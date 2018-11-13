@@ -1,0 +1,97 @@
+{
+    "name": "tembea",
+    "version": "0.0.1",
+    "description": "An application for managing trips at Andela",
+    "main": "./src/index.js",
+    "scripts": {
+        "build-server": "babel src --out-dir dist -s",
+        "clean": "rm -rf dist && mkdir dist",
+        "build": "yarn run clean && yarn run build-server",
+        "serve": "node dist/index.js",
+        "start": "NODE_ENV=production yarn run build && yarn run serve",
+        "start:dev": "NODE_ENV=development  DEBUG=log  nodemon --exec babel-node src/index.js",
+        "lint": "node_modules/.bin/eslint ./src",
+        "pretest": "NODE_ENV=test yarn db:rollback && NODE_ENV=test yarn run db:migrate",
+        "test": "jest --no-cache  --detectOpenHandles --runInBand --forceExit",
+        "db:seed": "node_modules/.bin/sequelize db:seed:all",
+        "db:migrate": "NODE_ENV=development node_modules/.bin/sequelize db:migrate",
+        "db:rollback": "node_modules/.bin/sequelize db:migrate:undo:all",
+        "db:rollmigrate": "yarn db:rollback && yarn db:migrate && yarn db:seed"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/andela/tembea.git"
+    },
+    "keywords": [
+        "trips",
+        "travel"
+    ],
+    "author": "",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/andela/tembea/issues"
+    },
+    "homepage": "https://github.com/andela/tembea#readme",
+    "devDependencies": {
+        "babel-cli": "^6.26.0",
+        "babel-eslint": "^8.2.6",
+        "babel-plugin-transform-object-rest-spread": "^6.26.0",
+        "babel-preset-env": "^1.7.0",
+        "commitplease": "^3.2.0",
+        "eslint": "^5.8.0",
+        "eslint-config-airbnb-base": "^13.1.0",
+        "eslint-plugin-import": "^2.14.0",
+        "jest": "^23.4.1",
+        "nodemon": "^1.18.3",
+        "nsp": "^3.2.1",
+        "sequelize-cli": "^4.1.1",
+        "supertest": "^3.1.0"
+    },
+    "dependencies": {
+        "body-parser": "^1.18.3",
+        "bugsnag": "^2.4.3",
+        "cls-hooked": "^4.2.2",
+        "cors": "^2.8.4",
+        "debug": "^3.1.0",
+        "dotenv": "^6.0.0",
+        "express": "^4.16.4",
+        "express-validator": "^5.3.0",
+        "json2csv": "^4.2.1",
+        "morgan": "^1.9.0",
+        "pg": "^7.4.3",
+        "pg-hstore": "^2.3.2",
+        "sequelize": "^4.39.0"
+    },
+    "jest": {
+        "collectCoverage": true,
+        "collectCoverageFrom": [
+            "src/**/*.js",
+            "!src/index.js"
+        ],
+        "testMatch": [
+            "<rootDir>/src/**/__tests__/**/?(*.)(spec|test)js",
+            "<rootDir>/src/**/?(*.)(spec|test).js"
+        ],
+        "coveragePathIgnorePatterns": [
+            "<rootDir>/src/database/migrations",
+            "<rootDir>/src/database/seeders",
+            "<rootDir>/src/database/models/index.js",
+            "<rootDir>/src/middlewares/index.js"
+        ],
+        "testEnvironment": "node"
+    },
+    "commitplease": {
+        "style": "angular",
+        "types": [
+            "feat",
+            "fix",
+            "docs",
+            "style",
+            "refactor",
+            "perf",
+            "test",
+            "chore"
+        ],
+        "scope": "\\S+.*"
+    }
+}
