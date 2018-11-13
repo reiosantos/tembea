@@ -1,0 +1,20 @@
+
+@startuml Models
+class Dummy {
+  String data
+  void methods()
+}
+
+class Flight {
+   flightNumber : Integer
+   departureTime : Date
+}
+@enduml
+
+@startuml anothermodel
+class User {
+  UserId : Guid
+  SlackId: String
+
+}
+@enduml
