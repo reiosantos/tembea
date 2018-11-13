@@ -1,5 +1,6 @@
 import express from 'express';
-import bodyParser from 'body-parser';
+// slack sdk have issues with body-parser, will be addressed later.
+// import bodyParser from 'body-parser';
 import cors from 'cors';
 import morgan from 'morgan';
 import bugsnag from 'bugsnag';
@@ -22,15 +23,6 @@ if (!process.env.NODE_ENV.match('test')
 
 app.use(cors());
 app.use(morgan('dev'));
-
-app.use(
-  bodyParser.urlencoded({
-    limit: '50mb',
-    extended: true
-  })
-);
-app.use(bodyParser.json());
-
 app.use(expressValidator());
 
 // set base url for api

@@ -65,7 +65,6 @@ jobs:
           command: |
             yarn check --integrity
             npx nsp check
-
   build_artifacts:
     <<: *defaults
     steps:
