@@ -1,5 +1,3 @@
-
-
 class SlackController {
   static launch(req, res) {
     const response = 'Hi, I am Tembea.\nI can help you schedule trips.';
