@@ -3,19 +3,20 @@ import {
   SlackDialogModel, SlackDialogSelectElementWithOptions,
   SlackDialog, SlackDialogText, SlackDialogElementWithDataSource
 } from '../SlackModels/SlackDialogModels';
+import dateDialogHelper from '../../../helpers/dateHelper';
 
 import departments from '../data';
-import SlackIntegrations from '../helpers/slackIntegrations';
+import WebClientSingleton from '../../../utils/WebClientSingleton';
 
-const web = SlackIntegrations.web(process.env.SLACK_OAUTH_TOKEN);
+const web = new WebClientSingleton();
 
 class DialogPrompts {
-  static sendTripDetailsForm(payload, forSelf = true) {
+  static sendTripDetailsForm(payload, forSelf) {
     const dialog = new SlackDialog('schedule_trip_form', 'Trip Details', 'Submit');
     const hint = `Enter date in Month/Day/Year format,
     leave a space and enter time in Hour:Minutes format. e.g 11/22/2018 22:00`;
 
-    if (!forSelf) {
+    if (forSelf === 'false') {
       dialog.addElements([
         new SlackDialogElementWithDataSource('Rider\'s name', 'rider')
       ]);
@@ -29,7 +30,18 @@ class DialogPrompts {
     ]);
 
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    web.dialog.open(dialogForm);
+    web.getWebClient().dialog.open(dialogForm);
+  }
+
+  static sendRescheduleTripForm(payload, callbackId, state, dialogName) {
+    const dialog = new SlackDialog(callbackId || payload.callback_id,
+      dialogName, 'submit', true, state);
+
+    dialog.addElements(dateDialogHelper.generateDialogElements());
+
+    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
+    
+    web.getWebClient().dialog.open(dialogForm);
   }
 }
 

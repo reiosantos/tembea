@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const TripRequest = sequelize.define('TripRequests', {
+  const TripRequest = sequelize.define('TripRequest', {
     id: {
       allowNull: false,
       primaryKey: true,
@@ -19,7 +19,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM(
         'Pending', 'Approved', 'Confirmed', 'InTransit', 'Cancelled', 'Completed'
       ),
-      defaultValue: 'Pending'
     },
     originId: {
       allowNull: false,
@@ -34,10 +33,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     departureTime: {
       allowNull: false,
-      type: DataTypes.DATE,
+      type: DataTypes.STRING,
     },
     arrivalTime: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING,
     },
     requestedById: {
       allowNull: false,

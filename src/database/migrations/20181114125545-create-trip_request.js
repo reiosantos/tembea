@@ -49,10 +49,10 @@ module.exports = {
     },
     departureTime: {
       allowNull: false,
-      type: Sequelize.DATE
+      type: Sequelize.STRING
     },
     arrivalTime: {
-      type: Sequelize.DATE
+      type: Sequelize.STRING
     },
     requestedById: {
       allowNull: false,

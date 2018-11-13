@@ -11,6 +11,8 @@ slackInteractionsRouter.action({ callbackId: 'schedule_trip_form' },
   SlackInteractions.handleUserInputs);
 slackInteractionsRouter.action({ callbackId: 'trip_itinerary' },
   SlackInteractions.handleItinerary);
+slackInteractionsRouter.action({ callbackId: 'reschedule_trip' },
+  SlackInteractions.handleReschedule);
 
 
 export default slackInteractionsRouter;

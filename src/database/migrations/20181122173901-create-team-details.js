@@ -3,7 +3,6 @@ module.exports = {
     teamId: {
       allowNull: false,
       primaryKey: true,
-      autoIncrement: true,
       type: Sequelize.STRING
     },
     botId: {

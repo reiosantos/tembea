@@ -36,7 +36,6 @@ class ScheduleTripController {
     } catch (error) {
       throw new Error('There was a problem processing your request');
     }
-    console.log(user);
     const diff = this.dateChecker(date_time, user.tz_offset);
 
     if (diff < 0) {
@@ -62,7 +61,7 @@ class ScheduleTripController {
 
   static async fetchUserInformationFromSlack(userId) {
     const { user } = await web.users.info({ //eslint-disable-line
-      token: process.env.SLACK_OAUTH_TOKEN,
+      token: process.env.BOT_TOKEN,
       user: userId
     });
     return user;
@@ -101,19 +100,20 @@ class ScheduleTripController {
 
       const requester = await ScheduleTripController.fetchUserInformationFromSlack(id);
       const { real_name, profile } = requester;
-      User.findOrCreate({
+      await User.findOrCreate({
         where: { slackId: id },
         defaults: { name: real_name, email: profile.email }
-      }).spread((user) => {
-        TripRequest.create({
+      }).spread(async (user) => {
+        await TripRequest.create({
           riderId: payload.submission.rider ? passenger : user.dataValues.id,
           name: username,
+          tripStatus: 'Pending',
           departureTime: date_time,
           requestedById: user.dataValues.id,
           originId: 1,
           destinationId: 1
         }).then((newRequest) => {
-          requestId = newRequest.id;
+          requestId = newRequest.dataValues.id;
         });
       });
     } catch (error) {

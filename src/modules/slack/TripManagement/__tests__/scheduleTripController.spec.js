@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 import ScheduleTripController from '../ScheduleTripController';
+import dateHelper from '../../../../helpers/dateHelper';
 
 config();
 
@@ -7,9 +8,12 @@ jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
     chat: { postMessage: jest.fn(() => Promise.resolve(() => {})) },
     users: {
+      info: jest.fn(() => Promise.resolve({
+        user: { real_name: 'someName', profile: { } }, token: 'sdf'
+      })),
       profile: {
         get: jest.fn(() => Promise.resolve({
-          profile: { tz_offset: 'someValue' }
+          profile: { tz_offset: 'someValue', email: 'sekito.ronald@andela.com' }
         }))
       }
     }
@@ -17,12 +21,14 @@ jest.mock('@slack/client', () => ({
 }));
 
 const currentTimezoneOffset = new Date().getTimezoneOffset() * 60 * -1;
-const yesterday = `${new Date(new Date().getTime() - 86400000).toLocaleDateString()} 12:00`;
-const tomorrow = `${new Date(new Date().getTime() + 86400000).toLocaleDateString()} 12:00`;
+const yesterday = `${new Date(new Date().getTime() - 86400000).toLocaleDateString('en-us')} 12:00`;
+const tomorrow = `${new Date(new Date().getTime() + 86400000).toLocaleDateString('en-us')} 12:00`;
 
 // nocking hack by @barak for slack api call for users info
 ScheduleTripController.fetchUserInformationFromSlack = () => ({
-  tz_offset: currentTimezoneOffset
+  tz_offset: currentTimezoneOffset,
+  profile: { email: 'sekito.ro.andela.com' },
+  real_name: 'ender'
 });
 
 const payload = {
@@ -31,11 +37,17 @@ const payload = {
     destination: 'Gabon',
     date_time: yesterday
   },
-  user: { id: process.env.MYSLACKID }
+  user: { id: '1', name: 'myName' }
 };
 
 describe('ScheduleTripController', () => {
   describe('dateChecker', () => {
+    it('should get the years', () => {
+      const res = dateHelper.generateDialogElements();
+
+      expect(res.length).toEqual(4);
+    });
+
     it('should return a negative integer if date is earlier than now', (done) => {
       const diff = ScheduleTripController.dateChecker(
         payload.submission.date_time, currentTimezoneOffset
@@ -90,5 +102,31 @@ describe('ScheduleTripController', () => {
       expect(user.tz_offset).toEqual(currentTimezoneOffset);
       done();
     });
+  });
+});
+
+describe('createRequest method', () => {
+  const payloadWithRider = {
+    user: {
+      id: '1',
+      name: 'sekito',
+    },
+    submission: {
+      pickup: 'pickUpLocation',
+      date_time: '12/12/2018 12:12',
+      destination: 'myHome'
+    }
+  };
+
+  it('should create a trip request', async (done) => {
+    await ScheduleTripController.createRequest(payload);
+
+    done();
+  });
+
+  it('should create a trip request for someone', async (done) => {
+    await ScheduleTripController.createRequest(payloadWithRider);
+
+    done();
   });
 });

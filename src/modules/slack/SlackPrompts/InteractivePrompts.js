@@ -26,7 +26,7 @@ class InteractivePrompts {
     attachment.addActions([
       // sample button actions
       new SlackButtonAction('view', 'View', `${requester} ${rider}`),
-      new SlackButtonAction('reschedule', 'Reschedule', `${requester} ${rider}`),
+      new SlackButtonAction('reschedule', 'Reschedule ', requestId),
       new SlackCancelButtonAction(
         'Cancel', `${requester} ${rider}`, 'Do you really want to cancel this trip?'
       )
@@ -36,6 +36,32 @@ class InteractivePrompts {
 
     const message = new SlackInteractiveMessage('Success! Your request has been submitted.', [attachment]);
     respond(message);
+  }
+
+  static SendRescheduleCompletion(trip) {
+    const attachments = new SlackAttachment();
+    attachments.addActions([
+      new SlackButtonAction('view', 'View', 'view'),
+      new SlackButtonAction('reschedule', 'Reschedule ', trip.dataValues.id),
+      new SlackCancelButtonAction(
+        'Cancel', trip.dataValues.id, 'Do you really want to cancel this trip?'
+      )
+    ]);
+    attachments.addOptionalProps('fallback', 'trip_itinerary', '#FFCCAA', 'default');
+    return new SlackInteractiveMessage(`The trip has been rescheduled for ${trip.departureTime}`, [attachments]);
+  }
+  
+  static SendRescheduleError(trip) {
+    const attachments = new SlackAttachment();
+    attachments.addActions([
+      new SlackButtonAction('reschedule', 'Try Again', trip.dataValues.id)
+    ]);
+    attachments.addOptionalProps('fallback', 'trip_itinerary', '#FFCCAA', 'default');
+    return new SlackInteractiveMessage('Oh! I was unable to save this trip', [attachments]);
+  }
+
+  static SendTripError() {
+    return new SlackInteractiveMessage('Dang! I hit an error with this trip');
   }
 }
 
