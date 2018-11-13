@@ -1,4 +1,5 @@
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
+import SlackNotifications from '../../../helpers/slack/notifications';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import DialogPrompts from '../SlackPrompts/DialogPrompts';
 import ScheduleTripController from '../TripManagement/ScheduleTripController';
@@ -15,6 +16,7 @@ class SlackInteractions {
         respond(
           new SlackInteractiveMessage('Your pending trips will arrive shortly.')
         );
+        break;
       default:
         respond(new SlackInteractiveMessage('Thank you for using Tembea'));
         break;
@@ -40,6 +42,7 @@ class SlackInteractions {
     }
     try {
       const requestId = await ScheduleTripController.createRequest(payload, respond);
+      SlackNotifications.notifyNewTripRequests(payload, respond);
       InteractivePrompts.SendCompletionResponse(payload, respond, requestId);
     } catch (error) {
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
@@ -78,7 +81,7 @@ class SlackInteractions {
     let { state } = payload;
     const { submission, user } = payload;
     const date = `${+submission.new_month + 1}/${submission.new_date}/${submission.new_year} ${submission.time}`;
-    
+
     state = state.split(' ');
     switch (state[0]) {
       case 'reschedule': {

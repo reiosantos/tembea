@@ -1,5 +1,5 @@
 
-// a function to notify when some environment variables are unset
+// a function to notifyNewTripRequests when some environment variables are unset
 const generalOptionalEnvVariables = [
   'DATABASE_DIALECT',
   'DATABASE_HOST',

@@ -31,9 +31,11 @@ export class SlackInteractiveMessage {
 }
 
 export class SlackAttachment {
-  constructor(title, text, authorName, authorIcon, imageUrl) {
+  constructor(title, text, authorName, authorIcon, imageUrl, attachmentType, color) {
     this.title = title;
     this.text = text;
+    this.color = color;
+    this.attachment_type = attachmentType;
     this.author_name = authorName;
     this.author_icon = authorIcon;
     this.image_url = imageUrl;
