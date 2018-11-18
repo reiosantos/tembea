@@ -4,6 +4,7 @@ import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import DialogPrompts from '../SlackPrompts/DialogPrompts';
 import ScheduleTripController from '../TripManagement/ScheduleTripController';
 import RescheduleTripController from '../TripManagement/RescheduleTripController';
+import CancelTripController from '../TripManagement/CancelTripController';
 
 class SlackInteractions {
   static welcomeMessage(payload, respond) {
@@ -53,27 +54,23 @@ class SlackInteractions {
     const { name, value } = payload.actions[0];
     switch (name) {
       case 'view':
-        respond({
-          text: 'Coming soon...'
-        });
+        respond({ text: 'Coming soon...' });
         break;
       case 'reschedule':
-        DialogPrompts.sendRescheduleTripForm(payload,
-          'reschedule_trip',
-          `reschedule ${payload.response_url} ${value}`,
-          'Reschedule Trip');
+        DialogPrompts.sendRescheduleTripForm(payload, 'reschedule_trip', `reschedule ${payload.response_url} ${value}`, 'Reschedule Trip');
         break;
-      case 'cancel':
-        respond(
-          new SlackInteractiveMessage(`Handle \`${name} trip\` as you would`)
-        );
+      case 'cancel_trip':
+        {
+          const tripId = value;
+          CancelTripController.cancelTrip(tripId)
+            .then((message) => {
+              respond(new SlackInteractiveMessage(message));
+            })
+            .catch(e => respond(new SlackInteractiveMessage(e.message)));
+        }
         break;
       default:
-        respond(
-          new SlackInteractiveMessage(
-            'Thank you for using Tembea. See you again.'
-          )
-        );
+        respond(new SlackInteractiveMessage('Thank you for using Tembea. See you again.'));
     }
   }
 

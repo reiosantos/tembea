@@ -47,7 +47,6 @@ export default class HomeController {
         resolveWithFullResponse: true
       });
       const jsonResponse = JSON.parse(response.body);
-      console.log(jsonResponse);
       if (jsonResponse.ok) {
         // get tokens and other data
         const botId = jsonResponse.bot.bot_user_id;

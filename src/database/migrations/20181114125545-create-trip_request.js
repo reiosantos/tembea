@@ -22,9 +22,14 @@ module.exports = {
     tripStatus: {
       allowNull: false,
       type: Sequelize.ENUM(
-        'Pending', 'Approved', 'Confirmed', 'InTransit', 'Cancelled', 'Completed'
+        'Pending',
+        'Approved',
+        'Confirmed',
+        'InTransit',
+        'Cancelled',
+        'Completed'
       ),
-      defaultValue: 'Pending',
+      defaultValue: 'Pending'
     },
     originId: {
       allowNull: false,

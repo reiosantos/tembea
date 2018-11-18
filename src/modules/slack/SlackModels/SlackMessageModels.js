@@ -100,8 +100,8 @@ export class SlackButtonAction extends SlackAction {
 }
 
 export class SlackCancelButtonAction extends SlackButtonAction {
-  constructor(text = 'Cancel', value = 'cancel', cancellationText = 'Do you really want to cancel?') {
-    super('cancel', text, value, SlackActionButtonStyles.danger);
+  constructor(text = 'Cancel', value = 'cancel', cancellationText = 'Do you really want to cancel?', name = 'cancel') {
+    super(name, text, value, SlackActionButtonStyles.danger);
     {
       const confirmDialogue = {
         title: 'Are you sure?',

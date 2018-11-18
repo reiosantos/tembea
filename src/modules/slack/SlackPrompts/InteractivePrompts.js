@@ -27,9 +27,8 @@ class InteractivePrompts {
       // sample button actions
       new SlackButtonAction('view', 'View', `${requester} ${rider}`),
       new SlackButtonAction('reschedule', 'Reschedule ', requestId),
-      new SlackCancelButtonAction(
-        'Cancel', `${requester} ${rider}`, 'Do you really want to cancel this trip?'
-      )
+      new SlackCancelButtonAction('Cancel Trip', requestId, 'Are you sure you want to cancel this trip', 'cancel_trip'),
+      new SlackCancelButtonAction()
     ]);
 
     attachment.addOptionalProps('fallback', 'trip_itinerary', '#FFCCAA', 'default');
@@ -40,17 +39,17 @@ class InteractivePrompts {
 
   static SendRescheduleCompletion(trip) {
     const attachments = new SlackAttachment();
+    // console.log(trip);
     attachments.addActions([
       new SlackButtonAction('view', 'View', 'view'),
       new SlackButtonAction('reschedule', 'Reschedule ', trip.dataValues.id),
-      new SlackCancelButtonAction(
-        'Cancel', trip.dataValues.id, 'Do you really want to cancel this trip?'
-      )
+      new SlackCancelButtonAction('Cancel Trip', trip.dataValues.id, 'Are you sure you want to cancel this trip', 'cancel_trip'),
+      new SlackCancelButtonAction()
     ]);
     attachments.addOptionalProps('fallback', 'trip_itinerary', '#FFCCAA', 'default');
     return new SlackInteractiveMessage('Success! Your request has been submitted.', [attachments]);
   }
-  
+
   static SendRescheduleError(trip) {
     const attachments = new SlackAttachment();
     attachments.addActions([

@@ -40,7 +40,7 @@ class DialogPrompts {
     dialog.addElements(dateDialogHelper.generateDialogElements());
 
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    
+
     web.getWebClient().dialog.open(dialogForm);
   }
 }
