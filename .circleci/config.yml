@@ -1,0 +1,89 @@
+defaults: &defaults
+  docker:
+    - image: circleci/node:carbon
+      environment:
+        NODE_ENV: test
+        DATABASE_URL: postgres://root@localhost/tembea_test_db
+    - image: postgres:9.6
+      environment:
+        POSTGRES_USER: root
+        POSTGRES_DB: tembea_test_db
+  working_directory: ~/tembea-backend
+
+cmd_attach_workspace: &cmd_attach_workspace
+  attach_workspace:
+    at: ~/tembea-backend
+
+cmd_install_packages: &cmd_install_packages
+  run:
+    name: Install project dependencies
+    command: sudo npm install -g yarn@1.12.x && yarn install
+
+cmd_restore_cache: &cmd_restore_cache
+  restore_cache:
+    keys:
+      - yarn-packages-{{ checksum "yarn.lock" }}
+
+cmd_save_cache: &cmd_save_cache
+  save_cache:
+    key: yarn-packages-{{ checksum "yarn.lock" }}
+    paths:
+      - ~/.cache/yarn
+      - node_modules
+
+persist_to_workspace: &persist_to_workspace
+  persist_to_workspace:
+    root: .
+    paths: .
+
+filters: &filters
+  filters:
+    branches:
+      only:
+        - /^(.*?(\bcircleci\b)[^$]*)$/
+        - develop
+        - master
+
+version: 2
+jobs:
+  checkout_code:
+    <<: *defaults
+    steps:
+      - checkout
+      - *cmd_restore_cache
+      - *cmd_install_packages
+      - *cmd_save_cache
+      - *persist_to_workspace
+
+  package_vulnerability_check:
+    <<: *defaults
+    steps:
+      - *cmd_attach_workspace
+      - *cmd_install_packages
+      - run:
+          name: Run npm packages security vulnerabilty check
+          command: |
+            yarn check --integrity
+            npx nsp check
+
+  build_artifacts:
+    <<: *defaults
+    steps:
+      - *cmd_attach_workspace
+      - *cmd_install_packages
+      - run: yarn run build
+      - *persist_to_workspace
+
+workflows:
+  version: 2
+  check_build_deploy:
+    jobs:
+      - checkout_code
+      - package_vulnerability_check:
+          requires:
+            - checkout_code
+      - build_artifacts:
+          requires:
+            - checkout_code
+            - package_vulnerability_check
+          <<: *filters
