@@ -1,8 +1,8 @@
 import express from 'express';
-import SlackController from './SlackInteractions/SlackController';
+import SlackController from './SlackController';
 
 const SlackRouter = express.Router();
 
-SlackRouter.post('/slack', SlackController.launch);
+SlackRouter.post('/slack/command', SlackController.launch);
 
 export default SlackRouter;

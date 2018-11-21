@@ -1,0 +1,17 @@
+html,
+body {
+  height: 100%;
+}
+
+.blue-square-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blue-square {
+  background-color: #B10DC9;
+  padding: 2em;
+  align-items: center;
+}

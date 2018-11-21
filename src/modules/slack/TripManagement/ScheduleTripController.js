@@ -30,7 +30,13 @@ class ScheduleTripController {
       );
     }
     // Check that date is not in the past
-    const user = await this.fetchUserInformationFromSlack(payload.user.id);
+    let user = {};
+    try {
+      user = await this.fetchUserInformationFromSlack(payload.user.id);
+    } catch (error) {
+      throw new Error('There was a problem processing your request');
+    }
+    console.log(user);
     const diff = this.dateChecker(date_time, user.tz_offset);
 
     if (diff < 0) {
@@ -56,7 +62,7 @@ class ScheduleTripController {
 
   static async fetchUserInformationFromSlack(userId) {
     const { user } = await web.users.info({ //eslint-disable-line
-      token: process.env.BOT_TOKEN,
+      token: process.env.SLACK_OAUTH_TOKEN,
       user: userId
     });
     return user;

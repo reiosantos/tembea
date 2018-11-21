@@ -4,7 +4,7 @@ export default [
     value: 'Technology'
   },
   {
-    label: 'Poeple',
+    label: 'People',
     value: 'People'
   },
   {

@@ -20,11 +20,11 @@ class SlackInteractions {
   }
 
   static bookNewTrip(payload, respond) {
-    const action = payload.actions[0].value === 'true';
+    const action = payload.actions[0].value;
     switch (action) {
-      case true:
-      case false:
-        DialogPrompts.sendTripDetailsForm(payload, action);
+      case 'true':
+      case 'false':
+        DialogPrompts.sendTripDetailsForm(payload, action === 'true');
         break;
       default:
         respond(new SlackInteractiveMessage('Thank you for using Tembea. See you again.'));

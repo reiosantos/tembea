@@ -1,13 +1,13 @@
-import { WebClient } from '@slack/client';
+
 import {
   SlackDialogModel, SlackDialogSelectElementWithOptions,
   SlackDialog, SlackDialogText, SlackDialogElementWithDataSource
 } from '../SlackModels/SlackDialogModels';
 
 import departments from '../data';
+import SlackIntegrations from '../helpers/slackIntegrations';
 
-
-const web = new WebClient(process.env.OAUTH_TOKEN);
+const web = SlackIntegrations.web(process.env.SLACK_OAUTH_TOKEN);
 
 class DialogPrompts {
   static sendTripDetailsForm(payload, forSelf = true) {
