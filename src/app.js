@@ -10,7 +10,7 @@ import modules from './modules';
 const app = express();
 
 if (!process.env.NODE_ENV.match('test')
-/* istanbul ignore next */
+  /* istanbul ignore next */
   && process.env.BUGSNAG_API_KEY
 ) {
   /* istanbul ignore next */

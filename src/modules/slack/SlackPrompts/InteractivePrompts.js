@@ -18,7 +18,7 @@ class InteractivePrompts {
     respond(message);
   }
 
-  static SendCompletionResponse(payload, respond) {
+  static SendCompletionResponse(payload, respond, requestId) {
     const requester = payload.user.id;
     const rider = payload.submission.rider || 'self';
 

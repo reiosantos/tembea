@@ -36,7 +36,12 @@ class SlackInteractions {
     if (errors.length > 0) {
       return { errors };
     }
-    InteractivePrompts.SendCompletionResponse(payload, respond);
+    try {
+      const requestId = ScheduleTripController.createRequest(payload, respond);
+      InteractivePrompts.SendCompletionResponse(payload, respond, requestId);
+    } catch (error) {
+      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+    }
   }
 
   static handleItinerary(payload, respond) {
@@ -45,10 +50,16 @@ class SlackInteractions {
       case 'view':
       case 'reschedule':
       case 'cancel':
-        respond(new SlackInteractiveMessage(`Handle \`${name} trip\` as you would`));
+        respond(
+          new SlackInteractiveMessage(`Handle \`${name} trip\` as you would`)
+        );
         break;
       default:
-        respond(new SlackInteractiveMessage('Thank you for using Tembea. See you again.'));
+        respond(
+          new SlackInteractiveMessage(
+            'Thank you for using Tembea. See you again.'
+          )
+        );
     }
   }
 }

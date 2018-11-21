@@ -1,7 +1,11 @@
 import { WebClient } from '@slack/client';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
+import models from '../../../database/models';
 
 const web = new WebClient(process.env.BOT_TOKEN);
+const {
+  TripRequest, User, Location, Address
+} = models;
 
 class ScheduleTripController {
   static async runValidations(payload) {
@@ -15,7 +19,9 @@ class ScheduleTripController {
       errors.push(new SlackDialogError('pickup', 'Only alphabets, dashes and spaces are allowed.'));
     }
     if (!wordsOnly.test(destination)) {
-      errors.push(new SlackDialogError('destination', 'Only alphabets, dashes and spaces are allowed.'));
+      errors.push(
+        new SlackDialogError('destination', 'Only alphabets, dashes and spaces are allowed.')
+      );
     }
     if (pickup.toLowerCase() === destination.toLowerCase()) {
       errors.push(
@@ -54,6 +60,60 @@ class ScheduleTripController {
       user: userId
     });
     return user;
+  }
+
+  static async createRequest(payload) {
+    let requestId;
+    try {
+      const { pickup, date_time, destination } = payload.submission;
+      const { id, name } = payload.user;
+      const username = name.replace(/\./g, ' ');
+
+      await Location.findOrCreate({
+        where: { id: 1 },
+        defaults: { longitude: 34, latitude: 23 }
+      }).spread((location) => {
+        Address.create({
+          locationId: location.dataValues.id,
+          address: destination
+        });
+      });
+
+      let passenger;
+      if (payload.submission.rider) {
+        const rider = await ScheduleTripController.fetchUserInformationFromSlack(
+          payload.submission.rider
+        );
+        const { real_name, profile } = rider;
+        await User.findOrCreate({
+          where: { slackId: rider.id },
+          defaults: { name: real_name, email: profile.email }
+        }).spread((user) => {
+          passenger = user.dataValues.id;
+        });
+      }
+
+      const requester = await ScheduleTripController.fetchUserInformationFromSlack(id);
+      const { real_name, profile } = requester;
+      User.findOrCreate({
+        where: { slackId: id },
+        defaults: { name: real_name, email: profile.email }
+      }).spread((user) => {
+        TripRequest.create({
+          riderId: payload.submission.rider ? passenger : user.dataValues.id,
+          name: username,
+          departureTime: date_time,
+          requestedById: user.dataValues.id,
+          originId: 1,
+          destinationId: 1
+        }).then((newRequest) => {
+          requestId = newRequest.id;
+        });
+      });
+    } catch (error) {
+      throw error;
+    }
+    return requestId;
   }
 }
 
