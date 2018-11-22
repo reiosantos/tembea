@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const TripRequest = sequelize.define('TripRequest', {
+  const TripRequest = sequelize.define('TripRequests', {
     id: {
       allowNull: false,
       primaryKey: true,

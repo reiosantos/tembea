@@ -81,4 +81,5 @@ typings/
 # build folder
 dist/
 
-yarn.lock
+# mac system file
+.DS_Store
