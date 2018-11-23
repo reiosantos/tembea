@@ -18,6 +18,11 @@ class SlackInteractions {
           new SlackInteractiveMessage('Your pending trips will arrive shortly.')
         );
         break;
+      case 'view_avilable_routes':
+        respond(
+          new SlackInteractiveMessage('Available routes will be shown soon.')
+        );
+        break;
       default:
         respond(new SlackInteractiveMessage('Thank you for using Tembea'));
         break;
@@ -57,7 +62,8 @@ class SlackInteractions {
         respond({ text: 'Coming soon...' });
         break;
       case 'reschedule':
-        DialogPrompts.sendRescheduleTripForm(payload, 'reschedule_trip', `reschedule ${payload.response_url} ${value}`, 'Reschedule Trip');
+        DialogPrompts.sendRescheduleTripForm(payload, 'reschedule_trip',
+          `reschedule ${payload.response_url} ${value}`, 'Reschedule Trip');
         break;
       case 'cancel_trip':
         {
@@ -77,7 +83,8 @@ class SlackInteractions {
   static async handleReschedule(payload, respond) {
     let { state } = payload;
     const { submission, user } = payload;
-    const date = `${+submission.new_month + 1}/${submission.new_date}/${submission.new_year} ${submission.time}`;
+    const date = `${+submission.new_month + 1}/${submission.new_date}/${submission.new_year} 
+                  ${submission.time}`;
 
     state = state.split(' ');
     switch (state[0]) {

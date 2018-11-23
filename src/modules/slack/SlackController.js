@@ -13,8 +13,9 @@ class SlackController {
       'What would you like to do today?', 'Tembea', '', '');
 
     attachment.addActions([
-      new SlackButtonAction('book', 'Book a Trip', 'book_new_trip'),
-      new SlackButtonAction('view', 'View Open Trips', 'view_open_trips'),
+      new SlackButtonAction('book', 'Schedule a Trip', 'book_new_trip'),
+      new SlackButtonAction('view', 'See Trip Itinerary', 'view_open_trips'),
+      new SlackButtonAction('view', 'See Available Routes', 'view_avilable_routes'),
       new SlackCancelButtonAction()
     ]);
 
