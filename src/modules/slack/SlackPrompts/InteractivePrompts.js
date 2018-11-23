@@ -48,7 +48,7 @@ class InteractivePrompts {
       )
     ]);
     attachments.addOptionalProps('fallback', 'trip_itinerary', '#FFCCAA', 'default');
-    return new SlackInteractiveMessage(`The trip has been rescheduled for ${trip.departureTime}`, [attachments]);
+    return new SlackInteractiveMessage('Success! Your request has been submitted.', [attachments]);
   }
   
   static SendRescheduleError(trip) {
