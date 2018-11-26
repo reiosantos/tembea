@@ -6,18 +6,22 @@ config();
 
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
-    chat: { postMessage: jest.fn(() => Promise.resolve(() => {})) },
+    chat: { postMessage: jest.fn(() => Promise.resolve(() => { })) },
     users: {
       info: jest.fn(() => Promise.resolve({
-        user: { real_name: 'someName', profile: { } }, token: 'sdf'
+        user: { real_name: 'someName', profile: {} },
+        token: 'sdf'
       })),
       profile: {
         get: jest.fn(() => Promise.resolve({
-          profile: { tz_offset: 'someValue', email: 'sekito.ronald@andela.com' }
+          profile: {
+            tz_offset: 'someValue',
+            email: 'sekito.ronald@andela.com'
+          }
         }))
       }
     }
-  })),
+  }))
 }));
 
 const currentTimezoneOffset = new Date().getTimezoneOffset() * 60 * -1;
@@ -49,7 +53,7 @@ describe('ScheduleTripController', () => {
     });
   });
 
-  describe('Run Validations', () => {
+  describe('Run Validations', async () => {
     it('should return an empty array if no errors exist', async (done) => {
       payload.submission.date_time = tomorrow;
       const errors = await ScheduleTripController.runValidations(payload);
@@ -88,37 +92,11 @@ describe('ScheduleTripController', () => {
     });
   });
 
-  describe('fetchUserInformationFromSlack', () => {
+  describe('fetchUserInformationFromSlack', async () => {
     it('should return a object containing users profile', async (done) => {
       const user = await ScheduleTripController.fetchUserInformationFromSlack(payload.user.id);
       expect(user.tz_offset).toEqual(currentTimezoneOffset);
       done();
     });
-  });
-});
-
-describe('createRequest method', () => {
-  const payloadWithRider = {
-    user: {
-      id: '1',
-      name: 'sekito',
-    },
-    submission: {
-      pickup: 'pickUpLocation',
-      date_time: '12/12/2018 12:12',
-      destination: 'myHome'
-    }
-  };
-
-  it('should create a trip request', async (done) => {
-    await ScheduleTripController.createRequest(payload);
-
-    done();
-  });
-
-  it('should create a trip request for someone', async (done) => {
-    await ScheduleTripController.createRequest(payloadWithRider);
-
-    done();
   });
 });

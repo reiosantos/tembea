@@ -20,7 +20,7 @@ class WebClientSingleton {
   }
 
   getWebClient() {
-    return this.web;
+    return this.web; 
   }
 }
 

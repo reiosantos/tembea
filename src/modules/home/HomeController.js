@@ -18,16 +18,16 @@ export default class HomeController {
   }
 
   static privacy(req, res) {
-    res.render('/home/index.html', { });
+    res.render('home/index.html', { });
   }
 
   static support(req, res) {
-    res.render('/home/index.html', { });
+    res.render('home/index.html', { });
   }
 
   static async auth(req, res) {
     if (!req.query.code || req.query.error) {
-      return res.render('/home/failed.html', {
+      return res.render('home/failed.html', {
         title: 'Installation failed',
         message: 'Authentication failed!'
       });
@@ -72,7 +72,7 @@ export default class HomeController {
       }
       throw new Error('Tembea could not be installed in your workspace.');
     } catch (error) {
-      return res.render('/home/failed.html', { message: error.message });
+      return res.render('home/failed.html', { message: error.message });
     }
   }
 }

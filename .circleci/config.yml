@@ -4,6 +4,7 @@ defaults: &defaults
       environment:
         NODE_ENV: test
         DATABASE_URL: postgres://root@localhost/tembea_test_db
+        SLACK_SIGNING_SECRET: hello
     - image: postgres:9.6
       environment:
         POSTGRES_USER: root

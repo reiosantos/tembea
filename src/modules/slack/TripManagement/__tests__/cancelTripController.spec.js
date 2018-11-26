@@ -2,7 +2,7 @@ import CancelTripController from '../CancelTripController';
 
 describe('cancel trip test', () => {
   it('should return trip not found', async (done) => {
-    const result = await CancelTripController.cancelTrip(300000);
+    const result = await CancelTripController.cancelTrip(300000000);
     expect(result).toBe('Trip not found');
     done();
   });

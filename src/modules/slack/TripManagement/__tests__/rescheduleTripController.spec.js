@@ -12,7 +12,7 @@ describe('RescheduleTripController', () => {
 
   it('should run validations with invalid date error', async (done) => {
     const nextYear = new Date().getFullYear() + 1;
-    
+
     const errors = await RescheduleTripController.runValidations(`8/1/${nextYear} 12;00`, { id: 1 });
 
     expect(errors.length).toBe(1);
