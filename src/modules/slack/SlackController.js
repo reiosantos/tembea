@@ -14,7 +14,7 @@ class SlackController {
 
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('book', 'Schedule a Trip', 'book_new_trip'),
-      new SlackButtonAction('view', 'See Trip Itinerary', 'view_open_trips'),
+      new SlackButtonAction('view', 'See Trip Itinerary', 'view_trips_itinerary'),
       new SlackButtonAction('view', 'See Available Routes', 'view_avilable_routes'),
       new SlackCancelButtonAction()
     ]);

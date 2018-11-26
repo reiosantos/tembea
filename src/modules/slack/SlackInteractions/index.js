@@ -5,18 +5,29 @@ import DialogPrompts from '../SlackPrompts/DialogPrompts';
 import ScheduleTripController from '../TripManagement/ScheduleTripController';
 import RescheduleTripController from '../TripManagement/RescheduleTripController';
 import CancelTripController from '../TripManagement/CancelTripController';
+import SlackController from '../SlackController';
 
 class SlackInteractions {
+  static launch(payload, respond) {
+    const action = payload.actions[0].value;
+    switch (action) {
+      case 'back_to_launch':
+        respond(SlackController.getWelcomeMessage());
+        break;
+      default:
+        respond(new SlackInteractiveMessage('Thank you for using Tembea'));
+        break;
+    }
+  }
+
   static welcomeMessage(payload, respond) {
     const action = payload.actions[0].value;
     switch (action) {
       case 'book_new_trip':
         InteractivePrompts.sendBookNewTripResponse(payload, respond);
         break;
-      case 'view_open_trips':
-        respond(
-          new SlackInteractiveMessage('Your pending trips will arrive shortly.')
-        );
+      case 'view_trips_itinerary':
+        InteractivePrompts.sendTripItinerary(payload, respond);
         break;
       case 'view_avilable_routes':
         respond(
@@ -55,7 +66,7 @@ class SlackInteractions {
     }
   }
 
-  static handleItinerary(payload, respond) {
+  static handleItineraryActions(payload, respond) {
     const { name, value } = payload.actions[0];
     switch (name) {
       case 'view':
