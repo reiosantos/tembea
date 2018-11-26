@@ -2,7 +2,7 @@ import { WebClient } from '@slack/client';
 import Utils from '../../utils/index';
 import { opsResponse, userResponse } from './responseObjects';
 
-const token = process.env.OAUTH_TOKEN;
+const token = process.env.SLACK_OAUTH_TOKEN;
 const channelId = process.env.OPERATIONS_DEPT_SLACK_CHANNEL_ID;
 
 const web = new WebClient(token);

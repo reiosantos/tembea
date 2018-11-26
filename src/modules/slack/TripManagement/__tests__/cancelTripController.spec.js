@@ -7,7 +7,7 @@ describe('cancel trip test', () => {
     done();
   });
 
-  it('should return trip not found', async (done) => {
+  it('should return success', async (done) => {
     const result = await CancelTripController.cancelTrip(1);
     expect(result).toBe('Success! Your Trip request has been cancelled');
     done();

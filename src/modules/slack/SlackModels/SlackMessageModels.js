@@ -39,33 +39,28 @@ export class SlackAttachment {
     this.author_name = authorName;
     this.author_icon = authorIcon;
     this.image_url = imageUrl;
+    this.fields = [];
+    this.actions = [];
   }
 
-  addFields(fields) {
-    if (Array.isArray(fields)) {
-      if (this.fields && this.fields.length > 0) {
-        this.fields.push(fields);
-      } else {
-        this.fields = fields;
-      }
+  /**
+   * @param  {string} type The type you wish to add 'field' or 'actions'
+   * @param  {array} valuesArray The array of fields or actions
+   */
+  addFieldsOrActions(type, valuesArray) {
+    if (Array.isArray(valuesArray)) {
+      this[type].push(...valuesArray);
     }
   }
 
-  addActions(actions) {
-    if (Array.isArray(actions)) {
-      if (this.actions && this.actions.length > 0) {
-        this.actions.push(actions);
-      } else {
-        this.actions = actions;
-      }
-    }
-  }
-
-  addOptionalProps(fallback, callbackId, color, attachmentType) {
-    if (fallback) this.fallback = fallback;
+  addOptionalProps(callbackId,
+    fallback = 'fallback',
+    color = '#FFCCAA',
+    attachmentType = 'default') {
     if (callbackId) this.callback_id = callbackId;
-    if (this.color) this.color = color;
-    if (this.attachmentType) this.attachment_type = attachmentType;
+    this.fallback = fallback;
+    this.color = color;
+    this.attachment_type = attachmentType;
   }
 }
 
@@ -78,9 +73,7 @@ export class SlackAttachmentField {
 }
 
 export class SlackAction {
-  constructor(
-    name, text, type
-  ) {
+  constructor(name, text, type) {
     this.name = name;
     this.text = text;
     this.type = type;
@@ -100,7 +93,10 @@ export class SlackButtonAction extends SlackAction {
 }
 
 export class SlackCancelButtonAction extends SlackButtonAction {
-  constructor(text = 'Cancel', value = 'cancel', cancellationText = 'Do you really want to cancel?', name = 'cancel') {
+  constructor(text = 'Cancel',
+    value = 'cancel',
+    cancellationText = 'Do you really want to cancel?',
+    name = 'cancel') {
     super(name, text, value, SlackActionButtonStyles.danger);
     {
       const confirmDialogue = {
@@ -128,6 +124,10 @@ export class SlackSelectActionWithSlackContent extends SlackAction {
   }
 }
 
-export const SlackDelayedSuccessResponse = new SlackInteractiveMessage('Thank you. your request is processing');
+export const SlackDelayedSuccessResponse = new SlackInteractiveMessage(
+  'Thank you. your request is processing'
+);
 
-export const SlackFailureResponse = new SlackInteractiveMessage('Sorry, something went wrong. Please try again');
+export const SlackFailureResponse = new SlackInteractiveMessage(
+  'Sorry, something went wrong. Please try again'
+);

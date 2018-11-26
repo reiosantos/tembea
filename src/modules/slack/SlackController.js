@@ -12,14 +12,14 @@ class SlackController {
     const attachment = new SlackAttachment('I am your trip operations assistant at Andela',
       'What would you like to do today?', 'Tembea', '', '');
 
-    attachment.addActions([
+    attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('book', 'Schedule a Trip', 'book_new_trip'),
       new SlackButtonAction('view', 'See Trip Itinerary', 'view_open_trips'),
       new SlackButtonAction('view', 'See Available Routes', 'view_avilable_routes'),
       new SlackCancelButtonAction()
     ]);
 
-    attachment.addOptionalProps('/fallback', 'welcome_message', '#3AA3E3', 'default');
+    attachment.addOptionalProps('welcome_message', '/fallback', '#3AA3E3');
 
     return new SlackInteractiveMessage('Welcome to Tembea!', [attachment]);
   }

@@ -28,10 +28,10 @@ describe('RescheduleTripController', () => {
 
     expect(errors.length).toBe(3);
     expect(errors[0]).toEqual({
-      name: 'new_month',
+      name: 'newMonth',
       error: 'This date seems to be in the past!'
     }, {
-      name: 'new_date',
+      name: 'newDate',
       error: 'This date seems to be in the past!'
     }, {
       name: 'time',

@@ -5,7 +5,7 @@ class WebClientSingleton {
     if (WebClientSingleton.exists) {
       return WebClientSingleton.instance;
     }
-    this.web = new WebClient(process.env.BOT_TOKEN);
+    this.web = new WebClient(process.env.SLACK_BOT_OAUTH_TOKEN);
     WebClientSingleton.instance = this;
     WebClientSingleton.exists = true;
   }

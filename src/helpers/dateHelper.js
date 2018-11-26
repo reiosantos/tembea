@@ -4,7 +4,7 @@ class TimeElementGenerator {
     return {
       label: 'Year',
       type: 'select',
-      name: 'new_year',
+      name: 'newYear',
       placeholder: 'Year',
       options: [{
         label: thisYear,
@@ -24,7 +24,7 @@ class TimeElementGenerator {
     return {
       label: 'Month',
       type: 'select',
-      name: 'new_month',
+      name: 'newMonth',
       placeholder: 'Month',
       options: months.map((month, index) => ({
         label: month,
@@ -44,7 +44,7 @@ class TimeElementGenerator {
     return {
       label: 'Date',
       type: 'select',
-      name: 'new_date',
+      name: 'newDate',
       placeholder: 'Date',
       options
     };
@@ -61,7 +61,7 @@ class TimeElementGenerator {
   }
 }
 
-class dateDialogHelper {
+class DateDialogHelper {
   static generateDialogElements() {
     const elements = [
       TimeElementGenerator.getYearElement(),
@@ -79,6 +79,12 @@ class dateDialogHelper {
 
     return dateInputTime - (now + contextTimezoneOffset + timezoneOffset * 1000);
   }
+
+  static dateFormat(date) {
+    const dateFormat = /^([1-9]|1[0-2])[/][0-3]?[0-9][/][2][0][0-9]{2}[ ][0-2]?[0-9][:][0-5][0-9]$/;
+
+    return dateFormat.test(date);
+  }
 }
 
-export default dateDialogHelper;
+export default DateDialogHelper;

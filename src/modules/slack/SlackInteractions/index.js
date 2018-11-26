@@ -11,7 +11,7 @@ class SlackInteractions {
     const action = payload.actions[0].value;
     switch (action) {
       case 'book_new_trip':
-        InteractivePrompts.SendBookNewTripResponse(payload, respond);
+        InteractivePrompts.sendBookNewTripResponse(payload, respond);
         break;
       case 'view_open_trips':
         respond(
@@ -49,7 +49,7 @@ class SlackInteractions {
     try {
       const requestId = await ScheduleTripController.createRequest(payload, respond);
       SlackNotifications.notifyNewTripRequests(payload, respond);
-      InteractivePrompts.SendCompletionResponse(payload, respond, requestId);
+      InteractivePrompts.sendCompletionResponse(payload, respond, requestId);
     } catch (error) {
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     }
@@ -82,9 +82,12 @@ class SlackInteractions {
 
   static async handleReschedule(payload, respond) {
     let { state } = payload;
-    const { submission, user } = payload;
-    const date = `${+submission.new_month + 1}/${submission.new_date}/${submission.new_year} 
-                  ${submission.time}`;
+    const {
+      submission: {
+        newMonth, newDate, newYear, time
+      }, user
+    } = payload;
+    const date = `${+newMonth + 1}/${newDate}/${newYear} ${time}`;
 
     state = state.split(' ');
     switch (state[0]) {

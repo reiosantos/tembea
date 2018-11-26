@@ -1,7 +1,7 @@
 import models from '../../../database/models';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
-import dateDialogHelper from '../../../helpers/dateHelper';
+import DateDialogHelper from '../../../helpers/dateHelper';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 
 const { TripRequest } = models;
@@ -18,18 +18,18 @@ class RescheduleTripController {
   static async runValidations(date, user) {
     const userInfo = await this.getUserInfo(user.id);
     const errors = [];
-    const dateFormat = /^([1-9]|1[0-2])[/][0-3]?[0-9][/][2][0][0-9]{2}[ ][0-2]?[0-9][:][0-5][0-9]$/;
 
-    if (!dateFormat.test(date)) {
+    if (!DateDialogHelper.dateFormat(date)) {
+      console.log(date);
       errors.push(
         new SlackDialogError('time', 'The time should be in the 24 hours format hh:mm')
       );
     }
 
-    if (dateDialogHelper.dateChecker(date, userInfo.tz_offset) < 0) {
+    if (DateDialogHelper.dateChecker(date, userInfo.tz_offset) < 0) {
       errors.push(
-        new SlackDialogError('new_month', 'This date seems to be in the past!'),
-        new SlackDialogError('new_date', 'This date seems to be in the past!'),
+        new SlackDialogError('newMonth', 'This date seems to be in the past!'),
+        new SlackDialogError('newDate', 'This date seems to be in the past!'),
         new SlackDialogError('time', 'This date seems to be in the past!')
       );
     }
@@ -43,9 +43,9 @@ class RescheduleTripController {
       trip.departureTime = newDate;
       return ride
         .save()
-        .then(() => InteractivePrompts.SendRescheduleCompletion(trip))
-        .catch(() => InteractivePrompts.SendRescheduleError(trip));
-    }).catch(() => InteractivePrompts.SendTripError());
+        .then(() => InteractivePrompts.sendRescheduleCompletion(trip))
+        .catch(() => InteractivePrompts.sendRescheduleError(trip));
+    }).catch(() => InteractivePrompts.sendTripError());
   }
 }
 

@@ -47,14 +47,6 @@ describe('ScheduleTripController', () => {
 
       expect(res.length).toEqual(4);
     });
-
-    it('should return a negative integer if date is earlier than now', (done) => {
-      const diff = ScheduleTripController.dateChecker(
-        payload.submission.date_time, currentTimezoneOffset
-      );
-      expect(diff).toBeLessThan(0);
-      done();
-    });
   });
 
   describe('Run Validations', () => {

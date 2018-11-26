@@ -31,7 +31,7 @@ export const userResponse = (user, data, channel) => {
     new SlackAttachmentField('Request Date', Utils.formatDate(requestDate), true),
     new SlackAttachmentField('Departure Date', Utils.formatDate(departureDate), true)
   ];
-  detailedAttachment.addFields(fields);
+  detailedAttachment.addFieldsOrActions('fields', fields);
 
   const attachments = [titleAttachment, detailedAttachment];
 
@@ -58,7 +58,7 @@ export const opsResponse = (channelId, tripFormat, data, color) => {
     new SlackAttachmentField('Departure', Utils.formatDate(departureDate), true),
     new SlackAttachmentField('Status', requestStatus, true)
   ];
-  detailedAttachment.addFields(fields);
+  detailedAttachment.addFieldsOrActions('fields', fields);
 
   return new SlackInteractiveMessage(
     '*Tembea* :oncoming_automobile:', [detailedAttachment], channelId
