@@ -65,6 +65,28 @@ jobs:
           command: |
             yarn check --integrity
             npx nsp check
+
+  test_and_report:
+    <<: *defaults
+    steps:
+      - *cmd_attach_workspace
+      - *cmd_install_packages
+      - run:
+          name: Install code climate test reporter
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+      - run:
+          name: Wait for postgres to be ready
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
+      - run:
+          name: Run tests
+          command: |
+            ./cc-test-reporter before-build     # https://github.com/codeclimate/test-reporter/issues/260#issuecomment-369783913
+            yarn test --coverage
+            ./cc-test-reporter after-build --exit-code $?
+      - *persist_to_workspace
+
   build_artifacts:
     <<: *defaults
     steps:
@@ -81,8 +103,12 @@ workflows:
       - package_vulnerability_check:
           requires:
             - checkout_code
+      - test_and_report:
+          requires:
+            - checkout_code
       - build_artifacts:
           requires:
             - checkout_code
             - package_vulnerability_check
+            - test_and_report
           <<: *filters
