@@ -1,3 +1,7 @@
+export const sendDeclineCompletion = () => ({
+  data: 'Everything is all good here'
+});
+
 export const sendBookNewTripMock = {
   attachments: [{
     actions: [{
@@ -14,7 +18,7 @@ export const sendBookNewTripMock = {
     author_icon: undefined,
     author_name: undefined,
     callback_id: 'book_new_trip',
-    color: '#FFCCAA',
+    color: '#3359DF',
     fallback: 'fallback',
     fields: [],
     image_url: undefined,
@@ -84,7 +88,7 @@ export const sendCompletionResponseMock = {
     author_icon: undefined,
     author_name: undefined,
     callback_id: 'itinerary_actions',
-    color: '#FFCCAA',
+    color: '#3359DF',
     fallback: 'fallback',
     fields: [],
     image_url: undefined,

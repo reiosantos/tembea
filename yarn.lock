@@ -5599,6 +5599,11 @@ sequelize-cli@^4.1.1:
     umzug "^2.1.0"
     yargs "^8.0.2"
 
+sequelize-replace-enum-postgres@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/sequelize-replace-enum-postgres/-/sequelize-replace-enum-postgres-1.5.0.tgz#76a913b8c073c139074145d25c6117303659d159"
+  integrity sha512-Vn9mtBuNeuswqYWW/BTpyg7rHW5NlbFWSWgev+F+ihi5TFpDUGAB4Tj4/7E2D7kLrW/0ZP30f0VQmIhyMarU/Q==
+
 sequelize@^4.39.0:
   version "4.41.2"
   resolved "https://registry.yarnpkg.com/sequelize/-/sequelize-4.41.2.tgz#bb9ba30d72e9eeb883c9861cd0e2cac672010883"
@@ -6401,7 +6406,7 @@ validate-npm-package-license@^3.0.1:
     spdx-correct "^3.0.0"
     spdx-expression-parse "^3.0.0"
 
-validator@^10.4.0:
+validator@^10.4.0, validator@^10.9.0:
   version "10.9.0"
   resolved "https://registry.yarnpkg.com/validator/-/validator-10.9.0.tgz#d10c11673b5061fb7ccf4c1114412411b2bac2a8"
   integrity sha512-hZJcZSWz9poXBlAkjjcsNAdrZ6JbjD3kWlNjq/+vE7RLLS/+8PAj3qVVwrwsOz/WL8jPmZ1hYkRvtlUeZAm4ug==

@@ -3,6 +3,10 @@ import {
   SlackAttachment, SlackButtonAction, SlackCancelButtonAction
 } from '../SlackModels/SlackMessageModels';
 import slackInteractionsHelpers from '../../../helpers/slack/navButtons';
+import Notifications from './Notifications';
+import WebClientSingleton from '../../../utils/WebClientSingleton';
+
+const web = new WebClientSingleton();
 
 class InteractivePrompts {
   static sendBookNewTripResponse(payload, respond) {
@@ -35,13 +39,17 @@ class InteractivePrompts {
       // sample button actions
       new SlackButtonAction('view', 'View', `${requester} ${rider}`),
       new SlackButtonAction('reschedule', 'Reschedule ', requestId),
-      new SlackCancelButtonAction('Cancel Trip', requestId, 'Are you sure you want to cancel this trip', 'cancel_trip'),
+      new SlackCancelButtonAction('Cancel Trip',
+        requestId,
+        'Are you sure you want to cancel this trip',
+        'cancel_trip'),
       new SlackCancelButtonAction()
     ]);
 
     attachment.addOptionalProps('itinerary_actions');
 
-    const message = new SlackInteractiveMessage('Success! Your request has been submitted.', [attachment]);
+    const message = new SlackInteractiveMessage('Success! Your request has been submitted.',
+      [attachment]);
     respond(message);
   }
 
@@ -50,7 +58,10 @@ class InteractivePrompts {
     attachments.addFieldsOrActions('actions', [
       new SlackButtonAction('view', 'View', 'view'),
       new SlackButtonAction('reschedule', 'Reschedule ', trip.dataValues.id),
-      new SlackCancelButtonAction('Cancel Trip', trip.dataValues.id, 'Are you sure you want to cancel this trip', 'cancel_trip'),
+      new SlackCancelButtonAction('Cancel Trip',
+        trip.dataValues.id,
+        'Are you sure you want to cancel this trip',
+        'cancel_trip'),
       new SlackCancelButtonAction()
     ]);
     attachments.addOptionalProps('itinerary_actions');
@@ -89,6 +100,30 @@ class InteractivePrompts {
     const message = new SlackInteractiveMessage('Please choose an option',
       [attachment, navAttachment]);
     respond(message);
+  }
+
+  static sendDeclineCompletion(tripInformation, timeStamp, channel) {
+    const requester = tripInformation.requester.dataValues;
+    const attachments = [
+      new SlackAttachment('Trip Declined'),
+      new SlackAttachment(':x: You have declined this trip')
+    ];
+    const fields = Notifications.notificationFields(
+      tripInformation.origin.dataValues.address,
+      tripInformation.destination.dataValues.address,
+      tripInformation
+    );
+
+    attachments[0].addOptionalProps('callback');
+    attachments[1].addOptionalProps('callback');
+    attachments[0].addFieldsOrActions('fields', fields);
+
+    web.getWebClient().chat.update({
+      channel,
+      text: `You have just declined the trip from <@${requester.slackId}>`,
+      ts: timeStamp,
+      attachments
+    });
   }
 }
 

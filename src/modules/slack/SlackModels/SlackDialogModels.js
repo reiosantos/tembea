@@ -41,6 +41,14 @@ export class SlackDialogError {
   }
 }
 
+export class SlackDialogTextarea extends SlackDialogElement {
+  constructor(label, name, hint) {
+    super(label, name);
+    this.type = 'textarea';
+    this.hint = hint;
+  }
+}
+
 export class SlackDialogText extends SlackDialogElement {
   constructor(label, name, placeholder, hint, type = SlackActionTypes.text) {
     super(label, name);
@@ -49,6 +57,7 @@ export class SlackDialogText extends SlackDialogElement {
     this.hint = hint;
   }
 }
+
 
 export class SlackDialogSelect extends SlackDialogElement {
   constructor(label, name) {

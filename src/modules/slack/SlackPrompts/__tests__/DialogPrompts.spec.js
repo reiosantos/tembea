@@ -1,5 +1,6 @@
 import DialogPrompts from '../DialogPrompts';
 
+jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
     dialog: {
@@ -11,17 +12,17 @@ jest.mock('@slack/client', () => ({
 }));
 
 describe('Dialog prompts test', () => {
-  it('should test sendTripDetailsForm function when forSelf is false', (done) => {
+  it('should test sendTripDetailsForm function when forSelf is false', async (done) => {
     const payload = jest.fn(() => 'payload');
-    const result = DialogPrompts.sendTripDetailsForm(payload, 'false');
+    const result = await DialogPrompts.sendTripDetailsForm(payload, 'false');
 
     expect(result).toBe(undefined);
     done();
   });
 
-  it('should test sendTripDetailsForm function when forSelf is true', (done) => {
+  it('should test sendTripDetailsForm function when forSelf is true', async (done) => {
     const payload = jest.fn(() => ({ trigger_id: 'trigger' }));
-    const result = DialogPrompts.sendTripDetailsForm(payload, 'true');
+    const result = await DialogPrompts.sendTripDetailsForm(payload, 'true');
 
     expect(result).toBe(undefined);
     done();
@@ -38,6 +39,20 @@ describe('Dialog prompts test', () => {
   it('should say chill', (done) => {
     const result = 'chill';
     expect(result).toBe('chill');
+    done();
+  });
+});
+
+describe('Decline dialog', () => {
+  it('should send decline dialog', async (done) => {
+    const res = await DialogPrompts.sendDeclineDialog({
+      trigger_id: 'XXXXXXX'
+    },
+    'callback_id',
+    'state',
+    'dialogName');
+
+    expect(res).toEqual({ data: 'just to know i worked' });
     done();
   });
 });

@@ -50,6 +50,16 @@ module.exports = (sequelize, DataTypes) => {
     },
     cabId: {
       type: DataTypes.INTEGER,
+    },
+    departmentId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    declinedById: {
+      type: DataTypes.INTEGER,
+    },
+    managerComment: {
+      type: DataTypes.TEXT
     }
   }, {});
   TripRequest.associate = (models) => {

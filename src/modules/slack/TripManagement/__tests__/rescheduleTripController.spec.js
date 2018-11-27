@@ -1,4 +1,5 @@
 import RescheduleTripController from '../RescheduleTripController';
+import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 
 jest.mock('../../../../utils/WebClientSingleton');
 
@@ -37,6 +38,33 @@ describe('RescheduleTripController', () => {
       name: 'time',
       error: 'This date seems to be in the past!'
     });
+    done();
+  });
+
+  it('should send reschedule completion', async (done) => {
+    InteractivePrompts.sendRescheduleCompletion = jest.fn(() => {});
+
+    await RescheduleTripController.rescheduleTrip(3, '12/12/2018 22:00');
+    
+    expect(InteractivePrompts.sendRescheduleCompletion.mock.calls.length).toBe(1);
+    done();
+  });
+
+  it('should send reschedule trip error', async (done) => {
+    InteractivePrompts.sendRescheduleError = jest.fn(() => {});
+
+    await RescheduleTripController.rescheduleTrip(3, {});
+    
+    expect(InteractivePrompts.sendRescheduleError.mock.calls.length).toBe(1);
+    done();
+  });
+
+  it('should send trip error', async (done) => {
+    InteractivePrompts.sendTripError = jest.fn(() => {});
+
+    await RescheduleTripController.rescheduleTrip(3000, '12/12/2018 22:00');
+    
+    expect(InteractivePrompts.sendTripError.mock.calls.length).toBe(1);
     done();
   });
 });

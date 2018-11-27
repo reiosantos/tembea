@@ -73,8 +73,10 @@
         "pg-hstore": "^2.3.2",
         "request-promise-native": "~1.0.5",
         "sequelize": "^4.39.0",
+        "sequelize-replace-enum-postgres": "^1.5.0",
         "short-id": "^0.1.0-1",
-        "slack-mock": "^1.1.1"
+        "slack-mock": "^1.1.1",
+        "validator": "^10.9.0"
     },
     "jest": {
         "collectCoverage": true,

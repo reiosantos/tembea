@@ -1,10 +1,102 @@
 import SlackInteractions from '../index';
 import DialogPrompts from '../../SlackPrompts/DialogPrompts';
+import ManageTripController from '../../TripManagement/ManageTripController';
 import ScheduleTripController from '../../TripManagement/ScheduleTripController';
 import RescheduleTripController from '../../TripManagement/RescheduleTripController';
 import CancelTripController from '../../TripManagement/CancelTripController';
 import { responseMessage, createPayload, respondMock } from '../__mocks__/SlackInteractions.mock';
 import SlackControllerMock from '../../__mocks__/SlackControllerMock';
+
+describe('Manager decline trip interactions', () => {
+  beforeAll(() => {
+    DialogPrompts.sendDeclineDialog = jest.fn(() => {});
+  });
+
+  it('should handle manager actions', (done) => {
+    SlackInteractions.handleManagerDecline({
+      original_message: {
+        ts: 'XXXXXXX'
+      },
+      channel: {
+        id: 'XXXXXXX'
+      },
+      actions: [{
+        name: 'manager_decline',
+        value: 3
+      }]
+    });
+
+    expect(DialogPrompts.sendDeclineDialog.mock.calls.length).toBe(1);
+    done();
+  });
+
+  it('should catch payload error', (done) => {
+    SlackInteractions.handleManagerDecline({
+      actions: [{
+        name: 'manager_decline',
+        value: 3
+      }]
+    }, (res) => {
+      expect(res).toEqual({
+        attachments: undefined,
+        channel: undefined,
+        response_type: 'ephemeral',
+        text: 'Error:bangbang:: I was unable to do that.'
+      });
+      done();
+    });
+  });
+});
+
+describe('Manager decline trip', () => {
+  beforeAll(() => {
+    ManageTripController.declineTrip = jest.fn(() => {});
+  });
+
+  it('should handle empty decline message', async (done) => {
+    const res = await SlackInteractions.handleTripDecline({
+      submission: {
+        declineReason: '        '
+      },
+      state: ''
+    });
+
+    expect(res.errors.length).toBe(1);
+    expect(res.errors[0]).toEqual({ name: 'declineReason', error: 'This field cannot be empty' });
+    done();
+  });
+
+  it('should handle trip decline', async (done) => {
+    await SlackInteractions.handleTripDecline({
+      submission: {
+        declineReason: 'Just a funny reason'
+      },
+      state: ''
+    });
+
+    expect(ManageTripController.declineTrip.mock.calls.length).toBe(1);
+    done();
+  });
+});
+
+describe('Error handling for manager decline', () => {
+  it('should catch unexpected errors', async (done) => {
+    await SlackInteractions.handleTripDecline({
+      submission: {
+        declineReason: {}
+      },
+      state: ''
+    }, (res) => {
+      expect(res).toEqual({
+        attachments: undefined,
+        channel: undefined,
+        response_type: 'ephemeral',
+        text: 'Error:bangbang:: Something went wrong! Please try again.'
+      });
+      done();
+    });
+  });
+});
 
 describe('Slack Interactions test: Launch and Welcome Message switch', () => {
   let respond;
@@ -208,6 +300,6 @@ describe('test handle reschedule function', () => {
     };
     const result = await SlackInteractions.handleReschedule(payload, rescheduleRespond);
     expect(result).toEqual(undefined);
-    expect(rescheduleRespond).toHaveBeenCalledWith(responseMessage());
+    expect(rescheduleRespond).toHaveBeenCalledWith('request submitted');
   });
 });

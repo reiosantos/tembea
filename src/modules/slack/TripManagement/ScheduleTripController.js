@@ -2,6 +2,8 @@ import { WebClient } from '@slack/client';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import models from '../../../database/models';
 import DateDialogHelper from '../../../helpers/dateHelper';
+import { slackEventNames } from '../events/slackEvents';
+import SlackEvents from '../events/index';
 
 const web = new WebClient(process.env.SLACK_BOT_OAUTH_TOKEN);
 const {
@@ -86,10 +88,10 @@ class ScheduleTripController {
     return user;
   }
 
-  static async createRequest(payload) {
+  static async createRequest(payload, respond) {
     let requestId;
     try {
-      const { pickup, dateTime, destination } = payload.submission;
+      const { dateTime, destination, department } = payload.submission;
       const { id, name } = payload.user;
       const username = name.replace(/\./g, ' ');
 
@@ -100,6 +102,7 @@ class ScheduleTripController {
         const rider = await ScheduleTripController.fetchUserInformationFromSlack(
           payload.submission.rider
         );
+        // eslint-disable-next-line camelcase
         const { real_name, profile } = rider;
         await User.findOrCreate({
           where: { slackId: rider.id },
@@ -110,6 +113,7 @@ class ScheduleTripController {
       }
 
       const requester = await ScheduleTripController.fetchUserInformationFromSlack(id);
+      // eslint-disable-next-line camelcase
       const { real_name, profile } = requester;
       await User.findOrCreate({
         where: { slackId: id },
@@ -121,7 +125,9 @@ class ScheduleTripController {
           user,
           username,
           dateTime,
-          requestId
+          requestId,
+          department,
+          respond
         );
       });
     } catch (error) {
@@ -130,7 +136,7 @@ class ScheduleTripController {
     return requestId;
   }
 
-  static async createTripRequest(payload, passenger, user, username, dateTime, requestId) {
+  static async createTripRequest(payload, passenger, user, username, dateTime, requestId, department, respond) {
     let reqId = requestId;
     await TripRequest.create({
       riderId: payload.submission.rider ? passenger : user.dataValues.id,
@@ -139,9 +145,12 @@ class ScheduleTripController {
       departureTime: dateTime,
       requestedById: user.dataValues.id,
       originId: 1,
+      departmentId: department,
       destinationId: 1
     }).then((newRequest) => {
       reqId = newRequest.dataValues.id;
+      SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST,
+        newRequest.dataValues, respond);
     });
     return reqId;
   }

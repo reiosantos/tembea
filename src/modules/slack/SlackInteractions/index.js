@@ -6,6 +6,7 @@ import ScheduleTripController from '../TripManagement/ScheduleTripController';
 import RescheduleTripController from '../TripManagement/RescheduleTripController';
 import CancelTripController from '../TripManagement/CancelTripController';
 import SlackController from '../SlackController';
+import ManageTripController from '../TripManagement/ManageTripController';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -119,26 +120,47 @@ class SlackInteractions {
     const date = `${newDate}/${+newMonth + 1}/${newYear} ${time}`;
 
     state = state.split(' ');
-    switch (state[0]) {
-      case 'reschedule': {
-        const errors = await RescheduleTripController.runValidations(
-          date,
-          user
-        );
-        if (errors.length > 0) {
-          return { errors };
-        }
-        const message = await RescheduleTripController.rescheduleTrip(
-          state[2],
-          date,
-          respond
-        );
-        respond(message);
-        break;
+    const errors = await RescheduleTripController.runValidations(
+      date,
+      user
+    );
+    if (errors.length > 0) {
+      return { errors };
+    }
+    const message = await RescheduleTripController.rescheduleTrip(
+      state[2],
+      date,
+      respond
+    );
+    respond(message);
+  }
+
+  static handleManagerDecline(payload, respond) {
+    const { value } = payload.actions[0];
+    try {
+      DialogPrompts.sendDeclineDialog(payload,
+        'decline_trip',
+        `${payload.original_message.ts} ${payload.channel.id} ${value}`,
+        'Decline');
+    } catch (error) {
+      respond(new SlackInteractiveMessage('Error:bangbang:: I was unable to do that.'));
+    }
+  }
+
+  static async handleTripDecline(payload, respond) {
+    const { submission: { declineReason } } = payload;
+    const state = payload.state.split(' ');
+    try {
+      const errors = await ManageTripController.runValidation(declineReason);
+      if (errors.length > 0) {
+        return { errors };
       }
-      default:
-        respond(new SlackInteractiveMessage('Thank you for using Tembea'));
-        break;
+      await ManageTripController.declineTrip(state, declineReason, respond);
+    } catch (error) {
+      const message = new SlackInteractiveMessage(
+        'Error:bangbang:: Something went wrong! Please try again.'
+      );
+      respond(message);
     }
   }
 }

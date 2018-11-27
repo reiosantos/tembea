@@ -83,4 +83,6 @@ dist/
 .floo*
 .snyk
 
+.vscode
+
 package-lock.json

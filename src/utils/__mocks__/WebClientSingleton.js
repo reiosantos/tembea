@@ -4,8 +4,16 @@ class WebClientSingleton {
       return WebClientSingleton.instance;
     }
     this.web = {
+      im: {
+        open: () => ({
+          channel: { id: 'just a dummy id' }
+        })
+      },
       dialog: {
         open: () => ({ data: 'just to know i worked' })
+      },
+      chat: {
+        postMessage: () => ({ data: 'successfully opened chat' })
       },
       users: {
         info: () => ({
@@ -20,7 +28,7 @@ class WebClientSingleton {
   }
 
   getWebClient() {
-    return this.web; 
+    return this.web;
   }
 }
 

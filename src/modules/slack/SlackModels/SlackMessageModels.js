@@ -55,7 +55,7 @@ export class SlackAttachment {
 
   addOptionalProps(callbackId,
     fallback = 'fallback',
-    color = '#FFCCAA',
+    color = '#3359DF',
     attachmentType = 'default') {
     if (callbackId) this.callback_id = callbackId;
     this.fallback = fallback;

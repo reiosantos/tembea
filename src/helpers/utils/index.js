@@ -7,7 +7,7 @@ class Utils {
     });
     const date = new Date(dateStr);
 
-    return moment(date).format('ddd, MMM Do YYYY hh:mm');
+    return moment(date).format('ddd, MMM Do YYYY hh:mm a');
   }
 }
 
