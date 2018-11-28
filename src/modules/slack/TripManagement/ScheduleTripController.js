@@ -1,4 +1,5 @@
 import { WebClient } from '@slack/client';
+import { SlackEvents, slackEventsNames } from '../events/slackEvents';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import models from '../../../database/models';
 import DateDialogHelper from '../../../helpers/dateHelper';
@@ -153,7 +154,7 @@ class ScheduleTripController {
     return newRequest;
   }
 
-  static async createRequest(payload) {
+  static async createRequest(payload, respond) {
     let requestId;
     let requestData = {};
     try {
@@ -188,6 +189,7 @@ class ScheduleTripController {
       );
 
       requestId = newRequest.dataValues.id;
+      SlackEvents.raise(slackEventsNames.NEW_TRIP_REQUEST, newRequest.dataValues, respond);
     } catch (error) {
       throw error;
     }

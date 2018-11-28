@@ -9,6 +9,7 @@ import bugsnag from 'bugsnag';
 import expressValidator from 'express-validator';
 import modules from './modules';
 import SlackBodyParserFilter from './helpers/slackBodyParserFilter';
+import './modules/slack/events/index';
 
 dotenv.config();
 

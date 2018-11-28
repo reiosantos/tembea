@@ -22,8 +22,9 @@ export const SlackKnownDataSources = Object.freeze({
 });
 
 export class SlackInteractiveMessage {
-  constructor(text, attachments, channelId) {
+  constructor(text, attachments, channelId, color) {
     this.text = text;
+    this.color = color;
     this.channel = channelId;
     this.attachments = attachments;
     this.response_type = SlackResponseType.ephemeral;

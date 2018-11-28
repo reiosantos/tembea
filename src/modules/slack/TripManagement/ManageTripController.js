@@ -1,10 +1,10 @@
 import validator from 'validator';
 import models from '../../../database/models';
+import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
-import DataHelper from '../../../helpers/dataHelpers';
 import SlackEvents from '../events';
-import { slackEventNames } from '../events/slackEvents';
+import { slackEventsNames } from '../events/slackEvents';
 
 const { TripRequest, Address, User } = models;
 
@@ -35,7 +35,7 @@ class ManageTripController {
         { model: Address, as: 'destination' },
         { model: User, as: 'requester' }]
     }).then(async (trip) => {
-      const head = await DataHelper.getHeadByDepartmentId(trip.departmentId);
+      const head = await SlackHelpers.getHeadByDepartmentId(trip.departmentId);
       const ride = trip;
       ride.tripStatus = 'DeclinedByManager';
       ride.managerComment = reason;
@@ -43,7 +43,7 @@ class ManageTripController {
       ride.save();
 
       InteractivePrompts.sendDeclineCompletion(trip.dataValues, state[0], state[1]);
-      SlackEvents.raise(slackEventNames.DECLINED_TRIP_REQUEST, ride.dataValues, respond);
+      SlackEvents.raise(slackEventsNames.DECLINED_TRIP_REQUEST, ride.dataValues, respond);
     }).catch(() => {
       respond({
         text: 'Dang, something went wrong there.'

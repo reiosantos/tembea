@@ -38,6 +38,7 @@ ScheduleTripController.fetchUserInformationFromSlack = () => ({
 const payload = {
   submission: {
     pickup: 'Entebe',
+    department: 2,
     destination: 'Gabon',
     dateTime: pastDate
   },

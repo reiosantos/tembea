@@ -1,6 +1,8 @@
 import { EventEmitter } from 'events';
 
-export const slackEventNames = Object.freeze({
+export const slackEventsNames = Object.freeze({
+  TRIP_APPROVED: 'trip_approved',
+  TRIP_WAITING_CONFIRMATION: 'trip_waiting_confirmation',
   NEW_TRIP_REQUEST: 'new_trip_request',
   DECLINED_TRIP_REQUEST: 'declined_trip_request'
 });
@@ -11,11 +13,7 @@ export class SlackEvents {
     eventsEmitter.emit(eventName, ...args);
   }
 
-  static handle(eventName, handle) {
-    eventsEmitter.on(eventName, handle);
-  }
-
-  static addListener(eventName, listener) {
-    eventsEmitter.addListener(eventName, listener);
+  static handle(eventName, handler) {
+    eventsEmitter.on(eventName, handler);
   }
 }

@@ -14,6 +14,9 @@ const SlackClientMock = () => jest.mock('@slack/client', () => ({
           }
         }))
       }
+    },
+    dialog: {
+      open: jest.fn(() => Promise.resolve(() => {}))
     }
   }))
 }));

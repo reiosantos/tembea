@@ -1,3 +1,4 @@
+import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import {
   SlackDialogModel,
   SlackDialogSelectElementWithOptions,
@@ -8,7 +9,6 @@ import {
 } from '../SlackModels/SlackDialogModels';
 import dateDialogHelper from '../../../helpers/dateHelper';
 
-import DataHelper from '../../../helpers/dataHelpers';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
 
 const web = new WebClientSingleton();
@@ -23,7 +23,7 @@ class DialogPrompts {
       dialog.addElements([new SlackDialogElementWithDataSource("Rider's name", 'rider')]);
     }
 
-    const departments = await DataHelper.getDepartments();
+    const departments = await SlackHelpers.getDepartments();
 
     dialog.addElements([
       new SlackDialogSelectElementWithOptions("Rider's department", 'department', departments),
@@ -52,13 +52,15 @@ class DialogPrompts {
     web.getWebClient().dialog.open(dialogForm);
   }
 
-  static async sendDeclineDialog(payload, callbackId, state, dialogName) {
+  static async sendDialogToManager(
+    payload, callbackId, state, dialogName, submitButtonText, submissionName
+  ) {
     const dialog = new SlackDialog(callbackId || payload.callbackId,
-      dialogName, 'Decline', false, state);
-      
+      dialogName, submitButtonText, false, state);
+
     const commentElement = new SlackDialogTextarea('Reason',
-      'declineReason',
-      'This is not an official trip');
+      submissionName,
+      `Why do you wan to ${submitButtonText} this trip`);
     dialog.addElements([commentElement]);
 
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);

@@ -76,13 +76,12 @@ class TimeElementGenerator {
 
 class DateDialogHelper {
   static generateDialogElements() {
-    const elements = [
+    return [
       TimeElementGenerator.getYearElement(),
       TimeElementGenerator.getMonthElement(),
       TimeElementGenerator.getDateElement(),
       TimeElementGenerator.getTime()
     ];
-    return elements;
   }
 
   static dateChecker(userDateInput, timezoneOffset) {
@@ -98,7 +97,8 @@ class DateDialogHelper {
   }
 
   static dateFormat(date) {
-    const dateFormat = /^([1-9]|([012][0-9])|(3[01]))[/]([0]{0,1}[1-9]|1[012])[/]\d\d\d\d [012]{0,1}[0-9]:[0-6][0-9]$/;
+    /* eslint-disable max-len */
+    const dateFormat = /^([1-9]|([012][0-9])|(3[01]))[/]([0]?[1-9]|1[012])[/]\d\d\d\d [012]?[0-9]:[0-6][0-9]$/;
     return dateFormat.test(date);
   }
 }

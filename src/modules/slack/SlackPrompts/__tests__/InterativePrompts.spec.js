@@ -4,6 +4,8 @@ import {
   sendCompletionResponseMock
 } from '../__mocks__/InteractivePrompts.mock';
 
+jest.mock('../../../../utils/WebClientSingleton');
+
 describe('Interactive Prompts test', () => {
   it('should sendBookNewTrip Response', (done) => {
     const respond = jest.fn(value => value);
@@ -23,6 +25,28 @@ describe('Interactive Prompts test', () => {
 
     done();
   });
+
+  it('should send decline response', (done) => {
+    const tripInitial = {
+      id: 2,
+      requestId: null,
+      departmentId: 23,
+      tripStatus: 'Approved',
+      department: null,
+      destination: { dataValues: {} },
+      origin: { dataValues: {} },
+      pickup: { },
+      departureDate: null,
+      requestDate: new Date(),
+      requester: { dataValues: {} },
+      rider: { dataValues: { slackId: 2 } },
+    };
+    const result = InteractivePrompts.sendDeclineCompletion(tripInitial, 'timeStamp', 1);
+    expect(result).toBe(undefined);
+
+    done();
+  });
+
 
   it('should sendRescheduleCompletion response', (done) => {
     const trip = { dataValues: { id: 1 } };

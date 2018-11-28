@@ -45,7 +45,7 @@ describe('Dialog prompts test', () => {
 
 describe('Decline dialog', () => {
   it('should send decline dialog', async (done) => {
-    const res = await DialogPrompts.sendDeclineDialog({
+    const res = await DialogPrompts.sendDialogToManager({
       trigger_id: 'XXXXXXX'
     },
     'callback_id',

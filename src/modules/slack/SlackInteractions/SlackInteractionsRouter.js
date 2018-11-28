@@ -15,8 +15,10 @@ slackInteractionsRouter.action({ callbackId: 'itinerary_actions' },
   SlackInteractions.handleItineraryActions);
 slackInteractionsRouter.action({ callbackId: 'reschedule_trip' },
   SlackInteractions.handleReschedule);
-slackInteractionsRouter.action({ callbackId: 'manager_action' },
-  SlackInteractions.handleManagerDecline);
+slackInteractionsRouter.action({ callbackId: 'approve_trip' },
+  SlackInteractions.handleManagerApprovalDetails);
+slackInteractionsRouter.action({ callbackId: 'manager_actions' },
+  SlackInteractions.handleManagerActions);
 slackInteractionsRouter.action({ callbackId: 'decline_trip' },
   SlackInteractions.handleTripDecline);
 

@@ -76,7 +76,8 @@
         "sequelize-replace-enum-postgres": "^1.5.0",
         "short-id": "^0.1.0-1",
         "slack-mock": "^1.1.1",
-        "validator": "^10.9.0"
+        "validator": "^10.9.0",
+        "sinon": "^7.1.1"
     },
     "jest": {
         "collectCoverage": true,

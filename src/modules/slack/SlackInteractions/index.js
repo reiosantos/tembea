@@ -1,12 +1,13 @@
-import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
-import SlackNotifications from '../../../helpers/slack/notifications';
-import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
-import DialogPrompts from '../SlackPrompts/DialogPrompts';
-import ScheduleTripController from '../TripManagement/ScheduleTripController';
-import RescheduleTripController from '../TripManagement/RescheduleTripController';
-import CancelTripController from '../TripManagement/CancelTripController';
+import SlackHelpers from '../../../helpers/slack/slackHelpers';
+import { SlackEvents, slackEventsNames } from '../events/slackEvents';
 import SlackController from '../SlackController';
+import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
+import DialogPrompts from '../SlackPrompts/DialogPrompts';
+import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
+import CancelTripController from '../TripManagement/CancelTripController';
 import ManageTripController from '../TripManagement/ManageTripController';
+import RescheduleTripController from '../TripManagement/RescheduleTripController';
+import ScheduleTripController from '../TripManagement/ScheduleTripController';
 import TripRescheduleHelper from '../helpers/slackHelpers/rescheduleHelper';
 
 class SlackInteractions {
@@ -58,8 +59,7 @@ class SlackInteractions {
       return { errors };
     }
     try {
-      const requestId = await ScheduleTripController.createRequest(payload);
-      SlackNotifications.notifyNewTripRequests(payload, respond);
+      const requestId = await ScheduleTripController.createRequest(payload, respond);
       InteractivePrompts.sendCompletionResponse(payload, respond, requestId);
     } catch (error) {
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
@@ -76,14 +76,11 @@ class SlackInteractions {
         TripRescheduleHelper.sendTripRescheduleDialog(payload, respond, value);
         break;
       case 'cancel_trip':
-        {
-          const tripId = value;
-          try {
-            const message = await CancelTripController.cancelTrip(tripId);
-            respond(new SlackInteractiveMessage(message));
-          } catch (error) {
-            respond(new SlackInteractiveMessage(error.message));
-          }
+        try {
+          const message = await CancelTripController.cancelTrip(value);
+          respond(new SlackInteractiveMessage(message));
+        } catch (error) {
+          respond(new SlackInteractiveMessage(error.message));
         }
         break;
       default:
@@ -110,15 +107,23 @@ class SlackInteractions {
     respond(message);
   }
 
-  static handleManagerDecline(payload, respond) {
-    const { value } = payload.actions[0];
+  static async handleManagerActions(payload, respond) {
+    const { value, name } = payload.actions[0];
+    let trip;
     try {
-      DialogPrompts.sendDeclineDialog(
-        payload,
-        'decline_trip',
-        `${payload.original_message.ts} ${payload.channel.id} ${value}`,
-        'Decline'
-      );
+      switch (name) {
+        case 'manager_decline':
+          return DialogPrompts.sendDialogToManager(payload,
+            'decline_trip',
+            `${payload.original_message.ts} ${payload.channel.id} ${value}`,
+            'Decline', 'Decline', 'declineReason');
+        case 'manager_approve':
+          trip = await SlackHelpers.isRequestApproved(value, payload.user.id);
+          SlackInteractions.approveTripRequestByManager(payload, { value, name }, trip, respond);
+          break;
+        default:
+          break;
+      }
     } catch (error) {
       respond(new SlackInteractiveMessage('Error:bangbang:: I was unable to do that.'));
     }
@@ -141,6 +146,42 @@ class SlackInteractions {
       );
       respond(message);
     }
+  }
+
+  static async handleManagerApprovalDetails(payload, respond) {
+    try {
+      const { state: tripRequestId, submission, user } = payload;
+      const { approveReason } = submission;
+      const hasApproved = await SlackHelpers.approveRequest(tripRequestId, user.id, approveReason);
+
+      if (hasApproved) {
+        SlackEvents.raise(slackEventsNames.TRIP_APPROVED, tripRequestId, respond);
+
+        respond(new SlackInteractiveMessage(':white_check_mark:'
+          + 'You have approved this request and it has been '
+          + 'forwarded to the operations team for confirmation.', undefined, undefined, '#29b016'));
+        return;
+      }
+      respond(new SlackInteractiveMessage('Error:bangbang: : This request could not be approved. '
+        + 'Consult the administrator'));
+    } catch (e) {
+      respond(new SlackInteractiveMessage(
+        'Error:bangbang: : We could not complete this process please try again.'
+      ));
+    }
+  }
+
+  static approveTripRequestByManager(payload, action, trip, respond) {
+    if (trip.isApproved) {
+      respond(new SlackInteractiveMessage(
+        `This trip has already been approved by ${trip.approvedBy}`
+      ));
+      return;
+    }
+    return DialogPrompts.sendDialogToManager(payload,
+      'approve_trip',
+      action.value,
+      'Approve', 'Approve', 'approveReason');
   }
 }
 

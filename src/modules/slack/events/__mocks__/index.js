@@ -1,6 +1,6 @@
-import { SlackEvents, slackEventNames } from '../slackEvents';
+import { SlackEvents, slackEventsNames } from '../slackEvents';
 
-SlackEvents.handle(slackEventNames.DECLINED_TRIP_REQUEST,
+SlackEvents.handle(slackEventsNames.DECLINED_TRIP_REQUEST,
   (ride, respond) => {
     respond({
       data: 'Notification sent'

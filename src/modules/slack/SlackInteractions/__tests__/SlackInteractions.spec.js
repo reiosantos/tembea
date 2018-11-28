@@ -9,11 +9,11 @@ import SlackControllerMock from '../../__mocks__/SlackControllerMock';
 
 describe('Manager decline trip interactions', () => {
   beforeAll(() => {
-    DialogPrompts.sendDeclineDialog = jest.fn(() => {});
+    DialogPrompts.sendDialogToManager = jest.fn(() => {});
   });
 
   it('should handle manager actions', (done) => {
-    SlackInteractions.handleManagerDecline({
+    SlackInteractions.handleManagerActions({
       original_message: {
         ts: 'XXXXXXX'
       },
@@ -26,12 +26,12 @@ describe('Manager decline trip interactions', () => {
       }]
     });
 
-    expect(DialogPrompts.sendDeclineDialog.mock.calls.length).toBe(1);
+    expect(DialogPrompts.sendDialogToManager.mock.calls.length).toBe(1);
     done();
   });
 
   it('should catch payload error', (done) => {
-    SlackInteractions.handleManagerDecline({
+    SlackInteractions.handleManagerActions({
       actions: [{
         name: 'manager_decline',
         value: 3
