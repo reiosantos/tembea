@@ -133,21 +133,6 @@ To execute all tests, run the command
   yarn test or make test
 ```
 
-## Contribute
-
-Contributions to the project are welcome! Before contributing, look through the branch naming, commit message and pull request conventions [here](https://github.com/andela/engineering-playbook/tree/master/5.%20Developing/Conventions). When you are all done, follow the guidelines below to raise a pull request:
-
-- Identify the feature, chore or bug to be worked on from the [pivotal tracker board](https://www.pivotaltracker.com/n/projects/2223435). If the ticket does not exist on the board, consult the project owners for approval before adding the ticket to the board.
-- Clone the repository and checkout from `develop` to a new branch to start working on the assigned task. Ensure branch names follow the convention linked above.
-- Work on the task following the coding standards and [style guide](https://github.com/airbnb/javascript) used in the project.
-- When task has been completed, make commits and raise a pull request against `develop` branch, also ensure to follow the conventions linked above.
-
-If the pull request is accepted by the owners of the repository, then it is merged into the `develop` branch and closed.
-
 ## Deployment
 
 TODO - add deployment commands
-
-## License
-
-I am not sure about this

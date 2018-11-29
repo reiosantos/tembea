@@ -9,5 +9,6 @@ WORKDIR /usr/app
 
 RUN npm install -g yarn@1.12.x && rm -rf package-lock.json
 COPY package.json yarn.lock dist /usr/app/
+COPY .sequelizerc.build /usr/app/.sequelizerc
 
 RUN yarn install

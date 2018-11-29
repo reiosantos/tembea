@@ -32,6 +32,23 @@ cmd_save_cache: &cmd_save_cache
       - ~/.cache/yarn
       - node_modules
 
+cmd_login_gcp: &cmd_login_gcp
+  run:
+    name: login into GCP
+    command: |
+      chmod +x .circleci/gcp_login.sh
+      .circleci/gcp_login.sh main
+
+cmd_build_and_push_docker: &cmd_build_and_push_docker
+  run:
+    name: build image
+    command: |
+      export IMG_TAG=$(echo $CIRCLE_SHA1 | cut -c -7)
+      echo $IMG_TAG
+      docker login -u _json_key -p "$(echo $SERVICE_ACCOUNT)" https://gcr.io
+      docker build -t gcr.io/${GCP_PROJECT_ID}/${PROJECT_NAME}:${IMG_TAG} -f docker/release/Dockerfile .
+      docker push gcr.io/${GCP_PROJECT_ID}/${PROJECT_NAME}:${IMG_TAG}
+
 persist_to_workspace: &persist_to_workspace
   persist_to_workspace:
     root: .
@@ -77,6 +94,7 @@ jobs:
           command: |
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
+
       - run:
           name: Wait for postgres to be ready
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
@@ -96,6 +114,80 @@ jobs:
       - run: yarn run build
       - *persist_to_workspace
 
+  docker_and_deploy:
+    docker:
+      - image: gcr.io/$GCP_PROJECT_ID/tembea-ci-image
+        auth:
+          username: _json_key
+          password: $SERVICE_ACCOUNT
+        environment:
+          GOOGLE_APPLICATION_CREDENTIALS: /root/tembea-backend/shared/account.json
+
+    working_directory: ~/tembea-backend
+    <<: *defaults
+    steps:
+      - checkout
+      - setup_remote_docker
+      - *cmd_attach_workspace
+      - *cmd_login_gcp
+      - *cmd_build_and_push_docker
+      - run:
+          name: Clone the deployment scripts repo
+          command: |
+            mkdir ~/.ssh/ && echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+            echo ${DEPLOYMENT_SCRIPTS_REPO}
+            git clone -b ft-add-ansible-scripts-162369692 ${DEPLOYMENT_SCRIPTS_REPO}
+      - deploy:
+          name: Run K8s configurations to deploy the app
+          command: |
+            cd tembea-deployment-scripts/ansible/backend
+            export IMG_TAG=$(echo $CIRCLE_SHA1 | cut -c -7)
+            if [ "${CIRCLE_BRANCH}" = "master" ]; then
+              export NAMESPACE="production"
+              export NODE_ENV=${NAMESPACE}
+            elif [[ "${CIRCLE_BRANCH}" = "develop" || "${CIRCLE_BRANCH}" = "ch-deploy-staging-env-162305814" ]]; then
+              export NAMESPACE="staging"
+              echo $NAMESPACE
+              export NODE_ENV=${NAMESPACE}
+            fi
+            ansible-playbook playbook.yml --extra-vars "@dev-vars.yml" -vvv
+
+  delete_migration_job:
+    docker:
+      - image: gcr.io/$GCP_PROJECT_ID/tembea-ci-image
+        auth:
+          username: _json_key
+          password: $SERVICE_ACCOUNT
+        environment:
+          GOOGLE_APPLICATION_CREDENTIALS: /root/tembea-backend/shared/account.json
+
+    <<: *defaults
+    steps:
+      - setup_remote_docker
+      - *cmd_attach_workspace
+      - *cmd_login_gcp
+      - run:
+          name: delete kubernetes job
+          command: |
+            sleep 1m
+            if [ "${CIRCLE_BRANCH}" = "master" ]; then
+              export NAMESPACE="production"
+            elif [[ "${CIRCLE_BRANCH}" = "develop" || "${CIRCLE_BRANCH}" = "ch-deploy-staging-env-162305814" ]]; then
+              export NAMESPACE="staging"
+            fi
+
+            export JOB_NAME=tembea-backend-${NAMESPACE}
+            echo ${NAMESPACE}
+            echo ${JOB_NAME}
+            export ACTIVE=$(kubectl get job -o 'jsonpath={.status.active}' ${JOB_NAME} --namespace ${NAMESPACE})
+            export SUCCEEDED=$(kubectl get job -o 'jsonpath={.status.succeeded}' ${JOB_NAME} --namespace ${NAMESPACE})
+            echo ${ACTIVE}
+            echo ${SUCCEEDED}
+            if ([ "${ACTIVE}" == "null" ] || [[ -z "${ACTIVE}" ]] ) && [ "${SUCCEEDED}" == "1" ]; then
+              echo "Blocking job ${JOB_NAME} succesfully completed, deleting"
+              kubectl delete job ${JOB_NAME} --namespace=${NAMESPACE}
+            fi
+
 workflows:
   version: 2
   check_build_deploy:
@@ -112,4 +204,15 @@ workflows:
             - checkout_code
             - package_vulnerability_check
             - test_and_report
+          <<: *filters
+      - docker_and_deploy:
+          requires:
+            - checkout_code
+            - package_vulnerability_check
+            - test_and_report
+            - build_artifacts
+          <<: *filters
+      - delete_migration_job:
+          requires:
+            - docker_and_deploy
           <<: *filters
