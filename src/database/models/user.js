@@ -30,14 +30,13 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {});
   User.associate = (models) => {
-    // associations can be defined here
     User.hasMany(models.TripRequest, {
       foreignKey: 'requestedById',
       sourceKey: 'id'
     });
     User.hasOne(models.Address, {
-      foreignKey: 'defaultDestinationId',
-      targetKey: 'id',
+      foreignKey: 'id',
+      targetKey: 'defaultDestinationId',
       as: 'defaultDestination',
     });
   };

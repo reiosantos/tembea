@@ -16,9 +16,6 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {});
   Location.associate = (models) => {
-    Location.belongsTo(models.Address, {
-      foreignKey: 'id'
-    });
   };
   return Location;
 };
