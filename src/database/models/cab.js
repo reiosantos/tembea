@@ -16,9 +16,6 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {});
   Cab.associate = (models) => {
-    Cab.belongsTo(models.TripRequest, {
-      foreignKey: 'cabId',
-    });
   };
   return Cab;
 };

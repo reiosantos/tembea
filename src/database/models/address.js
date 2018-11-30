@@ -16,12 +16,6 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {});
   Address.associate = (models) => {
-    Address.hasMany(models.TripRequest, {
-      foreignKey: 'originId',
-    });
-    Address.hasMany(models.TripRequest, {
-      foreignKey: 'destinationId',
-    });
   };
   return Address;
 };

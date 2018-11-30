@@ -34,11 +34,6 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'requestedById',
       sourceKey: 'id'
     });
-    User.hasOne(models.Address, {
-      foreignKey: 'id',
-      targetKey: 'defaultDestinationId',
-      as: 'defaultDestination',
-    });
   };
   return User;
 };

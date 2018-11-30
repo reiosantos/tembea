@@ -58,24 +58,19 @@ module.exports = (sequelize, DataTypes) => {
       targetKey: 'id',
       as: 'requester',
     });
-    TripRequest.hasOne(models.Cab, {
-      foreignKey: 'id',
-      targetKey: 'cabId',
-      as: 'cab'
-    });
-    TripRequest.hasOne(models.Address, {
-      foreignKey: 'id',
-      targetKey: 'originId',
+    TripRequest.belongsTo(models.Address, {
+      foreignKey: 'originId',
+      targetKey: 'id',
       as: 'origin'
     });
-    TripRequest.hasOne(models.Address, {
-      foreignKey: 'id',
-      targetKey: 'destinationId',
+    TripRequest.belongsTo(models.Address, {
+      foreignKey: 'destinationId',
+      targetKey: 'id',
       as: 'destination'
     });
-    TripRequest.hasOne(models.User, {
-      foreignKey: 'id',
-      targetKey: 'riderId',
+    TripRequest.belongsTo(models.User, {
+      foreignKey: 'riderId',
+      targetKey: 'id',
       as: 'rider'
     });
   };
