@@ -1,26 +1,39 @@
 class TimeElementGenerator {
   static getYearElement() {
-    const thisYear = (new Date()).getFullYear();
+    const thisYear = new Date().getFullYear();
     return {
       label: 'Year',
       type: 'select',
       name: 'newYear',
       placeholder: 'Year',
-      options: [{
-        label: thisYear,
-        value: thisYear
-      }, {
-        label: thisYear + 1,
-        value: thisYear + 1
-      }]
+      options: [
+        {
+          label: thisYear,
+          value: thisYear
+        },
+        {
+          label: thisYear + 1,
+          value: thisYear + 1
+        }
+      ]
     };
   }
 
   static getMonthElement() {
-    const months = ['January',
-      'February', 'March', 'April',
-      'May', 'June', 'July', 'August',
-      'September', 'October', 'November', 'December'];
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ];
     return {
       label: 'Month',
       type: 'select',
@@ -28,8 +41,8 @@ class TimeElementGenerator {
       placeholder: 'Month',
       options: months.map((month, index) => ({
         label: month,
-        value: index,
-      })),
+        value: index
+      }))
     };
   }
 
@@ -51,13 +64,13 @@ class TimeElementGenerator {
   }
 
   static getTime() {
-    return ({
+    return {
       label: 'Time',
       type: 'text',
       hint: 'hh:mm',
       placeholder: 'Time in 24 Hour format',
-      name: 'time',
-    });
+      name: 'time'
+    };
   }
 }
 
@@ -81,7 +94,7 @@ class DateDialogHelper {
   }
 
   static dateFormat(date) {
-    const dateFormat = /^([1-9]|1[0-2])[/][0-3]?[0-9][/][2][0][0-9]{2}[ ][0-2]?[0-9][:][0-5][0-9]$/;
+    const dateFormat = /^([1-9]|([012][0-9])|(3[01]))[/]([0]{0,1}[1-9]|1[012])[/]\d\d\d\d [012]{0,1}[0-9]:[0-6][0-9]$/;
 
     return dateFormat.test(date);
   }

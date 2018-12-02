@@ -6,7 +6,7 @@ config();
 
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
-    chat: { postMessage: jest.fn(() => Promise.resolve(() => { })) },
+    chat: { postMessage: jest.fn(() => Promise.resolve(() => {})) },
     users: {
       info: jest.fn(() => Promise.resolve({
         user: { real_name: 'someName', profile: {} },
@@ -25,8 +25,8 @@ jest.mock('@slack/client', () => ({
 }));
 
 const currentTimezoneOffset = new Date().getTimezoneOffset() * 60 * -1;
-const yesterday = `${new Date(new Date().getTime() - 86400000).toLocaleDateString('en-us')} 12:00`;
-const tomorrow = `${new Date(new Date().getTime() + 86400000).toLocaleDateString('en-us')} 12:00`;
+const pastDate = '01/01/2014 12:00';
+const futureDate = '01/01/2030 12:00';
 
 // nocking hack by @barak for slack api call for users info
 ScheduleTripController.fetchUserInformationFromSlack = () => ({
@@ -39,7 +39,7 @@ const payload = {
   submission: {
     pickup: 'Entebe',
     destination: 'Gabon',
-    date_time: yesterday
+    dateTime: pastDate
   },
   user: { id: '1', name: 'myName' }
 };
@@ -55,7 +55,7 @@ describe('ScheduleTripController', () => {
 
   describe('Run Validations', async () => {
     it('should return an empty array if no errors exist', async (done) => {
-      payload.submission.date_time = tomorrow;
+      payload.submission.dateTime = futureDate;
       const errors = await ScheduleTripController.runValidations(payload);
       expect(errors).toHaveLength(0);
       done();
@@ -78,14 +78,14 @@ describe('ScheduleTripController', () => {
       payload.submission = {
         pickup: 'Entebe',
         destination: 'Gabon',
-        date_time: yesterday
+        dateTime: pastDate
       };
       const errors = await ScheduleTripController.runValidations(payload);
       expect(errors[0].error).toEqual('Date cannot be in the past.');
       done();
     });
     it('should return "Time format must be in Month/Day/Year format. See hint."', async (done) => {
-      payload.submission.date_time = '31/2/218 1:00am';
+      payload.submission.dateTime = '31/2/218 1:00am';
       const errors = await ScheduleTripController.runValidations(payload);
       expect(errors[0].error).toEqual('Time format must be in Month/Day/Year format. See hint.');
       done();

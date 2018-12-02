@@ -30,15 +30,16 @@ class ScheduleTripValidator {
   static checkDate(date, tzOffset) {
     const diff = DateDialogHelper.dateChecker(date, tzOffset);
     if (diff < 0) {
-      return [new SlackDialogError('date_time', 'Date cannot be in the past.')];
+      return [new SlackDialogError('dateTime', 'Date cannot be in the past.')];
     }
     return [];
   }
 
   static checkDateFormat(date) {
     if (!DateDialogHelper.dateFormat(date)) {
-      return [new SlackDialogError('date_time',
-        'Time format must be in Month/Day/Year format. See hint.')];
+      return [
+        new SlackDialogError('dateTime', 'Time format must be in Month/Day/Year format. See hint.')
+      ];
     }
     return [];
   }
@@ -46,17 +47,19 @@ class ScheduleTripValidator {
 
 class ScheduleTripController {
   static async runValidations(payload) {
-    const { pickup, destination, date_time } = payload.submission;
+    const { pickup, destination, dateTime } = payload.submission;
     const errors = [];
 
     errors.push(...ScheduleTripValidator.checkWord(pickup, 'pickup'));
     errors.push(...ScheduleTripValidator.checkWord(destination, 'destination'));
-    errors.push(...ScheduleTripValidator.checkOriginAnDestination(
-      pickup,
-      destination,
-      'pickup',
-      'destination'
-    ));
+    errors.push(
+      ...ScheduleTripValidator.checkOriginAnDestination(
+        pickup,
+        destination,
+        'pickup',
+        'destination'
+      )
+    );
 
     let user = {};
     try {
@@ -64,15 +67,16 @@ class ScheduleTripController {
     } catch (error) {
       throw new Error('There was a problem processing your request');
     }
-    
-    errors.push(...ScheduleTripValidator.checkDate(date_time, user.tz_offset));
-    errors.push(...ScheduleTripValidator.checkDateFormat(date_time));
+
+    errors.push(...ScheduleTripValidator.checkDate(dateTime, user.tz_offset));
+    errors.push(...ScheduleTripValidator.checkDateFormat(dateTime));
 
     return errors;
   }
 
   static async fetchUserInformationFromSlack(userId) {
-    const { user } = await web.users.info({ //eslint-disable-line
+    const { user } = await web.users.info({
+      //eslint-disable-line
       token: process.env.SLACK_BOT_OAUTH_TOKEN,
       user: userId
     });
@@ -82,7 +86,7 @@ class ScheduleTripController {
   static async createRequest(payload) {
     let requestId;
     try {
-      const { pickup, date_time, destination } = payload.submission;
+      const { pickup, dateTime, destination } = payload.submission;
       const { id, name } = payload.user;
       const username = name.replace(/\./g, ' ');
 
@@ -108,12 +112,14 @@ class ScheduleTripController {
         where: { slackId: id },
         defaults: { name: real_name, email: profile.email }
       }).spread(async (user) => {
-        requestId = await ScheduleTripController.createTripRequest(payload,
+        requestId = await ScheduleTripController.createTripRequest(
+          payload,
           passenger,
           user,
           username,
-          date_time,
-          requestId);
+          dateTime,
+          requestId
+        );
       });
     } catch (error) {
       throw error;
@@ -121,13 +127,13 @@ class ScheduleTripController {
     return requestId;
   }
 
-  static async createTripRequest(payload, passenger, user, username, date_time, requestId) {
+  static async createTripRequest(payload, passenger, user, username, dateTime, requestId) {
     let reqId = requestId;
     await TripRequest.create({
       riderId: payload.submission.rider ? passenger : user.dataValues.id,
       name: username,
       tripStatus: 'Pending',
-      departureTime: date_time,
+      departureTime: dateTime,
       requestedById: user.dataValues.id,
       originId: 1,
       destinationId: 1

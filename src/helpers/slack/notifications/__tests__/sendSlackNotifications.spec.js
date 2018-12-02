@@ -36,7 +36,7 @@ describe('slack integration tests', () => {
         department: 'Technology',
         pickup: 'kasubi',
         destination: 'nansana',
-        date_time: '12/12/2018 12:12'
+        dateTime: '12/12/2018 12:12'
       },
     callback_id: 'schedule_trip_form',
     response_url: 'https://hooks.slack.com/app/response_url',
