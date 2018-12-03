@@ -116,7 +116,7 @@ class SlackInteractions {
         newMonth, newDate, newYear, time
       }, user
     } = payload;
-    const date = `${+newMonth + 1}/${newDate}/${newYear} ${time}`;
+    const date = `${newDate}/${+newMonth + 1}/${newYear} ${time}`;
 
     state = state.split(' ');
     switch (state[0]) {

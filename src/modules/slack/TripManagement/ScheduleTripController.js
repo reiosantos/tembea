@@ -38,7 +38,10 @@ class ScheduleTripValidator {
   static checkDateFormat(date) {
     if (!DateDialogHelper.dateFormat(date)) {
       return [
-        new SlackDialogError('dateTime', 'Time format must be in Month/Day/Year format. See hint.')
+        new SlackDialogError(
+          'dateTime',
+          'Time format must be in Day/Month/Year HH:MM format. See hint.'
+        )
       ];
     }
     return [];

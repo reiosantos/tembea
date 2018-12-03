@@ -52,6 +52,18 @@ describe('ScheduleTripController', () => {
       expect(res.length).toEqual(4);
     });
   });
+  describe('Check date if in the past', () => {
+    it('Differece in Date to be less than for past date', () => {
+      const offset = new Date().getTimezoneOffset();
+      const diff = dateHelper.dateChecker(pastDate, offset);
+      expect(diff).toBeLessThan(0);
+    });
+    it('Differece in Date to be more than for future date', () => {
+      const offset = new Date().getTimezoneOffset();
+      const diff = dateHelper.dateChecker(futureDate, offset);
+      expect(diff).toBeGreaterThan(0);
+    });
+  });
 
   describe('Run Validations', async () => {
     it('should return an empty array if no errors exist', async (done) => {
@@ -87,7 +99,9 @@ describe('ScheduleTripController', () => {
     it('should return "Time format must be in Month/Day/Year format. See hint."', async (done) => {
       payload.submission.dateTime = '31/2/218 1:00am';
       const errors = await ScheduleTripController.runValidations(payload);
-      expect(errors[0].error).toEqual('Time format must be in Month/Day/Year format. See hint.');
+      expect(errors[0].error).toEqual(
+        'Time format must be in Day/Month/Year HH:MM format. See hint.'
+      );
       done();
     });
   });
