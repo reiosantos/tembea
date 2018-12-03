@@ -2,13 +2,9 @@ import { WebClient } from '@slack/client';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import models from '../../../database/models';
 import DateDialogHelper from '../../../helpers/dateHelper';
-import { slackEventNames } from '../events/slackEvents';
-import SlackEvents from '../events/index';
 
 const web = new WebClient(process.env.SLACK_BOT_OAUTH_TOKEN);
-const {
-  TripRequest, User, Location, Address
-} = models;
+const { TripRequest, User, Address } = models;
 
 class ScheduleTripValidator {
   static checkWord(word, name) {
@@ -88,83 +84,114 @@ class ScheduleTripController {
     return user;
   }
 
-  static async createRequest(payload, respond) {
-    let requestId;
-    try {
-      const { dateTime, destination, department } = payload.submission;
-      const { id, name } = payload.user;
-      const username = name.replace(/\./g, ' ');
+  static async originAndDestination(pickup, destination) {
+    const originAddress = await Address.findOrCreate({
+      where: { address: pickup },
+      defaults: { address: pickup },
+      raw: true
+    });
 
-      await ScheduleTripController.createLocation(destination);
+    const destinationAddress = await Address.findOrCreate({
+      where: { address: destination },
+      defaults: { address: destination },
+      raw: true
+    });
 
-      let passenger;
-      if (payload.submission.rider) {
-        const rider = await ScheduleTripController.fetchUserInformationFromSlack(
-          payload.submission.rider
-        );
-        // eslint-disable-next-line camelcase
-        const { real_name, profile } = rider;
-        await User.findOrCreate({
-          where: { slackId: rider.id },
-          defaults: { name: real_name, email: profile.email }
-        }).spread((user) => {
-          passenger = user.dataValues.id;
-        });
-      }
+    return {
+      originId: originAddress[0].id,
+      destinationId: destinationAddress[0].id
+    };
+  }
 
-      const requester = await ScheduleTripController.fetchUserInformationFromSlack(id);
+  static async getPassengerId(payload) {
+    if (payload.submission.rider) {
+      const rider = await ScheduleTripController.fetchUserInformationFromSlack(
+        payload.submission.rider
+      );
       // eslint-disable-next-line camelcase
-      const { real_name, profile } = requester;
-      await User.findOrCreate({
-        where: { slackId: id },
-        defaults: { name: real_name, email: profile.email }
-      }).spread(async (user) => {
-        requestId = await ScheduleTripController.createTripRequest(
-          payload,
-          passenger,
-          user,
-          username,
-          dateTime,
-          requestId,
-          department,
-          respond
-        );
+      const { real_name, profile } = rider;
+      const passenger = await User.findOrCreate({
+        where: { slackId: rider.id },
+        defaults: { name: real_name, email: profile.email },
+        raw: true
       });
+      return {
+        passengerId: passenger[0].id
+      };
+    }
+  }
+
+  static async getRequesterId(id) {
+    const requesterInfo = await ScheduleTripController.fetchUserInformationFromSlack(id);
+    // eslint-disable-next-line camelcase
+    const { real_name, profile } = requesterInfo;
+    const requester = await User.findOrCreate({
+      where: { slackId: id },
+      defaults: { name: real_name, email: profile.email },
+      raw: true
+    });
+    return {
+      requesterId: requester[0].id
+    };
+  }
+
+  static async newRequest(name, dateTime, department, payload, requestData) {
+    const {
+      originId, destinationId, requesterId, passengerId
+    } = requestData;
+
+    const newRequest = await TripRequest.create({
+      riderId: payload.submission.rider ? passengerId : requesterId,
+      name,
+      departmentId: department,
+      tripStatus: 'Pending',
+      departureTime: dateTime,
+      requestedById: requesterId,
+      originId,
+      destinationId
+    });
+    return newRequest;
+  }
+
+  static async createRequest(payload) {
+    let requestId;
+    let requestData = {};
+    try {
+      const {
+        pickup, dateTime, destination, department
+      } = payload.submission;
+      const { id } = payload.user;
+
+      // find or create origin and destination addresses
+      const originAndDestination = await ScheduleTripController.originAndDestination(
+        pickup,
+        destination
+      );
+      requestData = { ...requestData, ...originAndDestination };
+
+      // find or create user being requested for
+      const passengerId = await ScheduleTripController.getPassengerId(payload);
+      requestData = { ...requestData, ...passengerId };
+
+      // find or create the user who is requesting
+      const requesterId = await ScheduleTripController.getRequesterId(id);
+      requestData = { ...requestData, ...requesterId };
+
+      // create new request
+      const name = `From ${pickup} to ${destination} on ${dateTime}`;
+      const newRequest = await ScheduleTripController.newRequest(
+        name,
+        dateTime,
+        department,
+        payload,
+        requestData
+      );
+
+      requestId = newRequest.dataValues.id;
     } catch (error) {
       throw error;
     }
     return requestId;
-  }
-
-  static async createTripRequest(payload, passenger, user, username, dateTime, requestId, department, respond) {
-    let reqId = requestId;
-    await TripRequest.create({
-      riderId: payload.submission.rider ? passenger : user.dataValues.id,
-      name: username,
-      tripStatus: 'Pending',
-      departureTime: dateTime,
-      requestedById: user.dataValues.id,
-      originId: 1,
-      departmentId: department,
-      destinationId: 1
-    }).then((newRequest) => {
-      reqId = newRequest.dataValues.id;
-      SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST,
-        newRequest.dataValues, respond);
-    });
-    return reqId;
-  }
-
-  static async createLocation(destination) {
-    await Location.findOrCreate({
-      where: { id: 1 },
-      defaults: { longitude: 34, latitude: 23 }
-    }).spread((location) => {
-      Address.create({
-        locationId: location.dataValues.id,
-        address: destination
-      });
-    });
   }
 }
 

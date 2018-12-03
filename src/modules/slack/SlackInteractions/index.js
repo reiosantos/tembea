@@ -32,9 +32,7 @@ class SlackInteractions {
         InteractivePrompts.sendTripItinerary(payload, respond);
         break;
       case 'view_available_routes':
-        respond(
-          new SlackInteractiveMessage('Available routes will be shown soon.')
-        );
+        respond(new SlackInteractiveMessage('Available routes will be shown soon.'));
         break;
       default:
         respond(new SlackInteractiveMessage('Thank you for using Tembea'));
@@ -50,11 +48,7 @@ class SlackInteractions {
         DialogPrompts.sendTripDetailsForm(payload, action);
         break;
       default:
-        respond(
-          new SlackInteractiveMessage(
-            'Thank you for using Tembea. See you again.'
-          )
-        );
+        respond(new SlackInteractiveMessage('Thank you for using Tembea. See you again.'));
     }
   }
 
@@ -64,16 +58,11 @@ class SlackInteractions {
       return { errors };
     }
     try {
-      const requestId = await ScheduleTripController.createRequest(
-        payload,
-        respond
-      );
+      const requestId = await ScheduleTripController.createRequest(payload);
       SlackNotifications.notifyNewTripRequests(payload, respond);
       InteractivePrompts.sendCompletionResponse(payload, respond, requestId);
     } catch (error) {
-      respond(
-        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
-      );
+      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     }
   }
 
@@ -98,11 +87,7 @@ class SlackInteractions {
         }
         break;
       default:
-        respond(
-          new SlackInteractiveMessage(
-            'Thank you for using Tembea. See you again.'
-          )
-        );
+        respond(new SlackInteractiveMessage('Thank you for using Tembea. See you again.'));
     }
   }
 
@@ -111,40 +96,38 @@ class SlackInteractions {
     const {
       submission: {
         newMonth, newDate, newYear, time
-      }, user
+      },
+      user
     } = payload;
     const date = `${newDate}/${+newMonth + 1}/${newYear} ${time}`;
 
     state = state.split(' ');
-    const errors = await RescheduleTripController.runValidations(
-      date,
-      user
-    );
+    const errors = await RescheduleTripController.runValidations(date, user);
     if (errors.length > 0) {
       return { errors };
     }
-    const message = await RescheduleTripController.rescheduleTrip(
-      state[2],
-      date,
-      respond
-    );
+    const message = await RescheduleTripController.rescheduleTrip(state[2], date, respond);
     respond(message);
   }
 
   static handleManagerDecline(payload, respond) {
     const { value } = payload.actions[0];
     try {
-      DialogPrompts.sendDeclineDialog(payload,
+      DialogPrompts.sendDeclineDialog(
+        payload,
         'decline_trip',
         `${payload.original_message.ts} ${payload.channel.id} ${value}`,
-        'Decline');
+        'Decline'
+      );
     } catch (error) {
       respond(new SlackInteractiveMessage('Error:bangbang:: I was unable to do that.'));
     }
   }
 
   static async handleTripDecline(payload, respond) {
-    const { submission: { declineReason } } = payload;
+    const {
+      submission: { declineReason }
+    } = payload;
     const state = payload.state.split(' ');
     try {
       const errors = await ManageTripController.runValidation(declineReason);
