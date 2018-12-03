@@ -1,7 +1,8 @@
 import InteractivePrompts from '../InteractivePrompts';
 import {
   sendBookNewTripMock,
-  sendCompletionResponseMock
+  sendCompletionResponseMock,
+  tripHistoryMock
 } from '../__mocks__/InteractivePrompts.mock';
 
 jest.mock('../../../../utils/WebClientSingleton');
@@ -68,6 +69,22 @@ describe('Interactive Prompts test', () => {
     const result = InteractivePrompts.sendTripError();
 
     expect(result).toHaveProperty('text', 'Dang! I hit an error with this trip');
+    done();
+  });
+});
+
+describe('test send Trip History', () => {
+  it('should generate trip history', (done) => {
+    const respond = jest.fn(value => value);
+    const tripHistory = [
+      {
+        departureTime: '22:00 12/12/2018',
+        'origin.address': 'ET',
+        'destination.address': 'DOJO'
+      }
+    ];
+    InteractivePrompts.sendTripHistory(tripHistory, respond);
+    expect(respond).toHaveBeenCalledWith(tripHistoryMock);
     done();
   });
 });

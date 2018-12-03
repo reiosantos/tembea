@@ -6,7 +6,7 @@ class CancelTripController {
   static async cancelTrip(tripId) {
     let message;
     try {
-      const trip = await TripRequest.findById(Number(tripId))
+      const trip = await TripRequest.findById(Number(tripId));
       if (!trip) {
         message = 'Trip not found';
         return message;

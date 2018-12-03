@@ -91,3 +91,26 @@ describe('slack Helpers', () => {
     done();
   });
 });
+
+describe('test getUser by slackId ', () => {
+  it("should return null when user isn't found", async (done) => {
+    const result = await SlackHelpers.getUserBySlackId('1aaaaBa');
+    expect(result).toEqual(null);
+    done();
+  });
+
+  it('should throw an error when an invalid slackId type is passed', async (done) => {
+    try {
+      await SlackHelpers.getUserBySlackId(1);
+    } catch (error) {
+      expect(error.message).toEqual('operator does not exist: character varying = integer');
+    }
+    done();
+  });
+
+  it('should return user', async (done) => {
+    const result = await SlackHelpers.getUserBySlackId('TEST123');
+    expect(result).toHaveProperty('email', 'test.buddy1@andela.com');
+    done();
+  });
+});

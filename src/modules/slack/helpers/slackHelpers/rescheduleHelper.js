@@ -11,7 +11,7 @@ export default class TripRescheduleHelper {
       const tripRequest = await TripRequest.findByPk(requestId);
       const confirmed = IsTripRequestConfirmed(tripRequest);
       const timedOut = IsTripRescheduleTimedOut(tripRequest);
-      
+
       if (confirmed) {
         respond(InteractivePrompts.rescheduleConfirmedError());
       }

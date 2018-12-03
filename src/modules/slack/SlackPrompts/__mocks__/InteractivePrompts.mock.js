@@ -4,16 +4,21 @@ export const sendDeclineCompletion = () => ({
 
 export const sendBookNewTripMock = {
   attachments: [{
-    actions: [{
-      name:
-   'yes',
-      style: 'primary',
-      text: 'For Me',
-      type: 'button',
-      value: 'true'
-    }, {
-      name: 'no', style: 'primary', text: 'For Someone', type: 'button', value: 'false'
-    }],
+    actions: [
+      {
+        name: 'yes',
+        style: 'primary',
+        text: 'For Me',
+        type: 'button',
+        value: 'true'
+      },
+      {
+        name: 'no',
+        style: 'primary',
+        text: 'For Someone',
+        type: 'button',
+        value: 'false'
+      }],
     attachment_type: 'default',
     author_icon: undefined,
     author_name: undefined,
@@ -22,11 +27,17 @@ export const sendBookNewTripMock = {
     fallback: 'fallback',
     fields: [],
     image_url: undefined,
+    mrkdwn_in: [],
     text: undefined,
     title: undefined
   }, {
     actions: [{
-      name: 'back', style: '#FFCCAA', text: '< Back', type: 'button', value: 'back_to_launch'
+      name: 'back',
+      style: '#FFCCAA',
+      text: '< Back',
+      type: 'button',
+      value:
+        'back_to_launch'
     }, {
       confirm: {
         dismiss_text: 'No',
@@ -48,6 +59,7 @@ export const sendBookNewTripMock = {
     fallback: 'fallback',
     fields: [],
     image_url: undefined,
+    mrkdwn_in: [],
     text: undefined,
     title: undefined
   }],
@@ -92,10 +104,40 @@ export const sendCompletionResponseMock = {
     fallback: 'fallback',
     fields: [],
     image_url: undefined,
+    mrkdwn_in: [],
     text: undefined,
     title: undefined
   }],
   channel: undefined,
   response_type: 'ephemeral',
   text: 'Success! Your request has been submitted.'
+};
+
+export const tripHistoryMock = {
+  attachments: [{
+    actions: [],
+    attachment_type: '',
+    author_icon: '',
+    author_name: '',
+    color: 'good',
+    fields: [
+      {
+        short: 'true',
+        title: 'Pickup Location',
+        value: 'ET'
+      },
+      {
+        short: 'true',
+        title: 'Destination',
+        value: 'DOJO'
+      }
+    ],
+    image_url: '',
+    mrkdwn_in: ['text'],
+    text: '*Date*: 22:00 12/12/2018',
+    title: ''
+  }],
+  channel: undefined,
+  response_type: 'ephemeral',
+  text: '*Your trip history for the last 30 days*'
 };

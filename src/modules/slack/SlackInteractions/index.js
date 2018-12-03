@@ -5,6 +5,7 @@ import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import DialogPrompts from '../SlackPrompts/DialogPrompts';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import CancelTripController from '../TripManagement/CancelTripController';
+import TripItineraryHelper from '../helpers/slackHelpers/TripItineraryHelper';
 import ManageTripController from '../TripManagement/ManageTripController';
 import RescheduleTripController from '../TripManagement/RescheduleTripController';
 import ScheduleTripController from '../TripManagement/ScheduleTripController';
@@ -182,6 +183,18 @@ class SlackInteractions {
       'approve_trip',
       action.value,
       'Approve', 'Approve', 'approveReason');
+  }
+
+  static viewTripItineraryActions(payload, respond) {
+    const { value } = payload.actions[0];
+    switch (value) {
+      case 'view_trips_history':
+        TripItineraryHelper.handleTripHistory(payload, respond);
+        break;
+      case 'view_upcoming_trips':
+      default:
+        break;
+    }
   }
 }
 

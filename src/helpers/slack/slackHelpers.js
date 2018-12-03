@@ -100,6 +100,25 @@ class SlackHelpers {
 
     return approved;
   }
+
+  /**
+ * @static async getUserBySlackId
+ * @description this methods queries the DB for users by slackId
+ * @param {*} slackId
+ * @returns user object
+ * @memberof DataHelper
+ */
+  static async getUserBySlackId(slackId) {
+    try {
+      const user = await User.findOne({
+        where: { slackId },
+        raw: true
+      });
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default SlackHelpers;

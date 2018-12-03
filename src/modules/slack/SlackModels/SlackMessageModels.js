@@ -42,6 +42,7 @@ export class SlackAttachment {
     this.image_url = imageUrl;
     this.fields = [];
     this.actions = [];
+    this.mrkdwn_in = [];
   }
 
   /**
@@ -62,6 +63,15 @@ export class SlackAttachment {
     this.fallback = fallback;
     this.color = color;
     this.attachment_type = attachmentType;
+  }
+
+  /**
+   * @param  {array} valuesArray The array of attachment parameters using markdown
+   */
+  addMarkdownIn(valuesArray) {
+    if (Array.isArray(valuesArray)) {
+      this.mrkdwn_in.push(...valuesArray);
+    }
   }
 }
 

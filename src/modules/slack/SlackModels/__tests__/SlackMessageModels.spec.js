@@ -22,6 +22,7 @@ describe('Slack Message models test', () => {
     const result = new SlackAttachment('title', 'text', 'author', 'icon', 'img', 'type', 'color');
     result.addOptionalProps('callback');
     result.addFieldsOrActions('fields', [{}]);
+    result.addMarkdownIn(['text']);
 
     expect(result).toHaveProperty('title', 'title');
     expect(result).toHaveProperty('text', 'text');
@@ -31,6 +32,7 @@ describe('Slack Message models test', () => {
     expect(result).toHaveProperty('fallback', 'fallback');
     expect(result).toHaveProperty('callback_id', 'callback');
     expect(result).toHaveProperty('fields', [{}]);
+    expect(result).toHaveProperty('mrkdwn_in', ['text']);
   });
 
   it('should create SlackAttachmentField object', () => {

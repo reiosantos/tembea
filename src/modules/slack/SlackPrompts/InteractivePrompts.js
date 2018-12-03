@@ -1,6 +1,6 @@
 import {
   SlackInteractiveMessage,
-  SlackAttachment, SlackButtonAction, SlackCancelButtonAction
+  SlackAttachment, SlackButtonAction, SlackCancelButtonAction, SlackAttachmentField
 } from '../SlackModels/SlackMessageModels';
 import slackInteractionsHelpers from '../../../helpers/slack/navButtons';
 import Notifications from './Notifications';
@@ -90,7 +90,7 @@ class InteractivePrompts {
       new SlackButtonAction('upcoming', 'Upcoming Trips ', 'view_upcoming_trips')
     ]);
 
-    attachment.addOptionalProps('fallback', 'trip_itinerary', '#FFCCAA', 'default');
+    attachment.addOptionalProps('trip_itinerary', 'fallback', '#FFCCAA', 'default');
 
     // add navigation buttons
     const navAttachment = slackInteractionsHelpers(
@@ -134,6 +134,26 @@ class InteractivePrompts {
 
   static rescheduleConfirmedError() {
     return new SlackInteractiveMessage('Sorry! This trip request can no longer be rescheduled');
+  }
+
+  static sendTripHistory(tripHistory, respond) {
+    const attachments = [];
+    const formatTrip = (trip) => {
+      const tripAttachment = new SlackAttachment(
+        '', `*Date*: ${trip.departureTime}`, '', '', '', '', 'good'
+      );
+      tripAttachment.addMarkdownIn(['text']);
+      tripAttachment.addFieldsOrActions('fields', [
+        new SlackAttachmentField('Pickup Location', `${trip['origin.address']}`, 'true'),
+        new SlackAttachmentField('Destination', `${trip['destination.address']}`, 'true')
+      ]);
+      attachments.push(tripAttachment);
+    };
+
+    tripHistory.forEach(trip => formatTrip(trip));
+    const text = '*Your trip history for the last 30 days*';
+    const message = new SlackInteractiveMessage(text, attachments);
+    respond(message);
   }
 }
 
