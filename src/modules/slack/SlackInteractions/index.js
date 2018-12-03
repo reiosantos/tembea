@@ -7,6 +7,7 @@ import RescheduleTripController from '../TripManagement/RescheduleTripController
 import CancelTripController from '../TripManagement/CancelTripController';
 import SlackController from '../SlackController';
 import ManageTripController from '../TripManagement/ManageTripController';
+import TripRescheduleHelper from '../helpers/slackHelpers/rescheduleHelper';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -83,12 +84,7 @@ class SlackInteractions {
         respond({ text: 'Coming soon...' });
         break;
       case 'reschedule':
-        DialogPrompts.sendRescheduleTripForm(
-          payload,
-          'reschedule_trip',
-          `reschedule ${payload.response_url} ${value}`,
-          'Reschedule Trip'
-        );
+        TripRescheduleHelper.sendTripRescheduleDialog(payload, respond, value);
         break;
       case 'cancel_trip':
         {

@@ -125,6 +125,16 @@ class InteractivePrompts {
       attachments
     });
   }
+
+  static passedTimeOutLimit() {
+    return new SlackInteractiveMessage(
+      'Sorry! this trip cant be rescheduled one hour prior the pick-up time'
+    );
+  }
+
+  static rescheduleConfirmedError() {
+    return new SlackInteractiveMessage('Sorry! This trip request can no longer be rescheduled');
+  }
 }
 
 export default InteractivePrompts;
