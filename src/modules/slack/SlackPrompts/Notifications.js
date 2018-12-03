@@ -185,6 +185,23 @@ class SlackNotifications {
     SlackNotifications.sendNotifications(channelId, attachments, message);
   }
 
+  static async sendManagerConfirmNotification(payload, tripInformation) {
+    const { headId } = tripInformation.department.dataValues;
+    const headOfDepartment = await SlackHelpers.findUserByIdOrSlackId(headId);
+    const rider = tripInformation.rider.dataValues.slackId;
+    const { slackId } = headOfDepartment;
+    const message = `The trip you approved for <@${rider}> trip has been Confirmed. :smiley:`;
+    const channelId = await SlackNotifications.getDMChannelId(slackId);
+    const attachments = new SlackAttachment('Confirmed Trip Request');
+    attachments.addOptionalProps('', '/fallback', '#007F00');
+    const fields = SlackNotifications.approveNotificationFields(
+      tripInformation,
+      payload
+    );
+    attachments.addFieldsOrActions('fields', fields);
+    SlackNotifications.sendNotifications(channelId, attachments, message);
+  }
+ 
   static async sendUserNotification(payload, tripInformation) {
     const requester = tripInformation.requester.dataValues.slackId;
     const rider = tripInformation.rider.dataValues.slackId;
@@ -203,6 +220,29 @@ class SlackNotifications {
       SlackNotifications.sendNotifications(channelId, attachments, message);
     }
     message = 'Your trip has been declined';
+    channelId = await SlackNotifications.getDMChannelId(rider);
+    SlackNotifications.sendNotifications(channelId, attachments, message);
+  }
+
+  
+  static async sendUserConfirmNotification(payload, tripInformation) {
+    const requester = tripInformation.requester.dataValues.slackId;
+    const rider = tripInformation.rider.dataValues.slackId;
+    let message;
+    let channelId;
+    const attachments = new SlackAttachment('Confirmed Trip Request');
+    attachments.addOptionalProps('', '/fallback', '#007F00');
+    const fields = SlackNotifications.approveNotificationFields(
+      tripInformation,
+      payload
+    );
+    attachments.addFieldsOrActions('fields', fields);
+    if (requester !== rider) {
+      channelId = await SlackNotifications.getDMChannelId(requester);
+      message = `The trip you requested for <@${rider}> trip has been confirmed. :smiley:`;
+      SlackNotifications.sendNotifications(channelId, attachments, message);
+    }
+    message = 'Your trip has been Confirmed';
     channelId = await SlackNotifications.getDMChannelId(rider);
     SlackNotifications.sendNotifications(channelId, attachments, message);
   }
@@ -235,6 +275,26 @@ class SlackNotifications {
     const commentField = new SlackAttachmentField('Reason', reason, false);
     notifications.unshift(decliner);
     notifications.push(commentField);
+    return notifications;
+  }
+
+  static approveNotificationFields(tripInformation, payload) {
+    const reason = tripInformation.operationsComment;
+    const { id } = payload.user;
+    const { driverName, driverPhoneNo, regNumber } = payload.submission;
+    const notifications = SlackNotifications.notificationFields(tripInformation);
+    const decliner = new SlackAttachmentField('', `Confirmed by <@${id}>`, false);
+    const commentField = new SlackAttachmentField('Reason', reason, false);
+    notifications.unshift(decliner);
+    notifications.push(commentField);
+    const cabAttachmentFields = [
+      new SlackAttachmentField(null, null, false),
+      new SlackAttachmentField('Cab Details', null, false),
+      new SlackAttachmentField('Driver Name', driverName, true),
+      new SlackAttachmentField('Driver Contacts', driverPhoneNo, true),
+      new SlackAttachmentField('Registration Number', regNumber, true),
+    ];
+    notifications.push(...cabAttachmentFields);
     return notifications;
   }
 }

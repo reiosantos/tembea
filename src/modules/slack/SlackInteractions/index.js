@@ -205,16 +205,30 @@ class SlackInteractions {
   }
 
   static sendCommentDialog(payload) {
-    DialogPrompts.sendCommentDialog(payload);
+    const action = payload.actions[0].name;
+    switch (action) {
+      case ('confirmTrip'):
+        DialogPrompts.sendOperationsApprovalDialog(payload);
+        break;
+      case ('declineRequest'):
+        DialogPrompts.sendCommentDialog(payload);
+        break;
+      default:
+        break;
+    }
   }
 
   static async handleTripActions(payload, respond) {
-    try {
+    if (payload.submission.confirmationComment) {
       TripActionsController.changeTripStatus(payload, respond);
-    } catch (error) {
-      respond(
-        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
-      );
+    } else if (payload.submission.comment) {
+      try {
+        TripActionsController.changeTripStatus(payload, respond);
+      } catch (error) {
+        respond(
+          new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
+        );
+      }
     }
   }
 }

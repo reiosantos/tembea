@@ -82,6 +82,28 @@ class DialogPrompts {
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
     web.getWebClient().dialog.open(dialogForm);
   }
+
+  static sendOperationsApprovalDialog(payload) {
+    const { value } = payload.actions[0];
+    const dialog = new SlackDialog('operations_reason_dialog', 'Confirm Trip Request', 'Submit', false, value);
+    dialog.addElements([
+      new SlackDialogText('Driver\'s name', 'driverName', 'Enter driver\'s name'),
+      new SlackDialogText('Driver\'s contact', 'driverPhoneNo', 'Enter driver\'s contact'),
+      new SlackDialogText(
+        'Cab Registration number',
+        'regNumber',
+        'Enter the Cab\'s registration number'
+      ),
+      new SlackDialogText(
+        'Justification',
+        'confirmationComment',
+        'Enter reason for approving trip',
+        'Reason why', 'textarea'
+      ),
+    ]);
+    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
+    web.getWebClient().dialog.open(dialogForm);
+  }
 }
 
 

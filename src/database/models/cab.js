@@ -3,6 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     id: {
       allowNull: false,
       primaryKey: true,
+      autoIncrement: true,
       type: DataTypes.INTEGER,
     },
     driverName: {
