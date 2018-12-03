@@ -3,6 +3,7 @@ import { SlackEvents, slackEventsNames } from '../events/slackEvents';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import models from '../../../database/models';
 import DateDialogHelper from '../../../helpers/dateHelper';
+import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 
 const web = new WebClient(process.env.SLACK_BOT_OAUTH_TOKEN);
 const { TripRequest, User, Address } = models;
@@ -189,6 +190,8 @@ class ScheduleTripController {
       );
 
       requestId = newRequest.dataValues.id;
+      // SlackNotifications.notifyNewTripRequests(payload, requestId);
+      InteractivePrompts.sendCompletionResponse(payload, respond, requestId);
       SlackEvents.raise(slackEventsNames.NEW_TRIP_REQUEST, newRequest.dataValues, respond);
     } catch (error) {
       throw error;

@@ -4,59 +4,56 @@ import {
   SlackAttachment,
   SlackAttachmentField,
   SlackButtonAction,
-  SlackCancelButtonAction,
   SlackInteractiveMessage
 } from '../SlackModels/SlackMessageModels';
 
 class NotificationsResponse {
-  static responseForOperationsChannel(data) {
+  static responseForOperationsChannel(data, payload) {
     const channelId = process.env.OPERATIONS_DEPT_SLACK_CHANNEL_ID;
-    const { requestId } = data;
+    const { id } = data;
 
     const actions = [
-      new SlackButtonAction('confirmTrip', 'Confirm', requestId),
-      new SlackCancelButtonAction('Decline', requestId,
-        'Do you want to decline this request?', 'declineRequest')
+      new SlackButtonAction('confirmTrip', 'Confirm', id),
+      new SlackButtonAction('declineRequest', 'Decline', id, 'danger')
     ];
     return NotificationsResponse.responseForOperations(
-      data, actions, channelId, 'operations_approval'
+      data, actions, channelId, 'operations_approval', payload
     );
   }
 
-  static responseForOperations(data, actions, channelId, callbackId) {
-    const {
-      department, requestDate, tripStatus
-    } = data;
-    const textArray = ['*Department:*', department, Utils.formatDate(requestDate)];
+  static responseForOperations(data, actions, channelId, callbackId, payload) {
+    const { tripStatus } = data;
 
-    const tripFormat = textArray.join(', ');
+    // const tripFormat = textArray.join(', ');
     const color = tripStatus && tripStatus
       .toLowerCase().startsWith('ca') ? '#EB3432' : undefined;
 
     return NotificationsResponse.prepareOperationsDepartmentResponse(
-      channelId, tripFormat, data, color, actions, callbackId
+      channelId, data, color, actions, callbackId, payload
     );
   }
 
   static prepareOperationsDepartmentResponse(
-    channelId, tripFormat, responseData, color, actions, callbackId
+    channelId, responseData, color, actions, callbackId, payload
   ) {
     const {
-      tripStatus, requester, pickup, departureDate, rider, destination
+      tripStatus, requester, pickup, departureDate, rider, destination, managerComment, department
     } = responseData;
-
-    const title = rider.slackId !== requester.slackId
-      ? `<@${requester.slackId}> has requested this ride for <@${rider.slackId}>`
-      : `<@${requester.slackId}> has requested this ride.`;
+    const riderInfo = rider.slackId !== requester.slackId
+      ? `<@${requester.slackId}> requested a trip for <@${rider.slackId}>`
+      : `<@${requester.slackId}> requested a trip`;
 
     const detailedAttachment = new SlackAttachment(
-      title, tripFormat, null, null, null, 'default', color
+      'Manager approved trip request', riderInfo, null, null, null, 'default', color
     );
     const fields = [
+      new SlackAttachmentField('Rider', `<@${requester.slackId}>`, true),
+      new SlackAttachmentField('Department', `<@${department}>`, true),
       new SlackAttachmentField('Pickup Location', pickup.address, true),
       new SlackAttachmentField('Destination', destination.address, true),
       new SlackAttachmentField('Departure', Utils.formatDate(departureDate), true),
-      new SlackAttachmentField('Status', tripStatus, true)
+      new SlackAttachmentField('Status', tripStatus, true),
+      new SlackAttachmentField('Manager Comment', managerComment)
     ];
 
     detailedAttachment.addFieldsOrActions('actions', actions);
@@ -64,7 +61,7 @@ class NotificationsResponse {
     detailedAttachment.addOptionalProps(callbackId, 'fallback', undefined, 'default');
 
     return new SlackInteractiveMessage(
-      '*Tembea* :oncoming_automobile:', [detailedAttachment], channelId
+      `<@${payload.user.id}> just approved this trip. Its ready for your action :smiley:`, [detailedAttachment], channelId
     );
   }
 

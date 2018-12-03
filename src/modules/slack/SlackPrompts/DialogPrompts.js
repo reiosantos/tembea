@@ -67,6 +67,22 @@ class DialogPrompts {
 
     return web.getWebClient().dialog.open(dialogForm);
   }
+  
+  static sendCommentDialog(payload) {
+    const actionTs = payload.message_ts;
+    const { value } = payload.actions[0];
+    const state = {
+      trip: value,
+      actionTs
+    };
+    const dialog = new SlackDialog('operations_reason_dialog', 'Reason for declining', 'Submit', false, JSON.stringify(state));
+    dialog.addElements([
+      new SlackDialogText('Justification', 'comment', 'Enter reason for declining trip', 'Reason why', 'textarea')
+    ]);
+    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
+    web.getWebClient().dialog.open(dialogForm);
+  }
 }
+
 
 export default DialogPrompts;

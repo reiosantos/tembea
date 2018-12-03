@@ -13,7 +13,7 @@ jest.mock('@slack/client', () => ({
 
 describe('Dialog prompts test', () => {
   it('should test sendTripDetailsForm function when forSelf is false', async (done) => {
-    const payload = jest.fn(() => 'payload');
+    const payload = jest.fn(() => ({ trigger_id: 'trigger' }));
     const result = await DialogPrompts.sendTripDetailsForm(payload, 'false');
 
     expect(result).toBe(undefined);
@@ -23,7 +23,6 @@ describe('Dialog prompts test', () => {
   it('should test sendTripDetailsForm function when forSelf is true', async (done) => {
     const payload = jest.fn(() => ({ trigger_id: 'trigger' }));
     const result = await DialogPrompts.sendTripDetailsForm(payload, 'true');
-
     expect(result).toBe(undefined);
     done();
   });

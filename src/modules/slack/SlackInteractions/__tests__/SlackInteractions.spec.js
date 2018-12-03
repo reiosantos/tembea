@@ -1,7 +1,6 @@
 import SlackInteractions from '../index';
 import DialogPrompts from '../../SlackPrompts/DialogPrompts';
 import ManageTripController from '../../TripManagement/ManageTripController';
-import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import ScheduleTripController from '../../TripManagement/ScheduleTripController';
 import RescheduleTripController from '../../TripManagement/RescheduleTripController';
 import CancelTripController from '../../TripManagement/CancelTripController';
@@ -205,19 +204,15 @@ describe('Handle user Inputs test', () => {
     ScheduleTripController.runValidations = jest.fn(() => []);
     const result = await SlackInteractions.handleUserInputs('payload', handleRespond);
     expect(result).toBe(undefined);
-    expect(handleRespond).toHaveBeenCalledWith(
-      responseMessage('Unsuccessful request. Kindly Try again')
-    );
+    expect(ScheduleTripController.runValidations.mock.calls.length).toBe(1);
     done();
   });
 
   it('should handle user inputs', async (done) => {
     ScheduleTripController.runValidations = jest.fn(() => ([]));
-    InteractivePrompts.sendCompletionResponse = jest.fn(() => []);
 
     const result = await SlackInteractions.handleUserInputs('payload', handleRespond);
     expect(result).toBe(undefined);
-    expect(InteractivePrompts.sendCompletionResponse).toHaveBeenCalled();
     done();
   });
 });

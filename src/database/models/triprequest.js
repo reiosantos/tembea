@@ -14,10 +14,13 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.INTEGER,
     },
+    departmentId: {
+      type: DataTypes.INTEGER,
+    },
     tripStatus: {
       allowNull: false,
       type: DataTypes.ENUM(
-        'Pending', 'Approved', 'Confirmed', 'InTransit', 'Cancelled', 'Completed'
+        'Pending', 'Approved', 'Confirmed', 'InTransit', 'Cancelled', 'Completed', 'DeclinedByOps'
       ),
     },
     originId: {
@@ -48,14 +51,13 @@ module.exports = (sequelize, DataTypes) => {
     confirmedById: {
       type: DataTypes.INTEGER,
     },
-    cabId: {
-      type: DataTypes.INTEGER,
-    },
-    departmentId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
     declinedById: {
+      type: DataTypes.INTEGER,
+    },
+    operationsComment: {
+      type: DataTypes.STRING,
+    },
+    cabId: {
       type: DataTypes.INTEGER,
     },
     managerComment: {
@@ -82,6 +84,16 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'riderId',
       targetKey: 'id',
       as: 'rider'
+    });
+    TripRequest.belongsTo(models.User, {
+      foreignKey: 'declinedById',
+      targetKey: 'id',
+      as: 'decliner'
+    });
+    TripRequest.belongsTo(models.Department, {
+      foreignKey: 'departmentId',
+      targetKey: 'id',
+      as: 'department'
     });
   };
   return TripRequest;

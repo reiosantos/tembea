@@ -23,5 +23,9 @@ slackInteractionsRouter.action({ callbackId: 'decline_trip' },
   SlackInteractions.handleTripDecline);
 slackInteractionsRouter.action({ callbackId: 'trip_itinerary' },
   SlackInteractions.viewTripItineraryActions);
+slackInteractionsRouter.action({ callbackId: 'operations_approval' },
+  SlackInteractions.sendCommentDialog);
+slackInteractionsRouter.action({ callbackId: 'operations_reason_dialog' },
+  SlackInteractions.handleTripActions);
 
 export default slackInteractionsRouter;

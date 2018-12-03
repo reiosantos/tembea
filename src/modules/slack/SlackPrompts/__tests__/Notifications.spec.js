@@ -91,6 +91,7 @@ describe('SlackNotifications', () => {
       },
       id: 3
     };
+    SlackNotifications.getDMChannelId = () => (jest.fn(() => (123)));
     const res = await SlackNotifications.sendRequesterDeclinedNotification(
       tripInfo,
       () => {}
@@ -127,12 +128,14 @@ describe('SlackNotifications Tests: Manager approval', () => {
     rider: { dataValues: { slackId: 2 } },
   };
 
+  let respond;
+
   beforeEach(() => {
     sandbox = sinon.createSandbox();
     tripFindByPkStub = sandbox.stub(TripRequest, 'findByPk');
     userFindByPkStub = sandbox.stub(User, 'findOne');
     deptFindByPkStub = sandbox.stub(Department, 'findByPk');
-
+    respond = jest.fn(value => value);
     tripFindByPkStub.returns(Promise.resolve({ dataValues: tripInitial }));
     userFindByPkStub.returns(Promise.resolve({ dataValues: { id: 45 } }));
     deptFindByPkStub.returns(Promise.resolve({ dataValues: { head: { dataValues: {} } } }));
@@ -143,14 +146,14 @@ describe('SlackNotifications Tests: Manager approval', () => {
   });
 
   it('should notify manager of new trip request', async (done) => {
-    const manager = await SlackNotifications.sendOperationsTripRequestNotification(23, jest.fn);
+    const manager = await SlackNotifications.sendOperationsTripRequestNotification(23, 'payload', respond);
     expect(manager).toEqual(undefined);
     done();
   });
 
   it('should throw an error when accessing dataValues form non existing dept', async (done) => {
     deptFindByPkStub.returns(Promise.resolve({}));
-    const manager = await SlackNotifications.sendOperationsTripRequestNotification(undefined, jest.fn);
+    const manager = await SlackNotifications.sendOperationsTripRequestNotification(undefined, 'payload', respond);
     expect(manager).toEqual(undefined);
     done();
   });

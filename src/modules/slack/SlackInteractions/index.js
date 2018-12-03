@@ -4,11 +4,12 @@ import SlackController from '../SlackController';
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import DialogPrompts from '../SlackPrompts/DialogPrompts';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
+import ScheduleTripController from '../TripManagement/ScheduleTripController';
+import RescheduleTripController from '../TripManagement/RescheduleTripController';
 import CancelTripController from '../TripManagement/CancelTripController';
 import TripItineraryHelper from '../helpers/slackHelpers/TripItineraryHelper';
 import ManageTripController from '../TripManagement/ManageTripController';
-import RescheduleTripController from '../TripManagement/RescheduleTripController';
-import ScheduleTripController from '../TripManagement/ScheduleTripController';
+import TripActionsController from '../TripManagement/TripActionsController';
 import TripRescheduleHelper from '../helpers/slackHelpers/rescheduleHelper';
 
 class SlackInteractions {
@@ -60,10 +61,14 @@ class SlackInteractions {
       return { errors };
     }
     try {
-      const requestId = await ScheduleTripController.createRequest(payload, respond);
-      InteractivePrompts.sendCompletionResponse(payload, respond, requestId);
+      await ScheduleTripController.createRequest(
+        payload,
+        respond
+      );
     } catch (error) {
-      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+      respond(
+        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
+      );
     }
   }
 
@@ -157,8 +162,7 @@ class SlackInteractions {
       const hasApproved = await SlackHelpers.approveRequest(tripRequestId, user.id, approveReason);
 
       if (hasApproved) {
-        SlackEvents.raise(slackEventsNames.TRIP_APPROVED, tripRequestId, respond);
-
+        SlackEvents.raise(slackEventsNames.TRIP_APPROVED, tripRequestId, payload, respond);
         respond(new SlackInteractiveMessage(':white_check_mark:'
           + 'You have approved this request and it has been '
           + 'forwarded to the operations team for confirmation.', undefined, undefined, '#29b016'));
@@ -197,6 +201,20 @@ class SlackInteractions {
         break;
       default:
         break;
+    }
+  }
+
+  static sendCommentDialog(payload) {
+    DialogPrompts.sendCommentDialog(payload);
+  }
+
+  static async handleTripActions(payload, respond) {
+    try {
+      TripActionsController.changeTripStatus(payload, respond);
+    } catch (error) {
+      respond(
+        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
+      );
     }
   }
 }

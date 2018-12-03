@@ -151,8 +151,6 @@ class InteractivePrompts {
       new SlackAttachment(':x: You have declined this trip')
     ];
     const fields = Notifications.notificationFields(
-      tripInformation.origin.dataValues.address,
-      tripInformation.destination.dataValues.address,
       tripInformation
     );
 

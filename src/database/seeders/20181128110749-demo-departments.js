@@ -1,5 +1,5 @@
 module.exports = {
-  up: (queryInterface, Sequelize) => queryInterface.bulkInsert('Departments', [{
+  up: queryInterface => queryInterface.bulkInsert('Departments', [{
     name: 'TDD',
     headId: 3,
     createdAt: '2018-11-28',
@@ -16,5 +16,5 @@ module.exports = {
     updatedAt: '2018-11-28'
   }], {}),
 
-  down: (queryInterface, Sequelize) => queryInterface.bulkDelete('Departments', null, {})
+  down: queryInterface => queryInterface.bulkDelete('Departments', null, {})
 };

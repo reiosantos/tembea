@@ -52,7 +52,7 @@ class SlackHelpers {
 
   static async getTripRequest(tripId) {
     const tripRequest = await TripRequest.findByPk(tripId, {
-      include: ['rider', 'requester', 'destination', 'origin']
+      include: ['rider', 'requester', 'destination', 'origin', 'department']
     });
 
     return tripRequest.dataValues;
