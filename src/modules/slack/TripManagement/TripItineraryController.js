@@ -18,7 +18,12 @@ const includeQuery = [
   {
     model: User,
     as: 'requester',
-    attributes: ['name']
+    attributes: ['name', 'slackId']
+  },
+  {
+    model: User,
+    as: 'rider',
+    attributes: ['name', 'slackId']
   }
 ];
 

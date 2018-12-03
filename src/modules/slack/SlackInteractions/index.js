@@ -192,6 +192,8 @@ class SlackInteractions {
         TripItineraryHelper.handleTripHistory(payload, respond);
         break;
       case 'view_upcoming_trips':
+        TripItineraryHelper.handleUpcomingTrips(payload, respond);
+        break;
       default:
         break;
     }

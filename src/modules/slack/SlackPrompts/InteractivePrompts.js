@@ -15,18 +15,18 @@ class InteractivePrompts {
     // main buttons
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('yes', 'For Me', 'true'),
-      new SlackButtonAction('no', 'For Someone', 'false'),
+      new SlackButtonAction('no', 'For Someone', 'false')
     ]);
 
     attachment.addOptionalProps('book_new_trip');
 
     // add navigation buttons
-    const navAttachment = slackInteractionsHelpers(
-      'back_to_launch', 'back_to_launch'
-    );
+    const navAttachment = slackInteractionsHelpers('back_to_launch', 'back_to_launch');
 
-    const message = new SlackInteractiveMessage('Who are you booking for?',
-      [attachment, navAttachment]);
+    const message = new SlackInteractiveMessage('Who are you booking for?', [
+      attachment,
+      navAttachment
+    ]);
     respond(message);
   }
 
@@ -39,17 +39,20 @@ class InteractivePrompts {
       // sample button actions
       new SlackButtonAction('view', 'View', `${requester} ${rider}`),
       new SlackButtonAction('reschedule', 'Reschedule ', requestId),
-      new SlackCancelButtonAction('Cancel Trip',
+      new SlackCancelButtonAction(
+        'Cancel Trip',
         requestId,
         'Are you sure you want to cancel this trip',
-        'cancel_trip'),
+        'cancel_trip'
+      ),
       new SlackCancelButtonAction()
     ]);
 
     attachment.addOptionalProps('itinerary_actions');
 
-    const message = new SlackInteractiveMessage('Success! Your request has been submitted.',
-      [attachment]);
+    const message = new SlackInteractiveMessage('Success! Your request has been submitted.', [
+      attachment
+    ]);
     respond(message);
   }
 
@@ -58,10 +61,12 @@ class InteractivePrompts {
     attachments.addFieldsOrActions('actions', [
       new SlackButtonAction('view', 'View', 'view'),
       new SlackButtonAction('reschedule', 'Reschedule ', trip.dataValues.id),
-      new SlackCancelButtonAction('Cancel Trip',
+      new SlackCancelButtonAction(
+        'Cancel Trip',
         trip.dataValues.id,
         'Are you sure you want to cancel this trip',
-        'cancel_trip'),
+        'cancel_trip'
+      ),
       new SlackCancelButtonAction()
     ]);
     attachments.addOptionalProps('itinerary_actions');
@@ -93,13 +98,50 @@ class InteractivePrompts {
     attachment.addOptionalProps('trip_itinerary', 'fallback', '#FFCCAA', 'default');
 
     // add navigation buttons
-    const navAttachment = slackInteractionsHelpers(
-      'back_to_launch', 'back_to_launch'
-    );
+    const navAttachment = slackInteractionsHelpers('back_to_launch', 'back_to_launch');
 
-    const message = new SlackInteractiveMessage('Please choose an option',
-      [attachment, navAttachment]);
+    const message = new SlackInteractiveMessage('Please choose an option', [
+      attachment,
+      navAttachment
+    ]);
     respond(message);
+  }
+
+  static sendUpcomingTrips(trips, respond, payload) {
+    const attachments = [];
+    trips.forEach(trip => InteractivePrompts.formatUpcomingTrip(trip, payload, attachments));
+
+    const message = new SlackInteractiveMessage('Your Upcoming Trips', attachments);
+    respond(message);
+  }
+
+  static formatUpcomingTrip(trip, payload, attachments) {
+    const { id } = payload.user;
+    const attachment = new SlackAttachment();
+    const journey = `From ${trip['origin.address']} To ${trip['destination.address']}`;
+    const time = `Departure Time:  ${trip.departureTime}`;
+    const requestedBy = id === trip['requester.slackId']
+      ? `Requested By: ${trip['requester.name']} (You)`
+      : `Requested By: ${trip['requester.name']}`;
+
+    const rider = id !== trip['rider.slackId'] || id !== trip['requester.slackId']
+      ? `Rider: ${trip['rider.name']}`
+      : null;
+
+    attachment.addFieldsOrActions('fields', [new SlackAttachmentField(journey, time)]);
+    attachment.addFieldsOrActions('fields', [new SlackAttachmentField(requestedBy, rider)]);
+    attachment.addFieldsOrActions('actions', [
+      new SlackButtonAction('reschedule', 'Reschedule ', trip.id),
+      new SlackCancelButtonAction(
+        'Cancel Trip',
+        trip.id,
+        'Are you sure you want to cancel this trip',
+        'cancel_trip'
+      )
+    ]);
+    attachment.addOptionalProps('itinerary_actions');
+    attachments.push(attachment);
+    return attachments;
   }
 
   static sendDeclineCompletion(tripInformation, timeStamp, channel) {

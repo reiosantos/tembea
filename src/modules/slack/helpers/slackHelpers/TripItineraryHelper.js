@@ -23,10 +23,13 @@ const filterTripHistory = (trips) => {
   const difference = date - thirtyDaysInMilliseconds;
 
   const filteredTrips = trips.filter(
-    trip => getDateTime(trip.departureTime) >= difference
-      && getDateTime(trip.departureTime) <= date
+    trip => getDateTime(trip.departureTime) >= difference && getDateTime(trip.departureTime) <= date
   );
+  return filteredTrips;
+};
 
+const filterUpcomingTrips = (trips) => {
+  const filteredTrips = trips.filter(trip => getDateTime(trip.departureTime) >= currentDate());
   return filteredTrips;
 };
 
@@ -56,8 +59,30 @@ class TripItineraryHelper {
       if (tripHistory.length < 1) {
         return respond(tripResponse('You have no trip history for the last 30 days'));
       }
-
       return InteractivePrompts.sendTripHistory(tripHistory, respond);
+    } catch (error) {
+      const message = new SlackInteractiveMessage(
+        `Request could not be processed! ${error.message}`
+      );
+      respond(message);
+    }
+  }
+
+  static async handleUpcomingTrips(payload, respond) {
+    const slackId = payload.user.id;
+
+    try {
+      const requestType = 'upcoming';
+      const trips = await getUserAndTripsRequest(slackId, requestType);
+      if (!trips || trips.length < 1) {
+        return respond(tripResponse('You have no upcoming trips'));
+      }
+
+      const tripHistory = await filterUpcomingTrips(trips);
+      if (tripHistory.length < 1) {
+        return respond(tripResponse('You have no upcoming trips'));
+      }
+      return InteractivePrompts.sendUpcomingTrips(trips, respond, payload);
     } catch (error) {
       const message = new SlackInteractiveMessage(
         `Request could not be processed! ${error.message}`

@@ -11,7 +11,7 @@ import TripItineraryHelper from '../../helpers/slackHelpers/TripItineraryHelper'
 
 describe('Manager decline trip interactions', () => {
   beforeAll(() => {
-    DialogPrompts.sendDialogToManager = jest.fn(() => {});
+    DialogPrompts.sendDialogToManager = jest.fn(() => { });
   });
 
   it('should handle manager actions', (done) => {
@@ -83,20 +83,23 @@ describe('Manager decline trip', () => {
 
 describe('Error handling for manager decline', () => {
   it('should catch unexpected errors', async (done) => {
-    await SlackInteractions.handleTripDecline({
-      submission: {
-        declineReason: {}
+    await SlackInteractions.handleTripDecline(
+      {
+        submission: {
+          declineReason: {}
+        },
+        state: ''
       },
-      state: ''
-    }, (res) => {
-      expect(res).toEqual({
-        attachments: undefined,
-        channel: undefined,
-        response_type: 'ephemeral',
-        text: 'Error:bangbang:: Something went wrong! Please try again.'
-      });
-      done();
-    });
+      (res) => {
+        expect(res).toEqual({
+          attachments: undefined,
+          channel: undefined,
+          response_type: 'ephemeral',
+          text: 'Error:bangbang:: Something went wrong! Please try again.'
+        });
+        done();
+      }
+    );
   });
 });
 
@@ -199,8 +202,7 @@ describe('Handle user Inputs test', () => {
   });
 
   it('should handle user inputs', async (done) => {
-    ScheduleTripController.runValidations = jest.fn(() => ([]));
-
+    ScheduleTripController.runValidations = jest.fn(() => []);
     const result = await SlackInteractions.handleUserInputs('payload', handleRespond);
     expect(result).toBe(undefined);
     expect(handleRespond).toHaveBeenCalledWith(
@@ -339,6 +341,7 @@ describe('test viewTripItineraryActions switch', () => {
   beforeEach(() => {
     itineraryRespond = respondMock();
     TripItineraryHelper.handleTripHistory = jest.fn();
+    TripItineraryHelper.handleUpcomingTrips = jest.fn();
   });
 
   it('should test view_trips_history case', async (done) => {
@@ -353,6 +356,22 @@ describe('test viewTripItineraryActions switch', () => {
   it('should test view_trips_history case', (done) => {
     const payload = createPayload('view_upcoming_trips');
 
+    const result = SlackInteractions.viewTripItineraryActions(payload, itineraryRespond);
+    expect(result).toBe(undefined);
+    done();
+  });
+
+  it('should test view_upcoming_trips case', async (done) => {
+    const payload = createPayload('view_upcoming_trips');
+
+    const result = await SlackInteractions.viewTripItineraryActions(payload, itineraryRespond);
+    expect(result).toBe(undefined);
+    expect(TripItineraryHelper.handleUpcomingTrips).toHaveBeenCalled();
+    done();
+  });
+
+  it('should test default case', (done) => {
+    const payload = createPayload('');
     const result = SlackInteractions.viewTripItineraryActions(payload, itineraryRespond);
     expect(result).toBe(undefined);
     done();
