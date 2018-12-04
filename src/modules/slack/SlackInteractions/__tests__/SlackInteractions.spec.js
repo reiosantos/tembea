@@ -4,6 +4,8 @@ import ManageTripController from '../../TripManagement/ManageTripController';
 import ScheduleTripController from '../../TripManagement/ScheduleTripController';
 import RescheduleTripController from '../../TripManagement/RescheduleTripController';
 import CancelTripController from '../../TripManagement/CancelTripController';
+import Cache from '../../../../cache';
+import ScheduleTripInputHandlers from '../../../../helpers/slack/ScheduleTripInputHandlers';
 import { responseMessage, createPayload, respondMock } from '../__mocks__/SlackInteractions.mock';
 import SlackControllerMock from '../../__mocks__/SlackControllerMock';
 import TripItineraryHelper from '../../helpers/slackHelpers/TripItineraryHelper';
@@ -39,6 +41,8 @@ describe('Manager decline trip interactions', () => {
       }]
     }, (res) => {
       expect(res).toEqual({
+        as_user: false,
+        user: undefined,
         attachments: undefined,
         channel: undefined,
         response_type: 'ephemeral',
@@ -88,9 +92,10 @@ describe('Error handling for manager decline', () => {
           declineReason: {}
         },
         state: ''
-      },
-      (res) => {
+      }, (res) => {
         expect(res).toEqual({
+          as_user: false,
+          user: undefined,
           attachments: undefined,
           channel: undefined,
           response_type: 'ephemeral',
@@ -162,6 +167,8 @@ describe('Slack Interactions test: book new Trip switch', () => {
 
   beforeEach(() => {
     respond = respondMock();
+    Cache.save = jest.fn(() => {});
+    DialogPrompts.sendTripReasonForm = jest.fn(value1 => ({ value1 }));
     DialogPrompts.sendTripDetailsForm = jest.fn((value1, value2) => ({ value1, value2 }));
   });
 
@@ -169,7 +176,7 @@ describe('Slack Interactions test: book new Trip switch', () => {
     const payload = createPayload('true');
     const result = SlackInteractions.bookNewTrip(payload, respond);
     expect(result).toBe(undefined);
-    expect(DialogPrompts.sendTripDetailsForm).toHaveBeenCalledWith(payload, 'true');
+    expect(DialogPrompts.sendTripReasonForm).toHaveBeenCalledWith(payload);
     done();
   });
 
@@ -186,34 +193,27 @@ describe('Slack Interactions test: book new Trip switch', () => {
 
 describe('Handle user Inputs test', () => {
   let handleRespond;
-  const expectedErrorResponse = [{ error: 'error1' }];
 
   beforeEach(() => {
     ScheduleTripController.createRequest = jest.fn(() => 1);
     handleRespond = respondMock();
   });
 
-  it('should return an error if it exists', async (done) => {
-    ScheduleTripController.runValidations = jest.fn(() => expectedErrorResponse);
-    const result = await SlackInteractions.handleUserInputs('payload', 'respond');
-    expect(result).toEqual({ errors: expectedErrorResponse });
-    done();
+  it('should call scheduleTripHandler if handler exists in object', async () => {
+    const reasonhandler = jest
+      .spyOn(ScheduleTripInputHandlers, 'reason')
+      .mockImplementation(() => {});
+    const payload = createPayload('reason');
+    SlackInteractions.handleUserInputs(payload, 'respond');
+    expect(reasonhandler).toHaveBeenCalledWith(payload, 'respond', 'reason');
   });
 
-  it('should handle user inputs', async (done) => {
-    ScheduleTripController.runValidations = jest.fn(() => []);
-    const result = await SlackInteractions.handleUserInputs('payload', handleRespond);
-    expect(result).toBe(undefined);
-    expect(ScheduleTripController.runValidations.mock.calls.length).toBe(1);
-    done();
-  });
-
-  it('should handle user inputs', async (done) => {
-    ScheduleTripController.runValidations = jest.fn(() => ([]));
-
-    const result = await SlackInteractions.handleUserInputs('payload', handleRespond);
-    expect(result).toBe(undefined);
-    done();
+  it('should respond with default message if handler does not exist in object', async () => {
+    const payload = createPayload('default');
+    SlackInteractions.handleUserInputs(payload, handleRespond);
+    expect(handleRespond).toHaveBeenCalledWith(
+      responseMessage('Thank you for using Tembea. See you again.')
+    );
   });
 });
 

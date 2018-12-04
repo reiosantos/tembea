@@ -86,20 +86,24 @@ class DateDialogHelper {
 
   static dateChecker(userDateInput, timezoneOffset) {
     // change date format to mm/dd/yyyy
-    const date = userDateInput.split(/\//);
-    const newDate = [date[1], date[0], date[2]].join('/');
+    const newDate = this.changeDateFormat(userDateInput);
 
     const dateInputTime = new Date(newDate).getTime();
     const now = new Date().getTime();
     const contextTimezoneOffset = new Date().getTimezoneOffset() * 60000;
 
-    return dateInputTime - (now + contextTimezoneOffset + timezoneOffset * 1000);
+    return dateInputTime - (now + contextTimezoneOffset + (timezoneOffset * 1000));
   }
 
   static dateFormat(date) {
-    /* eslint-disable max-len */
-    const dateFormat = /^([1-9]|([012][0-9])|(3[01]))[/]([0]?[1-9]|1[012])[/]\d\d\d\d [012]?[0-9]:[0-6][0-9]$/;
+    const dateFormat = /^[0-3]?[0-9][/]([1-9]|1[0-2])[/][2][0][0-9]{2}[ ][0-2]?[0-9][:][0-5][0-9]$/;
+
     return dateFormat.test(date);
+  }
+
+  static changeDateFormat(date) {
+    const [day, month, yearAndTime] = date.split('/');
+    return `${month}/${day}/${yearAndTime}`;
   }
 }
 

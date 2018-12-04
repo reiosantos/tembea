@@ -1,6 +1,8 @@
 import DialogPrompts from '../DialogPrompts';
+import sendDialogTryCatch from '../../../../helpers/sendDialogTryCatch';
 
 jest.mock('../../../../utils/WebClientSingleton');
+jest.mock('../../../../helpers/sendDialogTryCatch', () => jest.fn());
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
     dialog: {
@@ -27,9 +29,9 @@ describe('Dialog prompts test', () => {
     done();
   });
 
-  it('should test sendRescheduleTripForm function', (done) => {
+  it('should test sendRescheduleTripForm function', async (done) => {
     const payload = jest.fn(() => ({ callback_id: 'calling' }));
-    const result = DialogPrompts.sendRescheduleTripForm(payload, 'call', 'state', 'dialog');
+    const result = await DialogPrompts.sendRescheduleTripForm(payload, 'call', 'state', 'dialog');
 
     expect(result).toBe(undefined);
     done();
@@ -44,14 +46,14 @@ describe('Dialog prompts test', () => {
 
 describe('Decline dialog', () => {
   it('should send decline dialog', async (done) => {
-    const res = await DialogPrompts.sendDialogToManager({
+    await DialogPrompts.sendDialogToManager({
       trigger_id: 'XXXXXXX'
     },
     'callback_id',
     'state',
     'dialogName');
 
-    expect(res).toEqual({ data: 'just to know i worked' });
+    expect(sendDialogTryCatch).toBeCalled();
     done();
   });
 });

@@ -8,7 +8,7 @@ class Cache {
     if (!currentState) {
       return cache.set(key, { [field]: value });
     }
-    currentState[key] = value;
+    currentState[field] = value;
     return cache.set(key, currentState);
   }
 

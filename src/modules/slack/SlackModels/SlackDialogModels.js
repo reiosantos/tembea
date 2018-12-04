@@ -44,17 +44,21 @@ export class SlackDialogError {
 export class SlackDialogTextarea extends SlackDialogElement {
   constructor(label, name, hint) {
     super(label, name);
-    this.type = 'textarea';
+    this.type = SlackActionTypes.textarea;
     this.hint = hint;
   }
 }
 
 export class SlackDialogText extends SlackDialogElement {
-  constructor(label, name, placeholder, hint, type = SlackActionTypes.text) {
+  constructor(label, name, type = SlackActionTypes.text) {
     super(label, name);
     this.type = type;
-    this.placeholder = placeholder;
-    this.hint = hint;
+  }
+
+  addOptionalProps(placeholder, optional, hint) {
+    if (placeholder) this.placeholder = placeholder;
+    if (optional) this.optional = optional;
+    if (hint) this.hint = hint;
   }
 }
 
@@ -70,6 +74,17 @@ export class SlackDialogSelectElementWithOptions extends SlackDialogSelect {
   constructor(label, name, options) {
     super(label, name);
     this.options = options;
+  }
+
+  addOptionsList(options) {
+    if (Array.isArray(options)) {
+      const newSelectOptions = options.map(option => ({
+        label: option,
+        value: option
+      }));
+
+      this.options = newSelectOptions;
+    }
   }
 }
 

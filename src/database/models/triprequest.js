@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.STRING,
     },
+    reason: {
+      allowNull: false,
+      type: DataTypes.TEXT,
+    },
     riderId: {
       allowNull: false,
       type: DataTypes.INTEGER,

@@ -1,15 +1,15 @@
-import { config } from 'dotenv';
 import ScheduleTripController from '../ScheduleTripController';
+import UserInputValidator from '../../../../helpers/slack/UserInputValidator';
 import dateHelper from '../../../../helpers/dateHelper';
-
-config();
+import {
+  createPayload, tripRequestDetails, respondMock
+} from '../../SlackInteractions/__mocks__/SlackInteractions.mock';
 
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
-    chat: { postMessage: jest.fn(() => Promise.resolve(() => {})) },
     users: {
       info: jest.fn(() => Promise.resolve({
-        user: { real_name: 'someName', profile: {} },
+        user: { real_name: 'someName', profile: { email: 'someemial@email.com' } },
         token: 'sdf'
       })),
       profile: {
@@ -24,94 +24,77 @@ jest.mock('@slack/client', () => ({
   }))
 }));
 
-const currentTimezoneOffset = new Date().getTimezoneOffset() * 60 * -1;
-const pastDate = '01/01/2014 12:00';
-const futureDate = '01/01/2030 12:00';
-
-// nocking hack by @barak for slack api call for users info
-ScheduleTripController.fetchUserInformationFromSlack = () => ({
-  tz_offset: currentTimezoneOffset,
-  profile: { email: 'sekito.ro.andela.com' },
-  real_name: 'ender'
-});
-
-const payload = {
-  submission: {
-    pickup: 'Entebe',
-    department: 2,
-    destination: 'Gabon',
-    dateTime: pastDate
-  },
-  user: { id: '1', name: 'myName' }
-};
-
-describe('ScheduleTripController', () => {
-  describe('dateChecker', () => {
-    it('should get the years', () => {
-      const res = dateHelper.generateDialogElements();
-
-      expect(res.length).toEqual(4);
-    });
-  });
-  describe('Check date if in the past', () => {
-    it('Differece in Date to be less than for past date', () => {
-      const offset = new Date().getTimezoneOffset();
-      const diff = dateHelper.dateChecker(pastDate, offset);
-      expect(diff).toBeLessThan(0);
-    });
-    it('Differece in Date to be more than for future date', () => {
-      const offset = new Date().getTimezoneOffset();
-      const diff = dateHelper.dateChecker(futureDate, offset);
-      expect(diff).toBeGreaterThan(0);
+describe('ScheduleTripController Tests', () => {
+  describe('validateTripDetailsForm', () => {
+    it('should return date validation errors if they exist', async () => {
+      UserInputValidator.validateLocationEntries = jest.fn(() => []);
+      UserInputValidator.validateDateAndTimeEntry = jest.fn(() => []);
+      const errors = await ScheduleTripController.validateTripDetailsForm('payload');
+      expect(errors.length).toEqual(0);
     });
   });
 
-  describe('Run Validations', async () => {
-    it('should return an empty array if no errors exist', async (done) => {
-      payload.submission.dateTime = futureDate;
-      const errors = await ScheduleTripController.runValidations(payload);
-      expect(errors).toHaveLength(0);
-      done();
-    });
-    it('should return two errors if pickup location and destination are the same', async (done) => {
-      payload.submission.pickup = 'Gabon';
-      const errors = await ScheduleTripController.runValidations(payload);
-      expect(errors).toHaveLength(2);
-      done();
-    });
-    it('should return "Only alphabets, dashes and spaces are allowed." when any location contains a number', async (done) => {
-      payload.submission.pickup = 'Entebe2';
-      payload.submission.destination = 'Gabon2';
-      const errors = await ScheduleTripController.runValidations(payload);
-      expect(errors[0].error).toEqual('Only alphabets, dashes and spaces are allowed.');
-      expect(errors[1].error).toEqual('Only alphabets, dashes and spaces are allowed.');
-      done();
-    });
-    it('should return "Date cannot be in the past." when date is in the past', async (done) => {
-      payload.submission = {
-        pickup: 'Entebe',
-        destination: 'Gabon',
-        dateTime: pastDate
-      };
-      const errors = await ScheduleTripController.runValidations(payload);
-      expect(errors[0].error).toEqual('Date cannot be in the past.');
-      done();
-    });
-    it('should return "Time format must be in Month/Day/Year format. See hint."', async (done) => {
-      payload.submission.dateTime = '31/2/218 1:00am';
-      const errors = await ScheduleTripController.runValidations(payload);
-      expect(errors[0].error).toEqual(
-        'Time format must be in Day/Month/Year HH:MM format. See hint.'
-      );
-      done();
+  describe('getLocationIds', () => {
+    it('should return originId and destinationId', async () => {
+      ScheduleTripController.createLocation = jest.fn(() => 2);
+      const payload = createPayload();
+      const locationIds = await ScheduleTripController.getLocationIds(payload.submission);
+      expect(locationIds).toEqual({ originId: 2, destinationId: 2 });
     });
   });
 
-  describe('fetchUserInformationFromSlack', async () => {
-    it('should return a object containing users profile', async (done) => {
-      const user = await ScheduleTripController.fetchUserInformationFromSlack(payload.user.id);
-      expect(user.tz_offset).toEqual(currentTimezoneOffset);
-      done();
+  describe('createRequestObject', () => {
+    it('should return an object containing trip request details', async () => {
+      ScheduleTripController.getLocationIds = jest.fn(() => 2);
+      dateHelper.changeDateFormat = jest.fn(() => '22/12/2018 22:00');
+      const request = await ScheduleTripController
+        .createRequestObject(tripRequestDetails(), { id: 4 });
+      expect(request).toHaveProperty('riderId', 4);
+      expect(request).toHaveProperty('reason', tripRequestDetails().reason);
+    });
+  });
+
+  describe('createRequest', () => {
+    it('should return an object with details of the trip to persist', async () => {
+      const payload = createPayload();
+      ScheduleTripController.createUser = jest.fn(() => 4);
+      ScheduleTripController.createRequestObject = jest.fn(() => tripRequestDetails());
+
+      const request = await ScheduleTripController
+        .createRequest(payload, payload.submission);
+      expect(request).toHaveProperty('riderId', 4);
+      expect(request).toHaveProperty('reason', tripRequestDetails().reason);
+    });
+  });
+
+  describe('createTripRequest', () => {
+    const responder = respondMock();
+    it('should persist details of a trip', async () => {
+      const payload = createPayload();
+      ScheduleTripController.createUser = jest.fn(() => 4);
+      ScheduleTripController.createRequestObject = jest.fn(() => tripRequestDetails());
+
+      const request = await ScheduleTripController
+        .createTripRequest(payload, responder, tripRequestDetails());
+      expect(request).toEqual(true);
+    });
+  });
+
+  describe('createLocation', () => {
+    it('should persist details of a location', async () => {
+      ScheduleTripController.createUser = jest.fn(() => 4);
+      ScheduleTripController.createRequestObject = jest.fn(() => tripRequestDetails());
+
+      const location = await ScheduleTripController
+        .createLocation('13, Androse Road', 23, 25);
+      expect(location).toEqual(2);
+    });
+  });
+
+  describe('createUser', () => {
+    it('should persist details of a user', async () => {
+      const location = await ScheduleTripController.createUser('dummyId');
+      expect(location).toEqual(4);
     });
   });
 });

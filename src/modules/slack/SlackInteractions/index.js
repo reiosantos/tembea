@@ -4,13 +4,14 @@ import SlackController from '../SlackController';
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import DialogPrompts from '../SlackPrompts/DialogPrompts';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
-import ScheduleTripController from '../TripManagement/ScheduleTripController';
 import RescheduleTripController from '../TripManagement/RescheduleTripController';
 import CancelTripController from '../TripManagement/CancelTripController';
 import TripItineraryHelper from '../helpers/slackHelpers/TripItineraryHelper';
 import ManageTripController from '../TripManagement/ManageTripController';
 import TripActionsController from '../TripManagement/TripActionsController';
 import TripRescheduleHelper from '../helpers/slackHelpers/rescheduleHelper';
+import Cache from '../../../cache';
+import ScheduleTripInputHandlers from '../../../helpers/slack/ScheduleTripInputHandlers';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -44,32 +45,30 @@ class SlackInteractions {
   }
 
   static bookNewTrip(payload, respond) {
+    respond(new SlackInteractiveMessage('Loading...'));
     const action = payload.actions[0].value;
     switch (action) {
       case 'true':
       case 'false':
-        DialogPrompts.sendTripDetailsForm(payload, action);
+        Cache.save(payload.user.id, 'forSelf', action);
+        DialogPrompts.sendTripReasonForm(payload);
         break;
       default:
+        // default response for cancel button
         respond(new SlackInteractiveMessage('Thank you for using Tembea. See you again.'));
     }
   }
 
   static async handleUserInputs(payload, respond) {
-    const errors = await ScheduleTripController.runValidations(payload);
-    if (errors.length > 0) {
-      return { errors };
-    }
-    try {
-      await ScheduleTripController.createRequest(
-        payload,
-        respond
-      );
-    } catch (error) {
-      respond(
-        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
+    const callbackId = payload.callback_id.split('_')[2];
+    const scheduleTripHandler = ScheduleTripInputHandlers[callbackId];
+    if (!scheduleTripHandler) {
+      // default response for cancel button
+      return respond(
+        new SlackInteractiveMessage('Thank you for using Tembea. See you again.')
       );
     }
+    return scheduleTripHandler(payload, respond, callbackId);
   }
 
   static async handleItineraryActions(payload, respond) {

@@ -9,7 +9,7 @@ slackInteractionsRouter.action({ callbackId: 'welcome_message' },
   SlackInteractions.welcomeMessage);
 slackInteractionsRouter.action({ callbackId: 'book_new_trip' },
   SlackInteractions.bookNewTrip);
-slackInteractionsRouter.action({ callbackId: 'schedule_trip_form' },
+slackInteractionsRouter.action({ callbackId: /^schedule_trip/ },
   SlackInteractions.handleUserInputs);
 slackInteractionsRouter.action({ callbackId: 'itinerary_actions' },
   SlackInteractions.handleItineraryActions);

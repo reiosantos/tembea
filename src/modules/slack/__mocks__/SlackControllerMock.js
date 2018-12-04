@@ -45,6 +45,7 @@ const SlackControllerMock = {
   }],
   channel: undefined,
   response_type: 'ephemeral',
-  text: 'Welcome to Tembea!'
+  text: 'Welcome to Tembea!',
+  as_user: false
 };
 export default SlackControllerMock;

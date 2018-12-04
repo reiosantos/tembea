@@ -22,10 +22,11 @@ export const SlackKnownDataSources = Object.freeze({
 });
 
 export class SlackInteractiveMessage {
-  constructor(text, attachments, channelId, color) {
+  constructor(text, attachments, channelId, user, asUser = false) {
     this.text = text;
-    this.color = color;
     this.channel = channelId;
+    this.user = user;
+    this.as_user = asUser;
     this.attachments = attachments;
     this.response_type = SlackResponseType.ephemeral;
   }
@@ -57,12 +58,12 @@ export class SlackAttachment {
 
   addOptionalProps(callbackId,
     fallback = 'fallback',
-    color = '#3359DF',
+    color = '#3AAF85',
     attachmentType = 'default') {
     if (callbackId) this.callback_id = callbackId;
-    this.fallback = fallback;
-    this.color = color;
-    this.attachment_type = attachmentType;
+    if (fallback) this.fallback = fallback;
+    if (color) this.color = color;
+    if (attachmentType) this.attachment_type = attachmentType;
   }
 
   /**
@@ -135,8 +136,36 @@ export class SlackSelectActionWithSlackContent extends SlackAction {
   }
 }
 
+export class SlackButtonsAttachmentFromAList {
+  static createButtons(list) {
+    const createdButtons = list.map(department => new SlackButtonAction(
+      department.label.toLocaleLowerCase().replace(' ', '_'),
+      department.label,
+      department.value,
+      '#FFCCAA'
+    ));
+    return createdButtons;
+  }
+
+  static createAttachments(list, callbackId) {
+    const attachments = [];
+
+    const buttons = this.createButtons(list);
+
+    while (buttons.length > 0) {
+      const fiveButtons = buttons.splice(0, 5);
+      const slackAttachment = new SlackAttachment();
+
+      slackAttachment.addFieldsOrActions('actions', fiveButtons);
+      slackAttachment.addOptionalProps(callbackId);
+      attachments.push(slackAttachment);
+    }
+    return attachments;
+  }
+}
+
 export const SlackDelayedSuccessResponse = new SlackInteractiveMessage(
-  'Thank you. your request is processing'
+  'Thank you. Your request is processing'
 );
 
 export const SlackFailureResponse = new SlackInteractiveMessage(

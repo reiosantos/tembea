@@ -1,12 +1,15 @@
 import {
-  SlackInteractiveMessage,
-  SlackAttachment, SlackButtonAction, SlackCancelButtonAction, SlackAttachmentField
+  SlackInteractiveMessage, SlackSelectActionWithSlackContent,
+  SlackAttachment, SlackButtonAction, SlackCancelButtonAction,
+  SlackButtonsAttachmentFromAList, SlackAttachmentField
 } from '../SlackModels/SlackMessageModels';
-import slackInteractionsHelpers from '../../../helpers/slack/navButtons';
 import Notifications from './Notifications';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
+import createNavButtons from '../../../helpers/slack/navButtons';
+import slackHelpers from '../../../helpers/slack/slackHelpers';
 
 const web = new WebClientSingleton();
+
 
 class InteractivePrompts {
   static sendBookNewTripResponse(payload, respond) {
@@ -21,12 +24,11 @@ class InteractivePrompts {
     attachment.addOptionalProps('book_new_trip');
 
     // add navigation buttons
-    const navAttachment = slackInteractionsHelpers('back_to_launch', 'back_to_launch');
+    const navAttachment = createNavButtons('back_to_launch', 'back_to_launch');
 
-    const message = new SlackInteractiveMessage('Who are you booking for?', [
-      attachment,
-      navAttachment
-    ]);
+    const message = new SlackInteractiveMessage('Who are you booking for?',
+      [attachment, navAttachment]);
+
     respond(message);
   }
 
@@ -39,12 +41,8 @@ class InteractivePrompts {
       // sample button actions
       new SlackButtonAction('view', 'View', `${requester} ${rider}`),
       new SlackButtonAction('reschedule', 'Reschedule ', requestId),
-      new SlackCancelButtonAction(
-        'Cancel Trip',
-        requestId,
-        'Are you sure you want to cancel this trip',
-        'cancel_trip'
-      ),
+      new SlackCancelButtonAction('Cancel Trip', requestId,
+        'Are you sure you want to cancel this trip', 'cancel_trip'),
       new SlackCancelButtonAction()
     ]);
 
@@ -61,12 +59,8 @@ class InteractivePrompts {
     attachments.addFieldsOrActions('actions', [
       new SlackButtonAction('view', 'View', 'view'),
       new SlackButtonAction('reschedule', 'Reschedule ', trip.dataValues.id),
-      new SlackCancelButtonAction(
-        'Cancel Trip',
-        trip.dataValues.id,
-        'Are you sure you want to cancel this trip',
-        'cancel_trip'
-      ),
+      new SlackCancelButtonAction('Cancel Trip', trip.dataValues.id,
+        'Are you sure you want to cancel this trip', 'cancel_trip'),
       new SlackCancelButtonAction()
     ]);
     attachments.addOptionalProps('itinerary_actions');
@@ -98,7 +92,7 @@ class InteractivePrompts {
     attachment.addOptionalProps('trip_itinerary', 'fallback', '#FFCCAA', 'default');
 
     // add navigation buttons
-    const navAttachment = slackInteractionsHelpers('back_to_launch', 'back_to_launch');
+    const navAttachment = createNavButtons('back_to_launch', 'back_to_launch');
 
     const message = new SlackInteractiveMessage('Please choose an option', [
       attachment,
@@ -193,6 +187,36 @@ class InteractivePrompts {
     tripHistory.forEach(trip => formatTrip(trip));
     const text = '*Your trip history for the last 30 days*';
     const message = new SlackInteractiveMessage(text, attachments);
+    respond(message);
+  }
+
+  static sendRiderSelectList(payload, respond) {
+    const attachments = new SlackAttachment();
+
+    attachments.addFieldsOrActions('actions', [
+      new SlackSelectActionWithSlackContent('rider', 'Select a rider')
+    ]);
+    attachments.addOptionalProps('schedule_trip_rider');
+
+    // add navigation buttons
+    const navAttachment = createNavButtons('welcome_message', 'book_new_trip');
+
+    const message = new SlackInteractiveMessage('Who are you booking the ride for?',
+      [attachments, navAttachment], payload.channel.id, payload.user.id);
+
+    respond(message);
+  }
+
+  static async sendListOfDepartments(payload, respond, forSelf = 'true') {
+    const personify = forSelf === 'true' ? 'your' : 'rider\'s';
+    const attachment = SlackButtonsAttachmentFromAList.createAttachments(
+      await slackHelpers.getDepartments(), 'schedule_trip_department'
+    );
+    attachment.push(createNavButtons('schedule_trip_reason', 'default_value'));
+
+    const message = new SlackInteractiveMessage(`*Please select ${personify} department.*`,
+      attachment, payload.channel.id, payload.user.id);
+
     respond(message);
   }
 }
