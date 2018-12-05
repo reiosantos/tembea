@@ -1,6 +1,6 @@
 import request from 'request-promise-native';
 import url from 'url';
-import models from '../../database/models';
+import TeamDetailsService from '../../services/TeamDetailsService';
 
 export const SlackInstallUrl = `https://slack.com/oauth/authorize?client_id=${process.env.SLACK_CLIENT_ID}&scope=team:read,chat:write:bot,chat:write:user,bot,commands,users.profile:read,users:read.email,users:read,incoming-webhook`;
 
@@ -58,15 +58,15 @@ export default class HomeController {
         const webhookConfigUrl = jsonResponse.incoming_webhook.configuration_url;
         const urlObject = url.parse(webhookConfigUrl);
         // create and save team credentials
-        await models.TeamDetails.upsert({
+        await TeamDetailsService.saveTeamDetails({
           botId,
           botToken,
           teamId,
           teamName,
-          teamUrl: `https://${urlObject.host}`,
-          webhookConfigUrl,
           userId,
-          userToken
+          userToken,
+          webhookConfigUrl,
+          teamUrl: `https://${urlObject.host}`
         });
         return res.render('home/installed.html');
       }
