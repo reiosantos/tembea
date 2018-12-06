@@ -114,10 +114,11 @@ class SlackInteractions {
     try {
       switch (name) {
         case 'manager_decline':
-          return DialogPrompts.sendDialogToManager(payload,
+          DialogPrompts.sendDialogToManager(payload,
             'decline_trip',
             `${payload.original_message.ts} ${payload.channel.id} ${value}`,
             'Decline', 'Decline', 'declineReason');
+          break;
         case 'manager_approve':
           trip = await SlackHelpers.isRequestApproved(value, payload.user.id);
           SlackInteractions.approveTripRequestByManager(payload, { value, name }, trip, respond);
