@@ -104,8 +104,12 @@ class InteractivePrompts {
   static sendUpcomingTrips(trips, respond, payload) {
     const attachments = [];
     trips.forEach(trip => InteractivePrompts.formatUpcomingTrip(trip, payload, attachments));
-
-    const message = new SlackInteractiveMessage('Your Upcoming Trips', attachments);
+    const navButtonsAttachment = createNavButtons(
+      'welcome_message', 'view_trips_itinerary'
+    );
+    const message = new SlackInteractiveMessage(
+      'Your Upcoming Trips', [...attachments, navButtonsAttachment]
+    );
     respond(message);
   }
 
@@ -186,7 +190,10 @@ class InteractivePrompts {
 
     tripHistory.forEach(trip => formatTrip(trip));
     const text = '*Your trip history for the last 30 days*';
-    const message = new SlackInteractiveMessage(text, attachments);
+    const navButtonsAttachment = createNavButtons(
+      'welcome_message', 'view_trips_itinerary'
+    );
+    const message = new SlackInteractiveMessage(text, [...attachments, navButtonsAttachment]);
     respond(message);
   }
 

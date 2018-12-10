@@ -123,30 +123,69 @@ export const sendCompletionResponseMock = {
 export const tripHistoryMock = {
   user: undefined,
   as_user: false,
-  attachments: [{
-    actions: [],
-    attachment_type: '',
-    author_icon: '',
-    author_name: '',
-    color: 'good',
-    fields: [
-      {
-        short: 'true',
-        title: 'Pickup Location',
-        value: 'ET'
-      },
-      {
-        short: 'true',
-        title: 'Destination',
-        value: 'DOJO'
-      }
-    ],
-    image_url: '',
-    mrkdwn_in: ['text'],
-    text: '*Date*: 22:00 12/12/2018',
-    title: ''
-  }],
+  attachments: [
+    {
+      actions: [],
+      attachment_type: '',
+      author_icon: '',
+      author_name: '',
+      color: 'good',
+      fields: [
+        {
+          short: 'true',
+          title: 'Pickup Location',
+          value: 'ET'
+        },
+        {
+          short: 'true',
+          title: 'Destination',
+          value: 'DOJO'
+        }
+      ],
+      image_url: '',
+      mrkdwn_in: ['text'],
+      text: '*Date*: 22:00 12/12/2018',
+      title: ''
+    },
+    {
+      actions: [
+        {
+          name: 'back',
+          style: '#FFCCAA',
+          text: '< Back',
+          type: 'button',
+          value: 'view_trips_itinerary'
+        },
+        {
+          confirm: {
+            dismiss_text: 'No',
+            ok_text: 'Yes',
+            text: 'Do you really want to cancel?',
+            title: 'Are you sure?'
+          },
+          name: 'cancel',
+          style:
+            'danger',
+          text: 'Cancel',
+          type: 'button',
+          value: 'cancel'
+        }
+      ],
+      attachment_type: 'default',
+      author_icon: undefined,
+      author_name: undefined,
+      callback_id: 'welcome_message',
+      color: '#4285f4',
+      fallback: 'fallback',
+      fields: [],
+      image_url: undefined,
+      mrkdwn_in: [],
+      text: undefined,
+      title: undefined
+    }
+  ],
   channel: undefined,
+  color: undefined,
   response_type: 'ephemeral',
   text: '*Your trip history for the last 30 days*'
 };
