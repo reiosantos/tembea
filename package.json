@@ -52,12 +52,13 @@
     "supertest": "^3.3.0"
   },
   "dependencies": {
+    "@bugsnag/js": "^5.0.2",
+    "@bugsnag/plugin-express": "^5.0.2",
     "@google/maps": "^0.5.5",
     "@slack/client": "^4.8.0",
     "@slack/interactive-messages": "^1.0.2",
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
-    "bugsnag": "^2.4.3",
     "cls-hooked": "^4.2.2",
     "cors": "^2.8.4",
     "debug": "^3.1.0",
@@ -77,9 +78,9 @@
     "sequelize": "^4.39.0",
     "sequelize-replace-enum-postgres": "^1.5.0",
     "short-id": "^0.1.0-1",
+    "sinon": "^7.1.1",
     "slack-mock": "^1.1.1",
-    "validator": "^10.9.0",
-    "sinon": "^7.1.1"
+    "validator": "^10.9.0"
   },
   "jest": {
     "collectCoverage": true,
