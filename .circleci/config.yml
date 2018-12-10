@@ -136,7 +136,12 @@ jobs:
           command: |
             mkdir ~/.ssh/ && echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
             echo ${DEPLOYMENT_SCRIPTS_REPO}
-            git clone -b ft-add-ansible-scripts-162369692 ${DEPLOYMENT_SCRIPTS_REPO}
+            if [ "${CIRCLE_BRANCH}" = "master" ]; then
+              git clone -b master ${DEPLOYMENT_SCRIPTS_REPO}
+            elif [ "${CIRCLE_BRANCH}" = "develop" ]; then
+              git clone -b develop ${DEPLOYMENT_SCRIPTS_REPO}
+            fi
+
       - deploy:
           name: Run K8s configurations to deploy the app
           command: |
@@ -145,7 +150,7 @@ jobs:
             if [ "${CIRCLE_BRANCH}" = "master" ]; then
               export NAMESPACE="production"
               export NODE_ENV=${NAMESPACE}
-            elif [[ "${CIRCLE_BRANCH}" = "develop" || "${CIRCLE_BRANCH}" = "ch-deploy-staging-env-162305814" ]]; then
+            elif [ "${CIRCLE_BRANCH}" = "develop" ]; then
               export NAMESPACE="staging"
               echo $NAMESPACE
               export NODE_ENV=${NAMESPACE}
@@ -172,7 +177,7 @@ jobs:
             sleep 1m
             if [ "${CIRCLE_BRANCH}" = "master" ]; then
               export NAMESPACE="production"
-            elif [[ "${CIRCLE_BRANCH}" = "develop" || "${CIRCLE_BRANCH}" = "ch-deploy-staging-env-162305814" ]]; then
+            elif [ "${CIRCLE_BRANCH}" = "develop" ]; then
               export NAMESPACE="staging"
             fi
 

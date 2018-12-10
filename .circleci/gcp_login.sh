@@ -16,7 +16,7 @@ activateServiceAccount() {
   gcloud --quiet config set compute/zone ${COMPUTE_ZONE}
   if [ "${CIRCLE_BRANCH}" = "master" ]; then
     gcloud --quiet container clusters get-credentials ${PROD_CLUSTER_NAME}
-  elif [[ "${CIRCLE_BRANCH}" = "develop" || "${CIRCLE_BRANCH}" = "ch-deploy-staging-env-162305814" ]]; then
+  elif [ "${CIRCLE_BRANCH}" = "develop" ]; then
     gcloud --quiet container clusters get-credentials ${STAGING_CLUSTER_NAME}
   fi
   gcloud config list
