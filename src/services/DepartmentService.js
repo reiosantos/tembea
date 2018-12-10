@@ -36,23 +36,23 @@ class DepartmentService {
       if (newHeadEmail) {
         headId = await DepartmentService.getHeadId((newHeadEmail).trim());
       }
-  
+
       const department = await Department.update(
         { name: newName, headId },
         { returning: true, where: { name: { [Op.iLike]: `${name}%` } } }
       );
-  
+
       HttpError.throwErrorIfNull(department[1].length,
         'Department not found. To add a new department use POST /api/v1/departments');
-  
+
       const updatedDepartment = department[1][0].dataValues;
       const head = await SlackHelpers.getHeadByDepartmentId(updatedDepartment.id);
-  
+
       const newDepartmentRecords = {
         name: updatedDepartment.name,
         head: { name: head.name, email: head.email }
       };
-  
+
       return newDepartmentRecords;
     } catch (error) {
       if (error instanceof HttpError) throw error;

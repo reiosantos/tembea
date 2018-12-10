@@ -177,7 +177,7 @@ class InteractivePrompts {
     );
   }
 
-  
+
   /**
    * @description Update a previously sent message
    * @param  {string} channel The channel to which the original message was sent

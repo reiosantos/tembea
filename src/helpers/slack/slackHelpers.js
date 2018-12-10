@@ -7,10 +7,13 @@ const {
 
 class SlackHelpers {
   static async getDepartments() {
-    const departments = await Department.findAll();
+    const departments = await Department.findAll({
+      include: ['head']
+    });
     return departments.map(item => ({
       label: item.dataValues.name,
-      value: item.dataValues.id
+      value: item.dataValues.id,
+      head: item.dataValues.head ? item.dataValues.head.dataValues : item.dataValues.head
     }));
   }
 
@@ -121,11 +124,12 @@ class SlackHelpers {
   }
 
   static noOfPassengers() {
-    const passengerNumbers = [...Array(10)].map(
-      (label, value) => ({ text: value + 1, value: value + 1 })
+    return [...Array(10)].map(
+      (label, value) => ({
+        text: value + 1,
+        value: value + 1
+      })
     );
-    
-    return passengerNumbers;
   }
 }
 

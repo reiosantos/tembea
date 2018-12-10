@@ -1,4 +1,5 @@
 const moment = require('moment');
+const fs = require('fs');
 
 moment.updateLocale('en', {
   weekdaysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -22,6 +23,10 @@ class Utils {
   static nextAlphabet(firstChar) {
     const char = firstChar.toUpperCase();
     return String.fromCharCode(char.charCodeAt(0) + 1);
+  }
+
+  static writableToReadableStream(writableStream) {
+    return fs.createReadStream(writableStream.path);
   }
 }
 

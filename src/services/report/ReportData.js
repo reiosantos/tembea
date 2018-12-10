@@ -54,7 +54,7 @@ class GenerateReportData {
     const totalTakenTwoMonthsBack = monthTwoSummary.totalTripsCompleted;
 
     const percentage = (((totalTakenOneMonthBack - totalTakenTwoMonthsBack)
-      / totalTakenTwoMonthsBack || 1) * 100).toFixed(2);
+      / (totalTakenTwoMonthsBack || totalTakenOneMonthBack || 1)) * 100).toFixed(2);
 
     return { ...monthOneSummary, percentageChange: percentage };
   }

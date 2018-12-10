@@ -79,7 +79,7 @@ describe('Report Generator Service', () => {
         null: { completed: 2, declined: 0, total: 2 }
       },
       month: 'Nov, 2018',
-      percentageChange: '100.00',
+      percentageChange: '0.00',
       totalTrips: 3,
       totalTripsCompleted: 2,
       totalTripsDeclined: 1

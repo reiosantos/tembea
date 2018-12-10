@@ -6,6 +6,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import expressValidator from 'express-validator';
 import BugsnagHelper from './helpers/bugsnagHelper';
+import MonthlyReportSender from './helpers/email/monthlyReportSender';
 import modules from './modules';
 import SlackBodyParserFilter from './helpers/slackBodyParserFilter';
 import './modules/slack/events/index';
@@ -48,6 +49,8 @@ modules(app);
 app.use('*', (req, res) => res.status(404).json({
   message: 'Not Found. Use /api/v1 to access the api'
 }));
+
+MonthlyReportSender.scheduleReporting();
 
 /* This handles any errors that Express catches,
    it should come last in the pipeline */
