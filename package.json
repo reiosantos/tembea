@@ -63,6 +63,7 @@
     "debug": "^3.1.0",
     "dialog": "^0.3.1",
     "dotenv": "^6.0.0",
+    "exceljs": "^1.6.3",
     "express": "^4.16.4",
     "express-handlebars": "~3.0.0",
     "express-validator": "^5.3.0",

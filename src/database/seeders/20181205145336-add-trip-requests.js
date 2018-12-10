@@ -1,11 +1,13 @@
+const Utils = require('../../utils');
+
 module.exports = {
   up: queryInterface => queryInterface.bulkInsert('TripRequests', [
     {
       name: 'my trip home',
       riderId: 5,
-      departureTime: new Date(
+      departureTime: Utils.formatDateForDatabase(new Date(
         new Date().getTime() - 864000000
-      ).toLocaleString(),
+      ).toLocaleString()),
       originId: 1,
       tripStatus: 'Confirmed',
       destinationId: 2,
@@ -16,9 +18,9 @@ module.exports = {
     {
       name: 'my trip to the dojo',
       riderId: 7,
-      departureTime: new Date(
+      departureTime: Utils.formatDateForDatabase(new Date(
         new Date().getTime() - 864000000
-      ).toLocaleString(),
+      ).toLocaleString()),
       tripStatus: 'Confirmed',
       originId: 2,
       destinationId: 1,
@@ -29,9 +31,9 @@ module.exports = {
     {
       name: 'my trip home',
       riderId: 10,
-      departureTime: new Date(
+      departureTime: Utils.formatDateForDatabase(new Date(
         new Date().getTime() - 864000000
-      ).toLocaleString(),
+      ).toLocaleString()),
       originId: 1,
       tripStatus: 'Confirmed',
       destinationId: 2,
@@ -42,9 +44,9 @@ module.exports = {
     {
       name: 'my trip to the dojo',
       riderId: 7,
-      departureTime: new Date(
+      departureTime: Utils.formatDateForDatabase(new Date(
         new Date().getTime() - 864000000
-      ).toLocaleString(),
+      ).toLocaleString()),
       tripStatus: 'Confirmed',
       originId: 2,
       destinationId: 1,
@@ -55,9 +57,9 @@ module.exports = {
     {
       name: 'my trip to the Airport',
       riderId: 5,
-      departureTime: new Date(
+      departureTime: Utils.formatDateForDatabase(new Date(
         new Date().getTime() + 864000000
-      ).toLocaleString(),
+      ).toLocaleString()),
       originId: 2,
       tripStatus: 'Confirmed',
       destinationId: 1,
@@ -68,9 +70,9 @@ module.exports = {
     {
       name: 'my trip home',
       riderId: 8,
-      departureTime: new Date(
+      departureTime: Utils.formatDateForDatabase(new Date(
         new Date().getTime() - 86400000000
-      ).toLocaleString(),
+      ).toLocaleString()),
       tripStatus: 'Confirmed',
       originId: 1,
       destinationId: 2,
@@ -81,9 +83,9 @@ module.exports = {
     {
       name: 'my trip to the dojo',
       riderId: 8,
-      departureTime: new Date(
+      departureTime: Utils.formatDateForDatabase(new Date(
         new Date().getTime() - 86400000000
-      ).toLocaleString(),
+      ).toLocaleString()),
       tripStatus: 'Confirmed',
       originId: 2,
       destinationId: 1,
@@ -94,9 +96,9 @@ module.exports = {
     {
       name: 'my trip to the Airport',
       riderId: 5,
-      departureTime: new Date(
+      departureTime: Utils.formatDateForDatabase(new Date(
         new Date().getTime() - 86400000000
-      ).toLocaleString(),
+      ).toLocaleString()),
       tripStatus: 'Pending',
       originId: 2,
       destinationId: 1,
@@ -107,7 +109,7 @@ module.exports = {
     {
       name: 'my trip home',
       riderId: 9,
-      departureTime: '11/21/2018 22:00',
+      departureTime: '2018-11-21 22:00',
       originId: 1,
       destinationId: 2,
       tripStatus: 'Confirmed',
@@ -118,7 +120,7 @@ module.exports = {
     {
       name: 'my trip to the dojo',
       riderId: 9,
-      departureTime: '12/12/2018 22:00',
+      departureTime: '2018-12-12 22:00',
       tripStatus: 'Confirmed',
       originId: 2,
       destinationId: 1,
@@ -129,7 +131,7 @@ module.exports = {
     {
       name: 'my trip to the Airport',
       riderId: 9,
-      departureTime: '12/12/2018 22:00',
+      departureTime: '2018-12-12 22:00',
       tripStatus: 'Confirmed',
       originId: 2,
       destinationId: 1,

@@ -1,4 +1,5 @@
 import SlackEvents from '../events';
+import Utils from '../../../utils';
 import { slackEventsNames } from '../events/slackEvents';
 import models from '../../../database/models';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
@@ -46,7 +47,7 @@ class ScheduleTripController {
       to ${destination === 'Others' ? othersDestination : destination}
       on ${dateTime}`;
 
-      const departureTime = dateHelper.changeDateFormat(dateTime);
+      const departureTime = Utils.formatDateForDatabase(dateHelper.changeDateFormat(dateTime));
 
       return {
         riderId: requester.id,
