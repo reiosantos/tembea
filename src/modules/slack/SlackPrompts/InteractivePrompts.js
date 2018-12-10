@@ -1,12 +1,12 @@
 import {
   SlackInteractiveMessage, SlackSelectActionWithSlackContent,
   SlackAttachment, SlackButtonAction, SlackCancelButtonAction,
-  SlackButtonsAttachmentFromAList, SlackAttachmentField
+  SlackButtonsAttachmentFromAList, SlackAttachmentField, SlackSelectAction
 } from '../SlackModels/SlackMessageModels';
 import Notifications from './Notifications';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
 import createNavButtons from '../../../helpers/slack/navButtons';
-import slackHelpers from '../../../helpers/slack/slackHelpers';
+import SlackHelpers from '../../../helpers/slack/slackHelpers';
 
 const web = new WebClientSingleton();
 
@@ -217,18 +217,37 @@ class InteractivePrompts {
   static async sendListOfDepartments(payload, respond, forSelf = true) {
     const personify = forSelf ? 'your' : 'rider\'s';
     const attachment = SlackButtonsAttachmentFromAList.createAttachments(
-      await slackHelpers.getDepartments(), 'schedule_trip_department'
+      await SlackHelpers.getDepartments(), 'schedule_trip_department'
     );
 
-    // if rider is self navigate to for me/for someone option when 'Back' is clicked,
-    // else navigate to 'select rider' option
-    attachment.push(
-      createNavButtons(forSelf ? 'welcome_message' : 'schedule_trip_reason', 'book_new_trip')
-    );
+    // Navigate to the number of passengers
+    attachment.push(createNavButtons('schedule_trip_rider'));
 
     const message = new SlackInteractiveMessage(`*Please select ${personify} department.*`,
       attachment, payload.channel.id, payload.user.id);
 
+    respond(message);
+  }
+
+  static sendAddPassengersResponse(respond, forSelf = true) {
+    console.log(forSelf);
+    const attachment = new SlackAttachment();
+    const passengerNumbers = SlackHelpers.noOfPassengers();
+
+    attachment.addFieldsOrActions('actions', [
+      new SlackSelectAction('addPassenger', 'No. of passengers', passengerNumbers),
+      new SlackButtonAction('no', 'No', 1)]);
+
+    attachment.addOptionalProps('schedule_trip_addPassengers');
+    
+    /* if rider is self navigate to for me/for someone option when 'Back' is clicked,
+       else navigate to 'select rider' option
+    */
+    const navAttachment = createNavButtons(forSelf ? 'welcome_message' : 'schedule_trip_reason', 'book_new_trip');
+
+    const message = new SlackInteractiveMessage(
+      'Any more passengers?', [attachment, navAttachment]
+    );
     respond(message);
   }
 }

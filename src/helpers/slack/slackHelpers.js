@@ -119,6 +119,14 @@ class SlackHelpers {
       throw error;
     }
   }
+
+  static noOfPassengers(){
+    const passengerNumbers = [...Array(10)].map(
+      (label, value) => ({ text: value + 1, value: value + 1 })
+    );
+    
+    return passengerNumbers;
+  }
 }
 
 export default SlackHelpers;

@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.INTEGER,
     },
+    noOfPassengers: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1
+    },
     departmentId: {
       type: DataTypes.INTEGER,
     },

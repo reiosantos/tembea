@@ -111,3 +111,12 @@ describe('test send Trip History', () => {
     done();
   });
 });
+
+describe('test send add passenger response', () => {
+  it('should provide an interface to add passengers', (done) => {
+    const respond = jest.fn(value => value);
+    InteractivePrompts.sendAddPassengersResponse(respond);
+    expect(respond).toHaveBeenCalled();
+    done();
+  });
+});

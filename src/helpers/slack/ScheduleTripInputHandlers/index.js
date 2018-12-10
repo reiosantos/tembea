@@ -11,21 +11,35 @@ const ScheduleTripInputHandlers = {
     if (payload.submission) {
       Cache.save(payload.user.id, callbackId, payload.submission.reason);
     }
-
+  
     // check if user clicked for me or for someone
     if (Cache.fetch(payload.user.id).forSelf === 'true') {
-      return InteractivePrompts.sendListOfDepartments(payload, respond);
+      InteractivePrompts.sendAddPassengersResponse(respond);
+    } else {
+      InteractivePrompts.sendRiderSelectList(payload, respond);
     }
-    InteractivePrompts.sendRiderSelectList(payload, respond);
   },
   rider: (payload, respond, callbackId) => {
-    const rider = payload.actions[0].selected_options[0].value;
-    Cache.save(payload.user.id, callbackId, rider);
-    InteractivePrompts.sendListOfDepartments(payload, respond, false);
+    if (payload.actions && payload.actions[0].selected_options[0].value) {
+      const rider = payload.actions[0].selected_options[0].value;
+      Cache.save(payload.user.id, callbackId, rider);
+    }
+    
+    InteractivePrompts.sendAddPassengersResponse(respond, false);
+  },
+  addPassengers: (payload, respond) => {
+    if (payload.actions[0].value || payload.actions[0].selected_options[0]) {
+      const noOfPassengers = payload.actions[0].value
+        ? payload.actions[0].value : payload.actions[0].selected_options[0].value;
+      Cache.save(payload.user.id, 'passengers', noOfPassengers);
+    }
+
+    const { forSelf } = Cache.fetch(payload.user.id);
+
+    InteractivePrompts.sendListOfDepartments(payload, respond, forSelf);
   },
   department: (payload, respond) => {
     respond(new SlackInteractiveMessage('Loading...'));
-
     const departmentId = payload.actions[0].value;
     Cache.save(payload.user.id, 'departmentId', departmentId);
     DialogPrompts.sendTripDetailsForm(payload);

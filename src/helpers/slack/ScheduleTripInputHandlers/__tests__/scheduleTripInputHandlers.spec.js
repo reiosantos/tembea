@@ -9,24 +9,30 @@ import {
 import Cache from '../../../../cache';
 
 describe('ScheduleTripInputHandlers Tests', () => {
-  const payload = createPayload('dummyId');
+  const payload = createPayload('dummyValue');
   let responder;
 
   beforeAll(() => {
     responder = respondMock();
     Cache.fetch = jest.fn(() => ({ forSelf: 'true' }));
+    Cache.save = jest.fn();
     InteractivePrompts.sendListOfDepartments = jest.fn(() => {});
     InteractivePrompts.sendRiderSelectList = jest.fn(() => {});
+    InteractivePrompts.sendAddPassengersResponse = jest.fn(() => {});
     InteractivePrompts.sendCompletionResponse = jest.fn(() => {});
     DialogPrompts.sendTripDetailsForm = jest.fn(() => {});
     ScheduleTripController.createTripRequest = jest.fn(() => 1);
   });
 
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
   describe('Response to "reason" dialog', () => {
     it('should respond with list of departments', () => {
       ScheduleTripInputHandlers.reason(payload, responder);
-      expect(InteractivePrompts.sendListOfDepartments)
-        .toHaveBeenCalledWith(payload, responder);
+      expect(InteractivePrompts.sendAddPassengersResponse)
+        .toHaveBeenCalledWith(responder);
     });
 
     it('should respond with list of users', () => {
@@ -41,8 +47,17 @@ describe('ScheduleTripInputHandlers Tests', () => {
   describe('Response to "rider" interaction', () => {
     it('should respond with list of departments', () => {
       ScheduleTripInputHandlers.rider(payload, responder, 'rider');
+      expect(InteractivePrompts.sendAddPassengersResponse)
+        .toHaveBeenCalledWith(responder, false);
+    });
+  });
+
+  describe('Response to "addPassengers" interaction', () => {
+    it('should respond with message to add passengers', () => {
+      Cache.fetch = jest.fn(() => ({ forSelf: 'false' }));
+      ScheduleTripInputHandlers.addPassengers(payload, responder);
       expect(InteractivePrompts.sendListOfDepartments)
-        .toHaveBeenCalledWith(payload, responder, false);
+        .toHaveBeenCalledWith(payload, responder, 'false');
     });
   });
 
@@ -68,7 +83,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
       });
       ScheduleTripController.validateTripDetailsForm = jest.fn(() => []);
       await ScheduleTripInputHandlers.locationTime(payload, responder);
-      expect(responder).toHaveBeenCalledTimes(3);
+      expect(responder).toHaveBeenCalledTimes(2);
     });
   });
 });

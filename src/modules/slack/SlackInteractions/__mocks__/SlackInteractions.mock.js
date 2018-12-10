@@ -16,7 +16,8 @@ export const createPayload = (value = 'value', name = 'name') => ({
     others_pickup: 'others_pickup',
     destination: 'destination',
     others_destination: 'others_destination',
-    date_time: '10/10/2018 22:00'
+    date_time: '10/10/2018 22:00',
+    reason: 'test reason'
   }
 });
 

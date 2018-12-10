@@ -39,7 +39,7 @@ class ScheduleTripController {
   static async createRequestObject(tripRequestDetails, requester) {
     try {
       const {
-        reason, dateTime, departmentId, destination, pickup, othersPickup, othersDestination
+        reason, dateTime, departmentId, destination, pickup, othersPickup, othersDestination, passengers
       } = tripRequestDetails;
       const { originId, destinationId } = await this.getLocationIds(tripRequestDetails);
       const name = `From ${pickup === 'Others' ? othersPickup : pickup}
@@ -57,7 +57,8 @@ class ScheduleTripController {
         departureTime,
         requestedById: requester.id,
         originId,
-        destinationId
+        destinationId,
+        noOfPassengers: passengers
       };
     } catch (error) {
       throw error;
