@@ -25,8 +25,8 @@ describe('Team details service', () => {
   it('should fetch team details from DB', async (done) => {
     const teamDetails = await TeamDetailsService.getTeamDetails('TEAMID1');
 
-    expect(teamDetails.dataValues.teamId).toEqual('TEAMID1');
-    expect(teamDetails.dataValues.teamName).toEqual('Team 1');
+    expect(teamDetails.teamId).toEqual('TEAMID1');
+    expect(teamDetails.teamName).toEqual('Team 1');
     expect(cache.saveObject.mock.calls.length).toEqual(1);
     done();
   });
