@@ -1,5 +1,8 @@
 import TeamDetailsService from '../TeamDetailsService';
+import models from '../../database/models';
 import cache from '../../cache';
+
+const { TeamDetails } = models;
 
 describe('Team details service', () => {
   beforeAll(() => {
@@ -70,6 +73,19 @@ describe('Team details service', () => {
       await TeamDetailsService.saveTeamDetails();
     } catch (error) {
       expect(error.message).toEqual('Could not update teamDetails or write new teamDetails to DB');
+      done();
+    }
+  });
+
+  it('should fail on get team details by URL', async (done) => {
+    TeamDetails.findOne = jest.fn(() => {
+      throw new Error();
+    });
+
+    try {
+      await TeamDetailsService.getTeamDetailsByTeamUrl();
+    } catch (error) {
+      expect(error.message).toEqual('Could not get the team details.');
       done();
     }
   });

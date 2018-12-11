@@ -12,11 +12,31 @@ class TeamDetailsService {
     }
 
     try {
-      const teamDetails = await TeamDetails.findByPk(teamId);
-      cache.saveObject(getTeamDetailsKey(teamId), teamDetails);
-      return teamDetails;
+      const { dataValues } = await TeamDetails.findByPk(teamId);
+      cache.saveObject(getTeamDetailsKey(teamId), dataValues);
+      return dataValues;
     } catch (error) {
       throw new Error('Could not get team details from DB');
+    }
+  }
+
+  static async getTeamDetailsByTeamUrl(teamUrl) {
+    const fetchedValue = cache.fetch(getTeamDetailsKey(teamUrl));
+    if (fetchedValue) {
+      return fetchedValue;
+    }
+
+    try {
+      const teamDetails = await TeamDetails.findOne({
+        raw: true,
+        where: {
+          teamUrl: `https://${teamUrl}`,
+        }
+      });
+      cache.saveObject(getTeamDetailsKey(teamUrl), teamDetails);
+      return teamDetails;
+    } catch (error) {
+      throw new Error('Could not get the team details.');
     }
   }
 

@@ -163,7 +163,8 @@ class UsersController {
           }
         });
     } catch (error) {
-      bugsnag.notify(new Error(error));
+      // Handle with bugsnag
+      // bugsnag.notify(new Error(error));
     }
   }
 }
