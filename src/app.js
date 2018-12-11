@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import exphbs from 'express-handlebars';
-import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -23,12 +22,12 @@ app.use(cors());
 app.use(morgan('dev'));
 
 app.use(SlackBodyParserFilter.maybe(
-  bodyParser.urlencoded({
+  express.urlencoded({
     limit: '50mb',
     extended: true
   })
 ));
-app.use(SlackBodyParserFilter.maybe(bodyParser.json()));
+app.use(SlackBodyParserFilter.maybe(express.json()));
 
 app.use(expressValidator());
 
