@@ -207,12 +207,17 @@ class InteractivePrompts {
     respond(message);
   }
 
-  static async sendListOfDepartments(payload, respond, forSelf = 'true') {
-    const personify = forSelf === 'true' ? 'your' : 'rider\'s';
+  static async sendListOfDepartments(payload, respond, forSelf = true) {
+    const personify = forSelf ? 'your' : 'rider\'s';
     const attachment = SlackButtonsAttachmentFromAList.createAttachments(
       await slackHelpers.getDepartments(), 'schedule_trip_department'
     );
-    attachment.push(createNavButtons('schedule_trip_reason', 'default_value'));
+
+    // if rider is self navigate to for me/for someone option when 'Back' is clicked,
+    // else navigate to 'select rider' option
+    attachment.push(
+      createNavButtons(forSelf ? 'welcome_message' : 'schedule_trip_reason', 'book_new_trip')
+    );
 
     const message = new SlackInteractiveMessage(`*Please select ${personify} department.*`,
       attachment, payload.channel.id, payload.user.id);

@@ -8,7 +8,10 @@ import ScheduleTripController from '../../../modules/slack/TripManagement/Schedu
 
 const ScheduleTripInputHandlers = {
   reason: (payload, respond, callbackId) => {
-    Cache.save(payload.user.id, callbackId, payload.submission.reason);
+    if (payload.submission) {
+      Cache.save(payload.user.id, callbackId, payload.submission.reason);
+    }
+    
     // check if user clicked for me or for someone
     if (Cache.fetch(payload.user.id).forSelf === 'true') {
       return InteractivePrompts.sendListOfDepartments(payload, respond);
@@ -33,6 +36,7 @@ const ScheduleTripInputHandlers = {
       if (errors.length > 0) {
         return { errors };
       }
+      respond(new SlackInteractiveMessage('Loading...'));
 
       const tripRequestDetails = { ...Cache.fetch(payload.user.id), ...payload.submission };
 

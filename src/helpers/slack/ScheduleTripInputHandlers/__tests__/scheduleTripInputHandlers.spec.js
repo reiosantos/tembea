@@ -68,7 +68,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
       });
       ScheduleTripController.validateTripDetailsForm = jest.fn(() => []);
       await ScheduleTripInputHandlers.locationTime(payload, responder);
-      expect(responder).toHaveBeenCalledTimes(2);
+      expect(responder).toHaveBeenCalledTimes(3);
     });
   });
 });

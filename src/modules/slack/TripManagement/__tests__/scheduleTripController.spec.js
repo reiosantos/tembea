@@ -72,7 +72,7 @@ describe('ScheduleTripController Tests', () => {
     it('should persist details of a trip', async () => {
       const payload = createPayload();
       ScheduleTripController.createUser = jest.fn(() => 4);
-      ScheduleTripController.createRequestObject = jest.fn(() => tripRequestDetails());
+      ScheduleTripController.createRequest = jest.fn(() => tripRequestDetails());
 
       const request = await ScheduleTripController
         .createTripRequest(payload, responder, tripRequestDetails());

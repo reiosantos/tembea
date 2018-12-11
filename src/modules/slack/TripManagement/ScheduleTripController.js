@@ -69,8 +69,8 @@ class ScheduleTripController {
       const request = await this.createRequestObject(tripRequestDetails, requester);
 
       if (tripRequestDetails.forSelf === 'false') {
-        const passengerId = await this.createUser(tripRequestDetails.rider);
-        request.riderId = passengerId;
+        const passenger = await this.createUser(tripRequestDetails.rider);
+        request.riderId = passenger.id;
       }
       return request;
     } catch (error) {
@@ -82,7 +82,7 @@ class ScheduleTripController {
     try {
       const tripRequest = await this.createRequest(payload, tripRequestDetails);
       const trip = await TripRequest.create(tripRequest);
-      
+
       InteractivePrompts.sendCompletionResponse(payload, respond, tripRequest.requestedById);
       SlackEvents.raise(slackEventsNames.NEW_TRIP_REQUEST, trip.dataValues, respond);
 
@@ -98,7 +98,7 @@ class ScheduleTripController {
         where: { longitude, latitude }
       });
       const addressData = await Address.create({ locationId: location.dataValues.id, address });
-      return addressData.dataValues.locationId;
+      return addressData.dataValues.id;
     } catch (error) {
       throw error;
     }
