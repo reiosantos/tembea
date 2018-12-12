@@ -1,7 +1,7 @@
 import {
   SlackDialogText,
   SlackDialogSelectElementWithOptions,
-  SlackDialogElementWithDataSource
+  SlackDialogElementWithDataSource, SlackDialogTextarea
 } from '../../../modules/slack/SlackModels/SlackDialogModels';
 import { pickupLocations, destinations } from '../../../utils/data';
 
@@ -86,6 +86,29 @@ const createTripDetailsForm = {
       flightDateTime,
       pickupField,
       destinationField
+    ];
+  },
+
+  travelEmbassyDetailsForm: () => {
+    const pickupField = new SlackDialogText('Pick up Location',
+      'pickup', 'Enter pickup location', false);
+    const destinationField = new SlackDialogText('Destination',
+      'destination', 'Enter destination', false);
+    const appointmentDateTime = new SlackDialogText(
+      'Visit Date and Time',
+      'embassyVisitDateTime',
+      'dd/mm/yy hh:mm',
+      false,
+      dateHint
+    );
+
+    const textarea = new SlackDialogTextarea('Reason', 'reason',
+      'Enter reason for booking the trip');
+    return [
+      pickupField,
+      destinationField,
+      appointmentDateTime,
+      textarea
     ];
   }
 };

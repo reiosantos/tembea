@@ -85,7 +85,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
       ScheduleTripInputHandlers.department(payload, responder, 'department');
       expect(responder).toHaveBeenCalledWith(responseMessage('Loading...'));
       expect(DialogPrompts.sendTripDetailsForm)
-        .toHaveBeenCalledWith(payload);
+        .toHaveBeenCalledWith(payload, 'regularTripForm', 'schedule_trip_locationTime');
     });
   });
 

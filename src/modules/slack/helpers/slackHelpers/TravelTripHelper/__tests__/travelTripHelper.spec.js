@@ -1,13 +1,9 @@
-import travelTripHelper from '../travelTripHelper';
+import travelTripHelper from '../index';
+import cache from '../../../../../../cache';
 import ScheduleTripController from '../../../../TripManagement/ScheduleTripController';
 import InteractivePrompts from '../../../../SlackPrompts/InteractivePrompts';
 import DialogPrompts from '../../../../SlackPrompts/DialogPrompts';
-import Cache from '../../../../../../cache';
-import { SlackInteractiveMessage } from '../../../../SlackModels/SlackMessageModels';
 
-const unsuccessfulResponse = new SlackInteractiveMessage(
-  'Unsuccessful request. Kindly Try again'
-);
 jest.mock('../../../../events', () => ({
   slackEvents: jest.fn(() => ({
     raise: jest.fn(),
@@ -27,113 +23,265 @@ jest.mock('../../../../events/slackEvents', () => ({
   })
 }));
 
-describe('Travel Trip helper test', () => {
-  let respond;
+
+describe('travelTripHelper', () => {
+  let payload;
 
   beforeEach(() => {
-    respond = jest.fn();
-    Cache.save = jest.fn();
+    cache.save = jest.fn(() => {});
+    cache.fetch = jest.fn((id) => {
+      if (id === 1) {
+        return {
+          tripType: 'Airport Transfer',
+          departmentId: '',
+          departmentName: '',
+          contactDetails: ''
+        };
+      }
+      return {};
+    });
+    payload = { user: { id: 1 }, submission: {}, actions: [{ name: '', value: '' }] };
   });
 
   afterEach(() => {
     jest.resetAllMocks();
+    jest.restoreAllMocks();
   });
 
-  it('should test contact details handler and return error', async () => {
-    ScheduleTripController.validateTravelContactDetailsForm = jest.fn(() => 'error');
-    const result = await travelTripHelper.contactDetails('payload', respond);
-    expect(result).toHaveProperty('errors', 'error');
+  describe('contactDetails', () => {
+    let respond;
+    beforeEach(() => {
+      respond = jest.fn();
+    });
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should test contact details handler', async () => {
+      const validateTravelContactDetailsForm = jest.spyOn(ScheduleTripController,
+        'validateTravelContactDetailsForm');
+      validateTravelContactDetailsForm.mockImplementationOnce(() => []);
+
+      const sendListOfDepartments = jest.spyOn(InteractivePrompts,
+        'sendListOfDepartments');
+      sendListOfDepartments.mockImplementationOnce(() => {});
+
+
+      await travelTripHelper.contactDetails(payload, respond);
+
+      expect(validateTravelContactDetailsForm).toHaveBeenCalledTimes(1);
+      expect(sendListOfDepartments).toHaveBeenCalledTimes(1);
+    });
+
+    it('should test validateTravelContactDetailsForm and catches error ', async () => {
+      const validateTravelContactDetailsForm = jest.spyOn(ScheduleTripController,
+        'validateTravelContactDetailsForm');
+      validateTravelContactDetailsForm.mockImplementationOnce(() => ([{}]));
+
+      const sendListOfDepartments = jest.spyOn(InteractivePrompts,
+        'sendListOfDepartments');
+      sendListOfDepartments.mockImplementationOnce(() => {});
+
+      await travelTripHelper.contactDetails(payload, respond);
+
+      expect(validateTravelContactDetailsForm).toHaveBeenCalledTimes(1);
+      expect(sendListOfDepartments).not.toHaveBeenCalled();
+    });
+
+    it('should call respond error ', async () => {
+      const validateTravelContactDetailsForm = jest.spyOn(ScheduleTripController,
+        'validateTravelContactDetailsForm');
+      validateTravelContactDetailsForm.mockImplementationOnce(() => Promise.reject(new Error()));
+
+      const sendListOfDepartments = jest.spyOn(InteractivePrompts,
+        'sendListOfDepartments');
+      sendListOfDepartments.mockImplementationOnce(() => {});
+
+      await travelTripHelper.contactDetails(payload, respond);
+
+      expect(validateTravelContactDetailsForm).toHaveBeenCalledTimes(1);
+      expect(sendListOfDepartments).not.toHaveBeenCalled();
+      expect(respond).toHaveBeenCalledTimes(1);
+    });
   });
 
-  it('should test contact details handler', async () => {
-    ScheduleTripController.validateTravelContactDetailsForm = jest.fn(() => []);
-    InteractivePrompts.sendListOfDepartments = jest.fn();
-    const payload = { user: { id: 1 }, submission: 'submission' };
-    await travelTripHelper.contactDetails(payload, respond);
-    expect(Cache.save).toHaveBeenCalledWith(1, 'contactDetails', 'submission');
-    expect(InteractivePrompts.sendListOfDepartments).toHaveBeenCalled();
+  describe('department', () => {
+    let respond;
+
+    beforeEach(() => {
+      respond = jest.fn();
+    });
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('department handler should call sendTripDetailsForm with functionName, "travelTripFlightDetailsForm" and callbackId, "travel_trip_flightDetails" when tripType is Airport Transfer', async () => {
+      payload.user.id = 1;
+      const sendTripDetailsForm = jest.spyOn(DialogPrompts,
+        'sendTripDetailsForm');
+      sendTripDetailsForm.mockImplementationOnce(() => {});
+
+      travelTripHelper.department(payload, respond);
+
+      expect(cache.save).toHaveBeenCalledTimes(2);
+      expect(cache.save.mock.calls).toEqual([[1, 'departmentId', ''], [1, 'departmentName', '']]);
+
+      expect(sendTripDetailsForm).toHaveBeenCalledWith(payload, 'travelTripFlightDetailsForm', 'travel_trip_flightDetails');
+    });
+
+    it('department handler should call sendTripDetailsForm with functionName, "travelEmbassyDetailsForm" and callbackId, "travel_trip_embassyForm" when tripType is Embassy Visit', async () => {
+      payload.user.id = 2;
+      const sendTripDetailsForm = jest.spyOn(DialogPrompts,
+        'sendTripDetailsForm');
+      sendTripDetailsForm.mockImplementationOnce(() => {});
+
+      travelTripHelper.department(payload, respond);
+
+      expect(cache.save).toHaveBeenCalledTimes(2);
+      expect(cache.save.mock.calls).toEqual([[2, 'departmentId', ''], [2, 'departmentName', '']]);
+
+      expect(sendTripDetailsForm).toHaveBeenCalledWith(payload, 'travelEmbassyDetailsForm', 'travel_trip_embassyForm');
+    });
+  });
+  describe('embassyForm', () => {
+    let respond;
+
+    beforeEach(() => {
+      respond = jest.fn();
+    });
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should save tripDetails in cache and sendPreviewTripRespons', async () => {
+      payload.user.id = 1;
+      const validateTravelContactDetailsForm = jest.spyOn(ScheduleTripController,
+        'validateTravelDetailsForm');
+      validateTravelContactDetailsForm.mockImplementationOnce(() => []);
+
+      const sendPreviewTripResponse = jest.spyOn(InteractivePrompts,
+        'sendPreviewTripResponse');
+      sendPreviewTripResponse.mockImplementationOnce(() => []);
+
+      await travelTripHelper.embassyForm(payload, respond);
+
+      expect(cache.save).toHaveBeenCalledTimes(1);
+
+      expect(validateTravelContactDetailsForm).toHaveBeenCalledTimes(1);
+      expect(sendPreviewTripResponse).toHaveBeenCalledTimes(1);
+    });
+
+    it('should catch error ', async () => {
+      payload.user.id = 2;
+      const validateTravelDetailsForm = jest.spyOn(ScheduleTripController,
+        'validateTravelDetailsForm');
+      validateTravelDetailsForm.mockImplementationOnce(() => [{}]);
+
+      const result = await travelTripHelper.embassyForm(payload, respond);
+
+      expect(result).toEqual({ errors: [{}] });
+      expect(validateTravelDetailsForm).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call respond error', async () => {
+      const validateTravelDetailsForm = jest.spyOn(ScheduleTripController,
+        'validateTravelDetailsForm');
+      validateTravelDetailsForm.mockImplementationOnce(() => Promise.reject(new Error()));
+
+      const sendPreviewTripResponse = jest.spyOn(InteractivePrompts,
+        'sendPreviewTripResponse');
+      sendPreviewTripResponse.mockImplementationOnce(() => {});
+
+      await travelTripHelper.embassyForm(payload, respond);
+
+      expect(validateTravelDetailsForm).toHaveBeenCalledTimes(1);
+      expect(sendPreviewTripResponse).not.toHaveBeenCalled();
+      expect(respond).toHaveBeenCalledTimes(1);
+    });
   });
 
-  it('should test contact details handler and catch error', async () => {
-    InteractivePrompts.sendListOfDepartments = jest.fn();
-    ScheduleTripController.validateTravelContactDetailsForm = jest.fn(() => []);
-    await travelTripHelper.contactDetails('payload', respond);
-    expect(respond).toHaveBeenCalledWith(unsuccessfulResponse);
+  describe('flightDetails', () => {
+    let respond;
+    beforeEach(() => {
+      respond = jest.fn();
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should save tripDetails in cache and sendPreviewTripRespons', async () => {
+      payload.user.id = 1;
+      const validateTravelContactDetailsForm = jest.spyOn(ScheduleTripController,
+        'validateTravelDetailsForm');
+      validateTravelContactDetailsForm.mockImplementationOnce(() => []);
+
+      const sendPreviewTripResponse = jest.spyOn(InteractivePrompts,
+        'sendPreviewTripResponse');
+      sendPreviewTripResponse.mockImplementationOnce(() => []);
+
+      await travelTripHelper.flightDetails(payload, respond);
+
+      expect(cache.save).toHaveBeenCalledTimes(1);
+
+      expect(validateTravelContactDetailsForm).toHaveBeenCalledTimes(1);
+      expect(sendPreviewTripResponse).toHaveBeenCalledTimes(1);
+    });
+
+    it('should catch error ', async () => {
+      payload.user.id = 2;
+      const validateTravelDetailsForm = jest.spyOn(ScheduleTripController,
+        'validateTravelDetailsForm');
+      validateTravelDetailsForm.mockImplementationOnce(() => [{}]);
+
+      const result = await travelTripHelper.flightDetails(payload, respond);
+
+      expect(result).toEqual({ errors: [{}] });
+      expect(validateTravelDetailsForm).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call respond error', async () => {
+      const validateTravelDetailsForm = jest.spyOn(ScheduleTripController,
+        'validateTravelDetailsForm');
+      validateTravelDetailsForm.mockImplementationOnce(() => Promise.reject(new Error()));
+
+      const sendPreviewTripResponse = jest.spyOn(InteractivePrompts,
+        'sendPreviewTripResponse');
+      sendPreviewTripResponse.mockImplementationOnce(() => {});
+
+      await travelTripHelper.flightDetails(payload, respond);
+
+      expect(validateTravelDetailsForm).toHaveBeenCalledTimes(1);
+      expect(sendPreviewTripResponse).not.toHaveBeenCalled();
+      expect(respond).toHaveBeenCalledTimes(1);
+    });
   });
+  describe('confirmation', () => {
+    let respond;
 
-  it('should test department handler', () => {
-    DialogPrompts.sendTravelTripDetailsForm = jest.fn();
-    const payload = { user: { id: 1 }, actions: [{ value: 'boy', name: 'girl' }] };
-    travelTripHelper.department(payload, respond);
-    expect(Cache.save).toBeCalledTimes(2);
-    expect(DialogPrompts.sendTravelTripDetailsForm).toHaveBeenCalledWith(payload, 'flightDetails');
-  });
+    beforeEach(() => {
+      respond = jest.fn();
+    });
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
 
-  it('should formatTrip details', () => {
-    const cachedData = {
-      departmentId: 1,
-      departmentName: 'Go',
-      contactDetails: {
-        noOfPassengers: 23
-      },
-      tripType: 'Travel Trip'
-    };
-    const submission = { flightDateTime: '12/12/2018 11:00' };
+    it('should test cancel confirmation', async () => {
+      payload.actions[0].value = 'cancel';
+      const sendCancelRequestResponse = jest.spyOn(InteractivePrompts,
+        'sendCancelRequestResponse');
+      await travelTripHelper.confirmation(payload, respond);
+      expect(sendCancelRequestResponse).toHaveBeenCalledWith(respond);
+    });
 
-    Cache.fetch = jest.fn(() => (cachedData));
-    const result = travelTripHelper.formatTripDetails(1, submission);
-    expect(result).toHaveProperty('dateTime', '12/12/2018 08:00');
-    expect(result).toHaveProperty('reason', 'Airport Transfer');
-    expect(result).toHaveProperty('noOfPassengers', 23);
-  });
-
-  it('should test flightDetails handler and return error', async () => {
-    ScheduleTripController.validateTravelFlightDetailsForm = jest.fn(() => 'error');
-    const payload = { user: { id: 1 }, submission: 'submission' };
-    const result = await travelTripHelper.flightDetails(payload, respond);
-    expect(result).toHaveProperty('errors', 'error');
-  });
-
-  it('should test flightDetails handler', async () => {
-    ScheduleTripController.validateTravelFlightDetailsForm = jest.fn(() => []);
-    InteractivePrompts.sendPreviewTripResponse = jest.fn();
-    travelTripHelper.formatTripDetails = jest.fn(() => 'format');
-    const payload = { user: { id: 1 }, submission: 'submission' };
-
-    await travelTripHelper.flightDetails(payload, respond);
-    expect(ScheduleTripController.validateTravelFlightDetailsForm).toHaveBeenCalledWith(payload);
-    expect(travelTripHelper.formatTripDetails).toHaveBeenCalledWith(1, 'submission');
-    expect(Cache.save).toHaveBeenCalledWith(1, 'tripDetails', 'format');
-    expect(InteractivePrompts.sendPreviewTripResponse).toHaveBeenCalledWith('format', respond);
-  });
-
-  it('should test flightDetails handler', async () => {
-    ScheduleTripController.validateTravelFlightDetailsForm = jest.fn(() => []);
-    InteractivePrompts.sendPreviewTripResponse = jest.fn(() => { throw new Error('failed'); });
-    travelTripHelper.formatTripDetails = jest.fn(() => 'format');
-    const payload = { user: { id: 1 }, submission: 'submission' };
-
-    await travelTripHelper.flightDetails(payload, respond);
-    expect(respond).toBeCalled();
-  });
-
-  it('should test confirmation handler and return when action is cancel', () => {
-    InteractivePrompts.sendCancelRequestResponse = jest.fn();
-    ScheduleTripController.createTravelTripRequest = jest.fn();
-    Cache.fetch = jest.fn(() => ({ tripDetails: 'trip' }));
-    const payload = { user: { id: 1 }, actions: [{ value: 'cancel' }] };
-
-    travelTripHelper.confirmation(payload, respond);
-    expect(InteractivePrompts.sendCancelRequestResponse).toHaveBeenCalledWith(respond);
-  });
-
-  it('should test confirmation handler', () => {
-    InteractivePrompts.sendCancelRequestResponse = jest.fn();
-    ScheduleTripController.createTravelTripRequest = jest.fn();
-    Cache.fetch = jest.fn(() => ({ tripDetails: 'trip' }));
-    const payload = { user: { id: 1 }, actions: [{ value: 'go' }] };
-
-    travelTripHelper.confirmation(payload, respond);
-    expect(ScheduleTripController.createTravelTripRequest).toHaveBeenCalledWith(payload, respond, 'trip');
+    it('should test confirmation ', async () => {
+      payload.user.id = 1;
+      const createTravelTripRequest = jest.spyOn(ScheduleTripController,
+        'createTravelTripRequest');
+      createTravelTripRequest.mockImplementationOnce(() => []);
+      await travelTripHelper.confirmation(payload, respond);
+      expect(cache.fetch).toHaveBeenCalledTimes(1);
+      expect(createTravelTripRequest).toHaveBeenCalled();
+    });
   });
 });

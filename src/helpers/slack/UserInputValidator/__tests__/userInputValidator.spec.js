@@ -26,6 +26,79 @@ jest.mock('@slack/client', () => ({
   }))
 }));
 
+describe('checkNumberAndLetters', () => {
+  it('should accept numbers and letters', () => {
+    const errors = UserInputValidator.checkNumberAndLetters('0A', 'name');
+    expect(errors.length).toEqual(0);
+  });
+  it('should not accept letters and special characters', () => {
+    const errors = UserInputValidator.checkNumberAndLetters('***testthis***', 'name');
+    expect(errors.length).toEqual(1);
+  });
+});
+
+describe('checkMinLengthNumber', () => {
+  it('should accept numbers of a defined length in the parameters', () => {
+    const errors = UserInputValidator.checkMinLengthNumber('5', '12345', 'number');
+    expect(errors.length).toEqual(0);
+  });
+  it('should not accept numbers less than the defined length in the parameters', () => {
+    const errors = UserInputValidator.checkMinLengthNumber('5', '1', 'number');
+    expect(errors.length).toEqual(1);
+  });
+});
+
+describe('validateEmptyAndSpaces', () => {
+  it('should not allow empty spaces', () => {
+    const result = UserInputValidator.validateEmptyAndSpaces('           ');
+    expect(result.length).toBeGreaterThan(0);
+  });
+});
+
+describe('checkLocationsWithoutOthersField', () => {
+  it('should not allow empty spaces', () => {
+    let result = UserInputValidator.checkLocationsWithoutOthersField('equal', 'equal');
+    expect(result.length).toBeGreaterThan(0);
+
+    result = UserInputValidator.checkLocationsWithoutOthersField('equal', 'not equal');
+    expect(result.length).toEqual(0);
+  });
+});
+
+describe('validateTravelFormSubmission', () => {
+  it('should not allow empty spaces', () => {
+    const payload = { pickup: 'equal', destination: '' };
+
+    let result = UserInputValidator.validateTravelFormSubmission(payload);
+    expect(result.length).toEqual(0);
+
+    payload.flightNumber = ')(';
+    payload.destination = 'equal';
+    result = UserInputValidator.validateTravelFormSubmission(payload);
+    expect(result.length).toBeGreaterThan(0);
+  });
+});
+
+describe('validateTravelFormSubmission', () => {
+  it('should not allow empty spaces', () => {
+    const payload = { submission: { noOfPassengers: '', riderPhoneNo: '', travelTeamPhoneNo: '' } };
+
+    const result = UserInputValidator.validateTravelContactDetails(payload);
+    expect(result.length).toBeGreaterThan(0);
+  });
+});
+
+describe('checkNumber', () => {
+  it('should accept numbers', () => {
+    const errors = UserInputValidator.checkNumber('0', 'number');
+    expect(errors.length).toEqual(0);
+  });
+  it('should not accept letters and special characters', () => {
+    const errors = UserInputValidator.checkNumber('***test***', 'number');
+    expect(errors.length).toEqual(1);
+  });
+});
+
 describe('UserInputValidator tests', () => {
   describe('checkWord', () => {
     it('should return an error when address contains special characters', () => {
@@ -247,18 +320,5 @@ describe('test userInputValidator class', () => {
     const result = UserInputValidator.validateTravelContactDetails(payload);
     expect(result[0]).toHaveProperty('error', 'Only numbers are allowed. ');
     expect(result[1]).toHaveProperty('error', 'Minimum length is 6 digits');
-  });
-
-  it('should validate Travel flight details', () => {
-    const payload = {
-      submission: {
-        flightNumber: '3---4',
-        pickup: '  ',
-        destination: '4343sd'
-      }
-    };
-    const result = UserInputValidator.validateTravelFlightDetails(payload);
-    expect(result[0]).toHaveProperty('error', 'Only numbers and letters are allowed.');
-    expect(result[1]).toHaveProperty('error', 'pickup cannot be empty');
   });
 });

@@ -34,7 +34,8 @@ export const tripRequestDetails = () => ({
   departureTime: '10/10/2018 22:00',
   requestedById: 4,
   originId: 1,
-  destinationId: 1
+  destinationId: 1,
+  tripType: 'Regular Trip'
 });
 
 export const respondMock = () => (jest.fn(value => value));

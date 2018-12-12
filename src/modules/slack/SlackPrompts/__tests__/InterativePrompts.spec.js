@@ -235,7 +235,7 @@ describe('test send preview response and cancel response', () => {
   it('should send preview response', () => {
     const respond = jest.fn(value => value);
     InteractivePrompts.sendPreviewTripResponse('trip', respond);
-    expect(respond).toBeCalledWith('called');
+    expect(respond).toBeCalled();
   });
 
   it('should send cancel request response', () => {

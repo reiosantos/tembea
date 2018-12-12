@@ -8,6 +8,8 @@ import WebClientSingleton from '../../../utils/WebClientSingleton';
 import createNavButtons from '../../../helpers/slack/navButtons';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import InteractivePromptsHelpers from '../helpers/slackHelpers/InteractivePromptsHelpers';
+import previewTripDetailsAttachment
+  from '../helpers/slackHelpers/TravelTripHelper/previewTripDetailsAttachment';
 
 const web = new WebClientSingleton();
 
@@ -73,7 +75,9 @@ class InteractivePrompts {
       new SlackButtonAction('reschedule', 'Try Again', trip.dataValues.id)
     ]);
     attachments.addOptionalProps('itinerary_actions');
-    return new SlackInteractiveMessage('Oh! I was unable to save this trip', [attachments]);
+    return new SlackInteractiveMessage('Oh! I was unable to save this trip', [
+      attachments
+    ]);
   }
 
   static sendTripError() {
@@ -85,7 +89,11 @@ class InteractivePrompts {
     // main buttons
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('history', 'Trip History', 'view_trips_history'),
-      new SlackButtonAction('upcoming', 'Upcoming Trips ', 'view_upcoming_trips')
+      new SlackButtonAction(
+        'upcoming',
+        'Upcoming Trips ',
+        'view_upcoming_trips'
+      )
     ]);
     attachment.addOptionalProps('trip_itinerary', 'fallback', '#FFCCAA', 'default');
     const navAttachment = createNavButtons('back_to_launch', 'back_to_launch');
@@ -312,7 +320,32 @@ class InteractivePrompts {
   }
 
   static sendPreviewTripResponse(tripDetails, respond) {
-    const message = InteractivePromptsHelpers.generatePreviewTripResponse(tripDetails);
+    const hoursBefore = tripDetails.tripType === 'Airport Transfer' ? 3 : 2;
+    const tripType = tripDetails.tripType === 'Airport Transfer' ? 'flight' : 'appointment';
+    const attachment = new SlackAttachment(
+      '',
+      `N.B. Pickup time is fixed at ${hoursBefore}hrs before ${tripType} time`,
+      '', '', '', 'default', 'warning'
+    );
+    const fields = previewTripDetailsAttachment(tripDetails);
+
+    const actions = [
+      new SlackButtonAction('confirmTripRequest', 'Confirm Trip Request', 'confirm'),
+      new SlackCancelButtonAction(
+        'Cancel Trip Request',
+        'cancel',
+        'Are you sure you want to cancel this trip request',
+        'cancel_request'
+      )
+    ];
+
+    attachment.addFieldsOrActions('actions', actions);
+    attachment.addFieldsOrActions('fields', fields);
+    attachment.addOptionalProps('travel_trip_confirmation', 'fallback', undefined, 'default');
+
+    const message = new SlackInteractiveMessage('*Trip request preview*', [
+      attachment
+    ]);
     respond(message);
   }
 

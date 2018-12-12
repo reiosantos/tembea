@@ -281,7 +281,7 @@ describe('Create Travel Trip request test', () => {
     ScheduleTripController.createTripDetail = jest.fn(() => ({ id: 12 }));
     TripRequest.create = jest.fn(() => ({ dataValues: { id: 1 } }));
     InteractivePrompts.sendCompletionResponse = jest.fn();
-    SlackEvents.raise = jest.fn(() => { throw new Error('failed') ;});
+    SlackEvents.raise = jest.fn(() => { throw new Error('failed'); });
     const payload = createPayload();
     const respond = jest.fn();
     try {
@@ -290,35 +290,34 @@ describe('Create Travel Trip request test', () => {
       expect(error).toEqual(new Error('failed'));
     }
   });
-});
+  describe('Validate travel form test', () => {
+    const errorMock = [{ boy: 'bou' }];
+    it('should test validateTravelContactDetails Method', () => {
+      UserInputValidator.validateTravelContactDetails = jest.fn(() => (errorMock));
+      const result = ScheduleTripController.validateTravelContactDetailsForm('payload');
+      expect(result).toEqual(errorMock);
+    });
 
-describe('Validate travel form test', () => {
-  const errorMock = [{ boy: 'bou' }];
-  it('should test validateTravelContactDetails Method', () => {
-    UserInputValidator.validateTravelContactDetails = jest.fn(() => (errorMock));
-    const result = ScheduleTripController.validateTravelContactDetailsForm('payload');
-    expect(result).toEqual(errorMock);
-  });
+    it('should test validateTravelDetailsForm Method', async () => {
+      UserInputValidator.validateTravelDetailsForm = jest.fn(() => (errorMock));
+      UserInputValidator.validateLocationEntries = jest.fn(() => errorMock);
+      UserInputValidator.validateDateAndTimeEntry = jest.fn(() => errorMock);
+      const payload = createPayload();
+      const result = await ScheduleTripController.validateTravelDetailsForm(payload, 'tripType');
+      expect(result[0]).toEqual(errorMock[0]);
+    });
 
-  it('should test validateTravelFlightDetails Method', async () => {
-    UserInputValidator.validateTravelFlightDetails = jest.fn(() => (errorMock));
-    UserInputValidator.validateDateAndTimeEntry = jest.fn(() => errorMock);
-    UserInputValidator.checkDateTimeIsHoursAfterNow = jest.fn(() => errorMock);
-    const payload = createPayload();
 
-    const result = await ScheduleTripController.validateTravelFlightDetailsForm(payload);
-    expect(result[0]).toEqual(errorMock[0]);
-  });
+    it('should test validateTravelDetailsForm', async () => {
+      UserInputValidator.validateTravelDetailsForm = jest.fn(() => { throw new Error('Not working'); });
+      UserInputValidator.validateDateAndTimeEntry = jest.fn(() => errorMock);
+      UserInputValidator.checkDateTimeIsHoursAfterNow = jest.fn(() => errorMock);
 
-  it('should test validateTravelFlightDetails Method', async () => {
-    UserInputValidator.validateTravelFlightDetails = jest.fn(() => { throw new Error('Not working'); });
-    UserInputValidator.validateDateAndTimeEntry = jest.fn(() => errorMock);
-    UserInputValidator.checkDateTimeIsHoursAfterNow = jest.fn(() => errorMock);
-
-    try {
-      await ScheduleTripController.validateTravelFlightDetailsForm('payload');
-    } catch (error) {
-      expect(error.message).toEqual('Cannot destructure property `flightDateTime` of \'undefined\' or \'null\'.');
-    }
+      try {
+        await ScheduleTripController.validateTravelDetailsForm('payload');
+      } catch (error) {
+        expect(error.message).toEqual("Cannot read property 'flightDateTime' of undefined");
+      }
+    });
   });
 });

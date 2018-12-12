@@ -113,6 +113,15 @@ class UserInputValidator {
     return errors;
   }
 
+  static checkLocationsWithoutOthersField(pickupLocation, destination) {
+    const message = 'Pickup and Destination cannot be the same.';
+    if (pickupLocation.toLowerCase() === destination.toLowerCase()) {
+      return [new SlackDialogError('pickup', message),
+        new SlackDialogError('destination', message)];
+    }
+    return [];
+  }
+
   static async fetchUserInformationFromSlack(userId, slackBotOauthToken) {
     const web = new WebClient(slackBotOauthToken);
 
@@ -143,24 +152,16 @@ class UserInputValidator {
     return errors;
   }
 
-  static validateTravelFlightDetails(payload) {
-    const {
-      submission: {
-        flightNumber, pickup, destination
-      }
-    } = payload;
+  static validateTravelFormSubmission(formSubmission) {
+    const { pickup, destination } = formSubmission;
     const errors = [];
 
-    errors.push(...this.checkNumberAndLetters(flightNumber, 'flightNumber'));
+    errors.push(...this.checkLocationsWithoutOthersField(pickup, destination));
 
-    errors.push(...this.checkWord(pickup, 'pickup'));
-    errors.push(...this.checkWord(destination, 'destination'));
-    errors.push(...this.checkEmpty(pickup, 'pickup'));
-    errors.push(...this.checkEmpty(destination, 'destination'));
+    if (formSubmission.flightNumber) {
+      errors.push(...this.checkNumberAndLetters(formSubmission.flightNumber, 'flightNumber'));
+    }
 
-    errors.push(...InputValidator.checkDuplicateFieldValues(
-      pickup, destination, 'pickup', 'destination'
-    ));
     return errors;
   }
 
@@ -186,16 +187,18 @@ class UserInputValidator {
     return errors;
   }
 
-  static async validateDateAndTimeEntry(payload, fieldName = 'date_time') {
-    const { dateTime } = payload.submission;
+  static async validateDateAndTimeEntry(payload, fieldName = 'dateTime') {
+    const { submission } = payload;
+    const date = submission.dateTime
+      || submission.flightDateTime || submission.embassyVisitDateTime;
     const errors = [];
 
     try {
       const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
       const user = await this.fetchUserInformationFromSlack(payload.user.id, slackBotOauthToken);
 
-      errors.push(...this.checkDate(dateTime, user.tz_offset, fieldName));
-      errors.push(...this.checkDateFormat(dateTime, fieldName));
+      errors.push(...this.checkDate(date, user.tz_offset, fieldName));
+      errors.push(...this.checkDateFormat(date, fieldName));
 
       return errors;
     } catch (error) {

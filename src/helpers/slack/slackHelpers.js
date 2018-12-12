@@ -55,7 +55,8 @@ class SlackHelpers {
 
   static async getTripRequest(tripId) {
     const tripRequest = await TripRequest.findByPk(tripId, {
-      include: ['rider', 'requester', 'destination', 'origin', 'department', 'approver', 'confirmer', 'decliner', 'cab', 'tripDetail']
+      include: ['rider', 'requester', 'destination', 'origin', 'department',
+        'approver', 'confirmer', 'decliner', 'cab', 'tripDetail']
     });
 
     return tripRequest.dataValues;
@@ -124,12 +125,11 @@ class SlackHelpers {
   }
 
   static noOfPassengers() {
-    return [...Array(10)].map(
-      (label, value) => ({
-        text: value + 1,
-        value: value + 1
-      })
+    const passengerNumbers = [...Array(10)].map(
+      (label, value) => ({ text: value + 1, value: value + 1 })
     );
+
+    return passengerNumbers;
   }
 }
 

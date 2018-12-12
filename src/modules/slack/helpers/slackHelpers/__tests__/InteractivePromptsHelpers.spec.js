@@ -61,21 +61,4 @@ describe('InteractivePromptsHelpers', () => {
     expect(result[0]).toHaveProperty('actions');
     expect(result[0]).toHaveProperty('fields');
   });
-
-  it('should generate preview trip response', () => {
-    const tripDetails = {
-      rider: 'ride',
-      dateTime: 'tim',
-      flightDateTime: 'fly',
-      pickup: 'pi',
-      destination: 'dest',
-      noOfPassengers: 'num',
-      riderPhoneNo: 'ri',
-      travelTeamPhoneNo: 'travel',
-      tripType: 'trip',
-      departmentName: 'depart'
-    };
-    const result = InteractivePromptsHelpers.generatePreviewTripResponse(tripDetails);
-    expect(result).toHaveProperty('attachments');
-  });
 });

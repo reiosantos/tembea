@@ -12,7 +12,10 @@ slackEvents.handle(slackEventNames.NEW_TRIP_REQUEST,
   SlackNotifications.sendManagerTripRequestNotification);
 slackEvents.handle(slackEventNames.DECLINED_TRIP_REQUEST,
   SlackNotifications.sendRequesterDeclinedNotification);
-SlackEvents.handle(slackEventNames.NEW_TRAVEL_TRIP_REQUEST,
+slackEvents.handle(slackEventNames.NEW_TRAVEL_TRIP_REQUEST,
   SlackNotifications.sendOperationsTripRequestNotification);
 
-export default SlackEvents;
+slackEvents.handle(slackEventNames.NEW_TRAVEL_TRIP_REQUEST,
+  SlackNotifications.sendOperationsTripRequestNotification);
+
+export default slackEvents;

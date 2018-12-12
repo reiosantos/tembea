@@ -2,44 +2,17 @@ import {
   SlackDialogModel, SlackDialog, SlackDialogText, SlackDialogTextarea
 } from '../SlackModels/SlackDialogModels';
 import dateDialogHelper from '../../../helpers/dateHelper';
-import createTripDetailsForm from '../../../helpers/slack/createTripDetailsForm';
+import createDialogForm from '../../../helpers/slack/createDialogForm';
 import sendDialogTryCatch from '../../../helpers/sendDialogTryCatch';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 
 class DialogPrompts {
-  static async sendTripDetailsForm(payload) {
-    const dialog = new SlackDialog('schedule_trip_locationTime', 'Trip Details', 'Submit');
-    const formElements = createTripDetailsForm.regularTripForm();
-
-    dialog.addElements(formElements);
-
-    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
+  static async sendTripDetailsForm(payload, formElementsFunction, callbackId) {
+    const dialogForm = createDialogForm(payload, formElementsFunction, callbackId);
 
     const slackBotOauthToken = await
     TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
     await sendDialogTryCatch(dialogForm, slackBotOauthToken);
-  }
-
-  static contactDetails() {
-    return createTripDetailsForm.travelTripContactDetailsForm();
-  }
-
-  static flightDetails() {
-    return createTripDetailsForm.travelTripFlightDetailsForm();
-  }
-
-  static async sendTravelTripDetailsForm(payload, callbackId) {
-    const dialog = new SlackDialog(`travel_trip_${callbackId}`, 'Trip Details', 'Submit');
-
-    const createFormElements = this[callbackId];
-    const formElements = createFormElements();
-
-    dialog.addElements(formElements);
-
-    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    const slackBotOauthToken = await
-    TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
-    sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 
   static async sendRescheduleTripForm(payload, callbackId, state, dialogName) {

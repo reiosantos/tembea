@@ -53,7 +53,7 @@ const ScheduleTripInputHandlers = {
     respond(new SlackInteractiveMessage('Loading...'));
     const departmentId = payload.actions[0].value;
     Cache.save(payload.user.id, 'departmentId', departmentId);
-    DialogPrompts.sendTripDetailsForm(payload);
+    DialogPrompts.sendTripDetailsForm(payload, 'regularTripForm', 'schedule_trip_locationTime');
   },
   locationTime: async (payload, respond) => {
     try {

@@ -14,7 +14,7 @@ import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import SlackEvents from '../../events';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
-import travelTripHelper from '../../helpers/slackHelpers/TravelTripHelper/travelTripHelper';
+import travelTripHelper from '../../helpers/slackHelpers/TravelTripHelper';
 import TripRescheduleHelper from '../../helpers/slackHelpers/rescheduleHelper';
 
 describe('Manager decline trip interactions', () => {
@@ -554,7 +554,6 @@ describe('should test book travel start', () => {
 
   beforeEach(() => {
     respond = respondMock();
-    DialogPrompts.sendTravelTripDetailsForm = jest.fn((value1, value2) => ({ value1, value2 }));
     Cache.save = jest.fn(() => { });
   });
 
@@ -569,9 +568,13 @@ describe('should test book travel start', () => {
 
   it('should return thank you message', () => {
     const payload = createPayload('can', 'airport');
+    const sendTripDetailsForm = jest.spyOn(DialogPrompts, 'sendTripDetailsForm');
+    sendTripDetailsForm.mockImplementation((value1, value2) => ({ value1, value2 }));
+
     SlackInteractions.bookTravelTripStart(payload, respond);
     expect(Cache.save).toHaveBeenCalled();
-    expect(DialogPrompts.sendTravelTripDetailsForm).toHaveBeenCalledWith(payload, 'contactDetails');
+    expect(sendTripDetailsForm).toHaveBeenCalledWith(payload,
+      'travelTripContactDetailsForm', 'travel_trip_contactDetails');
   });
 });
 

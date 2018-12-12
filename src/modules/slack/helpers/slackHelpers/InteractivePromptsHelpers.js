@@ -1,7 +1,4 @@
-import {
-  SlackAttachmentField, SlackAttachment,
-  SlackInteractiveMessage, SlackButtonAction, SlackCancelButtonAction
-} from '../../SlackModels/SlackMessageModels';
+import { SlackAttachmentField, SlackAttachment } from '../../SlackModels/SlackMessageModels';
 import Utils from '../../../../utils';
 
 class InteractivePromptsHelpers {
@@ -78,53 +75,6 @@ class InteractivePromptsHelpers {
 
     tripHistory.forEach(trip => formatTrip(trip));
     return attachments;
-  }
-
-  static generatePreviewTripFields(tripDetails) {
-    const {
-      rider, dateTime, flightDateTime, pickup, destination, noOfPassengers,
-      riderPhoneNo, travelTeamPhoneNo, tripType, departmentName
-    } = tripDetails;
-
-    const fields = [
-      new SlackAttachmentField('Rider', `<@${rider}>`, true),
-      new SlackAttachmentField('Department', departmentName, true),
-      new SlackAttachmentField('Pickup Location', pickup, true),
-      new SlackAttachmentField('Destination', destination, true),
-      new SlackAttachmentField('Pick-Up Time', dateTime, true),
-      new SlackAttachmentField('Flight Time', flightDateTime, true),
-      new SlackAttachmentField('Number of Passengers', noOfPassengers, true),
-      new SlackAttachmentField('Rider Phone Number', riderPhoneNo, true),
-      new SlackAttachmentField('Travel Team Phone Number', travelTeamPhoneNo, true),
-      new SlackAttachmentField('Trip Type', tripType, true),
-    ];
-
-    return fields;
-  }
-
-  static generatePreviewTripResponse(tripDetails) {
-    const attachment = new SlackAttachment(
-      '', 'N.B. Pickup time is fixed as 3hrs before flight time',
-      '', '', '', 'default', 'warning'
-    );
-
-    const fields = this.generatePreviewTripFields(tripDetails);
-    const actions = [
-      new SlackButtonAction('confirmTripRequest', 'Confirm Trip Request', 'confirm'),
-      new SlackCancelButtonAction(
-        'Cancel Trip Request', 'cancel',
-        'Are you sure you want to cancel this trip request', 'cancel_request'
-      )
-    ];
-
-    attachment.addFieldsOrActions('actions', actions);
-    attachment.addFieldsOrActions('fields', fields);
-    attachment.addOptionalProps('travel_trip_confirmation', 'fallback', undefined, 'default');
-
-    const message = new SlackInteractiveMessage('*Trip request preview*', [
-      attachment
-    ]);
-    return message;
   }
 }
 

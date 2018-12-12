@@ -14,7 +14,7 @@ import TripRescheduleHelper from '../helpers/slackHelpers/rescheduleHelper';
 import Cache from '../../../cache';
 import ScheduleTripInputHandlers from '../../../helpers/slack/ScheduleTripInputHandlers';
 import TeamDetailsService from '../../../services/TeamDetailsService';
-import travelTripHelper from '../helpers/slackHelpers/TravelTripHelper/travelTripHelper';
+import travelTripHelper from '../helpers/slackHelpers/TravelTripHelper';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -251,7 +251,7 @@ class SlackInteractions {
       );
     }
     Cache.save(id, 'tripType', name);
-    return DialogPrompts.sendTravelTripDetailsForm(payload, 'contactDetails');
+    return DialogPrompts.sendTripDetailsForm(payload, 'travelTripContactDetailsForm', 'travel_trip_contactDetails');
   }
 
   static handleTravelTripActions(payload, respond) {

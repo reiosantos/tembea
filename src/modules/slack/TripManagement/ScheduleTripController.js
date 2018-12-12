@@ -18,22 +18,20 @@ class ScheduleTripController {
     return errors;
   }
 
-  static async validateTravelFlightDetailsForm(payload) {
-    const { submission: { flightDateTime } } = payload;
-    const datePayload = { ...payload, submission: { dateTime: flightDateTime } };
+  static async validateTravelDetailsForm(payload, tripType) {
+    const { submission } = payload;
+    const travelDateTime = submission.flightDateTime || submission.embassyVisitDateTime;
+    const dateFieldName = tripType === 'embassy' ? 'embassyVisitDateTime' : 'flightDateTime';
+    const allowedHours = tripType === 'embassy' ? 3 : 4;
     const errors = [];
-    try {
-      errors.push(...UserInputValidator.validateTravelFlightDetails(payload));
-      errors.push(
-        ...(await UserInputValidator.validateDateAndTimeEntry(datePayload, 'flightDateTime'))
-      );
-      errors.push(
-        ...(await UserInputValidator.checkDateTimeIsHoursAfterNow(4, flightDateTime, 'flightDateTime'))
-      );
-      return errors;
-    } catch (error) {
-      throw error;
-    }
+
+    errors.push(...await UserInputValidator.validateTravelFormSubmission(submission));
+    errors.push(...await UserInputValidator.validateDateAndTimeEntry(payload,
+      dateFieldName));
+    errors.push(...await UserInputValidator.checkDateTimeIsHoursAfterNow(allowedHours,
+      travelDateTime, dateFieldName));
+
+    return errors;
   }
 
   static async validateTripDetailsForm(payload) {
