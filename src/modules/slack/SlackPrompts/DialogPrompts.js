@@ -1,7 +1,6 @@
 import {
   SlackDialogModel, SlackDialog, SlackDialogText, SlackDialogTextarea
 } from '../SlackModels/SlackDialogModels';
-import { SlackActionTypes } from '../SlackModels/SlackMessageModels';
 import dateDialogHelper from '../../../helpers/dateHelper';
 import createTripDetailsForm from '../../../helpers/slack/createTripDetailsForm';
 import sendDialogTryCatch from '../../../helpers/sendDialogTryCatch';
@@ -32,8 +31,8 @@ class DialogPrompts {
   static async sendTripReasonForm(payload) {
     const dialog = new SlackDialog('schedule_trip_reason',
       'Reason for booking trip', 'Submit');
-    const textarea = new SlackDialogText('Reason', 'reason', SlackActionTypes.textarea);
-    textarea.addOptionalProps('Enter reason for booking the trip');
+    const textarea = new SlackDialogTextarea('Reason', 'reason',
+      'Enter reason for booking the trip');
 
     dialog.addElements([textarea]);
 
@@ -50,7 +49,7 @@ class DialogPrompts {
 
     const commentElement = new SlackDialogTextarea('Reason',
       submissionName,
-      `Why do you wan to ${submitButtonText} this trip`);
+      `Why do you want to ${submitButtonText} this trip`);
     dialog.addElements([commentElement]);
 
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
@@ -58,7 +57,7 @@ class DialogPrompts {
     sendDialogTryCatch(dialogForm);
   }
 
-  static async sendCommentDialog(payload) {
+  static async sendOperationsDeclineDialog(payload) {
     const actionTs = payload.message_ts;
     const { value } = payload.actions[0];
     const state = {
@@ -77,7 +76,8 @@ class DialogPrompts {
 
   static sendOperationsApprovalDialog(payload) {
     const { value } = payload.actions[0];
-    const dialog = new SlackDialog('operations_reason_dialog', 'Confirm Trip Request', 'Submit', false, value);
+    const dialog = new SlackDialog('operations_reason_dialog',
+      'Confirm Trip Request', 'Submit', false, value);
     dialog.addElements([
       new SlackDialogText('Driver\'s name', 'driverName', 'Enter driver\'s name'),
       new SlackDialogText('Driver\'s contact', 'driverPhoneNo', 'Enter driver\'s contact'),
@@ -86,15 +86,15 @@ class DialogPrompts {
         'regNumber',
         'Enter the Cab\'s registration number'
       ),
-      new SlackDialogText(
+      new SlackDialogTextarea(
         'Justification',
         'confirmationComment',
+        'Reason why',
         'Enter reason for approving trip',
-        'Reason why', 'textarea'
       ),
     ]);
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    web.getWebClient().dialog.open(dialogForm);
+    sendDialogTryCatch(dialogForm);
   }
 }
 

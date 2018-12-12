@@ -1,4 +1,5 @@
-import { SlackEvents, slackEventsNames } from '../events/slackEvents';
+import SlackEvents from '../events';
+import { slackEventsNames } from '../events/slackEvents';
 import models from '../../../database/models';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';

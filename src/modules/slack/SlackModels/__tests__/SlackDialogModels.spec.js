@@ -44,13 +44,12 @@ describe('Dialog model test', () => {
   });
 
   it('should return a slack dialog text object', () => {
-    const result = new SlackDialogText('labelName', 'dialogName');
-    result.addOptionalProps('place', 'optionalField', 'hinting');
+    const result = new SlackDialogText('labelName', 'dialogName', 'place', false, 'hinting');
 
     expect(result).toHaveProperty('label', 'labelName');
     expect(result).toHaveProperty('name', 'dialogName');
     expect(result).toHaveProperty('placeholder', 'place');
-    expect(result).toHaveProperty('optional', 'optionalField');
+    expect(result).toHaveProperty('optional', false);
     expect(result).toHaveProperty('hint', 'hinting');
   });
 

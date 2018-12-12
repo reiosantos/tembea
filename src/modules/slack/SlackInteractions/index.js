@@ -1,5 +1,6 @@
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
-import { SlackEvents, slackEventsNames } from '../events/slackEvents';
+import { slackEventsNames } from '../events/slackEvents';
+import SlackEvents from '../events';
 import SlackController from '../SlackController';
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import DialogPrompts from '../SlackPrompts/DialogPrompts';
@@ -210,7 +211,7 @@ class SlackInteractions {
         DialogPrompts.sendOperationsApprovalDialog(payload);
         break;
       case ('declineRequest'):
-        DialogPrompts.sendCommentDialog(payload);
+        DialogPrompts.sendOperationsDeclineDialog(payload);
         break;
       default:
         break;

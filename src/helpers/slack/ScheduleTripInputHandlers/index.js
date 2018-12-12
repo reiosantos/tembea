@@ -11,7 +11,7 @@ const ScheduleTripInputHandlers = {
     if (payload.submission) {
       Cache.save(payload.user.id, callbackId, payload.submission.reason);
     }
-    
+
     // check if user clicked for me or for someone
     if (Cache.fetch(payload.user.id).forSelf === 'true') {
       return InteractivePrompts.sendListOfDepartments(payload, respond);
