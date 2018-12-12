@@ -14,6 +14,7 @@ import TripRescheduleHelper from '../helpers/slackHelpers/rescheduleHelper';
 import Cache from '../../../cache';
 import ScheduleTripInputHandlers from '../../../helpers/slack/ScheduleTripInputHandlers';
 import TeamDetailsService from '../../../services/TeamDetailsService';
+import travelTripHelper from '../helpers/slackHelpers/TravelTripHelper/travelTripHelper';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -21,6 +22,9 @@ class SlackInteractions {
     switch (action) {
       case 'back_to_launch':
         respond(SlackController.getWelcomeMessage());
+        break;
+      case 'back_to_travel_launch':
+        respond(SlackController.getTravelCommandMsg());
         break;
       default:
         respond(new SlackInteractiveMessage('Thank you for using Tembea'));
@@ -50,19 +54,6 @@ class SlackInteractions {
     return new SlackInteractiveMessage('Thank you for using Tembea. See you again.');
   }
 
-  static handleTravelActions(payload, respond) {
-    const action = payload.actions[0].value;
-    switch (action) {
-      case 'airport_transfer':
-      case 'embassy_visit':
-        respond({ text: 'Coming soon...' });
-        break;
-      default:
-        respond(SlackInteractions.goodByeMessage());
-        break;
-    }
-  }
-
   static bookNewTrip(payload, respond) {
     respond(new SlackInteractiveMessage('Loading...'));
     const action = payload.actions[0].value;
@@ -73,7 +64,6 @@ class SlackInteractions {
         DialogPrompts.sendTripReasonForm(payload);
         break;
       default:
-        // default response for cancel button
         respond(SlackInteractions.goodByeMessage());
     }
   }
@@ -82,7 +72,6 @@ class SlackInteractions {
     const callbackId = payload.callback_id.split('_')[2];
     const scheduleTripHandler = ScheduleTripInputHandlers[callbackId];
     if (!scheduleTripHandler) {
-      // default response for cancel button
       return respond(
         SlackInteractions.goodByeMessage()
       );
@@ -121,7 +110,6 @@ class SlackInteractions {
       user
     } = payload;
     const date = `${newDate}/${+newMonth + 1}/${newYear} ${time}`;
-
     state = state.split(' ');
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
     const errors = await RescheduleTripController.runValidations(date, user, slackBotOauthToken);
@@ -168,9 +156,7 @@ class SlackInteractions {
       }
       await ManageTripController.declineTrip(state, declineReason, respond, teamId);
     } catch (error) {
-      const message = new SlackInteractiveMessage(
-        'Error:bangbang:: Something went wrong! Please try again.'
-      );
+      const message = new SlackInteractiveMessage('Error:bangbang:: Something went wrong! Please try again.');
       respond(message);
     }
   }
@@ -195,9 +181,7 @@ class SlackInteractions {
       respond(new SlackInteractiveMessage('Error:bangbang: : This request could not be approved. '
         + 'Consult the administrator'));
     } catch (e) {
-      respond(new SlackInteractiveMessage(
-        'Error:bangbang: : We could not complete this process please try again.'
-      ));
+      respond(new SlackInteractiveMessage('Error:bangbang: : We could not complete this process please try again.'));
     }
   }
 
@@ -256,6 +240,27 @@ class SlackInteractions {
         new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
       );
     }
+  }
+
+  static bookTravelTripStart(payload, respond) {
+    const { user: { id }, actions } = payload;
+    const { name } = actions[0];
+    if (name === 'cancel') {
+      return respond(
+        new SlackInteractiveMessage('Thank you for using Tembea. See you again.')
+      );
+    }
+    Cache.save(id, 'tripType', name);
+    return DialogPrompts.sendTravelTripDetailsForm(payload, 'contactDetails');
+  }
+
+  static handleTravelTripActions(payload, respond) {
+    const callBackName = payload.callback_id.split('_')[2];
+    const tripHandler = travelTripHelper[callBackName];
+    if (tripHandler) {
+      return tripHandler(payload, respond);
+    }
+    return respond(this.goodByeMessage());
   }
 }
 

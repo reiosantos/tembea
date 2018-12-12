@@ -14,6 +14,17 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.TEXT,
     },
+    tripType: {
+      allowNull: false,
+      type: DataTypes.ENUM(
+        'RegularTrip',
+        'AirportTransfer',
+        'EmbassyVisit'
+      )
+    },
+    tripDetailId: {
+      type: DataTypes.INTEGER
+    },
     riderId: {
       allowNull: false,
       type: DataTypes.INTEGER,
@@ -117,6 +128,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'confirmedById',
       targetKey: 'id',
       as: 'confirmer'
+    });
+    TripRequest.belongsTo(models.TripDetail, {
+      foreignKey: 'tripDetailId',
+      targetKey: 'id',
+      as: 'tripDetail'
     });
   };
   return TripRequest;

@@ -1,3 +1,4 @@
+import moment from 'moment';
 import UserInputValidator from '../index';
 import DateDialogHelper from '../../../dateHelper';
 import {
@@ -200,4 +201,64 @@ describe('checkNumberPlate', () => {
     const result = UserInputValidator.validateCabDetails(payload);
     expect(result.length).toEqual(1);
 });
+});
+
+describe('test userInputValidator class', () => {
+  it('should not digit characters', () => {
+    const result = UserInputValidator.checkNumber('aass');
+    expect(result[0]).toHaveProperty('error', 'Only numbers are allowed. ');
+  });
+
+  it('should test empty fields', () => {
+    const result = UserInputValidator.checkEmpty(' ', 'destination');
+    expect(result[0]).toHaveProperty('error', 'destination cannot be empty');
+  });
+
+  it('should test for special characters and return an empty array', () => {
+    const result = UserInputValidator.checkNumberAndLetters('11221', 'phoneNo');
+    expect(result).toEqual([]);
+  });
+
+  it('should test fields with white space', () => {
+    const result = UserInputValidator.validateEmptyAndSpaces('aa ', 'destination');
+    expect(result[0]).toHaveProperty('error', 'Spaces are not allowed');
+  });
+
+  it('should test if date is hours from now and return an error message', () => {
+    const date = moment().add(1, 'hours');
+    const result = UserInputValidator.checkDateTimeIsHoursAfterNow(2, date, 'flightTime');
+    expect(result[0]).toHaveProperty('error', 'flightTime must be at least 2 hours from current time.');
+  });
+
+  it('should test if date is hours from now and return an empty array', () => {
+    const date = moment().add(4, 'hours');
+    const result = UserInputValidator.checkDateTimeIsHoursAfterNow(2, date, 'flightTime');
+    expect(result).toEqual([]);
+  });
+
+  it('should test validate Travel contact details', () => {
+    const payload = {
+      submission: {
+        noOfPassengers: '34',
+        riderPhoneNo: '23223',
+        travelTeamPhoneNo: '4343sd'
+      }
+    };
+    const result = UserInputValidator.validateTravelContactDetails(payload);
+    expect(result[0]).toHaveProperty('error', 'Only numbers are allowed. ');
+    expect(result[1]).toHaveProperty('error', 'Minimum length is 6 digits');
+  });
+
+  it('should validate Travel flight details', () => {
+    const payload = {
+      submission: {
+        flightNumber: '3---4',
+        pickup: '  ',
+        destination: '4343sd'
+      }
+    };
+    const result = UserInputValidator.validateTravelFlightDetails(payload);
+    expect(result[0]).toHaveProperty('error', 'Only numbers and letters are allowed.');
+    expect(result[1]).toHaveProperty('error', 'pickup cannot be empty');
+  });
 });

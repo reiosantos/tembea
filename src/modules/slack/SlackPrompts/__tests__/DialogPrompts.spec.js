@@ -1,5 +1,6 @@
 import DialogPrompts from '../DialogPrompts';
 import sendDialogTryCatch from '../../../../helpers/sendDialogTryCatch';
+import createTripDetailsForm from '../../../../helpers/slack/createTripDetailsForm';
 
 jest.mock('../../../../services/TeamDetailsService', () => ({
   getTeamDetailsBotOauthToken: async () => 'just a random token'
@@ -88,5 +89,36 @@ describe('Decline dialog', () => {
 
     expect(sendDialogTryCatch).toBeCalled();
     done();
+  });
+});
+
+describe('Test Travel Details Dialogues', () => {
+  beforeEach(() => {
+    createTripDetailsForm.travelTripContactDetailsForm = jest.fn(() => ({ dialog: 'yay' }));
+    createTripDetailsForm.travelTripFlightDetailsForm = jest.fn(() => ({ dialog: 'yay' }));
+  });
+
+  it('should call the method to generate dialogue elements for contactDetails', () => {
+    DialogPrompts.contactDetails();
+    expect(createTripDetailsForm.travelTripContactDetailsForm).toHaveBeenCalled();
+  });
+
+  it('should call the method to generate dialogue elements for flightDetails', () => {
+    DialogPrompts.flightDetails();
+    expect(createTripDetailsForm.travelTripFlightDetailsForm).toHaveBeenCalled();
+  });
+
+  it('should send travelTrip contact details dialogue', () => {
+    const payload = { id: 1 };
+    DialogPrompts.sendTravelTripDetailsForm(payload, 'contactDetails');
+
+    expect(sendDialogTryCatch).toBeCalled();
+  });
+
+  it('should send travelTrip flight details dialogue', () => {
+    const payload = { id: 90 };
+    DialogPrompts.sendTravelTripDetailsForm(payload, 'flightDetails');
+
+    expect(sendDialogTryCatch).toBeCalled();
   });
 });

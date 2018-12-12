@@ -28,6 +28,11 @@ class Utils {
   static writableToReadableStream(writableStream) {
     return fs.createReadStream(writableStream.path);
   }
+
+  static removeHoursFromDate(noOfHours, date) {
+    const rawDate = moment(date, 'DD/MM/YYYY HH:mm').subtract(noOfHours, 'hours');
+    return rawDate.format('DD/MM/YYYY HH:mm');
+  }
 }
 
 module.exports = Utils;

@@ -6,7 +6,8 @@ import {
   SlackAction,
   SlackAttachmentField,
   SlackAttachment,
-  SlackInteractiveMessage
+  SlackInteractiveMessage,
+  SlackButtonsAttachmentFromAList
 } from '../SlackMessageModels';
 
 describe('Slack Message models test', () => {
@@ -80,5 +81,19 @@ describe('Slack Message models test', () => {
 
     expect(result).toHaveProperty('name', 'slack');
     expect(result).toHaveProperty('text', 'slackText');
+  });
+});
+
+describe('SlackButtons Attachment Test', () => {
+  it('createButtons test', () => {
+    const list = [{ label: 'people', value: 'pValue' }, { label: 'peo', value: 'pValue' }]
+    const result = SlackButtonsAttachmentFromAList.createButtons(list);
+    expect(result[0]).toHaveProperty('name', 'people');
+  });
+
+  it('createAttachments List test', () => {
+    const list = [{ label: 'people', value: 'pValue' }, { label: 'peo', value: 'pValue' }]
+    const result = SlackButtonsAttachmentFromAList.createAttachments(list, 'callback');
+    expect(result[0]).toHaveProperty('actions');
   });
 });

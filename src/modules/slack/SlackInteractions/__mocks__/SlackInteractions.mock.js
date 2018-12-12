@@ -18,6 +18,7 @@ export const createPayload = (value = 'value', name = 'name') => ({
     destination: 'destination',
     others_destination: 'others_destination',
     date_time: '10/10/2018 22:00',
+    flightDateTime: '10/10/2018 22:00',
     reason: 'test reason'
   }
 });
@@ -29,6 +30,7 @@ export const tripRequestDetails = () => ({
   forSelf: 'false',
   departmentId: 1,
   tripStatus: 'Pending',
+  tripType: 'Regular Trip',
   departureTime: '10/10/2018 22:00',
   requestedById: 4,
   originId: 1,

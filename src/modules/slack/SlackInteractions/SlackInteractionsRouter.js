@@ -7,6 +7,10 @@ slackInteractionsRouter.action({ callbackId: 'back_to_launch' },
   SlackInteractions.launch);
 slackInteractionsRouter.action({ callbackId: 'welcome_message' },
   SlackInteractions.welcomeMessage);
+slackInteractionsRouter.action({ callbackId: 'travel_trip_start' },
+  SlackInteractions.bookTravelTripStart);
+slackInteractionsRouter.action({ callbackId: /^travel_trip/ },
+  SlackInteractions.handleTravelTripActions);
 slackInteractionsRouter.action({ callbackId: 'book_new_trip' },
   SlackInteractions.bookNewTrip);
 slackInteractionsRouter.action({ callbackId: /^schedule_trip/ },
@@ -27,7 +31,5 @@ slackInteractionsRouter.action({ callbackId: 'operations_approval' },
   SlackInteractions.sendCommentDialog);
 slackInteractionsRouter.action({ callbackId: 'operations_reason_dialog' },
   SlackInteractions.handleTripActions);
-slackInteractionsRouter.action({ callbackId: 'travel_actions' },
-  SlackInteractions.handleTravelActions);
 
 export default slackInteractionsRouter;

@@ -6,7 +6,8 @@ export const slackEventNames = Object.freeze({
   TRIP_APPROVED: 'trip_approved',
   TRIP_WAITING_CONFIRMATION: 'trip_waiting_confirmation',
   NEW_TRIP_REQUEST: 'new_trip_request',
-  DECLINED_TRIP_REQUEST: 'declined_trip_request'
+  DECLINED_TRIP_REQUEST: 'declined_trip_request',
+  NEW_TRAVEL_TRIP_REQUEST: 'new_travel_trip_request'
 });
 
 export class SlackEvents {

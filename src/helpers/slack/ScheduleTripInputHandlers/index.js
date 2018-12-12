@@ -6,12 +6,23 @@ import {
 } from '../../../modules/slack/SlackModels/SlackMessageModels';
 import ScheduleTripController from '../../../modules/slack/TripManagement/ScheduleTripController';
 
+const createDepartmentPayloadObject = (payload, respond, forSelf = 'true') => {
+  const navButtonCallbackId = forSelf === 'true' ? 'welcome_message' : 'schedule_trip_reason';
+  return {
+    payload,
+    respond,
+    navButtonCallbackId,
+    navButtonValue: 'book_new_trip',
+    attachmentCallbackId: 'schedule_trip_department',
+  };
+};
+
 const ScheduleTripInputHandlers = {
   reason: (payload, respond, callbackId) => {
     if (payload.submission) {
       Cache.save(payload.user.id, callbackId, payload.submission.reason);
     }
-  
+
     // check if user clicked for me or for someone
     if (Cache.fetch(payload.user.id).forSelf === 'true') {
       InteractivePrompts.sendAddPassengersResponse(respond);
@@ -24,7 +35,7 @@ const ScheduleTripInputHandlers = {
       const rider = payload.actions[0].selected_options[0].value;
       Cache.save(payload.user.id, callbackId, rider);
     }
-    
+
     InteractivePrompts.sendAddPassengersResponse(respond, false);
   },
   addPassengers: (payload, respond) => {
@@ -35,8 +46,8 @@ const ScheduleTripInputHandlers = {
     }
 
     const { forSelf } = Cache.fetch(payload.user.id);
-
-    InteractivePrompts.sendListOfDepartments(payload, respond, forSelf);
+    const props = createDepartmentPayloadObject(payload, respond, forSelf);
+    return InteractivePrompts.sendListOfDepartments(props, forSelf);
   },
   department: (payload, respond) => {
     respond(new SlackInteractiveMessage('Loading...'));
@@ -52,7 +63,7 @@ const ScheduleTripInputHandlers = {
       }
       respond(new SlackInteractiveMessage('Loading...'));
 
-      const tripRequestDetails = { ...Cache.fetch(payload.user.id), ...payload.submission };
+      const tripRequestDetails = { ...Cache.fetch(payload.user.id), ...payload.submission, tripType: 'Regular Trip' };
 
       await ScheduleTripController.createTripRequest(payload, respond, tripRequestDetails);
     } catch (error) {

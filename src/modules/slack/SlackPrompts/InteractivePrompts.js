@@ -14,21 +14,15 @@ const web = new WebClientSingleton();
 class InteractivePrompts {
   static sendBookNewTripResponse(payload, respond) {
     const attachment = new SlackAttachment();
-
-    // main buttons
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('yes', 'For Me', 'true'),
       new SlackButtonAction('no', 'For Someone', 'false')
     ]);
-
     attachment.addOptionalProps('book_new_trip');
-
-    // add navigation buttons
     const navAttachment = createNavButtons('back_to_launch', 'back_to_launch');
-
-    const message = new SlackInteractiveMessage('Who are you booking for?',
-      [attachment, navAttachment]);
-
+    const message = new SlackInteractiveMessage('Who are you booking for?', [
+      attachment, navAttachment
+    ]);
     respond(message);
   }
 
@@ -41,16 +35,18 @@ class InteractivePrompts {
       // sample button actions
       new SlackButtonAction('view', 'View', `${requester} ${rider}`),
       new SlackButtonAction('reschedule', 'Reschedule ', requestId),
-      new SlackCancelButtonAction('Cancel Trip', requestId,
-        'Are you sure you want to cancel this trip', 'cancel_trip'),
+      new SlackCancelButtonAction(
+        'Cancel Trip', requestId,
+        'Are you sure you want to cancel this trip', 'cancel_trip'
+      ),
       new SlackCancelButtonAction()
     ]);
 
     attachment.addOptionalProps('itinerary_actions');
-
-    const message = new SlackInteractiveMessage('Success! Your request has been submitted.', [
-      attachment
-    ]);
+    const message = new SlackInteractiveMessage(
+      'Success! Your request has been submitted.',
+      [attachment]
+    );
     respond(message);
   }
 
@@ -59,12 +55,16 @@ class InteractivePrompts {
     attachments.addFieldsOrActions('actions', [
       new SlackButtonAction('view', 'View', 'view'),
       new SlackButtonAction('reschedule', 'Reschedule ', trip.dataValues.id),
-      new SlackCancelButtonAction('Cancel Trip', trip.dataValues.id,
-        'Are you sure you want to cancel this trip', 'cancel_trip'),
+      new SlackCancelButtonAction(
+        'Cancel Trip', trip.dataValues.id,
+        'Are you sure you want to cancel this trip', 'cancel_trip'
+      ),
       new SlackCancelButtonAction()
     ]);
     attachments.addOptionalProps('itinerary_actions');
-    return new SlackInteractiveMessage('Success! Your request has been submitted.', [attachments]);
+    return new SlackInteractiveMessage(
+      'Success! Your request has been submitted.', [attachments]
+    );
   }
 
   static sendRescheduleError(trip) {
@@ -82,21 +82,15 @@ class InteractivePrompts {
 
   static sendTripItinerary(payload, respond) {
     const attachment = new SlackAttachment();
-
     // main buttons
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('history', 'Trip History', 'view_trips_history'),
       new SlackButtonAction('upcoming', 'Upcoming Trips ', 'view_upcoming_trips')
     ]);
-
     attachment.addOptionalProps('trip_itinerary', 'fallback', '#FFCCAA', 'default');
-
-    // add navigation buttons
     const navAttachment = createNavButtons('back_to_launch', 'back_to_launch');
-
     const message = new SlackInteractiveMessage('Please choose an option', [
-      attachment,
-      navAttachment
+      attachment, navAttachment
     ]);
     respond(message);
   }
@@ -104,9 +98,7 @@ class InteractivePrompts {
   static sendUpcomingTrips(trips, respond, payload) {
     const attachments = [];
     trips.forEach(trip => InteractivePrompts.formatUpcomingTrip(trip, payload, attachments));
-    const navButtonsAttachment = createNavButtons(
-      'welcome_message', 'view_trips_itinerary'
-    );
+    const navButtonsAttachment = createNavButtons('welcome_message', 'view_trips_itinerary');
     const message = new SlackInteractiveMessage(
       'Your Upcoming Trips', [...attachments, navButtonsAttachment]
     );
@@ -131,10 +123,8 @@ class InteractivePrompts {
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('reschedule', 'Reschedule ', trip.id),
       new SlackCancelButtonAction(
-        'Cancel Trip',
-        trip.id,
-        'Are you sure you want to cancel this trip',
-        'cancel_trip'
+        'Cancel Trip', trip.id,
+        'Are you sure you want to cancel this trip', 'cancel_trip'
       )
     ]);
     attachment.addOptionalProps('itinerary_actions');
@@ -160,9 +150,7 @@ class InteractivePrompts {
           : ':white_check_mark: You have approved this trip'
       )
     ];
-    const fields = Notifications.notificationFields(
-      tripInformation
-    );
+    const fields = Notifications.notificationFields(tripInformation);
 
     attachments[0].addOptionalProps('callback');
     attachments[1].addOptionalProps('callback');
@@ -178,7 +166,6 @@ class InteractivePrompts {
       slackBotOauthToken
     );
   }
-
 
   /**
    * @description Update a previously sent message
@@ -224,9 +211,8 @@ class InteractivePrompts {
       await InteractivePrompts.messageUpdate(channel,
         (decline ? 'Trip request declined.' : 'Trip request approved'),
         timeStamp,
-        [tripDetailsAttachment,
-          cabDetailsAttachment,
-          confirmationDetailsAttachment], slackBotOauthToken);
+        [tripDetailsAttachment, cabDetailsAttachment, confirmationDetailsAttachment],
+        slackBotOauthToken);
     } catch (err) {
       console.log(err);
     }
@@ -239,24 +225,13 @@ class InteractivePrompts {
   }
 
   static rescheduleConfirmedError() {
-    return new SlackInteractiveMessage('Sorry! This trip request can no longer be rescheduled');
+    return new SlackInteractiveMessage(
+      'Sorry! This trip request can no longer be rescheduled'
+    );
   }
 
   static sendTripHistory(tripHistory, respond) {
-    const attachments = [];
-    const formatTrip = (trip) => {
-      const tripAttachment = new SlackAttachment(
-        '', `*Date*: ${trip.departureTime}`, '', '', '', '', 'good'
-      );
-      tripAttachment.addMarkdownIn(['text']);
-      tripAttachment.addFieldsOrActions('fields', [
-        new SlackAttachmentField('Pickup Location', `${trip['origin.address']}`, 'true'),
-        new SlackAttachmentField('Destination', `${trip['destination.address']}`, 'true')
-      ]);
-      attachments.push(tripAttachment);
-    };
-
-    tripHistory.forEach(trip => formatTrip(trip));
+    const attachments = InteractivePromptsHelpers.formatTripHistory(tripHistory);
     const text = '*Your trip history for the last 30 days*';
     const navButtonsAttachment = createNavButtons(
       'welcome_message', 'view_trips_itinerary'
@@ -272,28 +247,46 @@ class InteractivePrompts {
       new SlackSelectActionWithSlackContent('rider', 'Select a rider')
     ]);
     attachments.addOptionalProps('schedule_trip_rider');
-
     // add navigation buttons
     const navAttachment = createNavButtons('welcome_message', 'book_new_trip');
 
-    const message = new SlackInteractiveMessage('Who are you booking the ride for?',
-      [attachments, navAttachment], payload.channel.id, payload.user.id);
-
+    const message = new SlackInteractiveMessage(
+      'Who are you booking the ride for?', [attachments, navAttachment],
+      payload.channel.id, payload.user.id
+    );
     respond(message);
   }
 
-  static async sendListOfDepartments(payload, respond, forSelf = true) {
-    const personify = forSelf ? 'your' : 'rider\'s';
+  /**
+   * @static async sendListOfDepartments
+   * @param {object} {
+   *     @param payload - payload from slack sdk,
+   *     @param respond - respond function from slack sdk,
+   *     @param attachmentCallbackId,
+   *     @param navButtonCallbackId,
+   *     @param navButtonValue
+   *   }
+   * @param {string} [forSelf='true'] - either 'true' or 'false'
+   * @memberof InteractivePrompts
+   */
+  static async sendListOfDepartments(
+    {
+      payload, respond,
+      attachmentCallbackId, navButtonCallbackId, navButtonValue
+    },
+    forSelf = 'true'
+  ) {
+    const personify = forSelf === 'true' ? 'your' : "rider's";
     const attachment = SlackButtonsAttachmentFromAList.createAttachments(
-      await SlackHelpers.getDepartments(), 'schedule_trip_department'
+      await SlackHelpers.getDepartments(),
+      attachmentCallbackId
     );
+    attachment.push(createNavButtons(navButtonCallbackId, navButtonValue));
 
-    // Navigate to the number of passengers
-    attachment.push(createNavButtons('schedule_trip_rider'));
-
-    const message = new SlackInteractiveMessage(`*Please select ${personify} department.*`,
-      attachment, payload.channel.id, payload.user.id);
-
+    const message = new SlackInteractiveMessage(
+      `*Please select ${personify} department.*`,
+      attachment, payload.channel.id, payload.user.id
+    );
     respond(message);
   }
 
@@ -314,6 +307,18 @@ class InteractivePrompts {
 
     const message = new SlackInteractiveMessage(
       'Any more passengers?', [attachment, navAttachment]
+    );
+    respond(message);
+  }
+
+  static sendPreviewTripResponse(tripDetails, respond) {
+    const message = InteractivePromptsHelpers.generatePreviewTripResponse(tripDetails);
+    respond(message);
+  }
+
+  static sendCancelRequestResponse(respond) {
+    const message = new SlackInteractiveMessage(
+      'Thank you for using Tembea. Your request has been cancelled'
     );
     respond(message);
   }

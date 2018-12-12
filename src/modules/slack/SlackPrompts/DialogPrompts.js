@@ -9,7 +9,7 @@ import TeamDetailsService from '../../../services/TeamDetailsService';
 class DialogPrompts {
   static async sendTripDetailsForm(payload) {
     const dialog = new SlackDialog('schedule_trip_locationTime', 'Trip Details', 'Submit');
-    const formElements = createTripDetailsForm();
+    const formElements = createTripDetailsForm.regularTripForm();
 
     dialog.addElements(formElements);
 
@@ -18,6 +18,26 @@ class DialogPrompts {
     const slackBotOauthToken = await
     TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
     await sendDialogTryCatch(dialogForm, slackBotOauthToken);
+  }
+
+  static contactDetails() {
+    return createTripDetailsForm.travelTripContactDetailsForm();
+  }
+
+  static flightDetails() {
+    return createTripDetailsForm.travelTripFlightDetailsForm();
+  }
+
+  static sendTravelTripDetailsForm(payload, callbackId) {
+    const dialog = new SlackDialog(`travel_trip_${callbackId}`, 'Trip Details', 'Submit');
+
+    const createFormElements = this[callbackId];
+    const formElements = createFormElements();
+
+    dialog.addElements(formElements);
+
+    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
+    sendDialogTryCatch(dialogForm);
   }
 
   static async sendRescheduleTripForm(payload, callbackId, state, dialogName) {

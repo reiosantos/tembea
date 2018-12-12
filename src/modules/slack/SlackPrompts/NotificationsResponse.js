@@ -8,7 +8,7 @@ import {
 } from '../SlackModels/SlackMessageModels';
 
 class NotificationsResponse {
-  static getRequestMessageForOperationsChannel(data, payload, channel) {
+  static getRequestMessageForOperationsChannel(data, payload, channel, tripType) {
     const channelId = channel;
     const { id } = data;
 
@@ -17,19 +17,60 @@ class NotificationsResponse {
       new SlackButtonAction('declineRequest', 'Decline', id, 'danger')
     ];
     return NotificationsResponse.responseForOperations(
-      data, actions, channelId, 'operations_approval', payload
+      data, actions, channelId, 'operations_approval', payload, tripType
     );
   }
 
-  static responseForOperations(data, actions, channelId, callbackId, payload) {
+  static responseForOperations(data, actions, channelId, callbackId, payload, tripType) {
     const { tripStatus } = data;
-
-    // const tripFormat = textArray.join(', ');
     const color = tripStatus && tripStatus
-      .toLowerCase().startsWith('ca') ? '#EB3432' : undefined;
+      .toLowerCase().startsWith('ca') ? 'good' : undefined;
 
-    return NotificationsResponse.prepareOperationsDepartmentResponse(
-      channelId, data, color, actions, callbackId, payload
+    if (tripType === 'regular') {
+      return NotificationsResponse.prepareOperationsDepartmentResponse(
+        channelId, data, color, actions, callbackId, payload
+      );
+    }
+    return this.travelOperationsDepartmentResponse(
+      channelId, data, color, actions, callbackId
+    );
+  }
+
+  static riderInfoResponse(rider, requester) {
+    const riderInfo = rider.slackId !== requester.slackId
+      ? `<@${requester.slackId}> requested a trip for <@${rider.slackId}>`
+      : `<@${requester.slackId}> requested a trip`;
+    return riderInfo;
+  }
+
+  static travelOperationsDepartmentResponse(
+    channelId, responseData, color, actions, callbackId
+  ) {
+    const {
+      tripStatus, requester, pickup, departureDate, rider, destination,
+      department, noOfPassengers, tripType
+    } = responseData;
+    const riderInfo = this.riderInfoResponse(rider, requester);
+
+    const detailedAttachment = new SlackAttachment(
+      'Travel trip request', riderInfo, null, null, null, 'default', color
+    );
+    const fields = [
+      new SlackAttachmentField('Rider', `<@${rider.slackId}>`, true),
+      new SlackAttachmentField('Department', department, true),
+      new SlackAttachmentField('Pickup Location', pickup.address, true),
+      new SlackAttachmentField('Destination', destination.address, true),
+      new SlackAttachmentField('Pick-Up Time', Utils.formatDate(departureDate), true),
+      new SlackAttachmentField('Number of Passengers', noOfPassengers, true),
+      new SlackAttachmentField('Trip Type', tripType, true),
+      new SlackAttachmentField('Status', tripStatus, true),
+    ];
+    detailedAttachment.addFieldsOrActions('actions', actions);
+    detailedAttachment.addFieldsOrActions('fields', fields);
+    detailedAttachment.addOptionalProps(callbackId, 'fallback', undefined, 'default');
+
+    return new SlackInteractiveMessage(
+      '', [detailedAttachment], channelId
     );
   }
 
@@ -39,15 +80,13 @@ class NotificationsResponse {
     const {
       tripStatus, requester, pickup, departureDate, rider, destination, managerComment, department
     } = responseData;
-    const riderInfo = rider.slackId !== requester.slackId
-      ? `<@${requester.slackId}> requested a trip for <@${rider.slackId}>`
-      : `<@${requester.slackId}> requested a trip`;
+    const riderInfo = this.riderInfoResponse(rider, requester);
 
     const detailedAttachment = new SlackAttachment(
       'Manager approved trip request', riderInfo, null, null, null, 'default', color
     );
     const fields = [
-      new SlackAttachmentField('Rider', `<@${requester.slackId}>`, true),
+      new SlackAttachmentField('Rider', `<@${rider.slackId}>`, true),
       new SlackAttachmentField('Department', `<@${department}>`, true),
       new SlackAttachmentField('Pickup Location', pickup.address, true),
       new SlackAttachmentField('Destination', destination.address, true),

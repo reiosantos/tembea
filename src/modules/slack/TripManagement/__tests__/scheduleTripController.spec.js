@@ -6,6 +6,8 @@ import {
 } from '../../SlackInteractions/__mocks__/SlackInteractions.mock';
 import models from '../../../../database/models';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
+import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
+import SlackEvents from '../../events';
 
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
@@ -192,11 +194,15 @@ describe('ScheduleTripController Tests', () => {
     const responder = respondMock();
     it('should persist details of a trip', async () => {
       const payload = createPayload();
-      ScheduleTripController.createUser = jest.fn(() => 4);
+      const { TripRequest } = models;
+      TripRequest.create = jest.fn(() => ({ dataValues: 'someValue' }));
+      InteractivePrompts.sendCompletionResponse = jest.fn();
+      SlackEvents.raise = jest.fn();
       ScheduleTripController.createRequest = jest.fn(() => tripRequestDetails());
 
       const request = await ScheduleTripController
         .createTripRequest(payload, responder, tripRequestDetails());
+
       expect(request).toEqual(true);
     });
 
@@ -211,5 +217,108 @@ describe('ScheduleTripController Tests', () => {
         expect(e).toEqual(err);
       }
     });
+  });
+});
+
+describe('Create trip Detail test', () => {
+  beforeAll(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should create TripDetail', async () => {
+    const tripInfo = {
+      riderPhoneNo: '900009',
+      travelTeamPhoneNo: '900009',
+      flightNumber: '9AA09'
+    };
+
+    const result = await ScheduleTripController.createTripDetail(tripInfo);
+    expect(result).toHaveProperty('createdAt');
+    expect(result).toHaveProperty('updatedAt');
+    expect(result).toHaveProperty('id');
+  });
+
+  it("should throw an error when tripDetail isn't created", async () => {
+    const tripInfo = {
+      riderPhoneNo: '',
+      travelTeamPhoneNo: '',
+      flightNumber: ''
+    };
+    const { TripDetail } = models;
+    TripDetail.create = rejectMock;
+    try {
+      await ScheduleTripController.createTripDetail(tripInfo);
+    } catch (error) {
+      expect(error).toEqual(err);
+    }
+  });
+});
+
+
+describe('Create Travel Trip request test', () => {
+  const { TripRequest } = models;
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should create trip request', async () => {
+    ScheduleTripController.createRequest = jest.fn(() => ({ trip: 'Lekki' }));
+    ScheduleTripController.createTripDetail = jest.fn(() => ({ id: 12 }));
+    TripRequest.create = jest.fn(() => ({ dataValues: { id: 1 } }));
+    InteractivePrompts.sendCompletionResponse = jest.fn();
+    SlackEvents.raise = jest.fn();
+    const payload = createPayload();
+    const respond = jest.fn();
+
+    await ScheduleTripController.createTravelTripRequest(payload, respond, 'trip');
+    expect(InteractivePrompts.sendCompletionResponse).toHaveBeenCalled();
+    expect(SlackEvents.raise).toHaveBeenCalled();
+  });
+
+  it('should throw an error', async () => {
+    ScheduleTripController.createRequest = jest.fn(() => ({ trip: 'Lekki' }));
+    ScheduleTripController.createTripDetail = jest.fn(() => ({ id: 12 }));
+    TripRequest.create = jest.fn(() => ({ dataValues: { id: 1 } }));
+    InteractivePrompts.sendCompletionResponse = jest.fn();
+    SlackEvents.raise = jest.fn(() => { throw new Error('failed') ;});
+    const payload = createPayload();
+    const respond = jest.fn();
+    try {
+      await ScheduleTripController.createTravelTripRequest(payload, respond, 'trip');
+    } catch (error) {
+      expect(error).toEqual(new Error('failed'));
+    }
+  });
+});
+
+describe('Validate travel form test', () => {
+  const errorMock = [{ boy: 'bou' }];
+  it('should test validateTravelContactDetails Method', () => {
+    UserInputValidator.validateTravelContactDetails = jest.fn(() => (errorMock));
+    const result = ScheduleTripController.validateTravelContactDetailsForm('payload');
+    expect(result).toEqual(errorMock);
+  });
+
+  it('should test validateTravelFlightDetails Method', async () => {
+    UserInputValidator.validateTravelFlightDetails = jest.fn(() => (errorMock));
+    UserInputValidator.validateDateAndTimeEntry = jest.fn(() => errorMock);
+    UserInputValidator.checkDateTimeIsHoursAfterNow = jest.fn(() => errorMock);
+    const payload = createPayload();
+
+    const result = await ScheduleTripController.validateTravelFlightDetailsForm(payload);
+    expect(result[0]).toEqual(errorMock[0]);
+  });
+
+  it('should test validateTravelFlightDetails Method', async () => {
+    UserInputValidator.validateTravelFlightDetails = jest.fn(() => { throw new Error('Not working'); });
+    UserInputValidator.validateDateAndTimeEntry = jest.fn(() => errorMock);
+    UserInputValidator.checkDateTimeIsHoursAfterNow = jest.fn(() => errorMock);
+
+    try {
+      await ScheduleTripController.validateTravelFlightDetailsForm('payload');
+    } catch (error) {
+      expect(error.message).toEqual('Cannot destructure property `flightDateTime` of \'undefined\' or \'null\'.');
+    }
   });
 });

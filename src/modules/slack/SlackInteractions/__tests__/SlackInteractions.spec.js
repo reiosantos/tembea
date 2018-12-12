@@ -14,6 +14,8 @@ import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import SlackEvents from '../../events';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
+import travelTripHelper from '../../helpers/slackHelpers/TravelTripHelper/travelTripHelper';
+import TripRescheduleHelper from '../../helpers/slackHelpers/rescheduleHelper';
 
 describe('Manager decline trip interactions', () => {
   beforeAll(() => {
@@ -130,6 +132,14 @@ describe('Slack Interactions test: Launch and Welcome Message switch', () => {
     done();
   });
 
+  it('should test back_to_launch', (done) => {
+    const payload = createPayload('back_to_travel_launch');
+    const result = SlackInteractions.launch(payload, respond);
+    expect(result).toBe(undefined);
+    expect(respond).toHaveBeenCalled();
+    done();
+  });
+
   it('should test launch default response', (done) => {
     const payload = createPayload();
     const result = SlackInteractions.launch(payload, respond);
@@ -184,6 +194,7 @@ describe('Slack Interactions test: book new Trip switch', () => {
     const payload = createPayload('true');
     const result = SlackInteractions.bookNewTrip(payload, respond);
     expect(result).toBe(undefined);
+    expect(Cache.save).toHaveBeenCalled();
     expect(DialogPrompts.sendTripReasonForm).toHaveBeenCalledWith(payload);
     done();
   });
@@ -212,13 +223,13 @@ describe('Handle user Inputs test', () => {
       .spyOn(ScheduleTripInputHandlers, 'reason')
       .mockImplementation(() => {});
     const payload = createPayload('reason');
-    SlackInteractions.handleUserInputs(payload, 'respond');
+    await SlackInteractions.handleUserInputs(payload, 'respond');
     expect(reasonhandler).toHaveBeenCalledWith(payload, 'respond', 'reason');
   });
 
   it('should respond with default message if handler does not exist in object', async () => {
     const payload = createPayload('default');
-    SlackInteractions.handleUserInputs(payload, handleRespond);
+    await SlackInteractions.handleUserInputs(payload, handleRespond);
     expect(handleRespond).toHaveBeenCalledWith(
       responseMessage('Thank you for using Tembea. See you again.')
     );
@@ -231,6 +242,7 @@ describe('HandleItineraryActions function', () => {
   beforeEach(() => {
     itineraryRespond = respondMock();
     DialogPrompts.sendRescheduleTripForm = jest.fn();
+    TripRescheduleHelper.sendTripRescheduleDialog = jest.fn();
   });
 
   it('should respond with coming soon', async (done) => {
@@ -247,6 +259,7 @@ describe('HandleItineraryActions function', () => {
 
     const result = await SlackInteractions.handleItineraryActions(payload, itineraryRespond);
     expect(result).toBe(undefined);
+    expect(TripRescheduleHelper.sendTripRescheduleDialog).toHaveBeenCalled();
     done();
   });
 
@@ -274,7 +287,7 @@ describe('HandleItineraryActions function', () => {
     done();
   });
 
-  it('should handle cancel trip errors', async () => {
+  it('should handle cancel trip errors', async (done) => {
     const payload = createPayload(1, 'cancel_trip');
     const errorMessage = 'Dummy error message';
     CancelTripController.cancelTrip = jest.fn(() => Promise.reject(new Error(errorMessage)));
@@ -284,6 +297,7 @@ describe('HandleItineraryActions function', () => {
     expect(itineraryRespond).toHaveBeenCalledWith(
       responseMessage(errorMessage)
     );
+    done();
   });
 });
 
@@ -404,7 +418,7 @@ describe('Send comment dialog', () => {
     DialogPrompts.sendOperationsApprovalDialog = jest.fn();
     DialogPrompts.sendOperationsDeclineDialog = jest.fn();
   });
-  
+
   afterEach(() => {
     jest.resetAllMocks();
   });
@@ -439,7 +453,7 @@ describe('Handle trip actions', () => {
         regNumber: 'LNS 8367*'
       }
   };
-  
+
   beforeEach(() => {
     response = jest.fn();
     DialogPrompts.sendOperationsApprovalDialog = jest.fn();
@@ -447,12 +461,12 @@ describe('Handle trip actions', () => {
     TripActionsController.changeTripStatus = jest.fn(() => {});
     TripActionsController.runCabValidation = jest.fn(() => []);
   });
-  
+
   afterEach(() => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
   });
-  
+
   it('should handle confirm trip', () => {
     payload.actions = [{ name: 'confirmTrip' }];
     SlackInteractions.sendCommentDialog(payload);
@@ -532,5 +546,56 @@ describe('Manager Approve trip', () => {
 
     await SlackInteractions.handleManagerApprovalDetails(payload, respond);
     expect(respond).toHaveBeenCalled();
+  });
+});
+
+describe('should test book travel start', () => {
+  let respond;
+
+  beforeEach(() => {
+    respond = respondMock();
+    DialogPrompts.sendTravelTripDetailsForm = jest.fn((value1, value2) => ({ value1, value2 }));
+    Cache.save = jest.fn(() => { });
+  });
+
+  it('should return thank you message', () => {
+    const payload = createPayload('can', 'cancel');
+    const result = SlackInteractions.bookTravelTripStart(payload, respond);
+    expect(result).toHaveProperty('text', 'Thank you for using Tembea. See you again.');
+    expect(respond).toHaveBeenCalledWith(
+      responseMessage('Thank you for using Tembea. See you again.')
+    );
+  });
+
+  it('should return thank you message', () => {
+    const payload = createPayload('can', 'airport');
+    SlackInteractions.bookTravelTripStart(payload, respond);
+    expect(Cache.save).toHaveBeenCalled();
+    expect(DialogPrompts.sendTravelTripDetailsForm).toHaveBeenCalledWith(payload, 'contactDetails');
+  });
+});
+
+describe('should test handle travelTrip actions', () => {
+  let respond;
+
+  beforeEach(() => {
+    respond = respondMock();
+  });
+
+  it('should call the tripHandler method based on callBackId', () => {
+    const payload = createPayload('testBack', 'cancel');
+    travelTripHelper.testBack = jest.fn((value1, value2) => ({ value1, value2 }));
+    SlackInteractions.handleTravelTripActions(payload, respond);
+
+    expect(travelTripHelper.testBack).toHaveBeenCalledWith(payload, respond);
+  });
+
+  it('should call the tripHandler method based on callBackId', () => {
+    const payload = createPayload('test', 'cancel');
+    SlackInteractions.handleTravelTripActions(payload, respond);
+
+    expect(respond).toHaveBeenCalledWith(
+      responseMessage('Thank you for using Tembea. See you again.')
+    );
   });
 });

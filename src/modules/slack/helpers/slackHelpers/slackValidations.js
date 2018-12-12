@@ -16,6 +16,4 @@ const isTripRescheduleTimedOut = (tripRequest) => {
 
 const isSlackSubCommand = (commandTocheck, subCommand) => commandTocheck.includes(subCommand);
 
-
-export { isSlackSubCommand, isTripRescheduleTimedOut, isTripRequestConfirmed }
-;
+export { isSlackSubCommand, isTripRescheduleTimedOut, isTripRequestConfirmed };

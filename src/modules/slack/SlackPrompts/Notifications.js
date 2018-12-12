@@ -3,7 +3,7 @@ import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import Utils from '../../../utils';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
 import { slackEventNames } from '../events/slackEvents';
-import slackEvents from '../events';
+import SlackEvents from '../events';
 import {
   SlackAttachment,
   SlackAttachmentField,
@@ -69,21 +69,23 @@ class SlackNotifications {
     );
   }
 
-  static async sendOperationsTripRequestNotification(tripId, payload, respond) {
+  static async sendOperationsTripRequestNotification(tripId, payload, respond, tripType = 'regular') {
     const tripInformation = await SlackHelpers.getTripRequest(tripId);
     const { botToken: slackBotOauthToken } = await TeamDetailsService.getTeamDetails(payload.team.id);
     try {
-      SlackNotifications.restructureTripData(tripInformation);
+      const checkTripType = tripType === 'regular';
+      SlackNotifications.restructureTripData(tripInformation, checkTripType);
       const dept = await SlackHelpers.findSelectedDepartment(tripInformation.departmentId);
-
       const department = dept.dataValues;
       const { name } = department;
       tripInformation.department = name;
 
-      slackEvents.raise(slackEventNames.TRIP_WAITING_CONFIRMATION, tripInformation, respond, slackBotOauthToken);
+      if (checkTripType) {
+        SlackEvents.raise(slackEventNames.TRIP_WAITING_CONFIRMATION, tripInformation, respond, slackBotOauthToken);
+      }
 
       const opsRequestMessage = NotificationsResponse.getRequestMessageForOperationsChannel(
-        tripInformation, payload, SlackNotifications.getOpsChannel(payload.team.domain)
+        tripInformation, payload, SlackNotifications.getOpsChannel(payload.team.domain), tripType
       );
 
       await SlackNotifications.sendNotification(opsRequestMessage, slackBotOauthToken);
@@ -96,7 +98,7 @@ class SlackNotifications {
     }
   }
 
-  static restructureTripData(tripInformation) {
+  static restructureTripData(tripInformation, checkTripType) {
     Object.assign(tripInformation, {
       ...tripInformation,
       requestDate: tripInformation.createdAt,
@@ -105,6 +107,7 @@ class SlackNotifications {
       requester: tripInformation.requester.dataValues,
       destination: tripInformation.destination.dataValues,
       pickup: tripInformation.origin.dataValues,
+      tripDetail: checkTripType ? null : tripInformation.tripDetail.dataValues,
       origin: {}
     });
   }

@@ -1,4 +1,4 @@
-import slackEvents from '../events';
+import SlackEvents from '../events';
 import Utils from '../../../utils';
 import { slackEventNames } from '../events/slackEvents';
 import models from '../../../database/models';
@@ -8,10 +8,34 @@ import dateHelper from '../../../helpers/dateHelper';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 
 const {
-  TripRequest, User, Location, Address
+  TripRequest, User, Location, Address, TripDetail
 } = models;
 
 class ScheduleTripController {
+  static validateTravelContactDetailsForm(payload) {
+    const errors = [];
+    errors.push(...UserInputValidator.validateTravelContactDetails(payload));
+    return errors;
+  }
+
+  static async validateTravelFlightDetailsForm(payload) {
+    const { submission: { flightDateTime } } = payload;
+    const datePayload = { ...payload, submission: { dateTime: flightDateTime } };
+    const errors = [];
+    try {
+      errors.push(...UserInputValidator.validateTravelFlightDetails(payload));
+      errors.push(
+        ...(await UserInputValidator.validateDateAndTimeEntry(datePayload, 'flightDateTime'))
+      );
+      errors.push(
+        ...(await UserInputValidator.checkDateTimeIsHoursAfterNow(4, flightDateTime, 'flightDateTime'))
+      );
+      return errors;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async validateTripDetailsForm(payload) {
     const errors = [];
 
@@ -41,7 +65,7 @@ class ScheduleTripController {
   static async createRequestObject(tripRequestDetails, requester) {
     try {
       const {
-        reason, dateTime, departmentId, destination, pickup, othersPickup, othersDestination, passengers
+        reason, dateTime, departmentId, destination, pickup, othersPickup, othersDestination, passengers, tripType
       } = tripRequestDetails;
       const { originId, destinationId } = await this.getLocationIds(tripRequestDetails);
       const name = `From ${pickup === 'Others' ? othersPickup : pickup}
@@ -60,7 +84,8 @@ class ScheduleTripController {
         requestedById: requester.id,
         originId,
         destinationId,
-        noOfPassengers: passengers
+        noOfPassengers: passengers,
+        tripType
       };
     } catch (error) {
       throw error;
@@ -88,9 +113,27 @@ class ScheduleTripController {
       const trip = await TripRequest.create(tripRequest);
 
       InteractivePrompts.sendCompletionResponse(payload, respond, tripRequest.requestedById);
-      slackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, trip.dataValues, respond);
+      SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, trip.dataValues, respond);
 
       return true;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async createTravelTripRequest(payload, respond, tripDetails) {
+    try {
+      const tripRequest = await this.createRequest(payload, tripDetails);
+      const { id } = await this.createTripDetail(tripDetails);
+
+      const tripData = { ...tripRequest, tripDetailId: id };
+      const trip = await TripRequest.create(tripData);
+      const newPayload = { ...payload, submission: { rider: false } };
+
+      InteractivePrompts.sendCompletionResponse(newPayload, respond, trip.id);
+      SlackEvents.raise(
+        slackEventNames.NEW_TRAVEL_TRIP_REQUEST, trip.dataValues.id, payload, respond, 'travel'
+      );
     } catch (error) {
       throw error;
     }
@@ -119,6 +162,21 @@ class ScheduleTripController {
         defaults: { name: real_name, email }
       });
       return user.dataValues;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async createTripDetail(tripInfo) {
+    try {
+      const { riderPhoneNo, travelTeamPhoneNo, flightNumber } = tripInfo;
+      const tripDetail = await TripDetail.create({
+        riderPhoneNo,
+        travelTeamPhoneNo,
+        flightNumber
+      });
+
+      return tripDetail.dataValues;
     } catch (error) {
       throw error;
     }

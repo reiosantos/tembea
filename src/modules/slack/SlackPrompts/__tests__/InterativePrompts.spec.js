@@ -1,4 +1,7 @@
 import InteractivePrompts from '../InteractivePrompts';
+import InteractivePromptsHelpers from '../../helpers/slackHelpers/InteractivePromptsHelpers';
+import SlackHelpers from '../../../../helpers/slack/slackHelpers';
+import { SlackButtonsAttachmentFromAList } from '../../SlackModels/SlackMessageModels';
 import {
   sendBookNewTripMock,
   sendCompletionResponseMock,
@@ -109,7 +112,33 @@ describe('Interactive Prompts test', () => {
 
   it('should send list of departments', async () => {
     const response = jest.fn();
-    await InteractivePrompts.sendListOfDepartments({ channel: { id: 1 }, user: { id: 2 } }, response);
+    SlackHelpers.getDepartments = jest.fn(() => 'attachment');
+    SlackButtonsAttachmentFromAList.createAttachments = jest.fn(() => []);
+    const props = {
+      payload: { channel: { id: 1 }, user: { id: 2 } },
+      respond: response,
+      attachmentCallbackId: 'aata',
+      navButtonCallbackId: 'atab',
+      navButtonValue: 'io'
+    };
+
+    await InteractivePrompts.sendListOfDepartments(props);
+    expect(response).toBeCalledTimes(1);
+  });
+
+  it('should send list of departments with forSelf as [false]', async () => {
+    const response = jest.fn();
+    SlackHelpers.getDepartments = jest.fn(() => 'attachment');
+    SlackButtonsAttachmentFromAList.createAttachments = jest.fn(() => []);
+    const props = {
+      payload: { channel: { id: 1 }, user: { id: 2 } },
+      respond: response,
+      attachmentCallbackId: 'aata',
+      navButtonCallbackId: 'atab',
+      navButtonValue: 'io'
+    };
+
+    await InteractivePrompts.sendListOfDepartments(props, 'false');
     expect(response).toBeCalledTimes(1);
   });
 
@@ -186,5 +215,32 @@ describe('test send add passenger response', () => {
     InteractivePrompts.sendAddPassengersResponse(respond);
     expect(respond).toHaveBeenCalled();
     done();
+  });
+});
+
+describe('test send add passenger response with forSelf as [false]', () => {
+  it('should provide an interface to add passengers', (done) => {
+    const respond = jest.fn(value => value);
+    InteractivePrompts.sendAddPassengersResponse(respond, false);
+    expect(respond).toHaveBeenCalled();
+    done();
+  });
+});
+
+describe('test send preview response and cancel response', () => {
+  beforeEach(() => {
+    InteractivePromptsHelpers.generatePreviewTripResponse = jest.fn(() => 'called');
+  });
+
+  it('should send preview response', () => {
+    const respond = jest.fn(value => value);
+    InteractivePrompts.sendPreviewTripResponse('trip', respond);
+    expect(respond).toBeCalledWith('called');
+  });
+
+  it('should send cancel request response', () => {
+    const respond = jest.fn(value => value);
+    InteractivePrompts.sendCancelRequestResponse(respond);
+    expect(respond).toHaveBeenCalled();
   });
 });

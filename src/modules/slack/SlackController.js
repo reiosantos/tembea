@@ -40,34 +40,29 @@ class SlackController {
       new SlackCancelButtonAction()
     ]);
 
+    attachment.addOptionalProps('welcome_message', '/fallback', '#3AA3E3');
+
+    return new SlackInteractiveMessage('Welcome to Tembea!', [attachment]);
+  }
+
+  static getTravelCommandMsg() {
+    const attachment = this.greetings();
+
+    attachment.addFieldsOrActions('actions', [
+      new SlackButtonAction('Airport Transfer', 'Airport Transfer', 'airport_transfer'),
+      new SlackButtonAction('Embassy Visit', 'Embassy Visit', 'embassy_visit'),
+      new SlackCancelButtonAction()
+    ]);
     attachment.addOptionalProps(
-      'welcome_message',
+      'travel_trip_start',
       '/fallback',
       '#3AA3E3',
     );
-
     return new SlackInteractiveMessage('Welcome to Tembea!', [attachment]);
   }
 
   static travel(req, res, next) {
     return (req.body.text && isSlackSubCommand((req.body.text.toLowerCase()), 'travel') ? res.status(200).json(SlackController.getTravelCommandMsg()) : next());
-  }
-
-  static getTravelCommandMsg() {
-    const attachment = this.greetings();
-  
-    attachment.addFieldsOrActions('actions', [
-      new SlackButtonAction('book', 'Airport Transfer', 'airport_transfer'),
-      new SlackButtonAction('book', 'Embassy Visit', 'embassy_visit'),
-      new SlackCancelButtonAction()
-    ]);
-
-    attachment.addOptionalProps(
-      'travel_actions',
-      '/fallback',
-      '#3AA3E3',
-    );
-    return new SlackInteractiveMessage('Welcome to Tembea!', [attachment]);
   }
 }
 

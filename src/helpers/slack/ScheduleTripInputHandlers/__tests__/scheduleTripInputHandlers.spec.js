@@ -76,7 +76,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
       Cache.fetch = jest.fn(() => ({ forSelf: 'false' }));
       ScheduleTripInputHandlers.addPassengers(payload, responder);
       expect(InteractivePrompts.sendListOfDepartments)
-        .toHaveBeenCalledWith(payload, responder, 'false');
+        .toHaveBeenCalled();
     });
   });
 

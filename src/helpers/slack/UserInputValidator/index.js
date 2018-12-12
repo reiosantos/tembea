@@ -1,9 +1,60 @@
 import { WebClient } from '@slack/client';
+import moment from 'moment';
 import { SlackDialogError } from '../../../modules/slack/SlackModels/SlackDialogModels';
 import DateDialogHelper from '../../dateHelper';
 import TeamDetailsService from '../../../services/TeamDetailsService';
+import InputValidator from './InputValidator';
 
 class UserInputValidator {
+  static checkNumberAndLetters(param, fieldName) {
+    const regex = /[^a-zA-Z\d]+/g;
+    if (regex.test(param)) {
+      return [new SlackDialogError(fieldName, 'Only numbers and letters are allowed.')];
+    }
+    return [];
+  }
+
+  static checkMinLengthNumber(minLength, number, name) {
+    const numLength = number.trim().length;
+    if (numLength < minLength) {
+      return [new SlackDialogError(name, `Minimum length is ${minLength} digits`)];
+    }
+    return [];
+  }
+
+  static checkDateTimeIsHoursAfterNow(noOfHours, date, fieldName) {
+    const userDateInput = moment(date, 'DD/MM/YYYY HH:mm');
+    const afterTime = moment().add(noOfHours, 'hours');
+    if (userDateInput.isAfter(afterTime)) {
+      return [];
+    }
+    return [new SlackDialogError(
+      fieldName, `${fieldName} must be at least ${noOfHours} hours from current time.`
+    )];
+  }
+
+  static validateEmptyAndSpaces(param, name) {
+    if (InputValidator.isEmptySpace(param)) {
+      return [new SlackDialogError(name, 'Spaces are not allowed')];
+    }
+    return [];
+  }
+
+  static checkEmpty(param, fieldName) {
+    if (param.trim().length < 1) {
+      return [new SlackDialogError(fieldName, `${fieldName} cannot be empty`)];
+    }
+    return [];
+  }
+
+  static checkNumber(number, name) {
+    const notIntegerRegex = /\D/;
+    if (notIntegerRegex.test(number.trim())) {
+      return [new SlackDialogError(name, 'Only numbers are allowed. ')];
+    }
+    return [];
+  }
+
   static checkWord(word, name) {
     const wordsNumbersOnly = /^[A-Za-z0-9- ,]+$/;
     if (!wordsNumbersOnly.test(word)) {
@@ -22,19 +73,19 @@ class UserInputValidator {
     return [];
   }
 
-  static checkDate(date, tzOffset) {
+  static checkDate(date, tzOffset, fieldName = 'date_time') {
     if (this.checkDateFormat(date)) {
       const diff = DateDialogHelper.dateChecker(date, tzOffset);
       if (diff < 0) {
-        return [new SlackDialogError('date_time', 'Date cannot be in the past.')];
+        return [new SlackDialogError(fieldName, 'Date cannot be in the past.')];
       }
     }
     return [];
   }
 
-  static checkDateFormat(date) {
+  static checkDateFormat(date, fieldName = 'date_time') {
     if (!DateDialogHelper.dateFormat(date)) {
-      return [new SlackDialogError('date_time',
+      return [new SlackDialogError(fieldName,
         'Time format must be in Day/Month/Year format. See hint.')];
     }
     return [];
@@ -72,6 +123,47 @@ class UserInputValidator {
     return user;
   }
 
+  static validateTravelContactDetails(payload) {
+    const {
+      submission: { noOfPassengers, riderPhoneNo, travelTeamPhoneNo }
+    } = payload;
+    const errors = [];
+    errors.push(...this.checkNumber(noOfPassengers, 'noOfPassengers'));
+    errors.push(...InputValidator.checkNumberGreaterThanZero(noOfPassengers, 'noOfPassengers', 'number of passengers'));
+    errors.push(...this.checkNumber(riderPhoneNo, 'riderPhoneNo'));
+    errors.push(...this.checkNumber(travelTeamPhoneNo, 'travelTeamPhoneNo'));
+
+    errors.push(...this.validateEmptyAndSpaces(noOfPassengers, 'noOfPassengers'));
+    errors.push(...this.validateEmptyAndSpaces(riderPhoneNo, 'riderPhoneNo'));
+    errors.push(...this.validateEmptyAndSpaces(travelTeamPhoneNo, 'travelTeamPhoneNo'));
+
+    errors.push(...this.checkMinLengthNumber(6, riderPhoneNo, 'riderPhoneNo'));
+    errors.push(...this.checkMinLengthNumber(6, travelTeamPhoneNo, 'travelTeamPhoneNo'));
+
+    return errors;
+  }
+
+  static validateTravelFlightDetails(payload) {
+    const {
+      submission: {
+        flightNumber, pickup, destination
+      }
+    } = payload;
+    const errors = [];
+
+    errors.push(...this.checkNumberAndLetters(flightNumber, 'flightNumber'));
+
+    errors.push(...this.checkWord(pickup, 'pickup'));
+    errors.push(...this.checkWord(destination, 'destination'));
+    errors.push(...this.checkEmpty(pickup, 'pickup'));
+    errors.push(...this.checkEmpty(destination, 'destination'));
+
+    errors.push(...InputValidator.checkDuplicateFieldValues(
+      pickup, destination, 'pickup', 'destination'
+    ));
+    return errors;
+  }
+
   static validateLocationEntries(payload) {
     const {
       pickup, othersPickup, destination, othersDestination //eslint-disable-line
@@ -94,7 +186,7 @@ class UserInputValidator {
     return errors;
   }
 
-  static async validateDateAndTimeEntry(payload) {
+  static async validateDateAndTimeEntry(payload, fieldName = 'date_time') {
     const { dateTime } = payload.submission;
     const errors = [];
 
@@ -102,8 +194,8 @@ class UserInputValidator {
       const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
       const user = await this.fetchUserInformationFromSlack(payload.user.id, slackBotOauthToken);
 
-      errors.push(...this.checkDate(dateTime, user.tz_offset));
-      errors.push(...this.checkDateFormat(dateTime));
+      errors.push(...this.checkDate(dateTime, user.tz_offset, fieldName));
+      errors.push(...this.checkDateFormat(dateTime, fieldName));
 
       return errors;
     } catch (error) {

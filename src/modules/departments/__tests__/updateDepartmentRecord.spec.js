@@ -27,7 +27,7 @@ describe('/Departments update', () => {
         message: 'Department not found. To add a new department use POST /api/v1/departments'
       }, done);
   });
-  
+
   it('should return a user not found when the email does not exist in the database', (done) => {
     request(app)
       .put('/api/v1/departments')
@@ -43,7 +43,7 @@ describe('/Departments update', () => {
         message: 'User not found'
       }, done);
   });
-  
+
   it('should return a user not found when the email does not exist in the database', (done) => {
     request(app)
       .put('/api/v1/departments')
@@ -55,7 +55,7 @@ describe('/Departments update', () => {
       })
       .expect(400, done);
   });
-  
+
   it('should return a provide valid email when the email is not valid', (done) => {
     request(app)
       .put('/api/v1/departments')
@@ -71,7 +71,7 @@ describe('/Departments update', () => {
         message: 'Please provide a valid email'
       }, done);
   });
-  
+
   it('should return provide value when property is defined with no value', (done) => {
     request(app)
       .put('/api/v1/departments')
@@ -87,7 +87,7 @@ describe('/Departments update', () => {
         message: ['Please provide a value for newHeadEmail.']
       }, done);
   });
-  
+
   it('should return provide value when property is defined with no value', (done) => {
     request(app)
       .put('/api/v1/departments')
