@@ -198,22 +198,22 @@ workflows:
   check_build_deploy:
     jobs:
       - checkout_code
-      - package_vulnerability_check:
-          requires:
-            - checkout_code
+      # - package_vulnerability_check:
+      #     requires:
+      #       - checkout_code
       - test_and_report:
           requires:
             - checkout_code
       - build_artifacts:
           requires:
             - checkout_code
-            - package_vulnerability_check
+            # - package_vulnerability_check
             - test_and_report
           <<: *filters
       - docker_and_deploy:
           requires:
             - checkout_code
-            - package_vulnerability_check
+            # - package_vulnerability_check
             - test_and_report
             - build_artifacts
           <<: *filters
