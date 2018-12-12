@@ -1,6 +1,5 @@
 import request from 'supertest';
 import '@slack/client';
-import TeamDetailsService from '../../../services/TeamDetailsService';
 import UsersController from '../UsersController';
 import app from '../../../app';
 
@@ -175,69 +174,22 @@ describe('/User update', () => {
         message: 'Slack team not found',
       }, done);
   });
-});
 
-describe('UserController', () => {
-  it('should not be able to update user record', async (done) => {
-    const res = {
-      status: jest.fn(() => ({
-        json: jest.fn(() => {})
-      })),
-    };
-
+  it('should not update the user record', async (done) => {
     try {
-      await UsersController.saveNewRecord('sdnsdv', '', '', '', '', res);
-    } catch (err) {
-      expect(res.status.mock.calls.length).toBe(1);
-      done();
+      await UsersController.getUser({});
+    } catch (error) {
+      expect(error.message).toBe('Could not update the user record');
     }
+    done();
   });
 
-  it('should not be able to get user', async (done) => {
-    const res = {
-      status: jest.fn(() => ({
-        json: jest.fn(() => {})
-      })),
-    };
-
+  it('should not update the user in the database', async (done) => {
     try {
-      await UsersController.getUser({}, res);
-    } catch (err) {
-      expect(res.status.mock.calls.length).toBe(1);
-      done();
+      await UsersController.saveNewRecord({});
+    } catch (error) {
+      expect(error.message).toBe('Could not update user record');
     }
-  });
-
-  it('should not be able to get slack info', async (done) => {
-    const res = {
-      status: jest.fn(() => ({
-        json: jest.fn(() => {})
-      })),
-    };
-
-    try {
-      await UsersController.getUserSlackInfo({}, '', res);
-    } catch (err) {
-      expect(res.status.mock.calls.length).toBe(1);
-      done();
-    }
-  });
-
-  it('should not be able to fetch team details', async (done) => {
-    const res = {
-      status: jest.fn(() => ({
-        json: jest.fn(() => {})
-      })),
-    };
-    TeamDetailsService.getTeamDetailsByTeamUrl = jest.fn(() => {
-      throw new Error();
-    });
-
-    try {
-      await UsersController.fetchTeamDetails({}, res);
-    } catch (err) {
-      expect(res.status.mock.calls.length).toBe(1);
-      done();
-    }
+    done();
   });
 });

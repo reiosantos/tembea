@@ -30,7 +30,7 @@ class TeamDetailsService {
       const teamDetails = await TeamDetails.findOne({
         raw: true,
         where: {
-          teamUrl: `https://${teamUrl}`,
+          teamUrl: `https://${teamUrl}`
         }
       });
       cache.saveObject(getTeamDetailsKey(teamUrl), teamDetails);

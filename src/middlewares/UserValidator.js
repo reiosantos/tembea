@@ -13,12 +13,10 @@ class UserValidator {
     const email = req.body.email || '';
 
     if (!validator.isEmail(email.trim())) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: 'Please provide a valid email for the user'
-        });
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid email for the user'
+      });
     }
 
     return next();
@@ -38,23 +36,19 @@ class UserValidator {
       'newPhoneNo',
       'newEmail'
     );
-    const messages1 = GeneralValidator.validateReqBody(
-      req.body,
-      'slackUrl'
-    );
+    const messages1 = GeneralValidator.validateReqBody(req.body, 'slackUrl');
 
     if (messages.length < 3 && messages1.length === 0) {
       return next();
     }
 
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: 'Incomplete update information.'
+    return res.status(400).json({
+      success: false,
+      message:
+        'Incomplete update information.'
         + '\nOptional properties (at least one); newName, newPhoneNo or a newEmail.'
         + '\nCompulsory property; slackUrl.'
-      });
+    });
   }
 
   /**
@@ -71,7 +65,11 @@ class UserValidator {
     const messages = [];
 
     const trimmedSlackUrl = UserValidator.validateProps(
-      newName, messages, newPhoneNo, newEmail, slackUrl,
+      newName,
+      messages,
+      newPhoneNo,
+      newEmail,
+      slackUrl
     );
 
     if (messages.length > 0) {
@@ -93,15 +91,31 @@ class UserValidator {
     if (newPhoneNo && !nums.test(newPhoneNo.trim())) {
       messages.push('Invalid newPhoneNo.');
     }
-    if (newEmail && !validator.isEmail((newEmail || '').trim())) {
+    if (newEmail && !validator.isEmail(newEmail.trim())) {
       messages.push('Invalid newEmail.');
     }
-    let trimmedSlackUrl = slackUrl.replace('https://', '');
-    trimmedSlackUrl = slackUrl.replace('http://', '');
+    const regex = /https?:\/\//i;
+    const trimmedSlackUrl = slackUrl.replace(regex, '');
     if (!slackUrlRegex.test(trimmedSlackUrl)) {
       messages.push('Invalid slackUrl. e.g: ACME.slack.com');
     }
     return trimmedSlackUrl;
+  }
+
+  static validateUserBody(req, res, next) {
+    const { slackUrl } = req.body;
+    if (slackUrl) {
+      const slackUrlRegex = /.+\.slack\.com$/;
+
+      if (slackUrlRegex.test(slackUrl.trim())) {
+        return next();
+      }
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: 'Compulsory property; slackUrl e.g: ACME.slack.com'
+    });
   }
 }
 

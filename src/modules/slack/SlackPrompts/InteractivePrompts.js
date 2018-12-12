@@ -230,7 +230,6 @@ class InteractivePrompts {
   }
 
   static sendAddPassengersResponse(respond, forSelf = true) {
-    console.log(forSelf);
     const attachment = new SlackAttachment();
     const passengerNumbers = SlackHelpers.noOfPassengers();
 
@@ -239,7 +238,7 @@ class InteractivePrompts {
       new SlackButtonAction('no', 'No', 1)]);
 
     attachment.addOptionalProps('schedule_trip_addPassengers');
-    
+
     /* if rider is self navigate to for me/for someone option when 'Back' is clicked,
        else navigate to 'select rider' option
     */

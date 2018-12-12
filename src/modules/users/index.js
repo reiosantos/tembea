@@ -13,4 +13,11 @@ userRouter.put(
   UsersController.updateRecord
 );
 
+userRouter.post(
+  '/users',
+  UserValidator.validateEmail,
+  UserValidator.validateUserBody,
+  UsersController.newUserRecord
+);
+
 export default userRouter;
