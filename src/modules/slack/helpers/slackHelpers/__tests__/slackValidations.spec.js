@@ -1,11 +1,11 @@
-import { IsTripRescheduleTimedOut } from '../slackValidations';
+import { isTripRescheduleTimedOut } from '../slackValidations';
 
-describe('IsTripRescheduleTimedOut', () => {
+describe('isTripRescheduleTimedOut', () => {
   it('should return true', () => {
     const now = Date.now();
     const oneHourBefore = new Date(now - 60 * 60 * 1000);
 
-    expect(IsTripRescheduleTimedOut({
+    expect(isTripRescheduleTimedOut({
       departureTime: `${oneHourBefore.toISOString()}`
     })).toEqual(true);
   });
@@ -14,7 +14,7 @@ describe('IsTripRescheduleTimedOut', () => {
     const now = Date.now();
     const oneHourAfter = new Date(now + 1 + 60 * 60 * 1000);
 
-    expect(IsTripRescheduleTimedOut({
+    expect(isTripRescheduleTimedOut({
       departureTime: `${oneHourAfter.toISOString()}`
     })).toEqual(false);
   });

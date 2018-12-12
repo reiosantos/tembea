@@ -23,16 +23,23 @@ jest.mock('@slack/client', () => ({
 }));
 
 describe('Slack controller test', () => {
-  it('should return launch message', (done) => {
-    request(app)
+  it('should return launch message', async () => {
+    const res = await request(app)
+      .post('/api/v1/slack/command');
+    expect(res.status).toEqual(200);
+    expect(res.body).toHaveProperty('text');
+    expect(res.body).toHaveProperty('attachments');
+    expect(res.body).toHaveProperty('response_type');
+    expect(res.body).toEqual(SlackControllerMock);
+  });
+
+  it('should return the lunch meassage for the command /Tembea travel', async () => {
+    const res = await request(app)
       .post('/api/v1/slack/command')
-      .expect(200)
-      .end((err, res) => {
-        expect(res.body).toHaveProperty('text');
-        expect(res.body).toHaveProperty('attachments');
-        expect(res.body).toHaveProperty('response_type');
-        expect(res.body).toEqual(SlackControllerMock);
-        done();
-      });
-  })
-})
+      .send({ text: ' travel ' });
+    expect(res.status).toEqual(200);
+    expect(res.body).toHaveProperty('text');
+    expect(res.body).toHaveProperty('attachments');
+    expect(res.body).toHaveProperty('response_type');
+  });
+});

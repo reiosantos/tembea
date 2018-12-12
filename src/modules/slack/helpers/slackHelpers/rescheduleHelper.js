@@ -1,5 +1,5 @@
 import models from '../../../../database/models';
-import { IsTripRequestConfirmed, IsTripRescheduleTimedOut } from './slackValidations';
+import { isTripRequestConfirmed, isTripRescheduleTimedOut } from './slackValidations';
 import DialogPrompts from '../../SlackPrompts/DialogPrompts';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 
@@ -9,8 +9,8 @@ export default class TripRescheduleHelper {
   static async sendTripRescheduleDialog(payload, respond, requestId) {
     try {
       const tripRequest = await TripRequest.findByPk(requestId);
-      const confirmed = IsTripRequestConfirmed(tripRequest);
-      const timedOut = IsTripRescheduleTimedOut(tripRequest);
+      const confirmed = isTripRequestConfirmed(tripRequest);
+      const timedOut = isTripRescheduleTimedOut(tripRequest);
 
       if (confirmed) {
         respond(InteractivePrompts.rescheduleConfirmedError());

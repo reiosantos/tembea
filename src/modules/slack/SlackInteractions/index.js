@@ -45,6 +45,23 @@ class SlackInteractions {
     }
   }
 
+  static goodByeMessage() {
+    return new SlackInteractiveMessage('Thank you for using Tembea. See you again.');
+  }
+
+  static handleTravelActions(payload, respond) {
+    const action = payload.actions[0].value;
+    switch (action) {
+      case 'airport_transfer':
+      case 'embassy_visit':
+        respond({ text: 'Coming soon...' });
+        break;
+      default:
+      respond(SlackInteractions.goodByeMessage());
+        break;
+    }
+  }
+   
   static bookNewTrip(payload, respond) {
     respond(new SlackInteractiveMessage('Loading...'));
     const action = payload.actions[0].value;
@@ -56,7 +73,7 @@ class SlackInteractions {
         break;
       default:
         // default response for cancel button
-        respond(new SlackInteractiveMessage('Thank you for using Tembea. See you again.'));
+        respond(SlackInteractions.goodByeMessage());
     }
   }
 
@@ -66,7 +83,7 @@ class SlackInteractions {
     if (!scheduleTripHandler) {
       // default response for cancel button
       return respond(
-        new SlackInteractiveMessage('Thank you for using Tembea. See you again.')
+        SlackInteractions.goodByeMessage()
       );
     }
     return scheduleTripHandler(payload, respond, callbackId);
@@ -90,7 +107,7 @@ class SlackInteractions {
         }
         break;
       default:
-        respond(new SlackInteractiveMessage('Thank you for using Tembea. See you again.'));
+        respond(SlackInteractions.goodByeMessage());
     }
   }
 
