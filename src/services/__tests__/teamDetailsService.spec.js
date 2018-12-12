@@ -76,14 +76,45 @@ describe('Team details service', () => {
       done();
     }
   });
+});
+
+describe('getTeamDetailsByTeamUrl', () => {
+  const teamUrl = 'teamUrl';
+  const data = { data: 'team details' };
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('should fetch team details from catch', async () => {
+    cache.fetch = jest.fn(teamId => ((teamId === `teamDetails_${teamUrl}`) ? data : null));
+    TeamDetails.findOne = jest.fn(() => data);
+
+    const result = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
+    expect(TeamDetails.findOne).not.toHaveBeenCalled();
+    expect(cache.fetch).toBeCalledTimes(1);
+    expect(result).toEqual(data);
+  });
+
+  it('should fetch team details from database and save it in cache', async () => {
+    cache.fetch = jest.fn(() => null);
+    TeamDetails.findOne = jest.fn(() => data);
+    cache.saveObject = jest.fn(() => {});
+
+    const result = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
+    expect(cache.fetch).toBeCalledTimes(1);
+    expect(TeamDetails.findOne).toBeCalledTimes(1);
+    expect(cache.saveObject).toBeCalledWith(`teamDetails_${teamUrl}`, data);
+    expect(result).toEqual(data);
+  });
 
   it('should fail on get team details by URL', async (done) => {
-    TeamDetails.findOne = jest.fn(() => {
-      throw new Error();
-    });
+    cache.fetch = jest.fn(() => null);
+    TeamDetails.findOne = jest.fn(() => Promise.reject(new Error('')));
 
     try {
-      await TeamDetailsService.getTeamDetailsByTeamUrl();
+      await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
+      expect(cache.fetch).toBeCalledTimes(1);
     } catch (error) {
       expect(error.message).toEqual('Could not get the team details.');
       done();

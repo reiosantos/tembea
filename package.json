@@ -85,7 +85,8 @@
     "collectCoverage": true,
     "collectCoverageFrom": [
       "src/**/*.js",
-      "!src/index.js"
+      "!src/index.js",
+      "!**/__tests__/**/*.js?(x)"
     ],
     "testMatch": [
       "<rootDir>/src/**/__tests__/**/?(*.)(spec|test)js",

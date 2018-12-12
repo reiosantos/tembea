@@ -13,18 +13,12 @@ import NotificationsResponse from './NotificationsResponse';
 const web = new WebClientSingleton();
 
 class SlackNotifications {
-  static async getDMChannelId(user, respond) {
-    try {
-      const imResponse = await web.getWebClient().im.open({
-        user
-      });
-      const { id } = imResponse.channel;
-      return id;
-    } catch (error) {
-      respond({
-        text: 'Error:warning:: Error getting channelId.'
-      });
-    }
+  static async getDMChannelId(user) {
+    const imResponse = await web.getWebClient().im.open({
+      user
+    });
+    const { id } = imResponse.channel;
+    return id;
   }
 
   static sendNotifications(channelId, attachments, text) {
@@ -201,7 +195,7 @@ class SlackNotifications {
     attachments.addFieldsOrActions('fields', fields);
     SlackNotifications.sendNotifications(channelId, attachments, message);
   }
- 
+
   static async sendUserNotification(payload, tripInformation) {
     const requester = tripInformation.requester.dataValues.slackId;
     const rider = tripInformation.rider.dataValues.slackId;
@@ -224,7 +218,7 @@ class SlackNotifications {
     SlackNotifications.sendNotifications(channelId, attachments, message);
   }
 
-  
+
   static async sendUserConfirmNotification(payload, tripInformation) {
     const requester = tripInformation.requester.dataValues.slackId;
     const rider = tripInformation.rider.dataValues.slackId;

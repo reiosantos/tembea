@@ -22,7 +22,6 @@ class TripActionsController {
         const trip = await SlackHelpers.getTripRequest(tripId);
         SendNotifications.sendUserConfirmNotification(payload, trip);
         SendNotifications.sendManagerConfirmNotification(payload, trip);
-      
         return 'success';
       } catch (error) {
         respond({
@@ -43,7 +42,7 @@ class TripActionsController {
         SendNotifications.sendUserNotification(payload, trip);
         SendNotifications.sendManagerNotification(payload, trip);
         InteractivePrompts.sendDeclineCompletion(trip, state.actionTs, payload.channel.id);
-      
+
         return 'success';
       } catch (error) {
         respond({
@@ -53,21 +52,15 @@ class TripActionsController {
     }
   }
 
-  static async addCabDetails(payload, respond) {
+  static async addCabDetails(payload) {
     const { driverName, driverPhoneNo, regNumber } = payload.submission;
-    try {
-      await Cab.findOrCreate({
-        where: { driverName },
-        defaults: {
-          driverPhoneNo,
-          regNumber,
-        }
-      });
-    } catch (error) {
-      respond({
-        text: 'Dang, something went wrong there.'
-      });
-    }
+    return Cab.findOrCreate({
+      where: { driverName },
+      defaults: {
+        driverPhoneNo,
+        regNumber,
+      }
+    });
   }
 }
 export default TripActionsController;

@@ -66,7 +66,7 @@ class ScheduleTripController {
 
   static async createRequest(payload, tripRequestDetails) {
     try {
-      const requester = await this.createUser(payload.user.id);
+      const requester = await ScheduleTripController.createUser(payload.user.id);
       const request = await this.createRequestObject(tripRequestDetails, requester);
 
       if (tripRequestDetails.forSelf === 'false') {

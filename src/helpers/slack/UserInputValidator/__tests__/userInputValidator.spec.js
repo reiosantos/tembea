@@ -124,5 +124,15 @@ describe('UserInputValidator tests', () => {
       const errors = await UserInputValidator.validateDateAndTimeEntry(payload);
       expect(errors.length).toEqual(0);
     });
+    it('should handle and throw errors within validateDateAndTimeEntry', async () => {
+      try {
+        UserInputValidator.fetchUserInformationFromSlack = jest.fn(() => Promise.reject());
+        const payload = createPayload();
+        await UserInputValidator.validateDateAndTimeEntry(payload);
+        expect(UserInputValidator.fetchUserInformationFromSlack).toBeCalledWith(payload.user.id);
+      } catch (e) {
+        expect(e.message).toEqual('There was a problem processing your request');
+      }
+    });
   });
 });

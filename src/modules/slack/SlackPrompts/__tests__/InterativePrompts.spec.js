@@ -48,7 +48,6 @@ describe('Interactive Prompts test', () => {
     done();
   });
 
-
   it('should sendRescheduleCompletion response', (done) => {
     const trip = { dataValues: { id: 1 } };
     const result = InteractivePrompts.sendRescheduleCompletion(trip);
@@ -70,6 +69,30 @@ describe('Interactive Prompts test', () => {
 
     expect(result).toHaveProperty('text', 'Dang! I hit an error with this trip');
     done();
+  });
+
+  it('should send upcoming trips', async () => {
+    const response = jest.fn();
+    const trip = {
+      origin: { address: '' },
+      destination: { address: '' },
+      requester: { slackId: 1, name: '' }
+    };
+    const trips = [trip];
+    InteractivePrompts.sendUpcomingTrips(trips, response, { user: { id: 1 } });
+    expect(response).toBeCalledTimes(1);
+  });
+
+  it('should send rider select list', () => {
+    const response = jest.fn();
+    InteractivePrompts.sendRiderSelectList({ channel: { id: 1 }, user: { id: 2 } }, response);
+    expect(response).toBeCalledTimes(1);
+  });
+
+  it('should send list of departments', async () => {
+    const response = jest.fn();
+    await InteractivePrompts.sendListOfDepartments({ channel: { id: 1 }, user: { id: 2 } }, response);
+    expect(response).toBeCalledTimes(1);
   });
 });
 

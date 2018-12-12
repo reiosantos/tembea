@@ -16,7 +16,7 @@ export default class TripRescheduleHelper {
         respond(InteractivePrompts.rescheduleConfirmedError());
       }
       if (!timedOut && !confirmed) {
-        DialogPrompts.sendRescheduleTripForm(
+        await DialogPrompts.sendRescheduleTripForm(
           payload,
           'reschedule_trip',
           `reschedule ${payload.response_url} ${requestId}`,

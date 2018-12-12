@@ -14,7 +14,7 @@ class DialogPrompts {
 
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
 
-    sendDialogTryCatch(dialogForm);
+    await sendDialogTryCatch(dialogForm);
   }
 
   static async sendRescheduleTripForm(payload, callbackId, state, dialogName) {
@@ -25,7 +25,7 @@ class DialogPrompts {
 
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
 
-    sendDialogTryCatch(dialogForm);
+    await sendDialogTryCatch(dialogForm);
   }
 
   static async sendTripReasonForm(payload) {
@@ -38,7 +38,7 @@ class DialogPrompts {
 
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
 
-    sendDialogTryCatch(dialogForm);
+    await sendDialogTryCatch(dialogForm);
   }
 
   static async sendDialogToManager(
@@ -54,7 +54,7 @@ class DialogPrompts {
 
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
 
-    sendDialogTryCatch(dialogForm);
+    await sendDialogTryCatch(dialogForm);
   }
 
   static async sendOperationsDeclineDialog(payload) {
@@ -71,10 +71,10 @@ class DialogPrompts {
     ]);
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
 
-    sendDialogTryCatch(dialogForm);
+    await sendDialogTryCatch(dialogForm);
   }
 
-  static sendOperationsApprovalDialog(payload) {
+  static async sendOperationsApprovalDialog(payload) {
     const { value } = payload.actions[0];
     const dialog = new SlackDialog('operations_reason_dialog',
       'Confirm Trip Request', 'Submit', false, value);
@@ -94,7 +94,7 @@ class DialogPrompts {
       ),
     ]);
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    sendDialogTryCatch(dialogForm);
+    await sendDialogTryCatch(dialogForm);
   }
 }
 

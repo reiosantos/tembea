@@ -1,8 +1,9 @@
 import TripActionsController from '../TripActionsController';
 import SendNotifications from '../../SlackPrompts/Notifications';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
+import models from '../../../../database/models';
 
-describe('TripActiosController operations decline tests', () => {
+describe('TripActionController operations decline tests', () => {
   let respond;
 
   beforeEach(() => {
@@ -48,7 +49,7 @@ describe('TripActiosController operations decline tests', () => {
   });
 });
 
-describe('TripActiosController operations approve tests', () => {
+describe('TripActionController operations approve tests', () => {
   let respond;
 
   beforeEach(() => {
@@ -77,6 +78,16 @@ describe('TripActiosController operations approve tests', () => {
     await TripActionsController.changeTripStatus(payload, respond);
     expect(SendNotifications.sendUserConfirmNotification).toHaveBeenCalled();
     expect(SendNotifications.sendManagerConfirmNotification).toHaveBeenCalled();
+    done();
+  });
+
+  it('should run the catchBlock on error', async (done) => {
+    const { Cab } = models;
+    Cab.findOrCreate = jest.fn(() => Promise.reject(new Error('Dummy error')));
+    SendNotifications.sendUserConfirmNotification = jest.fn();
+    SendNotifications.sendManagerConfirmNotification = jest.fn();
+    await TripActionsController.changeTripStatus(payload, respond);
+    expect(respond).toHaveBeenCalled();
     done();
   });
 });

@@ -39,26 +39,29 @@ describe('Dialog prompts test', () => {
     expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
   });
-});
 
-describe('send trip reason should send a dialog form', () => {
-  afterEach(() => jest.resetAllMocks());
-  it('should make a call to sendDialogTryCatch', async (done) => {
-    const payload = {
-      trigger_id: 'trip_reason'
-    };
+  it('should test sendTripReasonForm function', async (done) => {
+    const payload = jest.fn(() => ({ trigger_id: 'trigger' }));
     await DialogPrompts.sendTripReasonForm(payload);
     expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
   });
-});
 
-describe('send dialog to manager should send a dialog form', () => {
-  it('should make a call to sendDialogTryCatch', async (done) => {
-    const payload = {
-      trigger_id: 'trip_reason'
-    };
-    await DialogPrompts.sendDialogToManager(payload);
+  it('should test sendCommentDialog function', async (done) => {
+    await DialogPrompts.sendOperationsDeclineDialog({
+      message_ts: 'trigger',
+      actions: ['value', '']
+    });
+    expect(sendDialogTryCatch).toBeCalledTimes(1);
+    done();
+  });
+
+  it('should test sendOperationsApprovalDialog function', async (done) => {
+    await DialogPrompts.sendOperationsApprovalDialog({
+      actions: ['value', ''],
+      trigger_id: 'trigger'
+    });
+
     expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
   });

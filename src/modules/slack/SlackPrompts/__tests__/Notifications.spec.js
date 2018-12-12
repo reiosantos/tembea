@@ -50,6 +50,11 @@ describe('SlackNotifications', () => {
   });
 
   it('should send error on decline', async (done) => {
+    const { User } = models;
+
+    const userFindByPkStub = sinon.stub(User, 'findOne');
+    userFindByPkStub.rejects();
+
     const tripInfo = {
       departmentId: 6,
       requestedById: 1000,
@@ -66,11 +71,13 @@ describe('SlackNotifications', () => {
       },
       id: 3
     };
-    SlackNotifications.sendRequesterDeclinedNotification(tripInfo, (res) => {
-      expect(res).toEqual({
-        text: 'Error:warning:: Decline saved but requester will not get the notification'
-      });
-    });
+    const response = jest.fn();
+    const responseData = {
+      text: 'Error:warning:: Decline saved but requester will not get the notification'
+    };
+    await SlackNotifications.sendRequesterDeclinedNotification(tripInfo, response);
+    expect(response).toBeCalledWith(responseData);
+    userFindByPkStub.restore();
     done();
   });
 
@@ -102,8 +109,120 @@ describe('SlackNotifications', () => {
     });
     done();
   });
-});
 
+  it('should send manager notification', async () => {
+    const tripInfo = {
+      department: {
+        dataValues: {
+          headId: 3,
+        }
+      },
+      rider: {
+        dataValues: {
+          slackId: 3,
+        }
+      },
+      origin: {
+        dataValues: {
+          address: 'never land',
+        }
+      },
+      destination: {
+        dataValues: {
+          address: 'never land',
+        }
+      }
+    };
+    const payload = {
+      user: { id: 3 }
+    };
+    const res = await SlackNotifications.sendManagerNotification(payload, tripInfo);
+    expect(res).toEqual(undefined);
+  });
+
+  it('should send manager confirmation notification', async () => {
+    const tripInfo = {
+      department: {
+        dataValues: {
+          headId: 3,
+        }
+      },
+      rider: {
+        dataValues: {
+          slackId: 3,
+        }
+      },
+      origin: {
+        dataValues: {
+          address: 'never land',
+        }
+      },
+      destination: {
+        dataValues: {
+          address: 'never land',
+        }
+      }
+    };
+    const payload = {
+      user: { id: 3 },
+      submission: { driverName: 'driverName', driverPhoneNo: 'driverPhoneNo', regNumber: 'regNumber' }
+    };
+    const res = await SlackNotifications.sendManagerConfirmNotification(payload, tripInfo);
+    expect(res).toEqual(undefined);
+  });
+
+  describe('User Notification', () => {
+    const tripInfo = {
+      requester: {
+        dataValues: {
+          slackId: 3,
+        }
+      },
+      rider: {
+        dataValues: {
+          slackId: 3,
+        }
+      },
+      origin: {
+        dataValues: {
+          address: 'never land',
+        }
+      },
+      destination: {
+        dataValues: {
+          address: 'never land',
+        }
+      }
+    };
+    const payload = {
+      user: { id: 3 },
+      submission: { driverName: 'driverName', driverPhoneNo: 'driverPhoneNo', regNumber: 'regNumber' }
+    };
+    it('should send user notification when requester is equal to rider', async () => {
+      tripInfo.rider.dataValues.slackId = 3;
+      const res = await SlackNotifications.sendUserNotification(payload, tripInfo);
+      expect(res).toEqual(undefined);
+    });
+
+    it('should send user notification when requester is not equal to rider', async () => {
+      tripInfo.rider.dataValues.slackId = 4;
+      const res = await SlackNotifications.sendUserNotification(payload, tripInfo);
+      expect(res).toEqual(undefined);
+    });
+
+    it('should send user confirmation notification when requester is equal to rider', async () => {
+      tripInfo.rider.dataValues.slackId = 3;
+      const res = await SlackNotifications.sendUserConfirmNotification(payload, tripInfo);
+      expect(res).toEqual(undefined);
+    });
+
+    it('should send user confirmation notification when requester is not equal to rider', async () => {
+      tripInfo.rider.dataValues.slackId = 4;
+      const res = await SlackNotifications.sendUserConfirmNotification(payload, tripInfo);
+      expect(res).toEqual(undefined);
+    });
+  });
+});
 
 describe('SlackNotifications Tests: Manager approval', () => {
   const { TripRequest, User, Department } = models;

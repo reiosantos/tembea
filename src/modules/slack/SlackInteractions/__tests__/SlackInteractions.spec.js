@@ -254,7 +254,7 @@ describe('HandleItineraryActions function', () => {
     done();
   });
 
-  it('should trigger cancel trip', async (done) => {
+  it('should trigger trip', async (done) => {
     const payload = createPayload(1, 'trip');
     CancelTripController.cancelTrip = jest.fn(() => Promise.resolve('message'));
 
@@ -264,6 +264,18 @@ describe('HandleItineraryActions function', () => {
       responseMessage('Thank you for using Tembea. See you again.')
     );
     done();
+  });
+
+  it('should handle cancel trip errors', async () => {
+    const payload = createPayload(1, 'cancel_trip');
+    const errorMessage = 'Dummy error message';
+    CancelTripController.cancelTrip = jest.fn(() => Promise.reject(new Error(errorMessage)));
+
+    const result = await SlackInteractions.handleItineraryActions(payload, itineraryRespond);
+    expect(result).toBe(undefined);
+    expect(itineraryRespond).toHaveBeenCalledWith(
+      responseMessage(errorMessage)
+    );
   });
 });
 
@@ -370,5 +382,44 @@ describe('test viewTripItineraryActions switch', () => {
     const result = SlackInteractions.viewTripItineraryActions(payload, itineraryRespond);
     expect(result).toBe(undefined);
     done();
+  });
+});
+
+describe('Send comment dialog', () => {
+  it('should handle confirm trip', () => {
+    DialogPrompts.sendOperationsApprovalDialog = jest.fn();
+    const payload = { actions: [{ name: 'confirmTrip' }] };
+    SlackInteractions.sendCommentDialog(payload);
+    expect(DialogPrompts.sendOperationsApprovalDialog).toBeCalledWith(payload);
+  });
+
+  it('should handle confirm trip', () => {
+    DialogPrompts.sendOperationsDeclineDialog = jest.fn();
+    const payload = { actions: [{ name: 'declineRequest' }] };
+    SlackInteractions.sendCommentDialog(payload);
+    expect(DialogPrompts.sendOperationsDeclineDialog).toBeCalledWith(payload);
+  });
+
+  it('should handle default', () => {
+    DialogPrompts.sendOperationsDeclineDialog = jest.fn();
+    const payload = { actions: [{ name: 'declineRequests' }] };
+    SlackInteractions.sendCommentDialog(payload);
+    expect(DialogPrompts.sendOperationsDeclineDialog).not.toHaveBeenCalled();
+  });
+});
+
+describe('Handle trip actions', () => {
+  it('should handle confirm trip', () => {
+    DialogPrompts.sendOperationsApprovalDialog = jest.fn();
+    const payload = { actions: [{ name: 'confirmTrip' }] };
+    SlackInteractions.sendCommentDialog(payload);
+    expect(DialogPrompts.sendOperationsApprovalDialog).toBeCalledWith(payload);
+  });
+
+  it('should handle confirm trip', () => {
+    DialogPrompts.sendOperationsDeclineDialog = jest.fn();
+    const payload = { actions: [{ name: 'declineRequest' }] };
+    SlackInteractions.sendCommentDialog(payload);
+    expect(DialogPrompts.sendOperationsDeclineDialog).toBeCalledWith(payload);
   });
 });
