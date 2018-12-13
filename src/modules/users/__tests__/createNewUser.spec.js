@@ -1,7 +1,6 @@
 import request from 'supertest';
 import '@slack/client';
 import app from '../../../app';
-import UsersController from '../UsersController';
 import UserValidator from '../../../middlewares/UserValidator';
 import HttpError from '../../../helpers/errorHandler';
 
@@ -163,35 +162,6 @@ describe('/User create user who does not exist', () => {
         Accept: 'application/json'
       })
       .expect(200, done);
-  });
-
-  it('should not be able to create user', async (done) => {
-    try {
-      await UsersController.createNewUser(1);
-    } catch (error) {
-      expect(error.message).toBe('Could not create user');
-    }
-    done();
-  });
-
-  it('should not get team details', async (done) => {
-    try {
-      await UsersController.fetchTeamDetails(1);
-    } catch (error) {
-      expect(error.message).toBe('Could not get team details');
-    }
-    done();
-  });
-
-  it('should not get User SlackInfo', async (done) => {
-    try {
-      await UsersController.getUserSlackInfo(1);
-    } catch (error) {
-      expect(error.message).toBe(
-        "User not found. If your are providing a newEmail, it must be the same as the user's email on slack"
-      );
-    }
-    done();
   });
 
   it('should validate info', (done) => {

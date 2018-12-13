@@ -4,7 +4,7 @@ import middlewares from '../../middlewares';
 
 const departmentRouter = express.Router();
 
-const { DepartmentValidator } = middlewares;
+const { DepartmentValidator, UserValidator } = middlewares;
 
 departmentRouter.put(
   '/departments',
@@ -12,6 +12,14 @@ departmentRouter.put(
   DepartmentValidator.validateUpdateBody,
   DepartmentValidator.validateNewHeadEmail,
   DepartmentsController.updateDepartment
+);
+
+departmentRouter.post(
+  '/departments',
+  DepartmentValidator.validateAddBody,
+  UserValidator.validateEmail,
+  DepartmentValidator.validateDepartmentBody,
+  DepartmentsController.addDepartment
 );
 
 export default departmentRouter;

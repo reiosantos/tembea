@@ -11,6 +11,7 @@ const routes = (app) => {
   app.use(apiPrefix, userRouter);
   app.use(apiPrefix, departmentRouter);
   app.use(apiPrefix, slackRouter);
+  app.use(apiPrefix, departmentRouter);
   app.use(`${apiPrefix}/slack/actions`, slackInteractionsRouter.expressMiddleware());
   return app;
 };

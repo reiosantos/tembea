@@ -1,5 +1,6 @@
 import HttpError from '../../helpers/errorHandler';
 import DepartmentService from '../../services/DepartmentService';
+import UserService from '../../services/UserService';
 
 
 class DepartmentController {
@@ -23,6 +24,32 @@ class DepartmentController {
           success: true,
           message: 'Department record updated',
           department
+        });
+    } catch (error) {
+      HttpError.sendErrorResponse(error, res);
+    }
+  }
+  
+  static async addDepartment(req, res) {
+    const { name, email } = req.body;
+    try {
+      const user = await UserService.getUser(email);
+      const [dept, created] = await DepartmentService.createDepartment(user, name);
+      
+      if (created) {
+        return res
+          .status(201)
+          .json({
+            success: true,
+            message: 'Department created successfully',
+            department: dept.dataValues
+          });
+      }
+      return res
+        .status(409)
+        .json({
+          success: false,
+          message: 'Department already exists.',
         });
     } catch (error) {
       HttpError.sendErrorResponse(error, res);

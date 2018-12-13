@@ -1,5 +1,4 @@
 import validator from 'validator';
-
 import GeneralValidator from './GeneralValidator';
 
 class DepartmentValidator {
@@ -74,6 +73,48 @@ class DepartmentValidator {
     }
 
     return next();
+  }
+
+  static validateAddBody(req, res, next) {
+    const messages = GeneralValidator.validateReqBody(
+      req.body,
+      'email',
+      'name'
+    );
+
+    DepartmentValidator.checkLengthOfMessageArray(messages, res, next);
+  }
+
+
+  static validateDepartmentBody(req, res, next) {
+    const { name } = req.body;
+    const messages = DepartmentValidator.validateProps(name);
+
+    DepartmentValidator.checkLengthOfMessageArray(messages, res, next);
+  }
+
+  static checkLengthOfMessageArray(messages, res, next) {
+    return messages.length !== 0 ? res
+      .status(400)
+      .json({
+        success: false,
+        messages
+      })
+      : next();
+  }
+
+  static validateProps(name) {
+    const messages = [];
+    const expNameCha = /^[A-Za-z0-9_@./#&+-\s]{1,}$/;
+    const nums = /^[0-9]+$/;
+    const trimmedName = name.trim();
+    if (name && !expNameCha.test(trimmedName)) {
+      messages.push('Please provide a valid department name.');
+    }
+    if (name && nums.test(trimmedName)) {
+      messages.push('Department cannot contain numeric values only.');
+    }
+    return messages;
   }
 }
 

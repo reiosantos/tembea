@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 
 import models from '../database/models';
-import UsersController from '../modules/users/UsersController';
+import UserService from './UserService';
 import HttpError from '../helpers/errorHandler';
 import SlackHelpers from '../helpers/slack/slackHelpers';
 
@@ -9,9 +9,20 @@ import SlackHelpers from '../helpers/slack/slackHelpers';
 const { Department } = models;
 
 class DepartmentService {
+  static async createDepartment(user, name) {
+    const department = await Department.findOrCreate({
+      where: { name: { [Op.iLike]: `${name}%` } },
+      defaults: {
+        name,
+        headId: user.id
+      }
+    });
+    return department;
+  }
+
   static async getHeadId(email) {
     try {
-      const headOfDepartment = await UsersController.getUser(email);
+      const headOfDepartment = await UserService.getUser(email);
       return headOfDepartment.dataValues.id;
     } catch (error) {
       if (error instanceof HttpError) throw error;

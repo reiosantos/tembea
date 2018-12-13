@@ -1,6 +1,5 @@
 import request from 'supertest';
 import '@slack/client';
-import UsersController from '../UsersController';
 import app from '../../../app';
 
 jest.mock('@slack/client', () => ({
@@ -173,23 +172,5 @@ describe('/User update', () => {
         success: false,
         message: 'Slack team not found',
       }, done);
-  });
-
-  it('should not update the user record', async (done) => {
-    try {
-      await UsersController.getUser({});
-    } catch (error) {
-      expect(error.message).toBe('Could not update the user record');
-    }
-    done();
-  });
-
-  it('should not update the user in the database', async (done) => {
-    try {
-      await UsersController.saveNewRecord({});
-    } catch (error) {
-      expect(error.message).toBe('Could not update user record');
-    }
-    done();
   });
 });

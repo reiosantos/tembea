@@ -1,6 +1,6 @@
-import UsersController from '../../modules/users/UsersController';
 import DepartmentService from '../DepartmentService';
 import model from '../../database/models';
+import UserService from '../UserService';
 
 const { Department } = model;
 
@@ -10,7 +10,7 @@ describe('/Departments update', () => {
   });
   it('should run the getHeadId catchBlock on error', async (done) => {
     try {
-      UsersController.getUser = jest.fn(() => 'notValid');
+      UserService.getUser = jest.fn(() => 'notValid');
       await DepartmentService.getHeadId('noEmail');
     } catch (error) {
       expect(error.message).toBe('Error getting the head of department');
