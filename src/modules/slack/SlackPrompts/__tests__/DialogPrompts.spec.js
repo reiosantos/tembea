@@ -59,7 +59,10 @@ describe('Dialog prompts test', () => {
   it('should test sendOperationsApprovalDialog function', async (done) => {
     await DialogPrompts.sendOperationsApprovalDialog({
       actions: ['value', ''],
-      trigger_id: 'trigger'
+      trigger_id: 'trigger',
+      channel: {
+        id: 'XXXXXXXX'
+      }
     });
 
     expect(sendDialogTryCatch).toBeCalledTimes(1);

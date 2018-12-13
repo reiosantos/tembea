@@ -9,6 +9,10 @@ import ScheduleTripInputHandlers from '../../../../helpers/slack/ScheduleTripInp
 import { responseMessage, createPayload, respondMock } from '../__mocks__/SlackInteractions.mock';
 import SlackControllerMock from '../../__mocks__/SlackControllerMock';
 import TripItineraryHelper from '../../helpers/slackHelpers/TripItineraryHelper';
+import TripActionsController from '../../TripManagement/TripActionsController';
+import SlackHelpers from '../../../../helpers/slack/slackHelpers';
+import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
+import SlackEvents from '../../events';
 
 describe('Manager decline trip interactions', () => {
   beforeAll(() => {
@@ -421,5 +425,77 @@ describe('Handle trip actions', () => {
     const payload = { actions: [{ name: 'declineRequest' }] };
     SlackInteractions.sendCommentDialog(payload);
     expect(DialogPrompts.sendOperationsDeclineDialog).toBeCalledWith(payload);
+  });
+
+  it('should throw an error', () => {
+    const response = jest.fn();
+
+    const payload = { actions: [{ name: 'declineRequest' }] };
+    SlackInteractions.handleTripActions(payload, response);
+    expect(response).toHaveBeenCalled();
+  });
+
+  it('should handle confirmationComment', () => {
+    TripActionsController.changeTripStatus = jest.fn(() => {});
+    const response = jest.fn();
+
+    const payload = { submission: { confirmationComment: 'fghj' }, actions: [{ name: 'declineRequest' }] };
+    SlackInteractions.handleTripActions(payload, response);
+    expect(TripActionsController.changeTripStatus).toHaveBeenCalled();
+  });
+
+  it('should handle confirmationComment', () => {
+    TripActionsController.changeTripStatus = jest.fn(() => {});
+    const response = jest.fn();
+
+    const payload = { submission: { comment: 'fghj' }, actions: [{ name: 'declineRequest' }] };
+    SlackInteractions.handleTripActions(payload, response);
+    expect(TripActionsController.changeTripStatus).toHaveBeenCalled();
+  });
+});
+
+describe('Manager Approve trip', () => {
+  it('manager should be able to approve trip', () => {
+    const trip = {
+      isApproved: true
+    };
+    const respond = jest.fn();
+    SlackInteractions.approveTripRequestByManager({}, trip, respond);
+
+    expect(respond).toHaveBeenCalled();
+  });
+
+  it('should handle has approved', async () => {
+    const payload = {
+      submission: {
+        approveRequest: 'dfghj'
+      },
+      user: {},
+      state: 'cvbn jhgf ty'
+    };
+    const respond = jest.fn();
+    SlackHelpers.approveRequest = jest.fn(() => true);
+    SlackEvents.raise = jest.fn();
+    SlackHelpers.getTripRequest = jest.fn();
+    InteractivePrompts.sendManagerDeclineOrApprovalCompletion = jest.fn();
+
+    await SlackInteractions.handleManagerApprovalDetails(payload, respond);
+    expect(SlackEvents.raise).toHaveBeenCalled();
+    expect(SlackHelpers.getTripRequest).toHaveBeenCalled();
+  });
+
+  it('should respond with error', async () => {
+    const payload = {
+      submission: {
+        approveRequest: 'dfghj'
+      },
+      user: {},
+      state: 'cvbn jhgf ty'
+    };
+    const respond = jest.fn();
+    SlackHelpers.approveRequest = jest.fn(() => false);
+
+    await SlackInteractions.handleManagerApprovalDetails(payload, respond);
+    expect(respond).toHaveBeenCalled();
   });
 });

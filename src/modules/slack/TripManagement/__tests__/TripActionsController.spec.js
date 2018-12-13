@@ -38,12 +38,12 @@ describe('TripActionController operations decline tests', () => {
     payload.state = validState;
     SendNotifications.sendUserNotification = jest.fn();
     SendNotifications.sendManagerNotification = jest.fn();
-    InteractivePrompts.sendDeclineCompletion = jest.fn();
+    InteractivePrompts.sendOpsDeclineOrApprovalCompletion = jest.fn();
     const result = await TripActionsController.changeTripStatus(payload, respond);
     expect(result).toEqual('success');
     expect(SendNotifications.sendUserNotification).toHaveBeenCalled();
     expect(SendNotifications.sendManagerNotification).toHaveBeenCalled();
-    expect(InteractivePrompts.sendDeclineCompletion).toHaveBeenCalled();
+    expect(InteractivePrompts.sendOpsDeclineOrApprovalCompletion).toHaveBeenCalled();
 
     done();
   });
@@ -69,7 +69,7 @@ describe('TripActionController operations approve tests', () => {
       driverPhoneNo: '07000000000',
       regNumber: 'KAA 666 Q'
     },
-    state: '13'
+    state: '{ "tripId": "13" }'
   };
 
   it('should run changeTripStatus() to approvedByOps', async (done) => {
@@ -78,6 +78,7 @@ describe('TripActionController operations approve tests', () => {
     await TripActionsController.changeTripStatus(payload, respond);
     expect(SendNotifications.sendUserConfirmNotification).toHaveBeenCalled();
     expect(SendNotifications.sendManagerConfirmNotification).toHaveBeenCalled();
+
     done();
   });
 

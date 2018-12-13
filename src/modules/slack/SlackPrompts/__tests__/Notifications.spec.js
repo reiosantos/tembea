@@ -1,6 +1,7 @@
 import sinon from 'sinon';
 import SlackInteractions from '../../SlackInteractions';
 import SlackNotifications from '../Notifications';
+import DialogPrompts from '../DialogPrompts';
 
 import models from '../../../../database/models';
 
@@ -161,8 +162,16 @@ describe('SlackNotifications', () => {
         dataValues: {
           address: 'never land',
         }
+      },
+      cab: {
+        dataValues: {
+          driverName: 'Dave',
+          driverPhoneNo: '6789009876',
+          regNumber: 'JK 321 LG'
+        }
       }
     };
+
     const payload = {
       user: { id: 3 },
       submission: { driverName: 'driverName', driverPhoneNo: 'driverPhoneNo', regNumber: 'regNumber' }
@@ -191,6 +200,13 @@ describe('SlackNotifications', () => {
       destination: {
         dataValues: {
           address: 'never land',
+        }
+      },
+      cab: {
+        dataValues: {
+          driverName: 'Dave',
+          driverPhoneNo: '6789009876',
+          regNumber: 'JK 321 LG'
         }
       }
     };
@@ -333,14 +349,20 @@ describe('SlackNotifications Tests: Manager approval', () => {
     const payload = {
       actions: [{ name: 'manager_approve' }],
       user: {},
-      submission: {}
+      submission: {},
+      original_message: {
+        ts: '1345654321.43212345432'
+      },
+      channel: {
+        id: 'YU789098765'
+      }
     };
+    DialogPrompts.sendDialogToManager = jest.fn(() => {});
     tripFindByPkStub.returns(Promise.resolve({ dataValues: tripInitial, update: jest.fn }));
     const manager = await SlackInteractions.handleManagerApprovalDetails(payload, jest.fn);
     expect(manager).toEqual(undefined);
-    expect(
-      SlackInteractions.approveTripRequestByManager({}, {}, { isApproved: true }, jest.fn)
-    ).toBeUndefined();
+    SlackInteractions.approveTripRequestByManager(payload, {}, { isApproved: true }, jest.fn);
+    expect(DialogPrompts.sendDialogToManager.mock.calls.length).toBe(1);
     done();
   });
 

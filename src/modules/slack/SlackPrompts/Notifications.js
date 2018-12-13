@@ -275,7 +275,7 @@ class SlackNotifications {
   static approveNotificationFields(tripInformation, payload) {
     const reason = tripInformation.operationsComment;
     const { id } = payload.user;
-    const { driverName, driverPhoneNo, regNumber } = payload.submission;
+    const { driverName, driverPhoneNo, regNumber } = tripInformation.cab.dataValues;
     const notifications = SlackNotifications.notificationFields(tripInformation);
     const decliner = new SlackAttachmentField('', `Confirmed by <@${id}>`, false);
     const commentField = new SlackAttachmentField('Reason', reason, false);

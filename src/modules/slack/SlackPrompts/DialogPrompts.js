@@ -76,8 +76,13 @@ class DialogPrompts {
 
   static async sendOperationsApprovalDialog(payload) {
     const { value } = payload.actions[0];
+    const state = {
+      tripId: value,
+      timeStamp: payload.message_ts,
+      channel: payload.channel.id
+    };
     const dialog = new SlackDialog('operations_reason_dialog',
-      'Confirm Trip Request', 'Submit', false, value);
+      'Confirm Trip Request', 'Submit', false, JSON.stringify(state));
     dialog.addElements([
       new SlackDialogText('Driver\'s name', 'driverName', 'Enter driver\'s name'),
       new SlackDialogText('Driver\'s contact', 'driverPhoneNo', 'Enter driver\'s contact'),

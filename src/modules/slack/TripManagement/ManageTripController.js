@@ -42,7 +42,7 @@ class ManageTripController {
       ride.declinedById = head.id;
       ride.save();
 
-      InteractivePrompts.sendDeclineCompletion(trip.dataValues, state[0], state[1]);
+      InteractivePrompts.sendManagerDeclineOrApprovalCompletion(true, trip.dataValues, state[0], state[1]);
       SlackEvents.raise(slackEventsNames.DECLINED_TRIP_REQUEST, ride.dataValues, respond);
     }).catch(() => {
       respond({

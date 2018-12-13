@@ -7,9 +7,9 @@ import Notifications from './Notifications';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
 import createNavButtons from '../../../helpers/slack/navButtons';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
+import InteractivePromptsHelpers from '../helpers/slackHelpers/InteractivePromptsHelpers';
 
 const web = new WebClientSingleton();
-
 
 class InteractivePrompts {
   static sendBookNewTripResponse(payload, respond) {
@@ -142,11 +142,22 @@ class InteractivePrompts {
     return attachments;
   }
 
-  static sendDeclineCompletion(tripInformation, timeStamp, channel) {
+  /**
+   * @description Replaces the trip notification message with an approval or decline message
+   * @param  {boolean} decline Is this a decline or approval?
+   * @param  {Object} tripInformation The object containing all the trip information
+   * @param  {string} timeStamp The timestamp of the trip request notification
+   * @param  {string} channel The channel id to which the notification was sent
+   */
+  static sendManagerDeclineOrApprovalCompletion(decline, tripInformation, timeStamp, channel) {
     const requester = tripInformation.requester.dataValues;
     const attachments = [
-      new SlackAttachment('Trip Declined'),
-      new SlackAttachment(':x: You have declined this trip')
+      new SlackAttachment(decline ? 'Trip Declined' : 'Trip Approved'),
+      new SlackAttachment(
+        decline
+          ? ':x: You have declined this trip'
+          : ':white_check_mark: You have approved this trip'
+      )
     ];
     const fields = Notifications.notificationFields(
       tripInformation
@@ -156,12 +167,62 @@ class InteractivePrompts {
     attachments[1].addOptionalProps('callback');
     attachments[0].addFieldsOrActions('fields', fields);
 
+    InteractivePrompts.messageUpdate(
+      channel,
+      (decline
+        ? `You have just declined the trip from <@${requester.slackId}>`
+        : `You have just approved the trip from <@${requester.slackId}>`),
+      timeStamp,
+      attachments
+    );
+  }
+
+  
+  /**
+   * @description Update a previously sent message
+   * @param  {string} channel The channel to which the original message was sent
+   * @param  {string} text The message text
+   * @param  {string} timeStamp The time stamp of the original message
+   * @param  {array} attachments The attachments
+   */
+  static messageUpdate(channel, text, timeStamp, attachments) {
     web.getWebClient().chat.update({
       channel,
-      text: `You have just declined the trip from <@${requester.slackId}>`,
+      text,
       ts: timeStamp,
       attachments
     });
+  }
+
+  /**
+   * @description Replaces the trip notification on the ops channel with an approval or decline
+   * @param  {boolean} decline
+   * @param  {Object} tripInformation
+   * @param  {string} timeStamp
+   * @param  {string} channel
+   */
+  static sendOpsDeclineOrApprovalCompletion(decline, tripInformation, timeStamp, channel) {
+    const tripDetailsAttachment = new SlackAttachment(decline ? 'Trip Declined' : 'Trip Confirmed');
+    const confirmationDetailsAttachment = new SlackAttachment(
+      decline
+        ? `:X: <@${tripInformation.decliner.dataValues.slackId}> declined this request`
+        : `:white_check_mark: <@${tripInformation.confirmer.slackId}> approved this request`
+    );
+    const cabDetailsAttachment = !decline
+      ? InteractivePromptsHelpers.generateCabDetailsAttachment(tripInformation)
+      : {};
+
+    confirmationDetailsAttachment.addOptionalProps('', '', (decline ? 'danger' : 'good'));
+    tripDetailsAttachment.addOptionalProps('', '', '#3c58d7');
+    tripDetailsAttachment.addFieldsOrActions('fields',
+      InteractivePromptsHelpers.addOpsNotificationTripFields(tripInformation));
+
+    InteractivePrompts.messageUpdate(channel,
+      (decline ? 'Trip request declined.' : 'Trip request approved'),
+      timeStamp,
+      [tripDetailsAttachment,
+        cabDetailsAttachment,
+        confirmationDetailsAttachment]);
   }
 
   static passedTimeOutLimit() {

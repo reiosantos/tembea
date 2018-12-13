@@ -42,7 +42,7 @@ describe('Interactive Prompts test', () => {
       requester: { dataValues: {} },
       rider: { dataValues: { slackId: 2 } },
     };
-    const result = InteractivePrompts.sendDeclineCompletion(tripInitial, 'timeStamp', 1);
+    const result = InteractivePrompts.sendManagerDeclineOrApprovalCompletion(true, tripInitial, 'timeStamp', 1);
     expect(result).toBe(undefined);
 
     done();
@@ -93,6 +93,56 @@ describe('Interactive Prompts test', () => {
     const response = jest.fn();
     await InteractivePrompts.sendListOfDepartments({ channel: { id: 1 }, user: { id: 2 } }, response);
     expect(response).toBeCalledTimes(1);
+  });
+
+  it('should send ops decline or approval', async (done) => {
+    const tripInfo = {
+      decliner: {
+        dataValues: {
+          slackId: 'XXXXXXX'
+        }
+      },
+      rider: {
+        dataValues: {
+
+        }
+      },
+      origin: {
+        dataValues: {
+
+        }
+      },
+      destination: {
+        dataValues: {
+
+        }
+      },
+      requester: {
+        dataValues: {
+
+        }
+      },
+      department: {
+        dataValues: {
+
+        }
+      },
+      confirmer: {
+        slackId: 'XXXXXXXXX'
+      },
+      cab: {
+        dataValues: {
+          driverName: 'Dave',
+          driverPhoneNo: '2345678',
+          regNumber: 'GE 890 DSX'
+        }
+      }
+    };
+    InteractivePrompts.messageUpdate = jest.fn(() => {});
+
+    await InteractivePrompts.sendOpsDeclineOrApprovalCompletion(false, tripInfo, '3456787654.3456787654', 'DM45676543');
+    expect(InteractivePrompts.messageUpdate).toHaveBeenCalled();
+    done();
   });
 });
 

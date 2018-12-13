@@ -103,6 +103,21 @@ module.exports = (sequelize, DataTypes) => {
       targetKey: 'id',
       as: 'department'
     });
+    TripRequest.belongsTo(models.Cab, {
+      foreignKey: 'cabId',
+      targetKey: 'id',
+      as: 'cab'
+    });
+    TripRequest.belongsTo(models.User, {
+      foreignKey: 'approvedById',
+      targetKey: 'id',
+      as: 'approver'
+    });
+    TripRequest.belongsTo(models.User, {
+      foreignKey: 'confirmedById',
+      targetKey: 'id',
+      as: 'confirmer'
+    });
   };
   return TripRequest;
 };

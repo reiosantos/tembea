@@ -57,7 +57,7 @@ class SlackInteractions {
         respond({ text: 'Coming soon...' });
         break;
       default:
-      respond(SlackInteractions.goodByeMessage());
+        respond(SlackInteractions.goodByeMessage());
         break;
     }
   }
@@ -143,7 +143,7 @@ class SlackInteractions {
           break;
         case 'manager_approve':
           trip = await SlackHelpers.isRequestApproved(value, payload.user.id);
-          SlackInteractions.approveTripRequestByManager(payload, { value, name }, trip, respond);
+          SlackInteractions.approveTripRequestByManager(payload, trip, respond);
           break;
         default:
           break;
@@ -174,15 +174,18 @@ class SlackInteractions {
 
   static async handleManagerApprovalDetails(payload, respond) {
     try {
-      const { state: tripRequestId, submission, user } = payload;
+      const { submission, user } = payload;
+      const state = payload.state.split(' ');
+      const timeStamp = state[0];
+      const channelId = state[1];
+      const tripId = state[2];
       const { approveReason } = submission;
-      const hasApproved = await SlackHelpers.approveRequest(tripRequestId, user.id, approveReason);
+      const hasApproved = await SlackHelpers.approveRequest(tripId, user.id, approveReason);
 
       if (hasApproved) {
-        SlackEvents.raise(slackEventsNames.TRIP_APPROVED, tripRequestId, payload, respond);
-        respond(new SlackInteractiveMessage(':white_check_mark:'
-          + 'You have approved this request and it has been '
-          + 'forwarded to the operations team for confirmation.', undefined, undefined, '#29b016'));
+        SlackEvents.raise(slackEventsNames.TRIP_APPROVED, tripId, payload, respond);
+        const trip = await SlackHelpers.getTripRequest(tripId);
+        InteractivePrompts.sendManagerDeclineOrApprovalCompletion(false, trip, timeStamp, channelId);
         return;
       }
       respond(new SlackInteractiveMessage('Error:bangbang: : This request could not be approved. '
@@ -194,7 +197,9 @@ class SlackInteractions {
     }
   }
 
-  static approveTripRequestByManager(payload, action, trip, respond) {
+  static approveTripRequestByManager(payload, trip, respond) {
+    const { channel, actions } = payload;
+
     if (trip.isApproved) {
       respond(new SlackInteractiveMessage(
         `This trip has already been approved by ${trip.approvedBy}`
@@ -203,7 +208,7 @@ class SlackInteractions {
     }
     return DialogPrompts.sendDialogToManager(payload,
       'approve_trip',
-      action.value,
+      `${payload.original_message.ts} ${channel.id} ${actions[0].value}`,
       'Approve', 'Approve', 'approveReason');
   }
 
@@ -236,16 +241,16 @@ class SlackInteractions {
   }
 
   static async handleTripActions(payload, respond) {
-    if (payload.submission.confirmationComment) {
-      TripActionsController.changeTripStatus(payload, respond);
-    } else if (payload.submission.comment) {
-      try {
+    try {
+      if (payload.submission.confirmationComment) {
         TripActionsController.changeTripStatus(payload, respond);
-      } catch (error) {
-        respond(
-          new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
-        );
+      } else if (payload.submission.comment) {
+        TripActionsController.changeTripStatus(payload, respond);
       }
+    } catch (error) {
+      respond(
+        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
+      );
     }
   }
 }
