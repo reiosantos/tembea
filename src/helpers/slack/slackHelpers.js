@@ -120,7 +120,7 @@ class SlackHelpers {
     }
   }
 
-  static noOfPassengers(){
+  static noOfPassengers() {
     const passengerNumbers = [...Array(10)].map(
       (label, value) => ({ text: value + 1, value: value + 1 })
     );

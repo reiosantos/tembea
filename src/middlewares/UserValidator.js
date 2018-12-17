@@ -11,7 +11,6 @@ class UserValidator {
    */
   static validateEmail(req, res, next) {
     const email = req.body.email || '';
-
     if (!validator.isEmail(email.trim())) {
       return res.status(400).json({
         success: false,
