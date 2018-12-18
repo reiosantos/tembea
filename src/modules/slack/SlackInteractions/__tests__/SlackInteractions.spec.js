@@ -390,22 +390,27 @@ describe('test viewTripItineraryActions switch', () => {
 });
 
 describe('Send comment dialog', () => {
-  it('should handle confirm trip', () => {
+  beforeEach(() => {
     DialogPrompts.sendOperationsApprovalDialog = jest.fn();
+    DialogPrompts.sendOperationsDeclineDialog = jest.fn();
+  });
+  
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+  it('should handle confirm trip', () => {
     const payload = { actions: [{ name: 'confirmTrip' }] };
     SlackInteractions.sendCommentDialog(payload);
     expect(DialogPrompts.sendOperationsApprovalDialog).toBeCalledWith(payload);
   });
 
   it('should handle confirm trip', () => {
-    DialogPrompts.sendOperationsDeclineDialog = jest.fn();
     const payload = { actions: [{ name: 'declineRequest' }] };
     SlackInteractions.sendCommentDialog(payload);
     expect(DialogPrompts.sendOperationsDeclineDialog).toBeCalledWith(payload);
   });
 
   it('should handle default', () => {
-    DialogPrompts.sendOperationsDeclineDialog = jest.fn();
     const payload = { actions: [{ name: 'declineRequests' }] };
     SlackInteractions.sendCommentDialog(payload);
     expect(DialogPrompts.sendOperationsDeclineDialog).not.toHaveBeenCalled();
@@ -413,42 +418,62 @@ describe('Send comment dialog', () => {
 });
 
 describe('Handle trip actions', () => {
-  it('should handle confirm trip', () => {
+  let response;
+
+  const payload = {
+    submission:
+      {
+        confirmationComment: 'yes',
+        driverName: 'Valid Name',
+        driverPhoneNo: '1234567890',
+        regNumber: 'LNS 8367*'
+      }
+  };
+  
+  beforeEach(() => {
+    response = jest.fn();
     DialogPrompts.sendOperationsApprovalDialog = jest.fn();
-    const payload = { actions: [{ name: 'confirmTrip' }] };
+    DialogPrompts.sendOperationsDeclineDialog = jest.fn();
+    TripActionsController.changeTripStatus = jest.fn(() => {});
+    TripActionsController.runCabValidation = jest.fn(() => []);
+  });
+  
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+  
+  it('should handle confirm trip', () => {
+    payload.actions = [{ name: 'confirmTrip' }];
     SlackInteractions.sendCommentDialog(payload);
     expect(DialogPrompts.sendOperationsApprovalDialog).toBeCalledWith(payload);
   });
 
   it('should handle confirm trip', () => {
-    DialogPrompts.sendOperationsDeclineDialog = jest.fn();
-    const payload = { actions: [{ name: 'declineRequest' }] };
+    payload.actions = [{ name: 'declineRequest' }];
     SlackInteractions.sendCommentDialog(payload);
     expect(DialogPrompts.sendOperationsDeclineDialog).toBeCalledWith(payload);
   });
 
   it('should throw an error', () => {
-    const response = jest.fn();
-
-    const payload = { actions: [{ name: 'declineRequest' }] };
-    SlackInteractions.handleTripActions(payload, response);
-    expect(response).toHaveBeenCalled();
+    payload.actions = [{ name: 'declineRequest' }];
+    const error = new Error('not working');
+    const rejectMock = jest.fn(() => Promise.reject(error));
+    TripActionsController.changeTripStatus = rejectMock;
+    try {
+      SlackInteractions.handleTripActions(payload, response);
+    } catch (err) {
+      expect(response).toHaveBeenCalled();
+    }
   });
 
   it('should handle confirmationComment', () => {
-    TripActionsController.changeTripStatus = jest.fn(() => {});
-    const response = jest.fn();
-
-    const payload = { submission: { confirmationComment: 'fghj' }, actions: [{ name: 'declineRequest' }] };
     SlackInteractions.handleTripActions(payload, response);
     expect(TripActionsController.changeTripStatus).toHaveBeenCalled();
   });
 
-  it('should handle confirmationComment', () => {
-    TripActionsController.changeTripStatus = jest.fn(() => {});
-    const response = jest.fn();
-
-    const payload = { submission: { comment: 'fghj' }, actions: [{ name: 'declineRequest' }] };
+  it('should handle declineComment', () => {
+    payload.submission = { opsDeclineComment: 'fghj' };
     SlackInteractions.handleTripActions(payload, response);
     expect(TripActionsController.changeTripStatus).toHaveBeenCalled();
   });

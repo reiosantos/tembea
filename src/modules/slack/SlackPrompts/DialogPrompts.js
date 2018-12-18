@@ -67,7 +67,7 @@ class DialogPrompts {
     const dialog = new SlackDialog('operations_reason_dialog',
       'Reason for declining', 'Submit', false, JSON.stringify(state));
     dialog.addElements([
-      new SlackDialogTextarea('Justification', 'comment')
+      new SlackDialogTextarea('Justification', 'opsDeclineComment')
     ]);
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
 

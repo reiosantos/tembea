@@ -242,11 +242,11 @@ class SlackInteractions {
 
   static async handleTripActions(payload, respond) {
     try {
-      if (payload.submission.confirmationComment) {
-        TripActionsController.changeTripStatus(payload, respond);
-      } else if (payload.submission.comment) {
-        TripActionsController.changeTripStatus(payload, respond);
+      const errors = TripActionsController.runCabValidation(payload);
+      if (errors && errors.length > 0) {
+        return { errors };
       }
+      await TripActionsController.changeTripStatus(payload, respond);
     } catch (error) {
       respond(
         new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')

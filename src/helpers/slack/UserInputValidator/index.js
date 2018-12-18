@@ -108,6 +108,42 @@ class UserInputValidator {
       throw new Error('There was a problem processing your request');
     }
   }
+
+  static checkUsername(user, name) {
+    const username = /[a-zA-Z]$/;
+    if (!user || !username.test(user)) {
+      return [new SlackDialogError(name, 'Invalid username.')];
+    }
+    return [];
+  }
+
+  static checkPhoneNumber(phoneNumber, name) {
+    const num = /^[0-9]{6,16}$/;
+
+    if (!num.test(phoneNumber)) {
+      return [new SlackDialogError(name, 'Invalid phone number!')];
+    }
+    return [];
+  }
+
+  static checkNumberPlate(numberPlate, name) {
+    const plate = /[A-Z0-9\s]$/;
+    let testStr = '';
+    if (numberPlate) testStr = numberPlate.toUpperCase();
+    if (!plate.test(testStr)) {
+      return [new SlackDialogError(name, 'Invalid cab registration number!')];
+    }
+    return [];
+  }
+
+  static validateCabDetails(payload) {
+    const { driverName, driverPhoneNo, regNumber } = payload.submission;
+    const errors = [];
+    errors.push(...this.checkUsername(driverName, 'driverName'));
+    errors.push(...this.checkPhoneNumber(driverPhoneNo, 'driverPhoneNo'));
+    errors.push(...this.checkNumberPlate(regNumber, 'regNumber'));
+    return errors;
+  }
 }
 
 export default UserInputValidator;

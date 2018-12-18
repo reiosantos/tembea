@@ -135,4 +135,67 @@ describe('UserInputValidator tests', () => {
       }
     });
   });
+
+  describe('checkUsername', () => {
+    it('valid user name', () => {
+      const result = UserInputValidator.checkUsername('dummyUser', 'driver');
+      expect(result.length).toEqual(0);
+    });
+    it('invalid username', () => {
+      let result = UserInputValidator.checkUsername('*****dummyUser*****', 'driver');
+      expect(result.length).toEqual(1);
+      result = UserInputValidator.checkUsername(null, 'driver');
+      expect(result.length).toEqual(1);
+    });
+  });
+});
+
+
+describe('checkPhoneNumber', () => {
+  it('valid phone number', () => {
+    const result = UserInputValidator.checkPhoneNumber('23481234567', 'driver');
+    expect(result.length).toEqual(0);
+  });
+  it('invalid phone number', () => {
+    let result = UserInputValidator.checkPhoneNumber('*****dummyUser*****', 'driver');
+    expect(result.length).toEqual(1);
+    result = UserInputValidator.checkPhoneNumber('1233', 'driver');
+    expect(result.length).toEqual(1);
+    result = UserInputValidator.checkPhoneNumber(null, 'driver');
+    expect(result.length).toEqual(1);
+  });
+});
+
+describe('checkNumberPlate', () => {
+  it('valid plate number', () => {
+    let result = UserInputValidator.checkNumberPlate('LND 419 SMC', 'driver');
+    expect(result.length).toEqual(0);
+    result = UserInputValidator.checkNumberPlate('LND 419 smn', 'driver');
+    expect(result.length).toEqual(0);
+  });
+  it('invalid plate number', () => {
+    let result = UserInputValidator.checkNumberPlate('*****Invalid Plate******', 'driver');
+    expect(result.length).toEqual(1);
+    result = UserInputValidator.checkNumberPlate(null, 'driver');
+    expect(result.length).toEqual(1);
+  });
+});
+
+describe('checkNumberPlate', () => {
+  const payload = {
+    submission: {
+      driverName: 'Valid User',
+      driverPhoneNo: '1234567890',
+      regNumber: 'LND 419 smn',
+    }
+  };
+  it('valid', async () => {
+    const result = UserInputValidator.validateCabDetails(payload);
+    expect(result.length).toEqual(0);
+  });
+  it('invalid', () => {
+    payload.submission.regNumber = '*inalid reg number*';
+    const result = UserInputValidator.validateCabDetails(payload);
+    expect(result.length).toEqual(1);
+});
 });
