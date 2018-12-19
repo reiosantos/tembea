@@ -1,6 +1,6 @@
-import SlackEvents from '../events';
+import slackEvents from '../events';
 import Utils from '../../../utils';
-import { slackEventsNames } from '../events/slackEvents';
+import { slackEventNames } from '../events/slackEvents';
 import models from '../../../database/models';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
@@ -88,7 +88,7 @@ class ScheduleTripController {
       const trip = await TripRequest.create(tripRequest);
 
       InteractivePrompts.sendCompletionResponse(payload, respond, tripRequest.requestedById);
-      SlackEvents.raise(slackEventsNames.NEW_TRIP_REQUEST, payload, trip.dataValues, respond);
+      slackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, trip.dataValues, respond);
 
       return true;
     } catch (error) {

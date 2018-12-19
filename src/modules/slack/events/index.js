@@ -1,15 +1,16 @@
-
 import SlackNotifications from '../SlackPrompts/Notifications';
-import { slackEventsNames, SlackEvents } from './slackEvents';
+import { SlackEvents, slackEventNames } from './slackEvents';
 
-SlackEvents.handle(slackEventsNames.TRIP_APPROVED,
+const slackEvents = SlackEvents;
+
+slackEvents.handle(slackEventNames.TRIP_APPROVED,
   SlackNotifications.sendOperationsTripRequestNotification);
-SlackEvents.handle(slackEventsNames.TRIP_WAITING_CONFIRMATION,
+slackEvents.handle(slackEventNames.TRIP_WAITING_CONFIRMATION,
   SlackNotifications.sendRequesterApprovedNotification);
 
-SlackEvents.handle(slackEventsNames.NEW_TRIP_REQUEST,
+slackEvents.handle(slackEventNames.NEW_TRIP_REQUEST,
   SlackNotifications.sendManagerTripRequestNotification);
-SlackEvents.handle(slackEventsNames.DECLINED_TRIP_REQUEST,
+slackEvents.handle(slackEventNames.DECLINED_TRIP_REQUEST,
   SlackNotifications.sendRequesterDeclinedNotification);
 
-export default SlackEvents;
+export default slackEvents;

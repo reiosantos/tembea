@@ -55,7 +55,7 @@ export default class HomeController {
         const teamName = jsonResponse.team_name;
         const userId = jsonResponse.user_id;
         const userToken = jsonResponse.access_token;
-        const webhookConfigUrl = jsonResponse.incoming_webhook.configuration_url;
+        const webhookConfigUrl = jsonResponse.incoming_webhook.url;
         const urlObject = url.parse(webhookConfigUrl);
         // create and save team credentials
         await TeamDetailsService.saveTeamDetails({

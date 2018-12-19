@@ -5,6 +5,50 @@ import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import UserInputValidator from '../../../../helpers/slack/UserInputValidator';
 import models from '../../../../database/models';
 
+jest.mock('../../SlackPrompts/Notifications.js');
+jest.mock('../../events/', () => ({
+  slackEvents: jest.fn(() => ({
+    raise: jest.fn(),
+    handle: jest.fn()
+  })),
+}));
+jest.mock('../../events/slackEvents', () => ({
+  SlackEvents: jest.fn(() => ({
+    raise: jest.fn(),
+    handle: jest.fn()
+  })),
+  slackEventNames: Object.freeze({
+    TRIP_APPROVED: 'trip_approved',
+    TRIP_WAITING_CONFIRMATION: 'trip_waiting_confirmation',
+    NEW_TRIP_REQUEST: 'new_trip_request',
+    DECLINED_TRIP_REQUEST: 'declined_trip_request'
+  })
+}));
+
+jest.mock('../../../../services/TeamDetailsService', () => ({
+  getTeamDetailsBotOauthToken: jest.fn(() => Promise.resolve('token'))
+}));
+
+jest.mock('../../SlackPrompts/Notifications.js');
+jest.mock('../../events/', () => ({
+  slackEvents: jest.fn(() => ({
+    raise: jest.fn(),
+    handle: jest.fn()
+  })),
+}));
+jest.mock('../../events/slackEvents', () => ({
+  SlackEvents: jest.fn(() => ({
+    raise: jest.fn(),
+    handle: jest.fn()
+  })),
+  slackEventNames: Object.freeze({
+    TRIP_APPROVED: 'trip_approved',
+    TRIP_WAITING_CONFIRMATION: 'trip_waiting_confirmation',
+    NEW_TRIP_REQUEST: 'new_trip_request',
+    DECLINED_TRIP_REQUEST: 'declined_trip_request'
+  })
+}));
+
 describe('TripActionController operations decline tests', () => {
   let respond;
 
@@ -20,6 +64,9 @@ describe('TripActionController operations decline tests', () => {
       },
       channel: {
         id: 'CE0F7SZNU'
+      },
+      team: {
+        id: 1
       },
       submission: {
         opsDeclineComment: 'abishai has it',
@@ -44,7 +91,7 @@ describe('TripActionController operations decline tests', () => {
     await TripActionsController.changeTripStatus(payload, respond);
 
     expect(findUserByIdOrSlackId).toHaveBeenCalledTimes(1);
-    expect(changeTripStatusToDeclined).toHaveBeenCalledWith(1, payload, respond);
+    expect(changeTripStatusToDeclined).toHaveBeenCalledWith(1, payload, respond, 'token');
     done();
   });
 
@@ -104,6 +151,9 @@ describe('TripActionController operations approve tests', () => {
       channel: {
         id: 'CE0F7SZNU'
       },
+      team: {
+        id: 1
+      },
       submission: {
         confirmationComment: 'derick has it',
         driverName: 'derick',
@@ -116,6 +166,7 @@ describe('TripActionController operations approve tests', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+    jest.resetAllMocks();
   });
 
   const opsUserId = 3;
@@ -131,16 +182,16 @@ describe('TripActionController operations approve tests', () => {
     await TripActionsController.changeTripStatus(payload, respond);
 
     expect(findUserByIdOrSlackId).toHaveBeenCalledTimes(1);
-    expect(changeTripStatusToConfirmed).toHaveBeenCalledWith(1, payload, respond);
+    expect(changeTripStatusToConfirmed).toHaveBeenCalledWith(1, payload, respond, undefined);
     done();
   });
 
   it('should run changeTripStatusToConfirmed() to approvedByOps', async (done) => {
-    SendNotifications.sendUserConfirmNotification = jest.fn();
-    SendNotifications.sendManagerConfirmNotification = jest.fn();
+    SendNotifications.sendUserConfirmOrDeclineNotification = jest.fn();
+    SendNotifications.sendManagerConfirmOrDeclineNotification = jest.fn();
     await TripActionsController.changeTripStatusToConfirmed(opsUserId, payload, respond);
-    expect(SendNotifications.sendUserConfirmNotification).toHaveBeenCalled();
-    expect(SendNotifications.sendManagerConfirmNotification).toHaveBeenCalled();
+    expect(SendNotifications.sendUserConfirmOrDeclineNotification).toHaveBeenCalled();
+    expect(SendNotifications.sendManagerConfirmOrDeclineNotification).toHaveBeenCalled();
 
     done();
   });

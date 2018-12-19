@@ -1,5 +1,5 @@
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
-import { slackEventsNames } from '../events/slackEvents';
+import { slackEventNames } from '../events/slackEvents';
 import SlackEvents from '../events';
 import SlackController from '../SlackController';
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
@@ -186,7 +186,7 @@ class SlackInteractions {
       const hasApproved = await SlackHelpers.approveRequest(tripId, user.id, approveReason);
 
       if (hasApproved) {
-        SlackEvents.raise(slackEventsNames.TRIP_APPROVED, tripId, payload, respond);
+        SlackEvents.raise(slackEventNames.TRIP_APPROVED, tripId, payload, respond);
         const trip = await SlackHelpers.getTripRequest(tripId);
         const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
         InteractivePrompts.sendManagerDeclineOrApprovalCompletion(false, trip, timeStamp, channelId, slackBotOauthToken);

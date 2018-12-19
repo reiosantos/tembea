@@ -8,8 +8,8 @@ import {
 } from '../SlackModels/SlackMessageModels';
 
 class NotificationsResponse {
-  static responseForOperationsChannel(data, payload) {
-    const channelId = process.env.OPERATIONS_DEPT_SLACK_CHANNEL_ID;
+  static getRequestMessageForOperationsChannel(data, payload, channel) {
+    const channelId = channel;
     const { id } = data;
 
     const actions = [

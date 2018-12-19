@@ -4,9 +4,18 @@ import SlackNotifications from '../Notifications';
 import DialogPrompts from '../DialogPrompts';
 
 import models from '../../../../database/models';
+import { SlackEvents } from '../../events/slackEvents';
+
+SlackEvents.raise = jest.fn();
 
 jest.mock('../../../../utils/WebClientSingleton');
-jest.mock('../../../../services/TeamDetailsService');
+jest.mock('../../../../services/TeamDetailsService', () => ({
+  getTeamDetails: jest.fn(() => Promise.resolve({
+    botToken: 'just a token',
+    webhookConfigUrl: 'just a url'
+  })),
+  getTeamDetailsBotOauthToken: jest.fn(() => Promise.resolve('just a random token'))
+}));
 
 describe('SlackNotifications', () => {
   it('should fail when departmentId is wrong', async (done) => {
@@ -138,6 +147,13 @@ describe('SlackNotifications', () => {
       destination: {
         dataValues: {
           address: 'never land',
+        }
+      },
+      cab: {
+        dataValues: {
+          driverName: 'Sunday',
+          driverPhoneNo: '001001001',
+          regNumber: '1928dfsgg'
         }
       }
     };
@@ -294,12 +310,12 @@ describe('SlackNotifications Tests: Manager approval', () => {
     sandbox.restore();
   });
 
-  it('should notify manager of new trip request', async (done) => {
+  it('should notify ops on manager\'s approval', async (done) => {
     const payload = {
       team: { id: 'AHDJDLKUER' }
     };
-    const manager = await SlackNotifications.sendOperationsTripRequestNotification(23, payload, respond);
-    expect(manager).toEqual(undefined);
+    await SlackNotifications.sendOperationsTripRequestNotification(23, payload, respond);
+    expect(SlackEvents.raise).toBeCalled();
     done();
   });
 

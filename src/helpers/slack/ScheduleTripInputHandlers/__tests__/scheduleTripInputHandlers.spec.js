@@ -8,6 +8,25 @@ import {
 } from '../../../../modules/slack/SlackInteractions/__mocks__/SlackInteractions.mock';
 import Cache from '../../../../cache';
 
+jest.mock('../../../../modules/slack/events/', () => ({
+  slackEvents: jest.fn(() => ({
+    raise: jest.fn(),
+    handle: jest.fn()
+  })),
+}));
+jest.mock('../../../../modules/slack/events/slackEvents', () => ({
+  SlackEvents: jest.fn(() => ({
+    raise: jest.fn(),
+    handle: jest.fn()
+  })),
+  slackEventNames: Object.freeze({
+    TRIP_APPROVED: 'trip_approved',
+    TRIP_WAITING_CONFIRMATION: 'trip_waiting_confirmation',
+    NEW_TRIP_REQUEST: 'new_trip_request',
+    DECLINED_TRIP_REQUEST: 'declined_trip_request'
+  })
+}));
+
 describe('ScheduleTripInputHandlers Tests', () => {
   const payload = createPayload('dummyValue');
   let responder;

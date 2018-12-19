@@ -4,6 +4,7 @@ import SendNotifications from '../SlackPrompts/Notifications';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
+import TeamDetailsService from '../../../services/TeamDetailsService';
 
 const { TripRequest, Cab } = models;
 const { Op } = Sequelize;
@@ -26,17 +27,18 @@ class TripActionsController {
     try {
       const { id } = payload.user;
       const { id: opsUserId } = await SlackHelpers.findUserByIdOrSlackId(id);
+      const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
       if (payload.submission.confirmationComment) {
-        TripActionsController.changeTripStatusToConfirmed(opsUserId, payload, respond);
+        await TripActionsController.changeTripStatusToConfirmed(opsUserId, payload, respond, slackBotOauthToken);
       } else if (payload.submission.opsDeclineComment) {
-        TripActionsController.changeTripStatusToDeclined(opsUserId, payload, respond);
+        await TripActionsController.changeTripStatusToDeclined(opsUserId, payload, respond, slackBotOauthToken);
       }
     } catch (error) {
       TripActionsController.errorMessage(respond);
     }
   }
 
-  static async changeTripStatusToConfirmed(opsUserId, payload, respond) {
+  static async changeTripStatusToConfirmed(opsUserId, payload, respond, slackBotOauthToken) {
     const { tripId, timeStamp, channel } = JSON.parse(payload.state);
     const { confirmationComment } = payload.submission;
     try {
@@ -49,9 +51,9 @@ class TripActionsController {
         cabId: cab.id,
       }, { where: { id: tripId } });
       const trip = await SlackHelpers.getTripRequest(tripId);
-      SendNotifications.sendUserConfirmNotification(payload, trip);
-      SendNotifications.sendManagerConfirmNotification(payload, trip);
-      InteractivePrompts.sendOpsDeclineOrApprovalCompletion(false, trip, timeStamp, channel);
+      await SendNotifications.sendUserConfirmOrDeclineNotification(payload, trip, false);
+      await SendNotifications.sendManagerConfirmOrDeclineNotification(payload, trip, false);
+      await InteractivePrompts.sendOpsDeclineOrApprovalCompletion(false, trip, timeStamp, channel, slackBotOauthToken);
 
       return 'success';
     } catch (error) {
@@ -59,7 +61,7 @@ class TripActionsController {
     }
   }
 
-  static async changeTripStatusToDeclined(opsUserId, payload, respond) {
+  static async changeTripStatusToDeclined(opsUserId, payload, respond, slackBotOauthToken) {
     const state = JSON.parse(payload.state);
     const tripId = Number(state.trip);
     const { opsDeclineComment } = payload.submission;
@@ -70,15 +72,14 @@ class TripActionsController {
         declinedById: opsUserId
       }, { where: { id: tripId } });
       const trip = await SlackHelpers.getTripRequest(tripId);
-      SendNotifications.sendUserConfirmOrDeclineNotification(payload, trip);
-      SendNotifications.sendManagerConfirmOrDeclineNotification(payload, trip);
-      InteractivePrompts.sendOpsDeclineOrApprovalCompletion(
-        true, trip, state.actionTs, payload.channel.id
+      await SendNotifications.sendUserConfirmOrDeclineNotification(payload, trip, true);
+      await SendNotifications.sendManagerConfirmOrDeclineNotification(payload, trip, true);
+      await InteractivePrompts.sendOpsDeclineOrApprovalCompletion(
+        true, trip, state.actionTs, payload.channel.id, slackBotOauthToken
       );
       return 'success';
     } catch (error) {
       TripActionsController.errorMessage(respond);
-      console.log(error);
     }
   }
 

@@ -150,7 +150,7 @@ class InteractivePrompts {
    * @param  {string} channel The channel id to which the notification was sent
    * @param {string} slackBotOauthToken The team bot token
    */
-  static sendManagerDeclineOrApprovalCompletion(decline, tripInformation, timeStamp, channel, slackBotOauthToken) {
+  static async sendManagerDeclineOrApprovalCompletion(decline, tripInformation, timeStamp, channel, slackBotOauthToken) {
     const requester = tripInformation.requester.dataValues;
     const attachments = [
       new SlackAttachment(decline ? 'Trip Declined' : 'Trip Approved'),
@@ -168,7 +168,7 @@ class InteractivePrompts {
     attachments[1].addOptionalProps('callback');
     attachments[0].addFieldsOrActions('fields', fields);
 
-    InteractivePrompts.messageUpdate(
+    await InteractivePrompts.messageUpdate(
       channel,
       (decline
         ? `You have just declined the trip from <@${requester.slackId}>`
@@ -188,8 +188,8 @@ class InteractivePrompts {
    * @param  {array} attachments The attachments
    * @param {string} slackBotOauthToken The team bot token
    */
-  static messageUpdate(channel, text, timeStamp, attachments, slackBotOauthToken) {
-    web.getWebClient(slackBotOauthToken).chat.update({
+  static async messageUpdate(channel, text, timeStamp, attachments, slackBotOauthToken) {
+    await web.getWebClient(slackBotOauthToken).chat.update({
       channel,
       text,
       ts: timeStamp,
@@ -204,7 +204,7 @@ class InteractivePrompts {
    * @param  {string} timeStamp
    * @param  {string} channel
    */
-  static sendOpsDeclineOrApprovalCompletion(decline, tripInformation, timeStamp, channel) {
+  static async sendOpsDeclineOrApprovalCompletion(decline, tripInformation, timeStamp, channel, slackBotOauthToken) {
     const tripDetailsAttachment = new SlackAttachment(decline ? 'Trip Declined' : 'Trip Confirmed');
     const confirmationDetailsAttachment = new SlackAttachment(
       decline
@@ -220,12 +220,16 @@ class InteractivePrompts {
     tripDetailsAttachment.addFieldsOrActions('fields',
       InteractivePromptsHelpers.addOpsNotificationTripFields(tripInformation));
 
-    InteractivePrompts.messageUpdate(channel,
-      (decline ? 'Trip request declined.' : 'Trip request approved'),
-      timeStamp,
-      [tripDetailsAttachment,
-        cabDetailsAttachment,
-        confirmationDetailsAttachment]);
+    try {
+      await InteractivePrompts.messageUpdate(channel,
+        (decline ? 'Trip request declined.' : 'Trip request approved'),
+        timeStamp,
+        [tripDetailsAttachment,
+          cabDetailsAttachment,
+          confirmationDetailsAttachment], slackBotOauthToken);
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   static passedTimeOutLimit() {

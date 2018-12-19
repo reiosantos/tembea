@@ -2,6 +2,25 @@ import RescheduleTripController from '../RescheduleTripController';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 
 jest.mock('../../../../utils/WebClientSingleton');
+jest.mock('../../SlackPrompts/Notifications.js');
+jest.mock('../../events/', () => ({
+  slackEvents: jest.fn(() => ({
+    raise: jest.fn(),
+    handle: jest.fn()
+  })),
+}));
+jest.mock('../../events/slackEvents', () => ({
+  SlackEvents: jest.fn(() => ({
+    raise: jest.fn(),
+    handle: jest.fn()
+  })),
+  slackEventNames: Object.freeze({
+    TRIP_APPROVED: 'trip_approved',
+    TRIP_WAITING_CONFIRMATION: 'trip_waiting_confirmation',
+    NEW_TRIP_REQUEST: 'new_trip_request',
+    DECLINED_TRIP_REQUEST: 'declined_trip_request'
+  })
+}));
 
 describe('RescheduleTripController', () => {
   it('should get user information', async (done) => {
@@ -45,7 +64,7 @@ describe('RescheduleTripController', () => {
     InteractivePrompts.sendRescheduleCompletion = jest.fn(() => {});
 
     await RescheduleTripController.rescheduleTrip(3, '12/12/2018 22:00');
-    
+
     expect(InteractivePrompts.sendRescheduleCompletion.mock.calls.length).toBe(1);
     done();
   });
@@ -54,7 +73,7 @@ describe('RescheduleTripController', () => {
     InteractivePrompts.sendRescheduleError = jest.fn(() => {});
 
     await RescheduleTripController.rescheduleTrip(3, {});
-    
+
     expect(InteractivePrompts.sendRescheduleError.mock.calls.length).toBe(1);
     done();
   });
@@ -63,7 +82,7 @@ describe('RescheduleTripController', () => {
     InteractivePrompts.sendTripError = jest.fn(() => {});
 
     await RescheduleTripController.rescheduleTrip(3000, '12/12/2018 22:00');
-    
+
     expect(InteractivePrompts.sendTripError.mock.calls.length).toBe(1);
     done();
   });

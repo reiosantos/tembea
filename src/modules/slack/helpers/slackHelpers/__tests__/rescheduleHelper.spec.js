@@ -4,6 +4,26 @@ import TripRescheduleHelper from '../rescheduleHelper';
 import DialogPrompts from '../../../SlackPrompts/DialogPrompts';
 import InteractivePrompts from '../../../SlackPrompts/InteractivePrompts';
 
+jest.mock('../../../SlackPrompts/Notifications.js');
+jest.mock('../../../events/', () => ({
+  slackEvents: jest.fn(() => ({
+    raise: jest.fn(),
+    handle: jest.fn()
+  })),
+}));
+jest.mock('../../../events/slackEvents', () => ({
+  SlackEvents: jest.fn(() => ({
+    raise: jest.fn(),
+    handle: jest.fn()
+  })),
+  slackEventNames: Object.freeze({
+    TRIP_APPROVED: 'trip_approved',
+    TRIP_WAITING_CONFIRMATION: 'trip_waiting_confirmation',
+    NEW_TRIP_REQUEST: 'new_trip_request',
+    DECLINED_TRIP_REQUEST: 'declined_trip_request'
+  })
+}));
+
 describe('Trip Reschedule Helper test', () => {
   const { TripRequest } = models;
 

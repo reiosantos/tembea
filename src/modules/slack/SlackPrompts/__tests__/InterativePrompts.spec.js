@@ -6,6 +6,24 @@ import {
 } from '../__mocks__/InteractivePrompts.mock';
 
 jest.mock('../../../../utils/WebClientSingleton');
+jest.mock('../../../slack/events/', () => ({
+  slackEvents: jest.fn(() => ({
+    raise: jest.fn(),
+    handle: jest.fn()
+  })),
+}));
+jest.mock('../../events/slackEvents', () => ({
+  SlackEvents: jest.fn(() => ({
+    raise: jest.fn(),
+    handle: jest.fn()
+  })),
+  slackEventNames: Object.freeze({
+    TRIP_APPROVED: 'trip_approved',
+    TRIP_WAITING_CONFIRMATION: 'trip_waiting_confirmation',
+    NEW_TRIP_REQUEST: 'new_trip_request',
+    DECLINED_TRIP_REQUEST: 'declined_trip_request'
+  })
+}));
 
 describe('Interactive Prompts test', () => {
   it('should sendBookNewTrip Response', (done) => {
@@ -28,6 +46,7 @@ describe('Interactive Prompts test', () => {
   });
 
   it('should send decline response', (done) => {
+    InteractivePrompts.messageUpdate = jest.fn();
     const tripInitial = {
       id: 2,
       requestId: null,
@@ -42,9 +61,8 @@ describe('Interactive Prompts test', () => {
       requester: { dataValues: {} },
       rider: { dataValues: { slackId: 2 } },
     };
-    const result = InteractivePrompts.sendManagerDeclineOrApprovalCompletion(true, tripInitial, 'timeStamp', 1);
-    expect(result).toBe(undefined);
-
+    InteractivePrompts.sendManagerDeclineOrApprovalCompletion(true, tripInitial, 'timeStamp', 1);
+    expect(InteractivePrompts.messageUpdate).toBeCalled();
     done();
   });
 
@@ -140,7 +158,7 @@ describe('Interactive Prompts test', () => {
     };
     InteractivePrompts.messageUpdate = jest.fn(() => {});
 
-    await InteractivePrompts.sendOpsDeclineOrApprovalCompletion(false, tripInfo, '3456787654.3456787654', 'DM45676543');
+    await InteractivePrompts.sendOpsDeclineOrApprovalCompletion(false, tripInfo, '3456787654.3456787654', 'DM45676543', 'just a token');
     expect(InteractivePrompts.messageUpdate).toHaveBeenCalled();
     done();
   });

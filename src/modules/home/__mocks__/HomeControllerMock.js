@@ -9,7 +9,8 @@ const HomeControllerMock = {
   access_token: 'access',
   incoming_webhook: {
     configuration_url:
-      'http://user:pass@host.com:8080/p/a/t/h?query=string#hash'
+      'http://user:pass@host.com:8080/p/a/t/h?query=string#hash',
+    url: 'hello'
   },
   ok: true
 };
