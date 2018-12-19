@@ -4,6 +4,7 @@ import {
 import dateDialogHelper from '../../../helpers/dateHelper';
 import createTripDetailsForm from '../../../helpers/slack/createTripDetailsForm';
 import sendDialogTryCatch from '../../../helpers/sendDialogTryCatch';
+import TeamDetailsService from '../../../services/TeamDetailsService';
 
 class DialogPrompts {
   static async sendTripDetailsForm(payload) {
@@ -14,7 +15,9 @@ class DialogPrompts {
 
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
 
-    await sendDialogTryCatch(dialogForm);
+    const slackBotOauthToken = await
+    TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 
   static async sendRescheduleTripForm(payload, callbackId, state, dialogName) {
@@ -24,8 +27,9 @@ class DialogPrompts {
     dialog.addElements(dateDialogHelper.generateDialogElements());
 
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-
-    await sendDialogTryCatch(dialogForm);
+    const slackBotOauthToken = await
+    TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 
   static async sendTripReasonForm(payload) {
@@ -37,8 +41,9 @@ class DialogPrompts {
     dialog.addElements([textarea]);
 
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-
-    await sendDialogTryCatch(dialogForm);
+    const slackBotOauthToken = await
+    TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 
   static async sendDialogToManager(
@@ -53,8 +58,9 @@ class DialogPrompts {
     dialog.addElements([commentElement]);
 
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-
-    await sendDialogTryCatch(dialogForm);
+    const slackBotOauthToken = await
+    TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 
   static async sendOperationsDeclineDialog(payload) {
@@ -70,17 +76,14 @@ class DialogPrompts {
       new SlackDialogTextarea('Justification', 'opsDeclineComment')
     ]);
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-
-    await sendDialogTryCatch(dialogForm);
+    const slackBotOauthToken = await
+    TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 
   static async sendOperationsApprovalDialog(payload) {
     const { value } = payload.actions[0];
-    const state = {
-      tripId: value,
-      timeStamp: payload.message_ts,
-      channel: payload.channel.id
-    };
+    const state = { tripId: value, timeStamp: payload.message_ts, channel: payload.channel.id };
     const dialog = new SlackDialog('operations_reason_dialog',
       'Confirm Trip Request', 'Submit', false, JSON.stringify(state));
     dialog.addElements([
@@ -99,7 +102,8 @@ class DialogPrompts {
       ),
     ]);
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    await sendDialogTryCatch(dialogForm);
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 }
 

@@ -8,15 +8,15 @@ const { TripRequest } = models;
 const web = new WebClientSingleton();
 
 class RescheduleTripController {
-  static async getUserInfo(slackId) {
-    const { user } = await web.getWebClient().users.info({
+  static async getUserInfo(slackId, slackBotOauthToken) {
+    const { user } = await web.getWebClient(slackBotOauthToken).users.info({
       user: slackId
     });
     return user;
   }
 
-  static async runValidations(date, user) {
-    const userInfo = await this.getUserInfo(user.id);
+  static async runValidations(date, user, slackBotOauthToken) {
+    const userInfo = await this.getUserInfo(user.id, slackBotOauthToken);
     const errors = [];
 
     if (!DateDialogHelper.dateFormat(date)) {

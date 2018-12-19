@@ -10,8 +10,8 @@ class WebClientSingleton {
     WebClientSingleton.exists = true;
   }
 
-  getWebClient() {
-    return this.web;
+  getWebClient(teamBotOauthToken) {
+    return teamBotOauthToken ? new WebClient(teamBotOauthToken) : this.web;
   }
 }
 

@@ -1,8 +1,7 @@
 import { WebClient } from '@slack/client';
 import { SlackDialogError } from '../../../modules/slack/SlackModels/SlackDialogModels';
 import DateDialogHelper from '../../dateHelper';
-
-const web = new WebClient();
+import TeamDetailsService from '../../../services/TeamDetailsService';
 
 class UserInputValidator {
   static checkWord(word, name) {
@@ -63,9 +62,11 @@ class UserInputValidator {
     return errors;
   }
 
-  static async fetchUserInformationFromSlack(userId) {
+  static async fetchUserInformationFromSlack(userId, slackBotOauthToken) {
+    const web = new WebClient(slackBotOauthToken);
+
     const { user } = await web.users.info({
-      token: process.env.SLACK_BOT_OAUTH_TOKEN,
+      token: slackBotOauthToken,
       user: userId
     });
     return user;
@@ -98,7 +99,8 @@ class UserInputValidator {
     const errors = [];
 
     try {
-      const user = await this.fetchUserInformationFromSlack(payload.user.id);
+      const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+      const user = await this.fetchUserInformationFromSlack(payload.user.id, slackBotOauthToken);
 
       errors.push(...this.checkDate(dateTime, user.tz_offset));
       errors.push(...this.checkDateFormat(dateTime));

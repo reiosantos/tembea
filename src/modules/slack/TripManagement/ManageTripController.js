@@ -5,6 +5,7 @@ import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import SlackEvents from '../events';
 import { slackEventsNames } from '../events/slackEvents';
+import TeamDetailsService from '../../../services/TeamDetailsService';
 
 const { TripRequest, Address, User } = models;
 
@@ -22,7 +23,7 @@ class ManageTripController {
     return errors;
   }
 
-  static async declineTrip(state, declineReason, respond) {
+  static async declineTrip(state, declineReason, respond, teamId) {
     // eslint-disable-next-line no-useless-escape
     const reason = validator.blacklist(declineReason.trim(), '=\'\"\t\b\0\Z').trim();
 
@@ -42,8 +43,9 @@ class ManageTripController {
       ride.declinedById = head.id;
       ride.save();
 
-      InteractivePrompts.sendManagerDeclineOrApprovalCompletion(true, trip.dataValues, state[0], state[1]);
-      SlackEvents.raise(slackEventsNames.DECLINED_TRIP_REQUEST, ride.dataValues, respond);
+      const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+      InteractivePrompts.sendManagerDeclineOrApprovalCompletion(true, trip.dataValues, state[0], state[1], slackBotOauthToken);
+      SlackEvents.raise(slackEventsNames.DECLINED_TRIP_REQUEST, ride.dataValues, respond, slackBotOauthToken);
     }).catch(() => {
       respond({
         text: 'Dang, something went wrong there.'

@@ -40,6 +40,11 @@ class TeamDetailsService {
     }
   }
 
+  static async getTeamDetailsBotOauthToken(teamId) {
+    const { botToken: slackBotOauthToken } = await TeamDetailsService.getTeamDetails(teamId);
+    return slackBotOauthToken;
+  }
+
   static async saveTeamDetails(teamObject) {
     try {
       await TeamDetails.upsert({ ...teamObject });

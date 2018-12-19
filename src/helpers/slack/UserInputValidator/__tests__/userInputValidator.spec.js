@@ -3,6 +3,7 @@ import DateDialogHelper from '../../../dateHelper';
 import {
   createPayload
 } from '../../../../modules/slack/SlackInteractions/__mocks__/SlackInteractions.mock';
+import TeamDetailsService from '../../../../services/TeamDetailsService';
 
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
@@ -120,6 +121,7 @@ describe('UserInputValidator tests', () => {
     it('should return date validation errors if they exist', async () => {
       UserInputValidator.checkDate = jest.fn(() => []);
       UserInputValidator.checkDateFormat = jest.fn(() => []);
+      TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => {});
       const payload = createPayload();
       const errors = await UserInputValidator.validateDateAndTimeEntry(payload);
       expect(errors.length).toEqual(0);

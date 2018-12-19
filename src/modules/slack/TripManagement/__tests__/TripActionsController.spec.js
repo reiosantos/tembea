@@ -40,9 +40,9 @@ describe('TripActionController operations decline tests', () => {
     }));
     const changeTripStatusToDeclined = jest.spyOn(TripActionsController, 'changeTripStatusToDeclined');
     changeTripStatusToDeclined.mockImplementation(() => {});
-    
+
     await TripActionsController.changeTripStatus(payload, respond);
-    
+
     expect(findUserByIdOrSlackId).toHaveBeenCalledTimes(1);
     expect(changeTripStatusToDeclined).toHaveBeenCalledWith(1, payload, respond);
     done();
@@ -53,9 +53,9 @@ describe('TripActionController operations decline tests', () => {
     findUserByIdOrSlackId.mockImplementation(() => Promise.reject(new Error()));
     const changeTripStatusToConfirmed = jest.spyOn(TripActionsController, 'changeTripStatusToConfirmed');
     changeTripStatusToConfirmed.mockImplementation(() => {});
-    
+
     await TripActionsController.changeTripStatus(payload, respond);
-    
+
     expect(findUserByIdOrSlackId).toHaveBeenCalledTimes(1);
     expect(changeTripStatusToConfirmed).not.toHaveBeenCalled();
     expect(respond).toHaveBeenCalledTimes(1);
@@ -63,19 +63,18 @@ describe('TripActionController operations decline tests', () => {
   });
 
   it('should run changeTripStatus() to declinedByOps', async (done) => {
-    payload.state = JSON.stringify({
-      trip: 1,
-      actionTs: 212132
-    });
-    SendNotifications.sendUserNotification = jest.fn();
-    SendNotifications.sendManagerNotification = jest.fn();
+    const validState = JSON.stringify({ trip: 1, actionTs: 212132 });
+    payload.state = validState;
+    SendNotifications.sendUserConfirmOrDeclineNotification = jest.fn();
+    SendNotifications.sendManagerConfirmOrDeclineNotification = jest.fn();
     InteractivePrompts.sendOpsDeclineOrApprovalCompletion = jest.fn();
+
     const result = await TripActionsController.changeTripStatusToDeclined(
       opsUserId, payload, respond
     );
     expect(result).toEqual('success');
-    expect(SendNotifications.sendUserNotification).toHaveBeenCalled();
-    expect(SendNotifications.sendManagerNotification).toHaveBeenCalled();
+    expect(SendNotifications.sendUserConfirmOrDeclineNotification).toHaveBeenCalled();
+    expect(SendNotifications.sendManagerConfirmOrDeclineNotification).toHaveBeenCalled();
     expect(InteractivePrompts.sendOpsDeclineOrApprovalCompletion).toHaveBeenCalled();
 
     done();
@@ -121,16 +120,16 @@ describe('TripActionController operations approve tests', () => {
 
   const opsUserId = 3;
 
-  it('should change Trip Status for confirmatyion comment', async (done) => {
+  it('should change Trip Status for confirmation comment', async (done) => {
     const findUserByIdOrSlackId = jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId');
     findUserByIdOrSlackId.mockImplementation(() => ({
       id: 1,
     }));
     const changeTripStatusToConfirmed = jest.spyOn(TripActionsController, 'changeTripStatusToConfirmed');
     changeTripStatusToConfirmed.mockImplementation(() => {});
-    
+
     await TripActionsController.changeTripStatus(payload, respond);
-    
+
     expect(findUserByIdOrSlackId).toHaveBeenCalledTimes(1);
     expect(changeTripStatusToConfirmed).toHaveBeenCalledWith(1, payload, respond);
     done();

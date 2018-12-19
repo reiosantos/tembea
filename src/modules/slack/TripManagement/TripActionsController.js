@@ -7,7 +7,6 @@ import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 
 const { TripRequest, Cab } = models;
 const { Op } = Sequelize;
-  
 
 class TripActionsController {
   static errorMessage(respond) {
@@ -53,7 +52,7 @@ class TripActionsController {
       SendNotifications.sendUserConfirmNotification(payload, trip);
       SendNotifications.sendManagerConfirmNotification(payload, trip);
       InteractivePrompts.sendOpsDeclineOrApprovalCompletion(false, trip, timeStamp, channel);
-      
+
       return 'success';
     } catch (error) {
       TripActionsController.errorMessage(respond);
@@ -71,14 +70,15 @@ class TripActionsController {
         declinedById: opsUserId
       }, { where: { id: tripId } });
       const trip = await SlackHelpers.getTripRequest(tripId);
-      SendNotifications.sendUserNotification(payload, trip);
-      SendNotifications.sendManagerNotification(payload, trip);
+      SendNotifications.sendUserConfirmOrDeclineNotification(payload, trip);
+      SendNotifications.sendManagerConfirmOrDeclineNotification(payload, trip);
       InteractivePrompts.sendOpsDeclineOrApprovalCompletion(
         true, trip, state.actionTs, payload.channel.id
       );
       return 'success';
     } catch (error) {
       TripActionsController.errorMessage(respond);
+      console.log(error);
     }
   }
 

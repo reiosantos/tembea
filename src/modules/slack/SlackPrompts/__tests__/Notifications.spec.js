@@ -6,6 +6,7 @@ import DialogPrompts from '../DialogPrompts';
 import models from '../../../../database/models';
 
 jest.mock('../../../../utils/WebClientSingleton');
+jest.mock('../../../../services/TeamDetailsService');
 
 describe('SlackNotifications', () => {
   it('should fail when departmentId is wrong', async (done) => {
@@ -14,8 +15,11 @@ describe('SlackNotifications', () => {
       requestedById: 100,
       id: 100
     };
+    const payload = {
+      team: { id: 'HAHJDILYR' }
+    };
 
-    await SlackNotifications.sendManagerTripRequestNotification(tripInfo, (response) => {
+    await SlackNotifications.sendManagerTripRequestNotification(payload, tripInfo, (response) => {
       expect(response).toEqual({
         text: 'Error:warning:: Request saved, but I could not send a notification to your manager.'
       });
@@ -27,10 +31,13 @@ describe('SlackNotifications', () => {
     const tripInfo = {
       departmentId: 3,
       requestedById: 6,
-      id: 3
+      id: 3,
+    };
+    const payload = {
+      team: { id: 'HAHJDILYR' }
     };
 
-    const res = await SlackNotifications.sendManagerTripRequestNotification(tripInfo, () => {});
+    const res = await SlackNotifications.sendManagerTripRequestNotification(payload, tripInfo, () => {});
     expect(res).toEqual({
       data: 'successfully opened chat'
     });
@@ -135,9 +142,11 @@ describe('SlackNotifications', () => {
       }
     };
     const payload = {
-      user: { id: 3 }
+      user: { id: 3 },
+      team: { id: 'HAHJDILYR' }
     };
-    const res = await SlackNotifications.sendManagerNotification(payload, tripInfo);
+    const delineStatus = false;
+    const res = await SlackNotifications.sendManagerConfirmOrDeclineNotification(payload, tripInfo, delineStatus);
     expect(res).toEqual(undefined);
   });
 
@@ -174,9 +183,11 @@ describe('SlackNotifications', () => {
 
     const payload = {
       user: { id: 3 },
+      team: { id: 'HAHJDILYR' },
       submission: { driverName: 'driverName', driverPhoneNo: 'driverPhoneNo', regNumber: 'regNumber' }
     };
-    const res = await SlackNotifications.sendManagerConfirmNotification(payload, tripInfo);
+    const delineStatus = true;
+    const res = await SlackNotifications.sendManagerConfirmOrDeclineNotification(payload, tripInfo, delineStatus);
     expect(res).toEqual(undefined);
   });
 
@@ -210,31 +221,34 @@ describe('SlackNotifications', () => {
         }
       }
     };
+    const declineStatusFalse = false;
+    const declineStatusTrue = true;
     const payload = {
       user: { id: 3 },
+      team: { id: 'HAHJDILYR' },
       submission: { driverName: 'driverName', driverPhoneNo: 'driverPhoneNo', regNumber: 'regNumber' }
     };
     it('should send user notification when requester is equal to rider', async () => {
       tripInfo.rider.dataValues.slackId = 3;
-      const res = await SlackNotifications.sendUserNotification(payload, tripInfo);
+      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(payload, tripInfo, declineStatusFalse);
       expect(res).toEqual(undefined);
     });
 
     it('should send user notification when requester is not equal to rider', async () => {
       tripInfo.rider.dataValues.slackId = 4;
-      const res = await SlackNotifications.sendUserNotification(payload, tripInfo);
+      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(payload, tripInfo, declineStatusFalse);
       expect(res).toEqual(undefined);
     });
 
     it('should send user confirmation notification when requester is equal to rider', async () => {
       tripInfo.rider.dataValues.slackId = 3;
-      const res = await SlackNotifications.sendUserConfirmNotification(payload, tripInfo);
+      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(payload, tripInfo, declineStatusTrue);
       expect(res).toEqual(undefined);
     });
 
     it('should send user confirmation notification when requester is not equal to rider', async () => {
       tripInfo.rider.dataValues.slackId = 4;
-      const res = await SlackNotifications.sendUserConfirmNotification(payload, tripInfo);
+      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(payload, tripInfo, declineStatusTrue);
       expect(res).toEqual(undefined);
     });
   });
@@ -281,14 +295,20 @@ describe('SlackNotifications Tests: Manager approval', () => {
   });
 
   it('should notify manager of new trip request', async (done) => {
-    const manager = await SlackNotifications.sendOperationsTripRequestNotification(23, 'payload', respond);
+    const payload = {
+      team: { id: 'AHDJDLKUER' }
+    };
+    const manager = await SlackNotifications.sendOperationsTripRequestNotification(23, payload, respond);
     expect(manager).toEqual(undefined);
     done();
   });
 
   it('should throw an error when accessing dataValues form non existing dept', async (done) => {
+    const payload = {
+      team: { id: 'AHDJDLKUER' }
+    };
     deptFindByPkStub.returns(Promise.resolve({}));
-    const manager = await SlackNotifications.sendOperationsTripRequestNotification(undefined, 'payload', respond);
+    const manager = await SlackNotifications.sendOperationsTripRequestNotification(undefined, payload, respond);
     expect(manager).toEqual(undefined);
     done();
   });

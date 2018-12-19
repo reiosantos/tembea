@@ -3,6 +3,12 @@ import ManageTripController from '../ManageTripController';
 jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../SlackPrompts/InteractivePrompts');
 jest.mock('../../events/index.js');
+jest.mock('../../../../services/TeamDetailsService');
+
+
+afterAll(() => {
+  jest.restoreAllMocks();
+});
 
 describe('Manage trip controller run validations', () => {
   it('should be able to run validations on empty string', (done) => {

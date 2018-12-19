@@ -5,6 +5,7 @@ import models from '../../../database/models';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import dateHelper from '../../../helpers/dateHelper';
+import TeamDetailsService from '../../../services/TeamDetailsService';
 
 const {
   TripRequest, User, Location, Address
@@ -68,11 +69,11 @@ class ScheduleTripController {
 
   static async createRequest(payload, tripRequestDetails) {
     try {
-      const requester = await ScheduleTripController.createUser(payload.user.id);
+      const requester = await ScheduleTripController.createUser(payload.user.id, payload.team.id);
       const request = await this.createRequestObject(tripRequestDetails, requester);
 
       if (tripRequestDetails.forSelf === 'false') {
-        const passenger = await this.createUser(tripRequestDetails.rider);
+        const passenger = await this.createUser(tripRequestDetails.rider, payload.team.id);
         request.riderId = passenger.id;
       }
       return request;
@@ -86,8 +87,8 @@ class ScheduleTripController {
       const tripRequest = await this.createRequest(payload, tripRequestDetails);
       const trip = await TripRequest.create(tripRequest);
 
-      InteractivePrompts.sendCompletionResponse(payload, respond, trip.id);
-      SlackEvents.raise(slackEventsNames.NEW_TRIP_REQUEST, trip.dataValues, respond);
+      InteractivePrompts.sendCompletionResponse(payload, respond, tripRequest.requestedById);
+      SlackEvents.raise(slackEventsNames.NEW_TRIP_REQUEST, payload, trip.dataValues, respond);
 
       return true;
     } catch (error) {
@@ -107,9 +108,10 @@ class ScheduleTripController {
     }
   }
 
-  static async createUser(userId) {
+  static async createUser(userId, teamId) {
     try {
-      const userInfo = await UserInputValidator.fetchUserInformationFromSlack(userId);
+      const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+      const userInfo = await UserInputValidator.fetchUserInformationFromSlack(userId, slackBotOauthToken);
       const { real_name, profile: { email } } = userInfo; //eslint-disable-line
 
       const [user] = await User.findOrCreate({

@@ -13,6 +13,7 @@ import TripActionsController from '../TripManagement/TripActionsController';
 import TripRescheduleHelper from '../helpers/slackHelpers/rescheduleHelper';
 import Cache from '../../../cache';
 import ScheduleTripInputHandlers from '../../../helpers/slack/ScheduleTripInputHandlers';
+import TeamDetailsService from '../../../services/TeamDetailsService';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -61,7 +62,7 @@ class SlackInteractions {
         break;
     }
   }
-   
+
   static bookNewTrip(payload, respond) {
     respond(new SlackInteractiveMessage('Loading...'));
     const action = payload.actions[0].value;
@@ -122,7 +123,8 @@ class SlackInteractions {
     const date = `${newDate}/${+newMonth + 1}/${newYear} ${time}`;
 
     state = state.split(' ');
-    const errors = await RescheduleTripController.runValidations(date, user);
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+    const errors = await RescheduleTripController.runValidations(date, user, slackBotOauthToken);
     if (errors.length > 0) {
       return { errors };
     }
@@ -158,12 +160,13 @@ class SlackInteractions {
       submission: { declineReason }
     } = payload;
     const state = payload.state.split(' ');
+    const teamId = payload.team.id;
     try {
       const errors = await ManageTripController.runValidation(declineReason);
       if (errors.length > 0) {
         return { errors };
       }
-      await ManageTripController.declineTrip(state, declineReason, respond);
+      await ManageTripController.declineTrip(state, declineReason, respond, teamId);
     } catch (error) {
       const message = new SlackInteractiveMessage(
         'Error:bangbang:: Something went wrong! Please try again.'
@@ -185,7 +188,8 @@ class SlackInteractions {
       if (hasApproved) {
         SlackEvents.raise(slackEventsNames.TRIP_APPROVED, tripId, payload, respond);
         const trip = await SlackHelpers.getTripRequest(tripId);
-        InteractivePrompts.sendManagerDeclineOrApprovalCompletion(false, trip, timeStamp, channelId);
+        const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+        InteractivePrompts.sendManagerDeclineOrApprovalCompletion(false, trip, timeStamp, channelId, slackBotOauthToken);
         return;
       }
       respond(new SlackInteractiveMessage('Error:bangbang: : This request could not be approved. '

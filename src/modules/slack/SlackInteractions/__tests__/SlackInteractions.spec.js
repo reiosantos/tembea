@@ -13,6 +13,7 @@ import TripActionsController from '../../TripManagement/TripActionsController';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import SlackEvents from '../../events';
+import TeamDetailsService from '../../../../services/TeamDetailsService';
 
 describe('Manager decline trip interactions', () => {
   beforeAll(() => {
@@ -67,7 +68,8 @@ describe('Manager decline trip', () => {
       submission: {
         declineReason: '        '
       },
-      state: ''
+      state: '',
+      team: { id: 'AHJKURLKJR' }
     });
 
     expect(res.errors.length).toBe(1);
@@ -80,7 +82,8 @@ describe('Manager decline trip', () => {
       submission: {
         declineReason: 'Just a funny reason'
       },
-      state: ''
+      state: '',
+      team: { id: 'AHJKURLKJR' }
     });
 
     expect(ManageTripController.declineTrip.mock.calls.length).toBe(1);
@@ -95,7 +98,8 @@ describe('Error handling for manager decline', () => {
         submission: {
           declineReason: {}
         },
-        state: ''
+        state: '',
+        team: { id: 'AHJKURLKJR' }
       }, (res) => {
         expect(res).toEqual({
           as_user: false,
@@ -295,6 +299,7 @@ describe('test handle reschedule function', () => {
   it('should test reschedule switch interaction', async (done) => {
     RescheduleTripController.runValidations = jest.fn(() => (expectedErrorResponse));
     RescheduleTripController.rescheduleTrip = jest.fn(() => response);
+    TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => {});
     const payload = {
       state: 'reschedule boy',
       submission: {
@@ -302,7 +307,8 @@ describe('test handle reschedule function', () => {
         new_date: 22,
         new_year: 2019
       },
-      user: 'user'
+      user: 'user',
+      team: { id: 'XXXXXXX' }
     };
     const result = await SlackInteractions.handleReschedule(payload, rescheduleRespond);
     expect(result).toEqual({ errors: expectedErrorResponse });
@@ -312,6 +318,7 @@ describe('test handle reschedule function', () => {
   it('should test reschedule switch interaction', async (done) => {
     RescheduleTripController.runValidations = jest.fn(() => ([]));
     RescheduleTripController.rescheduleTrip = jest.fn(() => response);
+    TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => { });
     const payload = {
       state: 'reschedule boy',
       submission: {
@@ -319,7 +326,8 @@ describe('test handle reschedule function', () => {
         new_date: 22,
         new_year: 2019
       },
-      user: 'user'
+      user: 'user',
+      team: { id: 'XXXXXXX' }
     };
     const result = await SlackInteractions.handleReschedule(payload, rescheduleRespond);
     expect(result).toEqual(undefined);
@@ -330,6 +338,7 @@ describe('test handle reschedule function', () => {
   it('should test reschedule switch interaction', async (done) => {
     RescheduleTripController.runValidations = jest.fn(() => ([]));
     RescheduleTripController.rescheduleTrip = jest.fn(() => response);
+    TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => { });
     const payload = {
       state: 'boy',
       submission: {
@@ -337,7 +346,8 @@ describe('test handle reschedule function', () => {
         new_date: 22,
         new_year: 2019
       },
-      user: 'user'
+      user: 'user',
+      team: { id: 'XXXXXXX' }
     };
     const result = await SlackInteractions.handleReschedule(payload, rescheduleRespond);
     expect(result).toEqual(undefined);

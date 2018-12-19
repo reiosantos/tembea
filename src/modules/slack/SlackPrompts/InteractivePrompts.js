@@ -148,8 +148,9 @@ class InteractivePrompts {
    * @param  {Object} tripInformation The object containing all the trip information
    * @param  {string} timeStamp The timestamp of the trip request notification
    * @param  {string} channel The channel id to which the notification was sent
+   * @param {string} slackBotOauthToken The team bot token
    */
-  static sendManagerDeclineOrApprovalCompletion(decline, tripInformation, timeStamp, channel) {
+  static sendManagerDeclineOrApprovalCompletion(decline, tripInformation, timeStamp, channel, slackBotOauthToken) {
     const requester = tripInformation.requester.dataValues;
     const attachments = [
       new SlackAttachment(decline ? 'Trip Declined' : 'Trip Approved'),
@@ -173,7 +174,8 @@ class InteractivePrompts {
         ? `You have just declined the trip from <@${requester.slackId}>`
         : `You have just approved the trip from <@${requester.slackId}>`),
       timeStamp,
-      attachments
+      attachments,
+      slackBotOauthToken
     );
   }
 
@@ -184,9 +186,10 @@ class InteractivePrompts {
    * @param  {string} text The message text
    * @param  {string} timeStamp The time stamp of the original message
    * @param  {array} attachments The attachments
+   * @param {string} slackBotOauthToken The team bot token
    */
-  static messageUpdate(channel, text, timeStamp, attachments) {
-    web.getWebClient().chat.update({
+  static messageUpdate(channel, text, timeStamp, attachments, slackBotOauthToken) {
+    web.getWebClient(slackBotOauthToken).chat.update({
       channel,
       text,
       ts: timeStamp,

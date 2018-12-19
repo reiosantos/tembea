@@ -20,28 +20,28 @@ describe('Dialog prompts test', () => {
   });
 
   it('should test sendTripDetailsForm function when forSelf is false', async (done) => {
-    const payload = jest.fn(() => ({ trigger_id: 'trigger' }));
+    const payload = { trigger_id: 'trigger', team: { id: 'TEAMID1' } };
     await DialogPrompts.sendTripDetailsForm(payload, 'false');
     expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
   });
 
   it('should test sendTripDetailsForm function when forSelf is true', async (done) => {
-    const payload = jest.fn(() => ({ trigger_id: 'trigger' }));
+    const payload = { trigger_id: 'trigger', team: { id: 'TEAMID1' } };
     await DialogPrompts.sendTripDetailsForm(payload, 'true');
     expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
   });
 
   it('should test sendRescheduleTripForm function', async (done) => {
-    const payload = jest.fn(() => ({ callback_id: 'calling' }));
+    const payload = { callback_id: 'calling', team: { id: 'TEAMID1' } };
     await DialogPrompts.sendRescheduleTripForm(payload, 'call', 'state', 'dialog');
     expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
   });
 
   it('should test sendTripReasonForm function', async (done) => {
-    const payload = jest.fn(() => ({ trigger_id: 'trigger' }));
+    const payload = { trigger_id: 'trigger', team: { id: 'TEAMID1' } };
     await DialogPrompts.sendTripReasonForm(payload);
     expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
@@ -50,7 +50,8 @@ describe('Dialog prompts test', () => {
   it('should test sendCommentDialog function', async (done) => {
     await DialogPrompts.sendOperationsDeclineDialog({
       message_ts: 'trigger',
-      actions: ['value', '']
+      actions: ['value', ''],
+      team: { id: 'TEAMID1' }
     });
     expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
@@ -62,7 +63,8 @@ describe('Dialog prompts test', () => {
       trigger_id: 'trigger',
       channel: {
         id: 'XXXXXXXX'
-      }
+      },
+      team: { id: 'TEAMID1' }
     });
 
     expect(sendDialogTryCatch).toBeCalledTimes(1);
@@ -73,7 +75,8 @@ describe('Dialog prompts test', () => {
 describe('Decline dialog', () => {
   it('should send decline dialog', async (done) => {
     await DialogPrompts.sendDialogToManager({
-      trigger_id: 'XXXXXXX'
+      trigger_id: 'XXXXXXX',
+      team: { id: 'TEAMID1' }
     },
     'callback_id',
     'state',
