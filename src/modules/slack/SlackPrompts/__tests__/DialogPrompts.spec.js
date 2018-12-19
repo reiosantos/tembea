@@ -1,6 +1,10 @@
 import DialogPrompts from '../DialogPrompts';
 import sendDialogTryCatch from '../../../../helpers/sendDialogTryCatch';
 
+jest.mock('../../../../services/TeamDetailsService', () => ({
+  getTeamDetailsBotOauthToken: async () => 'just a random token'
+}));
+
 jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../../../helpers/sendDialogTryCatch', () => jest.fn());
 
