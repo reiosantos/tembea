@@ -26,7 +26,7 @@ class DepartmentService {
       return headOfDepartment.dataValues.id;
     } catch (error) {
       if (error instanceof HttpError) throw error;
-      HttpError.throwErrorIfNull(null, 'Error getting the head of department');
+      HttpError.throwErrorIfNull(null, 'Error getting the head of department', 500);
     }
   }
 
@@ -56,7 +56,7 @@ class DepartmentService {
       return newDepartmentRecords;
     } catch (error) {
       if (error instanceof HttpError) throw error;
-      HttpError.throwErrorIfNull(null, 'Error updating department');
+      HttpError.throwErrorIfNull(null, 'Error updating department', 500);
     }
   }
 }

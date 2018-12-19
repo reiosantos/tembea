@@ -86,7 +86,7 @@ class ScheduleTripController {
       const tripRequest = await this.createRequest(payload, tripRequestDetails);
       const trip = await TripRequest.create(tripRequest);
 
-      InteractivePrompts.sendCompletionResponse(payload, respond, tripRequest.requestedById);
+      InteractivePrompts.sendCompletionResponse(payload, respond, trip.id);
       SlackEvents.raise(slackEventsNames.NEW_TRIP_REQUEST, trip.dataValues, respond);
 
       return true;

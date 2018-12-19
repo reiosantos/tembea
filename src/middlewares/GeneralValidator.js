@@ -24,14 +24,9 @@ class GeneralValidator {
    * @returns {array} An array of messages of the empty properties
    */
   static validateEmptyReqBodyProp(body, ...props) {
-    const messages = [];
-    props.forEach((prop) => {
-      if (body[prop] !== undefined && (body[prop]).trim().length === 0) {
-        messages.push(`Please provide a value for ${prop}.`);
-      }
-    });
-
-    return messages;
+    return props
+      .filter(prop => body[prop] !== undefined && !((body[prop]).trim().length))
+      .map(prop => `Please provide a value for ${prop}.`);
   }
 }
 
