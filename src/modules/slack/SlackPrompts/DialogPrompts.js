@@ -28,7 +28,7 @@ class DialogPrompts {
     return createTripDetailsForm.travelTripFlightDetailsForm();
   }
 
-  static sendTravelTripDetailsForm(payload, callbackId) {
+  static async sendTravelTripDetailsForm(payload, callbackId) {
     const dialog = new SlackDialog(`travel_trip_${callbackId}`, 'Trip Details', 'Submit');
 
     const createFormElements = this[callbackId];
@@ -37,7 +37,9 @@ class DialogPrompts {
     dialog.addElements(formElements);
 
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    sendDialogTryCatch(dialogForm);
+    const slackBotOauthToken = await
+    TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+    sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 
   static async sendRescheduleTripForm(payload, callbackId, state, dialogName) {

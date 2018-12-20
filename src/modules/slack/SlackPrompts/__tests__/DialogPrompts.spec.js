@@ -108,16 +108,16 @@ describe('Test Travel Details Dialogues', () => {
     expect(createTripDetailsForm.travelTripFlightDetailsForm).toHaveBeenCalled();
   });
 
-  it('should send travelTrip contact details dialogue', () => {
-    const payload = { id: 1 };
-    DialogPrompts.sendTravelTripDetailsForm(payload, 'contactDetails');
+  it('should send travelTrip contact details dialogue', async () => {
+    const payload = { id: 1, team: { id: 'TEAMID1' } };
+    await DialogPrompts.sendTravelTripDetailsForm(payload, 'contactDetails');
 
     expect(sendDialogTryCatch).toBeCalled();
   });
 
-  it('should send travelTrip flight details dialogue', () => {
-    const payload = { id: 90 };
-    DialogPrompts.sendTravelTripDetailsForm(payload, 'flightDetails');
+  it('should send travelTrip flight details dialogue', async () => {
+    const payload = { id: 90, team: { id: 'TEAMID1' } };
+    await DialogPrompts.sendTravelTripDetailsForm(payload, 'flightDetails');
 
     expect(sendDialogTryCatch).toBeCalled();
   });
