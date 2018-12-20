@@ -149,13 +149,15 @@ jobs:
             export IMG_TAG=$(echo $CIRCLE_SHA1 | cut -c -7)
             if [ "${CIRCLE_BRANCH}" = "master" ]; then
               export NAMESPACE="production"
+              echo $NAMESPACE
               export NODE_ENV=${NAMESPACE}
+              ansible-playbook playbook.yml --extra-vars "@prod-vars.yml" -vvv
             elif [ "${CIRCLE_BRANCH}" = "develop" ]; then
               export NAMESPACE="staging"
               echo $NAMESPACE
               export NODE_ENV=${NAMESPACE}
+              ansible-playbook playbook.yml --extra-vars "@dev-vars.yml" -vvv
             fi
-            ansible-playbook playbook.yml --extra-vars "@dev-vars.yml" -vvv
 
   delete_migration_job:
     docker:
