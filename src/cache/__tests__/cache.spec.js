@@ -12,6 +12,15 @@ describe('Cache tests', () => {
     const value = Cache.save('dummyId', 'someField', 'someValue');
     expect(value).toEqual(true);
   });
+
+  it('should delete an existing object with the passed key', () => {
+    Cache.save('tempObject', 'someField', 'someValue');
+    const cachedValue = Cache.fetch('tempObject');
+    expect(cachedValue).toBeDefined();
+    Cache.delete('tempObject');
+    const deletedObject = Cache.fetch('tempObject');
+    expect(deletedObject).toBeUndefined();
+  });
 });
 
 describe('Cache Singleton', () => {

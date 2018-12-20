@@ -68,6 +68,8 @@ const ScheduleTripInputHandlers = {
       await ScheduleTripController.createTripRequest(payload, respond, tripRequestDetails);
     } catch (error) {
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+    } finally {
+      Cache.delete(payload.user.id);
     }
   }
 };

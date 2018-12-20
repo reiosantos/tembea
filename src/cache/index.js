@@ -19,6 +19,10 @@ class Cache {
   static fetch(key) {
     return cache.get(key);
   }
+
+  static delete(key) {
+    return cache.del(key);
+  }
 }
 
 export default Cache;
