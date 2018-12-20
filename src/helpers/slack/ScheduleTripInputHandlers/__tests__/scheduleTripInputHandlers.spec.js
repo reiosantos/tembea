@@ -67,7 +67,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
     it('should respond with list of departments', () => {
       ScheduleTripInputHandlers.rider(payload, responder, 'rider');
       expect(InteractivePrompts.sendAddPassengersResponse)
-        .toHaveBeenCalledWith(responder, false);
+        .toHaveBeenCalledWith(responder, 'false');
     });
   });
 

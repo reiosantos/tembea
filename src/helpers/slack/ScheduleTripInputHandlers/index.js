@@ -8,7 +8,7 @@ import ScheduleTripController from '../../../modules/slack/TripManagement/Schedu
 import bugsnagHelper from '../../bugsnagHelper';
 
 const createDepartmentPayloadObject = (payload, respond, forSelf = 'true') => {
-  const navButtonCallbackId = forSelf === 'true' ? 'welcome_message' : 'schedule_trip_reason';
+  const navButtonCallbackId = forSelf === 'true' ? 'schedule_trip_reason' : 'schedule_trip_rider';
   return {
     payload,
     respond,
@@ -32,15 +32,15 @@ const ScheduleTripInputHandlers = {
     }
   },
   rider: (payload, respond, callbackId) => {
-    if (payload.actions && payload.actions[0].selected_options[0].value) {
+    if (payload.actions[0].selected_options) {
       const rider = payload.actions[0].selected_options[0].value;
       Cache.save(payload.user.id, callbackId, rider);
     }
 
-    InteractivePrompts.sendAddPassengersResponse(respond, false);
+    InteractivePrompts.sendAddPassengersResponse(respond, 'false');
   },
   addPassengers: (payload, respond) => {
-    if (payload.actions[0].value || payload.actions[0].selected_options[0]) {
+    if (payload.actions || payload.actions[0].selected_options) {
       const noOfPassengers = payload.actions[0].value
         ? payload.actions[0].value : payload.actions[0].selected_options[0].value;
       Cache.save(payload.user.id, 'passengers', noOfPassengers);

@@ -299,7 +299,7 @@ class InteractivePrompts {
     respond(message);
   }
 
-  static sendAddPassengersResponse(respond, forSelf = true) {
+  static sendAddPassengersResponse(respond, forSelf = 'true') {
     const attachment = new SlackAttachment();
     const passengerNumbers = SlackHelpers.noOfPassengers();
 
@@ -312,7 +312,7 @@ class InteractivePrompts {
     /* if rider is self navigate to for me/for someone option when 'Back' is clicked,
        else navigate to 'select rider' option
     */
-    const navAttachment = createNavButtons(forSelf ? 'welcome_message' : 'schedule_trip_reason', 'book_new_trip');
+    const navAttachment = createNavButtons(forSelf === 'true' ? 'welcome_message' : 'schedule_trip_reason', 'book_new_trip');
 
     const message = new SlackInteractiveMessage(
       'Any more passengers?', [attachment, navAttachment]

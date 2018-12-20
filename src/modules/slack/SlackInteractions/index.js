@@ -72,7 +72,9 @@ class SlackInteractions {
   static async handleUserInputs(payload, respond) {
     const callbackId = payload.callback_id.split('_')[2];
     const scheduleTripHandler = ScheduleTripInputHandlers[callbackId];
-    if (!scheduleTripHandler) {
+    if ((payload.type === 'interactive_message' && payload.actions[0].value === 'cancel')
+    || !scheduleTripHandler) {
+      // default response for cancel button
       return respond(
         SlackInteractions.goodByeMessage()
       );
