@@ -55,7 +55,7 @@ class SlackInteractions {
   }
 
   static bookNewTrip(payload, respond) {
-    respond(new SlackInteractiveMessage('Loading...'));
+    respond(new SlackInteractiveMessage('Noted...'));
     const action = payload.actions[0].value;
     switch (action) {
       case 'true':

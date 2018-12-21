@@ -33,7 +33,7 @@ const travelTripHelper = {
     }
   },
   department: (payload, respond) => {
-    respond(new SlackInteractiveMessage('Loading...'));
+    respond(new SlackInteractiveMessage('Noted...'));
 
     const { user: { id }, actions } = payload;
     const { value, name } = actions[0];

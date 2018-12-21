@@ -50,7 +50,7 @@ const ScheduleTripInputHandlers = {
     return InteractivePrompts.sendListOfDepartments(props, forSelf);
   },
   department: (payload, respond) => {
-    respond(new SlackInteractiveMessage('Loading...'));
+    respond(new SlackInteractiveMessage('Noted...'));
     const departmentId = payload.actions[0].value;
     Cache.save(payload.user.id, 'departmentId', departmentId);
     DialogPrompts.sendTripDetailsForm(payload, 'regularTripForm', 'schedule_trip_locationTime');
@@ -61,7 +61,7 @@ const ScheduleTripInputHandlers = {
       if (errors.length > 0) {
         return { errors };
       }
-      respond(new SlackInteractiveMessage('Loading...'));
+      respond(new SlackInteractiveMessage('Noted...'));
 
       const tripRequestDetails = { ...Cache.fetch(payload.user.id), ...payload.submission, tripType: 'Regular Trip' };
 
