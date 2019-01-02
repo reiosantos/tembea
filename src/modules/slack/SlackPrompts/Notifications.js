@@ -257,7 +257,8 @@ class SlackNotifications {
       new SlackAttachmentField('Request Date',
         Utils.formatDate(tripInformation.createdAt), true),
       new SlackAttachmentField('Trip Date',
-        Utils.formatDate(tripInformation.departureTime), true)
+        Utils.formatDate(tripInformation.departureTime), true),
+      new SlackAttachmentField('Reason', tripInformation.reason, true)
     ];
   }
 
