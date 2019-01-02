@@ -6,7 +6,7 @@ import HttpError from '../helpers/errorHandler';
 import SlackHelpers from '../helpers/slack/slackHelpers';
 
 
-const { Department } = models;
+const { Department, User } = models;
 
 class DepartmentService {
   static async createDepartment(user, name) {
@@ -58,6 +58,25 @@ class DepartmentService {
       if (error instanceof HttpError) throw error;
       HttpError.throwErrorIfNull(null, 'Error updating department', 500);
     }
+  }
+
+
+  /**
+   * @description returns paginated departments records
+   * @param {number} size The size of a single paginated
+   * @param {number} page The page number
+   * @returns {object} an array of departments
+   */
+  static async getAllDepartments(size, page) {
+    return Department.findAndCountAll({
+      raw: true,
+      limit: size,
+      include: [
+        { model: User, as: 'head' }
+      ],
+      offset: (size * (page - 1)),
+      order: [['id', 'DESC']]
+    });
   }
 }
 

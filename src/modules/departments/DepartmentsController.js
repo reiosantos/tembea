@@ -1,6 +1,7 @@
 import HttpError from '../../helpers/errorHandler';
 import DepartmentService from '../../services/DepartmentService';
 import UserService from '../../services/UserService';
+import defaultSize from '../../helpers/constants';
 
 
 class DepartmentController {
@@ -51,6 +52,41 @@ class DepartmentController {
           success: false,
           message: 'Department already exists.',
         });
+    } catch (error) {
+      HttpError.sendErrorResponse(error, res);
+    }
+  }
+
+  /**
+   * @description Read the department records
+   * @param {object} req The http request object
+   * @param {object} res The http response object
+   * @returns {object} The http response object
+   */
+
+  static async readRecords(req, res) {
+    try {
+      const page = req.query.page || 1;
+      const size = req.query.size || defaultSize;
+      
+      const data = await DepartmentService.getAllDepartments(size, page);
+      const { count, rows } = data;
+      if (rows <= 0) {
+        throw new HttpError('There are no records on this page.', 404);
+      }
+
+      const totalPages = Math.ceil(count / size);
+
+      return res.status(200).json({
+        success: true,
+        message: `${page} of ${totalPages} page(s).`,
+        page_meta: {
+          totalPages,
+          total_results: count,
+          page,
+        },
+        departments: rows,
+      });
     } catch (error) {
       HttpError.sendErrorResponse(error, res);
     }
