@@ -28,6 +28,20 @@ class GeneralValidator {
       .filter(prop => body[prop] !== undefined && !((body[prop]).trim().length))
       .map(prop => `Please provide a value for ${prop}.`);
   }
+
+  static validateQueryParams(req, res, next) {
+    const { page, size } = req.query;
+    const nums = /^[1-9][0-9]*$/;
+    if ((page && !nums.test(page)) || (size && !nums.test(size))) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: 'Please provide a positive integer value'
+        });
+    }
+    return next();
+  }
 }
 
 export default GeneralValidator;

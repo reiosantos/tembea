@@ -119,6 +119,21 @@ class UserService {
     // Get user's slack Id
     return UserService.getUserSlackInfo(web, newEmail || email);
   }
+
+  /**
+   * @description Get's paginated user records from db
+   * @param  {number} size The size of a single page
+   * @param  {number} page The page number
+   * @returns {object} An array of users
+   */
+  static async getUsersFromDB(size, page) {
+    return User.findAndCountAll({
+      raw: true,
+      limit: size,
+      offset: (size * (page - 1)),
+      order: [['id', 'DESC']]
+    });
+  }
 }
 
 export default UserService;

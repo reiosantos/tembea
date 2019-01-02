@@ -73,6 +73,35 @@ class UsersController {
       HttpError.sendErrorResponse(error, res);
     }
   }
+
+  
+  /**
+   * @description Read the user records
+   * @param  {object} req The http request object
+   * @param  {object} res The http response object
+   * @returns {object} The http response object
+   */
+  static async readRecords(req, res) {
+    try {
+      const size = req.query.size || 100;
+      const page = req.query.page || 1;
+
+      const data = await UserService.getUsersFromDB(size, page);
+      if (data.rows <= 0) {
+        throw new HttpError('There are no records on this page.', 404);
+      }
+
+      const totalPages = data.count / size;
+
+      return res.status(200).json({
+        success: true,
+        message: `${page} of ${Math.ceil(totalPages)} page(s).`,
+        users: data.rows
+      });
+    } catch (error) {
+      HttpError.sendErrorResponse(error, res);
+    }
+  }
 }
 
 export default UsersController;
