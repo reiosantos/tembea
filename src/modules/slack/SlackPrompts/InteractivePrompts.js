@@ -228,13 +228,13 @@ class InteractivePrompts {
 
   static passedTimeOutLimit() {
     return new SlackInteractiveMessage(
-      'Sorry! this trip cant be rescheduled one hour prior the pick-up time'
+      'Sorry! This trip cant be rescheduled one hour prior the pick-up time'
     );
   }
 
-  static rescheduleConfirmedError() {
+  static rescheduleConfirmedApprovedError() {
     return new SlackInteractiveMessage(
-      'Sorry! This trip request can no longer be rescheduled'
+      'Sorry! This trip has been approved and cannot be rescheduled but cancelled.'
     );
   }
 

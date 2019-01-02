@@ -32,10 +32,10 @@ describe('Trip Reschedule Helper test', () => {
     const sendRescheduleTripFormSpy = sinon.spy(DialogPrompts, 'sendRescheduleTripForm');
 
     const now = Date.now();
-    const oneHourAfter = new Date(now + 2 * 60 * 60 * 1000);
+    const twoHoursAfter = new Date(now + 2 * 60 * 60 * 1000);
     tripRequestFindByPkStub.resolves({
       confirmedById: 0,
-      departureTime: `${oneHourAfter.toISOString()}`
+      departureTime: `${twoHoursAfter.toISOString()}`
     });
     const payload = {};
     const response = jest.fn();
@@ -48,16 +48,38 @@ describe('Trip Reschedule Helper test', () => {
     done();
   });
 
-  it('should send Reschedule Confirm Error', async () => {
+  it('should send reschedule confirm error when trip is < 1hr before the departure time', async () => {
     const tripRequestFindByPkStub = sinon.stub(TripRequest, 'findByPk');
-    const spy = sinon.spy(InteractivePrompts, 'rescheduleConfirmedError');
+    const spy = sinon.spy(InteractivePrompts, 'passedTimeOutLimit');
 
     const now = Date.now();
     const oneHourAfter = new Date(now - 60 * 60 * 1000);
 
     tripRequestFindByPkStub.resolves({
-      confirmedById: 1,
       departureTime: `${oneHourAfter.toISOString()}`
+    });
+
+    const payload = {};
+    const response = jest.fn();
+    await TripRescheduleHelper.sendTripRescheduleDialog(payload, response, 12);
+    expect(spy.calledOnce)
+      .toEqual(true);
+
+    tripRequestFindByPkStub.restore();
+    spy.restore();
+  });
+
+  it('should send reschedule confirm or approve error when trip has been approved', async () => {
+    const tripRequestFindByPkStub = sinon.stub(TripRequest, 'findByPk');
+    const spy = sinon.spy(InteractivePrompts, 'rescheduleConfirmedApprovedError');
+
+    const now = Date.now();
+    const twoHourBefore = new Date(now + 2 * 60 * 60 * 1000);
+
+    tripRequestFindByPkStub.resolves({
+      approvedById: 1,
+      // Set departure time to two hour from the current time.
+      departureTime: `${twoHourBefore.toISOString()}`
     });
 
     const payload = {};
