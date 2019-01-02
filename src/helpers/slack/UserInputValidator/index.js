@@ -191,14 +191,15 @@ class UserInputValidator {
     const { submission } = payload;
     const date = submission.dateTime
       || submission.flightDateTime || submission.embassyVisitDateTime;
+    const sanitizedDate = date.trim().replace(/\s\s+/g, ' ');
     const errors = [];
 
     try {
       const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
       const user = await this.fetchUserInformationFromSlack(payload.user.id, slackBotOauthToken);
 
-      errors.push(...this.checkDate(date, user.tz_offset, fieldName));
-      errors.push(...this.checkDateFormat(date, fieldName));
+      errors.push(...this.checkDate(sanitizedDate, user.tz_offset, fieldName));
+      errors.push(...this.checkDateFormat(sanitizedDate, fieldName));
 
       return errors;
     } catch (error) {
