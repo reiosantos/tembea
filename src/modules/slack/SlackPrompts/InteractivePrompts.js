@@ -70,10 +70,10 @@ class InteractivePrompts {
     );
   }
 
-  static sendRescheduleError(trip) {
+  static sendRescheduleError(tripId) {
     const attachments = new SlackAttachment();
     attachments.addFieldsOrActions('actions', [
-      new SlackButtonAction('reschedule', 'Try Again', trip.dataValues.id)
+      new SlackButtonAction('reschedule', 'Try Again', tripId)
     ]);
     attachments.addOptionalProps('itinerary_actions');
     return new SlackInteractiveMessage('Oh! I was unable to save this trip', [

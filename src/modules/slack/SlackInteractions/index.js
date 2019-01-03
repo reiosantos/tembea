@@ -118,7 +118,7 @@ class SlackInteractions {
     if (errors.length > 0) {
       return { errors };
     }
-    const message = await RescheduleTripController.rescheduleTrip(state[2], date, respond);
+    const message = await RescheduleTripController.rescheduleTrip(state[2], date, payload, respond);
     respond(message);
   }
 

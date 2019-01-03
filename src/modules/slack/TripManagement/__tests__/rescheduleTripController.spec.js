@@ -1,13 +1,17 @@
 import RescheduleTripController from '../RescheduleTripController';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
+import SlackEvents from '../../events';
+import models from '../../../../database/models';
+
+const { TripRequest } = models;
 
 jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../SlackPrompts/Notifications.js');
-jest.mock('../../events/', () => ({
+jest.mock('../../events', () => ({
   slackEvents: jest.fn(() => ({
     raise: jest.fn(),
     handle: jest.fn()
-  })),
+  }))
 }));
 jest.mock('../../events/slackEvents', () => ({
   SlackEvents: jest.fn(() => ({
@@ -60,30 +64,37 @@ describe('RescheduleTripController', () => {
     done();
   });
 
-  it('should send reschedule completion', async (done) => {
+  it('should send reschedule completion', async () => {
     InteractivePrompts.sendRescheduleCompletion = jest.fn(() => {});
+    const payload = { id: 1 };
+    const respond = jest.fn();
+    SlackEvents.raise = jest.fn();
+    TripRequest.findByPk = jest.fn(() => ({
+      save: jest.fn()
+    }));
 
-    await RescheduleTripController.rescheduleTrip(3, '12/12/2018 22:00');
+    await RescheduleTripController.rescheduleTrip(3, '12/12/2018 22:00', payload, respond);
 
     expect(InteractivePrompts.sendRescheduleCompletion.mock.calls.length).toBe(1);
-    done();
   });
 
-  it('should send reschedule trip error', async (done) => {
-    InteractivePrompts.sendRescheduleError = jest.fn(() => {});
-
-    await RescheduleTripController.rescheduleTrip(3, {});
-
-    expect(InteractivePrompts.sendRescheduleError.mock.calls.length).toBe(1);
-    done();
-  });
-
-  it('should send trip error', async (done) => {
+  it('should send trip error', async () => {
     InteractivePrompts.sendTripError = jest.fn(() => {});
+    TripRequest.findByPk = jest.fn(() => { });
 
     await RescheduleTripController.rescheduleTrip(3000, '12/12/2018 22:00');
 
     expect(InteractivePrompts.sendTripError.mock.calls.length).toBe(1);
-    done();
   });
+
+  it('should send reschedule trip error', async () => {
+    const err = new Error();
+    InteractivePrompts.sendRescheduleError = jest.fn(() => {});
+    TripRequest.findByPk = jest.fn(() => Promise.reject(err));
+
+    await RescheduleTripController.rescheduleTrip(3, {});
+
+    expect(InteractivePrompts.sendRescheduleError.mock.calls.length).toBe(1);
+  });
+
 });

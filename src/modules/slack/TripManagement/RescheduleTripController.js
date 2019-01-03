@@ -5,6 +5,8 @@ import DateDialogHelper from '../../../helpers/dateHelper';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import Utils from '../../../utils';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
+import SlackEvents from '../events';
+import { slackEventNames } from '../events/slackEvents';
 
 const { TripRequest } = models;
 const web = new WebClientSingleton();
@@ -38,21 +40,22 @@ class RescheduleTripController {
     return errors;
   }
 
-  static async rescheduleTrip(tripId, newDate) {
-    return TripRequest.findByPk(tripId).then((ride) => {
-      const trip = ride;
-      trip.departureTime = Utils.formatDateForDatabase(newDate);
-      return ride
-        .save()
-        .then(() => InteractivePrompts.sendRescheduleCompletion(trip))
-        .catch((error) => {
-          bugsnagHelper.log(error);
-          return InteractivePrompts.sendRescheduleError(trip);
-        });
-    }).catch((error) => {
-      bugsnagHelper.log(error);
+  static async rescheduleTrip(tripId, newDate, payload, respond) {
+    try {
+      const trip = await TripRequest.findByPk(tripId);
+      if (trip) {
+        trip.departureTime = Utils.formatDateForDatabase(newDate);
+        const newTrip = await trip.save();
+        const requestType = 'reschedule';
+        SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, newTrip, respond, requestType);
+        return InteractivePrompts.sendRescheduleCompletion(newTrip);
+      }
+
       return InteractivePrompts.sendTripError();
-    });
+    } catch (error) {
+      bugsnagHelper.log(error);
+      return InteractivePrompts.sendRescheduleError(tripId);
+    }
   }
 }
 

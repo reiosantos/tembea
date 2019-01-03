@@ -39,7 +39,7 @@ class SlackNotifications {
     });
   }
 
-  static async sendManagerTripRequestNotification(payload, tripInformation, respond) {
+  static async sendManagerTripRequestNotification(payload, tripInformation, respond, requestType = 'newTrip') {
     try {
       const head = await SlackHelpers.getHeadByDepartmentId(tripInformation.departmentId);
       const requester = await SlackHelpers.findUserByIdOrSlackId(tripInformation.requestedById);
@@ -47,7 +47,7 @@ class SlackNotifications {
       const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
       const imResponse = await SlackNotifications.getDMChannelId(head.slackId, slackBotOauthToken);
       const message = SlackNotifications.getManagerMessageAttachment(
-        newTripRequest, imResponse, requester
+        newTripRequest, imResponse, requester, requestType
       );
       return SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (error) {
@@ -58,16 +58,21 @@ class SlackNotifications {
     }
   }
 
-  static getManagerMessageAttachment(newTripRequest, imResponse, requester) {
-    const attachments = new SlackAttachment('New Trip Request');
+  static getManagerMessageAttachment(newTripRequest, imResponse, requester, requestType) {
+    const { tripStatus } = newTripRequest;
+    const text = requestType === 'newTrip' ? 'booked a' : 'rescheduled this';
+
+    const attachments = new SlackAttachment('Trip Request');
     attachments.addOptionalProps('manager_actions', '/fallback', '#3359DF');
     const fields = SlackNotifications.notificationFields(newTripRequest);
-    const actions = SlackNotifications.notificationActions(newTripRequest);
     attachments.addFieldsOrActions('fields', fields);
-    attachments.addFieldsOrActions('actions', actions);
 
+    if (tripStatus === 'Pending') {
+      const actions = SlackNotifications.notificationActions(newTripRequest);
+      attachments.addFieldsOrActions('actions', actions);
+    }
     return SlackNotifications.createDirectMessage(
-      imResponse, `Hey, <@${requester.slackId}> has just booked a trip. :smiley:`, attachments
+      imResponse, `Hey, <@${requester.slackId}> has just ${text} trip. :smiley:`, attachments
     );
   }
 
