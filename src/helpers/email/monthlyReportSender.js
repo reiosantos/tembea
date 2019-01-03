@@ -42,26 +42,30 @@ class MonthlyReportSender {
   }
 
   static async send(callbackFunction) {
-    const emailService = new EmailService();
+    try {
+      const emailService = new EmailService();
 
-    const receivers = await MonthlyReportSender.getAddresses();
-    const summary = await ReportGeneratorService.getOverallTripsSummary();
+      const receivers = await MonthlyReportSender.getAddresses();
+      const summary = await ReportGeneratorService.getOverallTripsSummary();
 
-    const subject = 'Monthly Report for trips taken by Andelans';
-    const html = MailTemplate.tripReportMail(summary, receivers[0].name, receivers[1].name);
-    const fileAttachment = await MonthlyReportSender.getEmailReportAttachment();
+      const subject = 'Monthly Report for trips taken by Andelans';
+      const html = MailTemplate.tripReportMail(summary, receivers[0].name, receivers[1].name);
+      const fileAttachment = await MonthlyReportSender.getEmailReportAttachment();
 
-    const attachments = [
-      {
-        filename: `${summary.month} Report.xlsx`.replace(/[, ]/g, '_'),
-        content: Utils.writableToReadableStream(fileAttachment),
-      },
-    ];
+      const attachments = [
+        {
+          filename: `${summary.month} Report.xlsx`.replace(/[, ]/g, '_'),
+          content: Utils.writableToReadableStream(fileAttachment),
+        },
+      ];
 
-    const mailOptions = emailService.createEmailOptions(
-      receivers[0].email, [receivers[1].email], subject, html, attachments
-    );
-    return emailService.sendMail(mailOptions, callbackFunction);
+      const mailOptions = emailService.createEmailOptions(
+        receivers[0].email, [receivers[1].email], subject, html, attachments
+      );
+      return emailService.sendMail(mailOptions, callbackFunction);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   static recurringFunction() {

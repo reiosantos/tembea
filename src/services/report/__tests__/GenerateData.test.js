@@ -1,4 +1,5 @@
 import { WriteStream } from 'fs';
+import moment from 'moment';
 import models from '../../../database/models';
 import tripMockResults from '../__mocks__/TripsDataMock';
 import ReportGeneratorService from '../ReportGeneratorService';
@@ -71,14 +72,15 @@ describe('Report Generator Service', () => {
   });
 
   it('should create a summary including percentage change', async (done) => {
-    const willThrowAnotherError = await ReportGeneratorService.getOverallTripsSummary();
-
-    expect(willThrowAnotherError).toEqual({
+    const result = await ReportGeneratorService.getOverallTripsSummary();
+    const lastMonth = moment().subtract(1, 'months');
+    const month = lastMonth.format('MMM, YYYY');
+    expect(result).toEqual({
       departments: {
         People: { completed: 0, declined: 1, total: 1 },
         null: { completed: 2, declined: 0, total: 2 }
       },
-      month: 'Nov, 2018',
+      month,
       percentageChange: '0.00',
       totalTrips: 3,
       totalTripsCompleted: 2,

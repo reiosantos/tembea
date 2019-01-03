@@ -16,6 +16,7 @@ class Utils {
   }
 
   static formatDateForDatabase(dateStr) {
+    if (!dateStr || typeof dateStr !== 'string') return dateStr;
     const date = new Date(dateStr);
     return moment(date).format('YYYY-MM-DD HH:mm:ss');
   }

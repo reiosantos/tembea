@@ -3,6 +3,7 @@ import WebClientSingleton from '../../../utils/WebClientSingleton';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import DateDialogHelper from '../../../helpers/dateHelper';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
+import Utils from '../../../utils';
 
 const { TripRequest } = models;
 const web = new WebClientSingleton();
@@ -39,7 +40,7 @@ class RescheduleTripController {
   static async rescheduleTrip(tripId, newDate) {
     return TripRequest.findByPk(tripId).then((ride) => {
       const trip = ride;
-      trip.departureTime = newDate;
+      trip.departureTime = Utils.formatDateForDatabase(newDate);
       return ride
         .save()
         .then(() => InteractivePrompts.sendRescheduleCompletion(trip))
