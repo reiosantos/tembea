@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 printf "\n\n=======================================\n"
 printf "Linting"

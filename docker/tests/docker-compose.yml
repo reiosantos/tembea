@@ -1,4 +1,4 @@
-version: '2.1'
+version: '3'
 services:
   test:
     build:
@@ -12,8 +12,7 @@ services:
       DATABASE_URL: postgres://postgres:postgres@database/tembea_test_db
     command: tail -F package.json
     depends_on:
-      database:
-        condition: service_healthy
+      - database
   database:
     image: postgres:9.6
     environment:

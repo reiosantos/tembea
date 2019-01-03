@@ -1,6 +1,6 @@
 FROM node:10-alpine
 
-LABEL application="testing-tembea-backend"
+LABEL application="tembea-backend"
 
 ENV TERM=xterm-256color
 
