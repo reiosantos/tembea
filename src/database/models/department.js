@@ -13,7 +13,33 @@ module.exports = (sequelize, DataTypes) => {
     headId: {
       type: DataTypes.INTEGER,
     },
-  }, {});
+    status: {
+      allowNull: false,
+      defaultValue: 'Active',
+      type: DataTypes.ENUM(
+        'Active',
+        'Inactive'
+      )
+    }
+  }, {
+    defaultScope: {
+      where: {
+        status: 'Active'
+      }
+    },
+    scopes: {
+      all: {
+        where: {
+          status: { [sequelize.Op.or]: ['Active', 'Inactive'] }
+        }
+      },
+      inactive: {
+        where: {
+          status: 'Inactive'
+        }
+      }
+    }
+  });
   Department.associate = (models) => {
     Department.belongsTo(models.User, {
       foreignKey: 'headId',

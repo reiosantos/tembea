@@ -10,13 +10,21 @@ const { Department, User } = models;
 
 class DepartmentService {
   static async createDepartment(user, name) {
-    const department = await Department.findOrCreate({
+    const department = await Department.scope('all').findOrCreate({
       where: { name: { [Op.iLike]: `${name}%` } },
       defaults: {
         name,
         headId: user.id
       }
     });
+
+    if (department[0] && department[0].dataValues.status === 'Inactive') {
+      department[0].headId = user.id;
+      department[0].status = 'Active';
+      department[0].save();
+      department[1] = true;
+    }
+
     return department;
   }
 
@@ -77,6 +85,29 @@ class DepartmentService {
       offset: (size * (page - 1)),
       order: [['id', 'DESC']]
     });
+  }
+
+  /**
+   * @description This method deletes a department
+   * @param {number} id The id of the department
+   * @param {string} name The name of the department
+   * @returns {boolean} The status of the delete operation
+   */
+  static async deleteDepartmentByNameOrId(id = -1, name = '') {
+    const department = await Department.findOne({
+      where: {
+        [Op.or]: [
+          { id },
+          { name: name.trim() }
+        ]
+      }
+    });
+
+    HttpError.throwErrorIfNull(department, 'Department not found', 404);
+
+    department.status = 'Inactive';
+    department.save();
+    return true;
   }
 }
 

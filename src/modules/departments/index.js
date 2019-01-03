@@ -21,9 +21,18 @@ departmentRouter.post(
   DepartmentValidator.validateDepartmentBody,
   DepartmentsController.addDepartment
 );
+
 departmentRouter.get(
   '/departments',
   GeneralValidator.validateQueryParams,
   DepartmentsController.readRecords
 );
+
+departmentRouter.delete(
+  '/departments',
+  DepartmentValidator.validateDeleteProps,
+  DepartmentValidator.validateDeletePropsValues,
+  DepartmentsController.deleteRecord
+);
+
 export default departmentRouter;

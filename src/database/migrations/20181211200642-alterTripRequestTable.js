@@ -21,7 +21,7 @@ module.exports = {
 
   down: queryInterface => Promise.all([
     queryInterface.removeColumn('TripRequests', 'tripType'),
-    queryInterface.sequelize.query('DROP TYPE "enum_TripRequests_tripType";'),
-    queryInterface.removeColumn('TripRequests', 'tripDetailId')
+    queryInterface.removeColumn('TripRequests', 'tripDetailId'),
+    queryInterface.sequelize.query('DROP TYPE "enum_TripRequests_tripType";')
   ])
 };

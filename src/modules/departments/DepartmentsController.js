@@ -63,7 +63,6 @@ class DepartmentController {
    * @param {object} res The http response object
    * @returns {object} The http response object
    */
-
   static async readRecords(req, res) {
     try {
       const page = req.query.page || 1;
@@ -80,13 +79,35 @@ class DepartmentController {
       return res.status(200).json({
         success: true,
         message: `${page} of ${totalPages} page(s).`,
-        page_meta: {
+        pageMeta: {
           totalPages,
-          total_results: count,
+          totalResults: count,
           page,
         },
         departments: rows,
       });
+    } catch (error) {
+      HttpError.sendErrorResponse(error, res);
+    }
+  }
+
+  /**
+   * @description This method handles the deleting of a department
+   * @param  {object} req The http request object
+   * @param  {object} res The http response object
+   * @returns {object} The http response object
+   */
+  static async deleteRecord(req, res) {
+    try {
+      const { id, name } = req.body;
+      const success = await DepartmentService.deleteDepartmentByNameOrId(id, name);
+
+      if (success) {
+        return res.status(200).json({
+          success,
+          message: 'The department has been deleted'
+        });
+      }
     } catch (error) {
       HttpError.sendErrorResponse(error, res);
     }

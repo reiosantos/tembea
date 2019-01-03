@@ -1,5 +1,6 @@
 import validator from 'validator';
 import GeneralValidator from './GeneralValidator';
+import HttpError from '../helpers/errorHandler';
 
 class DepartmentValidator {
   /**
@@ -115,6 +116,64 @@ class DepartmentValidator {
       messages.push('Department cannot contain numeric values only.');
     }
     return messages;
+  }
+
+  /**
+   * @description This method ensures the required parameter is present
+   * @param  {object} req The http request object
+   * @param  {object} res The http response object
+   * @param  {object} next The next middleware
+   * @return {object} The http response object or the next middleware
+   */
+  static validateDeleteProps(req, res, next) {
+    try {
+      const { id, name } = req.body;
+  
+      if ((id && name)
+        || (!id && !name)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Kindly provide one of the two; id or name'
+        });
+      }
+  
+      return next();
+    } catch (error) {
+      HttpError.sendErrorResponse(error, res);
+    }
+  }
+
+  /**
+   * @description This method validates the passed parameters
+   * @param  {object} req The http request object
+   * @param  {object} res The http response object
+   * @param  {object} next The next middleware
+   * @return {object} The http response object or the next middleware
+   */
+  static validateDeletePropsValues(req, res, next) {
+    try {
+      const { id, name } = req.body;
+      const numRegex = /^[1-9][0-9]*$/;
+      const wordRegex = /^[A-Za-z0-9- ]+$/;
+  
+      if (id && !numRegex.test(id)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Id can contain only positive integers'
+        });
+      }
+      
+      if (name && !wordRegex.test(name.trim())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Name can contain only letters dashes and spaces'
+        });
+      }
+  
+      return next();
+    } catch (error) {
+      HttpError.sendErrorResponse(error, res);
+    }
   }
 }
 

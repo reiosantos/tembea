@@ -27,4 +27,18 @@ describe('/Departments update', () => {
     }
     done();
   });
+
+  it('should create a department', async (done) => {
+    const dept = await Department.create({
+      name: 'DSTD',
+      headId: 1,
+      status: 'Inactive'
+    });
+
+    const recreated = await DepartmentService.createDepartment({ id: 1 }, 'DSTD');
+    expect(recreated.length).toEqual(2);
+
+    await dept.destroy();
+    done();
+  });
 });

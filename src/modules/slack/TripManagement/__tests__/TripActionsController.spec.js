@@ -5,6 +5,8 @@ import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import UserInputValidator from '../../../../helpers/slack/UserInputValidator';
 import models from '../../../../database/models';
 
+const { TripRequest } = models;
+
 jest.mock('../../SlackPrompts/Notifications.js');
 jest.mock('../../events/', () => ({
   slackEvents: jest.fn(() => ({
@@ -110,7 +112,21 @@ describe('TripActionController operations decline tests', () => {
   });
 
   it('should run changeTripStatus() to declinedByOps', async (done) => {
-    const validState = JSON.stringify({ trip: 1, actionTs: 212132 });
+    const trip = await TripRequest.create({
+      name: 'A trip',
+      riderId: 1,
+      tripStatus: 'Approved',
+      originId: 1,
+      destinationId: 2,
+      departureTime: '2018-12-12- 22:00',
+      requestedById: 1,
+      departmentId: 1,
+      reason: 'I need to go',
+      noOfPassengers: 1,
+      tripType: 'Regular Trip'
+    });
+
+    const validState = JSON.stringify({ trip: trip.id, actionTs: 212132 });
     payload.state = validState;
     SendNotifications.sendUserConfirmOrDeclineNotification = jest.fn();
     SendNotifications.sendManagerConfirmOrDeclineNotification = jest.fn();
@@ -119,11 +135,13 @@ describe('TripActionController operations decline tests', () => {
     const result = await TripActionsController.changeTripStatusToDeclined(
       opsUserId, payload, respond
     );
+
     expect(result).toEqual('success');
     expect(SendNotifications.sendUserConfirmOrDeclineNotification).toHaveBeenCalled();
     expect(SendNotifications.sendManagerConfirmOrDeclineNotification).toHaveBeenCalled();
     expect(InteractivePrompts.sendOpsDeclineOrApprovalCompletion).toHaveBeenCalled();
 
+    await trip.destroy();
     done();
   });
 
