@@ -1,5 +1,6 @@
 import { Sequelize } from 'sequelize';
 import models from '../../database/models';
+import bugsnagHelper from '../bugsnagHelper';
 
 const {
   Department, User, TripRequest
@@ -120,6 +121,7 @@ class SlackHelpers {
       });
       return user;
     } catch (error) {
+      bugsnagHelper.log(error);
       throw error;
     }
   }

@@ -1,6 +1,7 @@
 import request from 'request-promise-native';
 import url from 'url';
 import TeamDetailsService from '../../services/TeamDetailsService';
+import bugsnagHelper from '../../helpers/bugsnagHelper';
 
 export const SlackInstallUrl = `https://slack.com/oauth/authorize?client_id=${process.env.SLACK_CLIENT_ID}&scope=team:read,chat:write:bot,chat:write:user,bot,commands,users.profile:read,users:read.email,users:read,incoming-webhook`;
 
@@ -26,53 +27,70 @@ export default class HomeController {
   }
 
   static async auth(req, res) {
-    if (!req.query.code || req.query.error) {
-      return res.render('home/failed.html', {
-        title: 'Installation failed',
-        message: 'Authentication failed!'
-      });
+    if (HomeController.validateAuthRequest(req)) {
+      return HomeController.renderErrorPage(res, 'Authentication failed!');
     }
     try {
-      const response = await request({
-        url: 'https://slack.com/api/oauth.access',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        formData: {
-          client_id: process.env.SLACK_CLIENT_ID,
-          client_secret: process.env.SLACK_CLIENT_SECRET,
-          code: req.query.code
-        },
-        resolveWithFullResponse: true
-      });
+      const response = await HomeController.sendSlackAuthRequest(req);
       const jsonResponse = JSON.parse(response.body);
       if (jsonResponse.ok) {
-        // get tokens and other data
-        const botId = jsonResponse.bot.bot_user_id;
-        const botToken = jsonResponse.bot.bot_access_token;
-        const teamId = jsonResponse.team_id;
-        const teamName = jsonResponse.team_name;
-        const userId = jsonResponse.user_id;
-        const userToken = jsonResponse.access_token;
-        const webhookConfigUrl = jsonResponse.incoming_webhook.url;
-        const urlObject = url.parse(jsonResponse.incoming_webhook.configuration_url);
         // create and save team credentials
-        await TeamDetailsService.saveTeamDetails({
-          botId,
-          botToken,
-          teamId,
-          teamName,
-          userId,
-          userToken,
-          webhookConfigUrl,
-          teamUrl: `https://${urlObject.host}`
-        });
+        const teamObject = HomeController.convertJSONResponseToTeamDetailsObj(jsonResponse);
+        await TeamDetailsService.saveTeamDetails({ ...teamObject });
         return res.render('home/installed.html');
       }
-      throw new Error('Tembea could not be installed in your workspace.');
+      HomeController.renderErrorPage(res, 'Tembea could not be installed in your workspace.');
     } catch (error) {
-      return res.render('home/failed.html', { message: error.message });
+      bugsnagHelper.log(error);
+      return HomeController.renderErrorPage(res, error.message);
     }
+  }
+
+  static validateAuthRequest(req) {
+    return !req.query.code || req.query.error;
+  }
+
+  static async sendSlackAuthRequest(req) {
+    return request({
+      url: 'https://slack.com/api/oauth.access',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      formData: {
+        client_id: process.env.SLACK_CLIENT_ID,
+        client_secret: process.env.SLACK_CLIENT_SECRET,
+        code: req.query.code
+      },
+      resolveWithFullResponse: true
+    });
+  }
+
+  static renderErrorPage(res, message) {
+    const title = 'Installation failed';
+    res.render('home/failed.html', { message, title });
+  }
+
+  static convertJSONResponseToTeamDetailsObj(jsonResponse) {
+    // get tokens and other data
+    const botId = jsonResponse.bot.bot_user_id;
+    const botToken = jsonResponse.bot.bot_access_token;
+    const teamId = jsonResponse.team_id;
+    const teamName = jsonResponse.team_name;
+    const userId = jsonResponse.user_id;
+    const userToken = jsonResponse.access_token;
+    const webhookConfigUrl = jsonResponse.incoming_webhook.url;
+    const urlObject = url.parse(jsonResponse.incoming_webhook.configuration_url);
+    const teamUrl = `https://${urlObject.host}`;
+    return {
+      botId,
+      botToken,
+      teamId,
+      teamName,
+      userId,
+      userToken,
+      webhookConfigUrl,
+      teamUrl
+    };
   }
 }

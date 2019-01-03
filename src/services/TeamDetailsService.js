@@ -1,5 +1,6 @@
 import models from '../database/models';
 import cache from '../cache';
+import bugsnagHelper from '../helpers/bugsnagHelper';
 
 const { TeamDetails } = models;
 const getTeamDetailsKey = teamId => `teamDetails_${teamId}`;
@@ -16,6 +17,7 @@ class TeamDetailsService {
       cache.saveObject(getTeamDetailsKey(teamId), dataValues);
       return dataValues;
     } catch (error) {
+      bugsnagHelper.log(error);
       throw new Error('Could not get team details from DB');
     }
   }
@@ -36,6 +38,7 @@ class TeamDetailsService {
       cache.saveObject(getTeamDetailsKey(teamUrl), teamDetails);
       return teamDetails;
     } catch (error) {
+      bugsnagHelper.log(error);
       throw new Error('Could not get the team details.');
     }
   }
@@ -51,6 +54,7 @@ class TeamDetailsService {
       cache.saveObject(getTeamDetailsKey(teamObject.teamId), teamObject);
       return teamObject;
     } catch (error) {
+      bugsnagHelper.log(error);
       throw new Error('Could not update teamDetails or write new teamDetails to DB');
     }
   }

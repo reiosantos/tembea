@@ -1,13 +1,15 @@
 import HttpError from '../../helpers/errorHandler';
 import DepartmentService from '../../services/DepartmentService';
 import UserService from '../../services/UserService';
+import bugsnagHelper from '../../helpers/bugsnagHelper';
 import defaultSize from '../../helpers/constants';
 
 
 class DepartmentController {
   /**
    * @description Get the department by name from the database
-   * @param  {string} name The name of the department on the db
+   * @param {object} req
+   * @param {object} res
    * @returns {object} The http response object
    */
 
@@ -27,16 +29,17 @@ class DepartmentController {
           department
         });
     } catch (error) {
+      bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
     }
   }
-  
+
   static async addDepartment(req, res) {
     const { name, email } = req.body;
     try {
       const user = await UserService.getUser(email);
       const [dept, created] = await DepartmentService.createDepartment(user, name);
-      
+
       if (created) {
         return res
           .status(201)
@@ -53,6 +56,7 @@ class DepartmentController {
           message: 'Department already exists.',
         });
     } catch (error) {
+      bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
     }
   }
@@ -67,7 +71,7 @@ class DepartmentController {
     try {
       const page = req.query.page || 1;
       const size = req.query.size || defaultSize;
-      
+
       const data = await DepartmentService.getAllDepartments(size, page);
       const { count, rows } = data;
       if (rows <= 0) {
@@ -109,6 +113,7 @@ class DepartmentController {
         });
       }
     } catch (error) {
+      bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
     }
   }

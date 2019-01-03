@@ -1,42 +1,61 @@
 import bugsnag from '@bugsnag/js';
 import bugsnagExpress from '@bugsnag/plugin-express';
+import env from '../config/environment';
+
+const { NODE_ENV } = env;
+const isProd = ['production', 'prod'].includes(NODE_ENV);
+const isDev = ['development', 'dev'].includes(NODE_ENV);
 
 class BugsnagHelper {
-  static createMiddleware() {
-    if (!process.env.NODE_ENV.match('test')
-  /* istanbul ignore next */
-  && process.env.BUGSNAG_API_KEY
+  constructor() {
+    this.bugsnagClient = null;
+    if (!NODE_ENV.match('test')
+      /* istanbul ignore next */
+      && process.env.BUGSNAG_API_KEY
     ) {
-    /* istanbul ignore next */
-      const bugsnagClient = bugsnag({
+      /* istanbul ignore next */
+      this.bugsnagClient = bugsnag({
         apiKey: process.env.BUGSNAG_API_KEY,
         autoNotify: true,
         appVersion: '0.0.1',
         appType: 'web_server'
       });
 
-      bugsnagClient.use(bugsnagExpress);
+      this.bugsnagClient.use(bugsnagExpress);
+    }
+  }
 
+  createMiddleware() {
+    if (this.bugsnagClient) {
       /* istanbul ignore next */
-      const bugsnagMiddleware = bugsnagClient.getPlugin('express');
-      return bugsnagMiddleware;
+      return this.bugsnagClient.getPlugin('express');
     }
     return false;
   }
 
-  static init(app) {
-    const { requestHandler } = BugsnagHelper.createMiddleware();
+  init(app) {
+    const { requestHandler } = this.createMiddleware();
     if (requestHandler) {
       app.use(requestHandler);
     }
   }
 
-  static errorHandler(app) {
-    const { errorHandler } = BugsnagHelper.createMiddleware();
+  errorHandler(app) {
+    const { errorHandler } = this.createMiddleware();
     if (errorHandler) {
       app.use(errorHandler);
     }
   }
+
+  log(error) {
+    if (this.bugsnagClient && isProd) {
+      this.bugsnagClient.notify(error);
+    } else if (isDev) {
+      // eslint-disable-next-line no-console
+      console.error('Error: ', error);
+    }
+  }
 }
 
-export default BugsnagHelper;
+const bugsnagHelper = new BugsnagHelper();
+export default bugsnagHelper;

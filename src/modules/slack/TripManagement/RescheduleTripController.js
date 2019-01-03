@@ -4,6 +4,7 @@ import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import DateDialogHelper from '../../../helpers/dateHelper';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import Utils from '../../../utils';
+import bugsnagHelper from '../../../helpers/bugsnagHelper';
 
 const { TripRequest } = models;
 const web = new WebClientSingleton();
@@ -44,8 +45,14 @@ class RescheduleTripController {
       return ride
         .save()
         .then(() => InteractivePrompts.sendRescheduleCompletion(trip))
-        .catch(() => InteractivePrompts.sendRescheduleError(trip));
-    }).catch(() => InteractivePrompts.sendTripError());
+        .catch((error) => {
+          bugsnagHelper.log(error);
+          return InteractivePrompts.sendRescheduleError(trip);
+        });
+    }).catch((error) => {
+      bugsnagHelper.log(error);
+      return InteractivePrompts.sendTripError();
+    });
   }
 }
 

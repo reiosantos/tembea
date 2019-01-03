@@ -6,6 +6,7 @@ import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import slackEvents from '../events';
 import { slackEventNames } from '../events/slackEvents';
 import TeamDetailsService from '../../../services/TeamDetailsService';
+import bugsnagHelper from '../../../helpers/bugsnagHelper';
 
 const { TripRequest, Address, User } = models;
 
@@ -27,14 +28,11 @@ class ManageTripController {
     // eslint-disable-next-line no-useless-escape
     const reason = validator.blacklist(declineReason.trim(), '=\'\"\t\b\0\Z').trim();
 
-    const scheduledTrip = await TripRequest.findByPk(state[2], {
+    return TripRequest.findByPk(state[2], {
       where: {
         tripStatus: 'Pending'
       },
-      include: [
-        { model: Address, as: 'origin' },
-        { model: Address, as: 'destination' },
-        { model: User, as: 'requester' }]
+      include: [{ model: Address, as: 'origin' }, { model: Address, as: 'destination' }, { model: User, as: 'requester' }]
     }).then(async (trip) => {
       const head = await SlackHelpers.getHeadByDepartmentId(trip.departmentId);
       const ride = trip;
@@ -46,13 +44,10 @@ class ManageTripController {
       const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
       InteractivePrompts.sendManagerDeclineOrApprovalCompletion(true, trip.dataValues, state[0], state[1], slackBotOauthToken);
       slackEvents.raise(slackEventNames.DECLINED_TRIP_REQUEST, ride.dataValues, respond, slackBotOauthToken);
-    }).catch(() => {
-      respond({
-        text: 'Dang, something went wrong there.'
-      });
+    }).catch((error) => {
+      bugsnagHelper.log(error);
+      respond({ text: 'Dang, something went wrong there.' });
     });
-
-    return scheduledTrip;
   }
 }
 

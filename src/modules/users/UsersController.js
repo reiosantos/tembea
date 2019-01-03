@@ -1,6 +1,7 @@
 import models from '../../database/models';
 import HttpError from '../../helpers/errorHandler';
 import UserService from '../../services/UserService';
+import bugsnagHelper from '../../helpers/bugsnagHelper';
 
 const { User } = models;
 class UsersController {
@@ -38,6 +39,7 @@ class UsersController {
         }
       });
     } catch (error) {
+      bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
     }
   }
@@ -70,11 +72,12 @@ class UsersController {
         }
       });
     } catch (error) {
+      bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
     }
   }
 
-  
+
   /**
    * @description Read the user records
    * @param  {object} req The http request object
@@ -99,6 +102,7 @@ class UsersController {
         users: data.rows
       });
     } catch (error) {
+      bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
     }
   }

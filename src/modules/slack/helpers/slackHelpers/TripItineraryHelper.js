@@ -2,6 +2,7 @@ import TripItineraryController from '../../TripManagement/TripItineraryControlle
 import { SlackInteractiveMessage } from '../../SlackModels/SlackMessageModels';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import slackHelpers from '../../../../helpers/slack/slackHelpers';
+import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 
 const getDateTime = value => new Date(value).getTime();
 
@@ -22,16 +23,12 @@ const filterTripHistory = (trips) => {
   const date = currentDate();
   const difference = date - thirtyDaysInMilliseconds;
 
-  const filteredTrips = trips.filter(
+  return trips.filter(
     trip => getDateTime(trip.departureTime) >= difference && getDateTime(trip.departureTime) <= date
   );
-  return filteredTrips;
 };
 
-const filterUpcomingTrips = (trips) => {
-  const filteredTrips = trips.filter(trip => getDateTime(trip.departureTime) >= currentDate());
-  return filteredTrips;
-};
+const filterUpcomingTrips = trips => trips.filter(trip => getDateTime(trip.departureTime) >= currentDate());
 
 const getUserAndTripsRequest = async (slackId, requestType) => {
   const user = await slackHelpers.getUserBySlackId(slackId);
@@ -40,8 +37,7 @@ const getUserAndTripsRequest = async (slackId, requestType) => {
   }
   const userId = user.id;
 
-  const trips = await TripItineraryController.getTripRequests(userId, requestType);
-  return trips;
+  return TripItineraryController.getTripRequests(userId, requestType);
 };
 
 class TripItineraryHelper {
@@ -61,6 +57,7 @@ class TripItineraryHelper {
       }
       return InteractivePrompts.sendTripHistory(tripHistory, respond);
     } catch (error) {
+      bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         `Request could not be processed! ${error.message}`
       );
@@ -84,6 +81,7 @@ class TripItineraryHelper {
       }
       return InteractivePrompts.sendUpcomingTrips(trips, respond, payload);
     } catch (error) {
+      bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         `Request could not be processed! ${error.message}`
       );

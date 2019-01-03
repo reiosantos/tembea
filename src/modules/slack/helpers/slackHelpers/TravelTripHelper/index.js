@@ -4,6 +4,7 @@ import { SlackInteractiveMessage } from '../../../SlackModels/SlackMessageModels
 import Cache from '../../../../../cache';
 import ScheduleTripController from '../../../TripManagement/ScheduleTripController';
 import createTravelTripDetails from './createTravelTripDetails';
+import bugsnagHelper from '../../../../../helpers/bugsnagHelper';
 import SlackEvents from '../../../events';
 import { slackEventNames } from '../../../events/slackEvents';
 
@@ -29,23 +30,28 @@ const travelTripHelper = {
       };
       return InteractivePrompts.sendListOfDepartments(props, 'false');
     } catch (error) {
+      bugsnagHelper.log(error);
       respond(
         new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
       );
     }
   },
   department: (payload, respond) => {
-    respond(new SlackInteractiveMessage('Noted...'));
+    try {
+      respond(new SlackInteractiveMessage('Noted...'));
 
-    const { user: { id }, actions } = payload;
-    const { value, name } = actions[0];
-    Cache.save(id, 'departmentId', value);
-    Cache.save(id, 'departmentName', name);
+      const { user: { id }, actions } = payload;
+      const { value, name } = actions[0];
+      Cache.save(id, 'departmentId', value);
+      Cache.save(id, 'departmentName', name);
 
-    if (Cache.fetch(id).tripType === 'Airport Transfer') {
-      return DialogPrompts.sendTripDetailsForm(payload, 'travelTripFlightDetailsForm', 'travel_trip_flightDetails');
+      if (Cache.fetch(id).tripType === 'Airport Transfer') {
+        return DialogPrompts.sendTripDetailsForm(payload, 'travelTripFlightDetailsForm', 'travel_trip_flightDetails');
+      }
+      return DialogPrompts.sendTripDetailsForm(payload, 'travelEmbassyDetailsForm', 'travel_trip_embassyForm');
+    } catch (error) {
+      bugsnagHelper.log(error);
     }
-    return DialogPrompts.sendTripDetailsForm(payload, 'travelEmbassyDetailsForm', 'travel_trip_embassyForm');
   },
   embassyForm: async (payload, respond) => {
     try {
@@ -60,6 +66,7 @@ const travelTripHelper = {
       Cache.save(payload.user.id, 'tripDetails', tripDetails);
       InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
     } catch (error) {
+      bugsnagHelper.log(error);
       respond(
         new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
       );
@@ -77,6 +84,7 @@ const travelTripHelper = {
       Cache.save(payload.user.id, 'tripDetails', tripDetails);
       return InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
     } catch (error) {
+      bugsnagHelper.log(error);
       respond(
         new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
       );
@@ -97,6 +105,7 @@ const travelTripHelper = {
         slackEventNames.NEW_TRAVEL_TRIP_REQUEST, id, payload, respond, 'travel'
       );
     } catch (error) {
+      bugsnagHelper.log(error);
       respond(
         new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
       );

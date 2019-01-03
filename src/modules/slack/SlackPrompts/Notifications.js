@@ -12,6 +12,7 @@ import {
 } from '../SlackModels/SlackMessageModels';
 import NotificationsResponse from './NotificationsResponse';
 import TeamDetailsService from '../../../services/TeamDetailsService';
+import bugsnagHelper from '../../../helpers/bugsnagHelper';
 
 const web = new WebClientSingleton();
 
@@ -50,6 +51,7 @@ class SlackNotifications {
       );
       return SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (error) {
+      bugsnagHelper.log(error);
       respond({
         text: 'Error:warning:: Request saved, but I could not send a notification to your manager.'
       });
@@ -89,7 +91,8 @@ class SlackNotifications {
       );
 
       await SlackNotifications.sendNotification(opsRequestMessage, slackBotOauthToken);
-    } catch (e) {
+    } catch (error) {
+      bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         'We could not get the details of the department selected. '
         + 'Please contact the administrator.', [], undefined, '#b52833'
@@ -131,7 +134,8 @@ class SlackNotifications {
         responseData, imResponse.channel.id
       );
       SlackNotifications.sendNotification(response, slackBotOauthToken);
-    } catch (e) {
+    } catch (error) {
+      bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Oopps! We could not process this request.'));
     }
   }
@@ -164,6 +168,7 @@ class SlackNotifications {
       );
       return SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (error) {
+      bugsnagHelper.log(error);
       respond({
         text: 'Error:warning:: Decline saved but requester will not get the notification'
       });

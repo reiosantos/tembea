@@ -5,6 +5,7 @@ import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import TeamDetailsService from '../../../services/TeamDetailsService';
+import bugsnagHelper from '../../../helpers/bugsnagHelper';
 
 const { TripRequest, Cab } = models;
 const { Op } = Sequelize;
@@ -34,6 +35,7 @@ class TripActionsController {
         await TripActionsController.changeTripStatusToDeclined(opsUserId, payload, respond, slackBotOauthToken);
       }
     } catch (error) {
+      bugsnagHelper.log(error);
       TripActionsController.errorMessage(respond);
     }
   }
@@ -57,6 +59,7 @@ class TripActionsController {
 
       return 'success';
     } catch (error) {
+      bugsnagHelper.log(error);
       TripActionsController.errorMessage(respond);
     }
   }
@@ -79,6 +82,7 @@ class TripActionsController {
       );
       return 'success';
     } catch (error) {
+      bugsnagHelper.log(error);
       TripActionsController.errorMessage(respond);
     }
   }
@@ -99,6 +103,7 @@ class TripActionsController {
 
       return cab[0].dataValues;
     } catch (error) {
+      bugsnagHelper.log(error);
       TripActionsController.errorMessage(respond);
     }
   }

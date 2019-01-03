@@ -1,5 +1,6 @@
 import Sequelize from 'sequelize';
 import models from '../../../database/models';
+import bugsnagHelper from '../../../helpers/bugsnagHelper';
 
 const { TripRequest, User, Address } = models;
 const { Op } = Sequelize;
@@ -53,6 +54,7 @@ class TripItineraryController {
       });
       return trips;
     } catch (error) {
+      bugsnagHelper.log(error);
       throw error;
     }
   }

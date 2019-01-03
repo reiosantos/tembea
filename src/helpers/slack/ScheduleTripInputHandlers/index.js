@@ -5,6 +5,7 @@ import {
   SlackInteractiveMessage
 } from '../../../modules/slack/SlackModels/SlackMessageModels';
 import ScheduleTripController from '../../../modules/slack/TripManagement/ScheduleTripController';
+import bugsnagHelper from '../../bugsnagHelper';
 
 const createDepartmentPayloadObject = (payload, respond, forSelf = 'true') => {
   const navButtonCallbackId = forSelf === 'true' ? 'welcome_message' : 'schedule_trip_reason';
@@ -67,6 +68,7 @@ const ScheduleTripInputHandlers = {
 
       await ScheduleTripController.createTripRequest(payload, respond, tripRequestDetails);
     } catch (error) {
+      bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     } finally {
       Cache.delete(payload.user.id);

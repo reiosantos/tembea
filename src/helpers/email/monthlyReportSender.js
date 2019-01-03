@@ -4,6 +4,7 @@ import ReportGeneratorService from '../../services/report/ReportGeneratorService
 import SlackHelpers from '../slack/slackHelpers';
 import MailTemplate from './mailTemplate';
 import Utils from '../../utils';
+import BugsnagHelper from '../bugsnagHelper';
 
 class MonthlyReportSender {
   /**
@@ -64,7 +65,7 @@ class MonthlyReportSender {
       );
       return emailService.sendMail(mailOptions, callbackFunction);
     } catch (e) {
-      console.error(e);
+      BugsnagHelper.log(e);
     }
   }
 

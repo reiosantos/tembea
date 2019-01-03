@@ -15,6 +15,7 @@ import Cache from '../../../cache';
 import ScheduleTripInputHandlers from '../../../helpers/slack/ScheduleTripInputHandlers';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import travelTripHelper from '../helpers/slackHelpers/TravelTripHelper';
+import bugsnagHelper from '../../../helpers/bugsnagHelper';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -93,6 +94,7 @@ class SlackInteractions {
           const message = await CancelTripController.cancelTrip(value);
           respond(new SlackInteractiveMessage(message));
         } catch (error) {
+          bugsnagHelper.log(error);
           respond(new SlackInteractiveMessage(error.message));
         }
         break;
@@ -139,6 +141,7 @@ class SlackInteractions {
           break;
       }
     } catch (error) {
+      bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Error:bangbang:: I was unable to do that.'));
     }
   }
@@ -156,6 +159,7 @@ class SlackInteractions {
       }
       await ManageTripController.declineTrip(state, declineReason, respond, teamId);
     } catch (error) {
+      bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage('Error:bangbang:: Something went wrong! Please try again.');
       respond(message);
     }
@@ -180,7 +184,8 @@ class SlackInteractions {
       }
       respond(new SlackInteractiveMessage('Error:bangbang: : This request could not be approved. '
         + 'Consult the administrator'));
-    } catch (e) {
+    } catch (error) {
+      bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Error:bangbang: : We could not complete this process please try again.'));
     }
   }
@@ -236,6 +241,7 @@ class SlackInteractions {
       }
       await TripActionsController.changeTripStatus(payload, respond);
     } catch (error) {
+      bugsnagHelper.log(error);
       respond(
         new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
       );

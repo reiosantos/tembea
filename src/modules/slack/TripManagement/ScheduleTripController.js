@@ -6,6 +6,7 @@ import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import dateHelper from '../../../helpers/dateHelper';
 import TeamDetailsService from '../../../services/TeamDetailsService';
+import bugsnagHelper from '../../../helpers/bugsnagHelper';
 
 const {
   TripRequest, User, Location, Address, TripDetail
@@ -42,6 +43,7 @@ class ScheduleTripController {
       errors.push(...await UserInputValidator.validateDateAndTimeEntry(payload));
       return errors;
     } catch (error) {
+      bugsnagHelper.log(error);
       throw error;
     }
   }
@@ -86,6 +88,7 @@ class ScheduleTripController {
         tripType
       };
     } catch (error) {
+      bugsnagHelper.log(error);
       throw error;
     }
   }
@@ -101,6 +104,7 @@ class ScheduleTripController {
       }
       return request;
     } catch (error) {
+      bugsnagHelper.log(error);
       throw error;
     }
   }
@@ -115,6 +119,7 @@ class ScheduleTripController {
 
       return true;
     } catch (error) {
+      bugsnagHelper.log(error);
       throw error;
     }
   }
@@ -131,6 +136,7 @@ class ScheduleTripController {
 
       return travelTripRequest;
     } catch (error) {
+      bugsnagHelper.log(error);
       throw error;
     }
   }
@@ -143,6 +149,7 @@ class ScheduleTripController {
       const addressData = await Address.create({ locationId: location.dataValues.id, address });
       return addressData.dataValues.id;
     } catch (error) {
+      bugsnagHelper.log(error);
       throw error;
     }
   }
@@ -159,6 +166,7 @@ class ScheduleTripController {
       });
       return user.dataValues;
     } catch (error) {
+      bugsnagHelper.log(error);
       throw error;
     }
   }
@@ -174,6 +182,7 @@ class ScheduleTripController {
 
       return tripDetail.dataValues;
     } catch (error) {
+      bugsnagHelper.log(error);
       throw error;
     }
   }

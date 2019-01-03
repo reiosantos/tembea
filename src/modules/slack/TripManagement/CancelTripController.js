@@ -1,4 +1,5 @@
 import models from '../../../database/models';
+import bugsnagHelper from '../../../helpers/bugsnagHelper';
 
 const { TripRequest } = models;
 
@@ -18,6 +19,7 @@ class CancelTripController {
       message = 'Success! Your Trip request has been cancelled';
       return message;
     } catch (error) {
+      bugsnagHelper.log(error);
       message = `Request could not be processed, ${error.message}`;
       return message;
     }

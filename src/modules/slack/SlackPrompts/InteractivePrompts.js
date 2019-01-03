@@ -10,6 +10,7 @@ import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import InteractivePromptsHelpers from '../helpers/slackHelpers/InteractivePromptsHelpers';
 import previewTripDetailsAttachment
   from '../helpers/slackHelpers/TravelTripHelper/previewTripDetailsAttachment';
+import BugsnagHelper from '../../../helpers/bugsnagHelper';
 
 const web = new WebClientSingleton();
 
@@ -222,7 +223,7 @@ class InteractivePrompts {
         [tripDetailsAttachment, cabDetailsAttachment, confirmationDetailsAttachment],
         slackBotOauthToken);
     } catch (err) {
-      console.log(err);
+      BugsnagHelper.log(err);
     }
   }
 
