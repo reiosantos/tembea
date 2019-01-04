@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=0.86, minimum-scale=0.86">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Email Template</title>
+
+	<style rel="stylesheet" type="text/css">
+		@import url('https://fonts.googleapis.com/css?family=Roboto+Slab:300,400,500,600');
+		.app {
+			background-color: #ececec;
+			margin: 0;
+			padding-top: 80px;
+			font-weight: 100;
+			width: 100%;
+			min-height: 100vh;
+		}
+		.content {
+			background-color: #FFFFFF;
+			width: 70%;
+			border: 1px solid #F5F5F5;
+			padding: 20px;
+			padding-top: 60px;
+			margin: 0 auto;
+			color: #4F4F4F;
+		}
+		.image {
+			display: block;
+			width: 140px;
+			margin: 0 auto;
+		}
+		.title {
+			margin-top: 60px;
+			text-align: center;
+			font-size: 24px;
+			font-weight: 500;
+			line-height: 29px;
+		}
+		.sub-title {
+			text-align: center;
+			font-size: 16px;
+			line-height: 20px;
+		}
+		.card-list {
+			display: inline-block;
+			width: 104%;
+		}
+		.top { margin-top: 20px; }
+		.sm-card {
+			background-color: #ececec;
+			border-radius: 13px;
+			margin-right: 2%;
+			margin-bottom: 2%;
+			padding: 3% 1%;
+			text-align: center;
+			width: 45%;
+			float: left;
+			background-size: 100% 100%;
+			background-image: url(https://res.cloudinary.com/olamideoncloudinary/image/upload/v1546620593/Tembea/Tembea-report-a.png);
+		}
+		.sm-card:nth-child(2n+0) {
+			background-size: 100% 100%;
+			background-image: url(https://res.cloudinary.com/olamideoncloudinary/image/upload/v1546620593/Tembea/Tembea-report-b.png);
+		}
+		.md-card {
+			border-radius: 13px;
+			margin-right: 2%;
+			margin-bottom: 2%;
+			padding: 3% 1%;
+			text-align: center;
+			width: 45%;
+			float: left;
+		}
+		.request-trip { background-color: rgba(255,175,48,0.13); }
+		.approve-trip { background-color: rgba(16,163,109,0.13); }
+		.lg-card {
+			background-color: #ececec;
+			border-radius: 13px;
+			padding: 15px 10px;
+			text-align: center;
+			background-image: url(https://res.cloudinary.com/olamideoncloudinary/image/upload/v1546620593/Tembea/Tembea-report-c.png);
+		}
+		.dept-name, .trip-number, .trip, .info { display: block; }
+		.dept-name {
+			text-transform: capitalize;
+			color: #2D4EE2;
+			font-size: 18px;
+			font-weight: 500;
+			line-height: 23px;
+		}
+		.trip-number {
+			margin-top: 30px;
+			font-size: 42px;
+			font-weight: 500;
+			line-height: 54px;
+		}
+		.total-title, .total-number, .change-status, .change-number, .change-trip {
+			display: block;
+		}
+		.trip {
+			margin-top: 5px;
+			font-size: 15px;
+			line-height: 20px;
+		}
+		.total-title {
+			font-size: 18px;
+			font-weight: 500;
+			line-height: 22px;
+		}
+		.total-number {
+			font-size: 42px;
+			margin-top: 10px;
+			font-weight: 500;
+			line-height: 54px;
+		}
+		.change-status {
+			font-size: 18px;
+			font-weight: 500;
+			line-height: 23px;
+		}
+		.change-number {
+			font-size: 42px;
+			margin-top: 7px;
+			font-weight: 500;
+			line-height: 54px;
+			position: relative;
+    		display: inline-block;
+		}
+		.change-trip {
+			margin-top: 10px;
+			font-size: 15px;
+			font-weight: 300;
+			line-height: 20px;
+		}
+		.arrow-up {
+			position: absolute;
+			left: -15px;
+			top: 12px;
+		}
+		hr { margin-top: 30px; }
+		.footer {
+			margin-top: 30px;
+			width: 100%;
+			display: inline-block;
+		}
+		.more-info {
+			float: left;
+			font-size: 16px;
+			line-height: 27px;
+			margin-left: 30px;
+		}
+		.button { float: right; }
+		.arrow { vertical-align: middle; }
+		.button-content {
+			padding: 10px 20px;
+			background-color: #3359DB;
+			border-radius: 10px;
+			color: #FFFFFF;
+			font-size: 16px;
+			line-height: 21px;
+			text-align: center;
+			display: inline-block;
+			text-decoration: none;
+		}
+		@media only screen and (max-width: 600px) {
+			.sm-card {
+				margin-right: 0;
+				margin-bottom: 4%;
+				width: 95%;
+			}
+			.md-card {
+				margin-right: 0;
+				margin-bottom: 5%;
+				width: 95%;
+				float: none;
+			}
+			.more-info { float: none; }
+			.button {
+				float: none;
+				margin-top: 15px;
+			}
+			.footer {
+				display: block;
+				text-align: center;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="app">
+		<div class="content">
+			<!-- Header -->
+			<div class="image-holder">
+				<img class="image" src="https://res.cloudinary.com/olamideoncloudinary/image/upload/v1546872581/Tembea_Logo.png" alt="Tembea" />
+			</div>
+
+			<!-- Welcome user note -->
+			<div>
+				<p class="title">Hello, {{ name }}!</p>
+
+				<p class="sub-title">Here is a summary of trips taken in {{ month }}</p>
+			</div>
+
+			<!-- Department Trip Report Content -->
+			<div class="card-list top">
+
+				{{#each departments}}
+
+				<div class="sm-card">
+					<span class="dept-name">{{ this.name }}</span>
+					<span class="trip-number">{{ this.completed }}</span>
+					<span class="trip">Trip(s) Taken</span>
+				</div>
+
+				{{/each}}
+
+			</div>
+
+			<!-- Total number of trips -->
+			<div class="card-list">
+				<div class="md-card request-trip">
+					<span class="total-title">Number of Requested Trips</span>
+					<span class="total-number">{{ summary.totalTrips }}</span>
+				</div>
+				<div class="md-card approve-trip">
+					<span class="total-title">Number of Completed Requests</span>
+					<span class="total-number">{{ summary.totalTripsCompleted }}</span>
+				</div>
+			</div>
+
+			<!-- Percentage Increase -->
+			<div class="lg-card">
+				<span class="change-status">Trips taken had a percentage change of</span>
+
+				<span class="change-number">
+					{{#if increased}}
+						<img alt="increase" class="arrow-up" src="https://res.cloudinary.com/dwf8aqhry/image/upload/v1546876832/Tembea-Green_Arrow_o4ikki.png">
+					{{ else }}
+						<img alt="decrease" class="arrow-up" src="https://res.cloudinary.com/dwf8aqhry/image/upload/v1546876988/Tembea-Red_Arrow_p4xy3a.png"/>
+					{{/if}}
+					{{ summary.percentageChange }}%
+				</span>
+				<!--<span class="change-trip">Up by 25% since October</span>-->
+			</div>
+
+			<hr>
+
+			<div class="footer">
+				<div class="more-info">
+					<span class="info">Have a question?</span>
+					<span><a href="mailto:tembea@andela.com">tembea@andela.com</a></span>
+				</div>
+				<div class="button">
+					<a class="button-content" href="http://">
+						<span class="text">Login to Tembea</span>
+						<img class="arrow" src="https://i.imgur.com/g6dU6ed.png" width="20" height="20" alt="" />
+					</a>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</body>
+</html>

@@ -10,7 +10,7 @@ class GenerateReportData {
     "tripStatus" = ANY(ARRAY['DeclinedByOps', 'DeclinedByManager', 'Completed']::"enum_TripRequests_tripStatus"[]) AND
     (DATE_TRUNC('month', NOW() - INTERVAL '${numberOfMonthsBack} months') = DATE_TRUNC('month', TO_DATE("TripRequest"."departureTime", 'YYYY-MM-DD HH24:MI:SS'))) AND
     (DATE_TRUNC('month', NOW()) > DATE_TRUNC('month', "TripRequest"."createdAt")) AND
-    (DATE_TRUNC('month', NOW() - INTERVAL '${numberOfMonthsBack} months') <= DATE_TRUNC('month', "TripRequest"."createdAt"))
+    (DATE_TRUNC('month', NOW() - INTERVAL '${numberOfMonthsBack} months') >= DATE_TRUNC('month', "TripRequest"."createdAt"))
     `;
   }
 

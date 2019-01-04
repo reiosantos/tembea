@@ -9,5 +9,7 @@ const logger = debug('log');
 const server = http.createServer(app);
 
 server.listen(env.PORT, () => {
+  app.set('host', `http://localhost:${env.PORT}`);
+
   logger(`Find me on http://localhost:${env.PORT}`);
 });

@@ -1,7 +1,6 @@
 import fs from 'fs';
 import GenerateExcelBook from './GenerateExcelBook';
 import GenerateReportData from './ReportData';
-import bugsnagHelper from '../../helpers/bugsnagHelper';
 
 class ReportGeneratorService {
   constructor(numberOfMonthsBack = 1, reportType = 'excel') {
@@ -14,12 +13,7 @@ class ReportGeneratorService {
   }
 
   generateMonthlyReport() {
-    try {
-      return GenerateReportData.getReportData(this.numberOfMonthsBack);
-    } catch (error) {
-      bugsnagHelper.log(error);
-      return error;
-    }
+    return GenerateReportData.getReportData(this.numberOfMonthsBack);
   }
 
   getEmailAttachmentFile(tripData) {

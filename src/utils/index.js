@@ -35,6 +35,13 @@ class Utils {
     return rawDate.format('DD/MM/YYYY HH:mm');
   }
 
+  static chunkArray(array, number) {
+    if (!Array.isArray(array) || !array.length) {
+      return [];
+    }
+    return [array.slice(0, number)].concat(this.chunkArray(array.slice(number), number));
+  }
+
   static convertMinutesToSeconds(minutes) {
     return 1000 * 60 * minutes;
   }

@@ -35,22 +35,26 @@ app.use(expressValidator());
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.set('views', path.join(__dirname, 'views'));
-app.engine('html', exphbs.create({
+
+const hbs = exphbs.create({
   defaultLayout: '_layout.html',
+  baseTemplates: app.get('views'),
   layoutsDir: `${app.get('views')}/layouts`,
   partialsDir: [`${app.get('views')}/partials`]
-}).engine);
+});
+
+app.engine('html', hbs.engine);
 app.set('view engine', 'html');
 
 // set base url for api
-modules(app);
+modules(app, hbs);
 
 // catch all routers
 app.use('*', (req, res) => res.status(404).json({
   message: 'Not Found. Use /api/v1 to access the api'
 }));
 
-MonthlyReportSender.scheduleReporting();
+MonthlyReportSender.scheduleReporting(app);
 
 /* This handles any errors that Express catches,
    it should come last in the pipeline */

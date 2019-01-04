@@ -130,3 +130,35 @@ describe('test getUser by slackId ', () => {
     done();
   });
 });
+
+describe('test findOrCreateUserBySlackId by slackId ', () => {
+  beforeEach(() => {
+    SlackHelpers.getUserBySlackId = jest.fn(() => (null));
+    SlackHelpers.getUserInfoFromSlack = jest.fn(() => ({}));
+    SlackHelpers.createUserFromSlackUserInfo = jest.fn(() => ({
+      username: 'santos',
+      email: 'tembea@tem.com'
+    }));
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it("should return new user when user isn't found", async (done) => {
+    const result = await SlackHelpers.findOrCreateUserBySlackId('1aaaBa', 'TI34DJ');
+    expect(result).toEqual({ username: 'santos', email: 'tembea@tem.com' });
+    expect(SlackHelpers.getUserBySlackId).toHaveBeenCalledTimes(1);
+    expect(SlackHelpers.createUserFromSlackUserInfo).toHaveBeenCalledTimes(1);
+    done();
+  });
+
+  it('should return null when user is found', async (done) => {
+    SlackHelpers.getUserBySlackId = jest.fn(() => ({}));
+    const result = await SlackHelpers.findOrCreateUserBySlackId('1aaaBa', 'TI34DJ');
+    expect(SlackHelpers.getUserBySlackId).toHaveBeenCalled();
+    expect(SlackHelpers.createUserFromSlackUserInfo).toHaveBeenCalledTimes(0);
+    expect(result).toEqual({});
+    done();
+  });
+});
