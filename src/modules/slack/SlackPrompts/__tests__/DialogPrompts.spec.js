@@ -31,6 +31,13 @@ describe('Dialog prompts test', () => {
     done();
   });
 
+  it('should test sendSkipPage function', async (done) => {
+    const payload = { actions: [{ name: 'skipPage' }], team: { id: 'TEAMID1' } };
+    await DialogPrompts.sendSkipPage(payload, 'view_upcoming_trips');
+    expect(sendDialogTryCatch).toBeCalledTimes(1);
+    done();
+  });
+
   it('should test sendRescheduleTripForm function', async (done) => {
     const payload = { callback_id: 'calling', team: { id: 'TEAMID1' } };
     await DialogPrompts.sendRescheduleTripForm(payload, 'call', 'state', 'dialog');

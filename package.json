@@ -80,6 +80,7 @@
     "request": "^2.88.0",
     "request-promise-native": "~1.0.5",
     "sequelize": "^4.39.0",
+    "sequelize-mock": "^0.10.2",
     "sequelize-replace-enum-postgres": "^1.5.0",
     "short-id": "^0.1.0",
     "sinon": "^7.1.1",

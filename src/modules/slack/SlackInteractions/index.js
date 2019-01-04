@@ -7,7 +7,7 @@ import DialogPrompts from '../SlackPrompts/DialogPrompts';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import RescheduleTripController from '../TripManagement/RescheduleTripController';
 import CancelTripController from '../TripManagement/CancelTripController';
-import TripItineraryHelper from '../helpers/slackHelpers/TripItineraryHelper';
+import TripItineraryController from '../TripManagement/TripItineraryController';
 import ManageTripController from '../TripManagement/ManageTripController';
 import TripActionsController from '../TripManagement/TripActionsController';
 import TripRescheduleHelper from '../helpers/slackHelpers/rescheduleHelper';
@@ -211,13 +211,13 @@ class SlackInteractions {
   }
 
   static viewTripItineraryActions(payload, respond) {
-    const { value } = payload.actions[0];
+    const value = payload.state || payload.actions[0].value;
     switch (value) {
       case 'view_trips_history':
-        TripItineraryHelper.handleTripHistory(payload, respond);
+        TripItineraryController.handleTripHistory(payload, respond);
         break;
       case 'view_upcoming_trips':
-        TripItineraryHelper.handleUpcomingTrips(payload, respond);
+        TripItineraryController.handleUpcomingTrips(payload, respond);
         break;
       default:
         break;

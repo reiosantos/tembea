@@ -1,61 +1,120 @@
-import Sequelize from 'sequelize';
-import models from '../../../database/models';
-import bugsnagHelper from '../../../helpers/bugsnagHelper';
+import TripItineraryHelper from '../helpers/slackHelpers/TripItineraryHelper';
+import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
+import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
+import slackHelpers from '../../../helpers/slack/slackHelpers';
+import SlackPagination from '../../../helpers/slack/SlackPaginationHelper';
+import DialogPrompts from '../SlackPrompts/DialogPrompts';
 
-const { TripRequest, User, Address } = models;
-const { Op } = Sequelize;
+const getDateTime = value => new Date(value).getTime();
 
-const includeQuery = [
-  {
-    model: Address,
-    as: 'origin',
-    attributes: ['address']
-  },
-  {
-    model: Address,
-    as: 'destination',
-    attributes: ['address']
-  },
-  {
-    model: User,
-    as: 'requester',
-    attributes: ['name', 'slackId']
-  },
-  {
-    model: User,
-    as: 'rider',
-    attributes: ['name', 'slackId']
+const currentDate = () => new Date().getTime();
+
+export const tripResponse = (
+  text = 'You have no trip history'
+) => new SlackInteractiveMessage(text);
+
+/**
+ * @description this function filters tripsRequests by the currentDate and
+ * returns the trips have been taken for the last 30days
+ * @param trips - [array]
+ * @returns filteredTrips [array]
+ */
+const filterTripHistory = (trips) => {
+  const thirtyDaysInMilliseconds = 2592000000;
+  const date = currentDate();
+  const difference = date - thirtyDaysInMilliseconds;
+
+  const filteredTrips = trips.filter(
+    trip => getDateTime(trip.departureTime) >= difference && getDateTime(trip.departureTime) <= date
+  );
+  return filteredTrips;
+};
+
+const getUserAndTripsRequest = async (slackId, requestType) => {
+  const user = await slackHelpers.getUserBySlackId(slackId);
+  if (!user) {
+    return false;
   }
-];
+  const userId = user.id;
+
+  const trips = await TripItineraryHelper.getTripRequests(userId, requestType);
+  return trips;
+};
+
+const getPageNumber = (payload) => {
+  let pageNumber;
+
+  if (payload.submission) {
+    ({ pageNumber } = payload.submission);
+  }
+
+  if (payload.actions) {
+    const tempPageNo = SlackPagination.getPageNumber(payload.actions[0].name);
+    pageNumber = tempPageNo || 1;
+  }
+
+  return pageNumber;
+};
+
+const triggerSkipPage = (payload, respond) => {
+  if (payload.actions && payload.actions[0].name === 'skipPage') {
+    respond(new SlackInteractiveMessage('Noted...'));
+    return DialogPrompts.sendSkipPage(payload, 'view_upcoming_trips');
+  }
+};
 
 class TripItineraryController {
-  /**
-   * @static async getTripRequests
-   * @description This method queries the DB for either upcoming trips or trip history
-   * @param {*} userId
-   * @param {string} [requestType='upcoming']
-   * @returns tripRequest
-   * @memberof TripItineraryController
-   */
-  static async getTripRequests(userId, requestType = 'upcoming') {
+  static async handleTripHistory(payload, respond) {
+    const slackId = payload.user.id;
     try {
-      const upcomingTripStatus = ['Pending', 'Approved', 'Confirmed'];
+      const requestType = 'history';
+      const trips = await getUserAndTripsRequest(slackId, requestType);
+      if (!trips || trips.length < 1) {
+        return respond(tripResponse());
+      }
 
-      const tripStatus = requestType === 'upcoming' ? upcomingTripStatus : ['Confirmed'];
-      const trips = await TripRequest.findAll({
-        raw: true,
-        where: {
-          [Op.or]: [{ riderId: userId }, { requestedById: userId }],
-          tripStatus: {
-            [Op.or]: tripStatus
-          }
-        },
-        include: includeQuery
-      });
-      return trips;
+      const tripHistory = await filterTripHistory(trips);
+      if (tripHistory.length < 1) {
+        return respond(tripResponse('You have no trip history for the last 30 days'));
+      }
+      return InteractivePrompts.sendTripHistory(tripHistory, respond);
     } catch (error) {
-      bugsnagHelper.log(error);
-      throw error;
+      const message = new SlackInteractiveMessage(
+        `Request could not be processed! ${error.message}`
+      );
+      respond(message);
+    }
+  }
+
+  static async handleUpcomingTrips(payload, respond) {
+    const slackId = payload.user.id;
+    try {
+      const pageNumber = getPageNumber(payload);
+      const requestType = 'upcoming';
+      const tripsPayload = await TripItineraryHelper.getPaginatedTripRequestsBySlackUserId(
+        slackId, requestType
+      );
+      
+      if (!tripsPayload) {
+        throw new Error('Something went wrong getting trips');
+      }
+
+      const page = await tripsPayload.getPageNo(pageNumber);
+      const totalPages = await tripsPayload.getTotalPages();
+      const trips = await tripsPayload.getPageItems(page);
+      
+      if (!Array.isArray(trips) || !trips.length) {
+        return respond(tripResponse('You have no upcoming trips'));
+      }
+
+      triggerSkipPage(payload, respond);
+      
+      return InteractivePrompts.sendUpcomingTrips(trips, totalPages, page, respond, payload);
+    } catch (error) {
+      const message = new SlackInteractiveMessage(
+        `Request could not be processed! ${error.message}`
+      );
+      respond(message);
     }
   }
 }

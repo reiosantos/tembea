@@ -6,6 +6,7 @@ import {
 import Notifications from './Notifications';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
 import createNavButtons from '../../../helpers/slack/navButtons';
+import SlackPagination from '../../../helpers/slack/SlackPaginationHelper';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import InteractivePromptsHelpers from '../helpers/slackHelpers/InteractivePromptsHelpers';
 import previewTripDetailsAttachment
@@ -104,12 +105,23 @@ class InteractivePrompts {
     respond(message);
   }
 
-  static sendUpcomingTrips(trips, respond, payload) {
+
+  static async sendUpcomingTrips(trips, totalPages, pageNumber, respond, payload) {
     const attachments = [];
-    trips.forEach(trip => InteractivePrompts.formatUpcomingTrip(trip, payload, attachments));
+
+    trips.forEach(
+      trip => InteractivePrompts.formatUpcomingTrip(trip, payload, attachments)
+    );
+
+    let pageButtonsAttachment;
+    if (totalPages > 1) {
+      pageButtonsAttachment = SlackPagination.createPaginationAttachment(
+        'trip_itinerary', 'view_upcoming_trips', pageNumber, totalPages
+      );
+    }
     const navButtonsAttachment = createNavButtons('welcome_message', 'view_trips_itinerary');
     const message = new SlackInteractiveMessage(
-      'Your Upcoming Trips', [...attachments, navButtonsAttachment]
+      'Your Upcoming Trips', [...attachments, pageButtonsAttachment, navButtonsAttachment]
     );
     respond(message);
   }

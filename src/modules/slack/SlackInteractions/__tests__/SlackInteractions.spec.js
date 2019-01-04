@@ -8,7 +8,7 @@ import Cache from '../../../../cache';
 import ScheduleTripInputHandlers from '../../../../helpers/slack/ScheduleTripInputHandlers';
 import { createPayload, respondMock, responseMessage } from '../__mocks__/SlackInteractions.mock';
 import SlackControllerMock from '../../__mocks__/SlackControllerMock';
-import TripItineraryHelper from '../../helpers/slackHelpers/TripItineraryHelper';
+import TripItineraryController from '../../TripManagement/TripItineraryController';
 import TripActionsController from '../../TripManagement/TripActionsController';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
@@ -368,8 +368,8 @@ describe('test viewTripItineraryActions switch', () => {
 
   beforeEach(() => {
     itineraryRespond = respondMock();
-    TripItineraryHelper.handleTripHistory = jest.fn();
-    TripItineraryHelper.handleUpcomingTrips = jest.fn();
+    TripItineraryController.handleTripHistory = jest.fn();
+    TripItineraryController.handleUpcomingTrips = jest.fn();
   });
 
   it('should test view_trips_history case', async (done) => {
@@ -377,7 +377,7 @@ describe('test viewTripItineraryActions switch', () => {
 
     const result = await SlackInteractions.viewTripItineraryActions(payload, itineraryRespond);
     expect(result).toBe(undefined);
-    expect(TripItineraryHelper.handleTripHistory).toHaveBeenCalled();
+    expect(TripItineraryController.handleTripHistory).toHaveBeenCalled();
     done();
   });
 
@@ -391,10 +391,8 @@ describe('test viewTripItineraryActions switch', () => {
 
   it('should test view_upcoming_trips case', async (done) => {
     const payload = createPayload('view_upcoming_trips');
-
-    const result = await SlackInteractions.viewTripItineraryActions(payload, itineraryRespond);
-    expect(result).toBe(undefined);
-    expect(TripItineraryHelper.handleUpcomingTrips).toHaveBeenCalled();
+    await SlackInteractions.viewTripItineraryActions(payload, itineraryRespond);
+    expect(TripItineraryController.handleUpcomingTrips).toHaveBeenCalled();
     done();
   });
 

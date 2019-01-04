@@ -94,13 +94,20 @@ describe('Interactive Prompts test', () => {
 
   it('should send upcoming trips', async () => {
     const response = jest.fn();
+    const payload = {
+      user: { id: 1 },
+      actions: [{
+        name: 'page_1',
+        value: 'xxxx'
+      }]
+    };
     const trip = {
       origin: { address: '' },
       destination: { address: '' },
       requester: { slackId: 1, name: '' }
     };
     const trips = [trip];
-    InteractivePrompts.sendUpcomingTrips(trips, response, { user: { id: 1 } });
+    InteractivePrompts.sendUpcomingTrips(trips, 20, 10, response, payload);
     expect(response).toBeCalledTimes(1);
   });
 

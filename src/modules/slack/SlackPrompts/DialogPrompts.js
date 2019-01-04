@@ -115,6 +115,20 @@ class DialogPrompts {
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
+
+  static async sendSkipPage(payload, value) {
+    const dialog = new SlackDialog('trip_itinerary',
+      'Page to skip to', 'Submit', false, value);
+    const textarea = new SlackDialogText('Page Number', 'pageNumber',
+      'Page to skip to');
+
+    dialog.addElements([textarea]);
+
+    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
+    const { team: { id: teamId } } = payload;
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
+  }
 }
 
 
