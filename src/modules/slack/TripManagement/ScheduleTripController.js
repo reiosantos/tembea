@@ -119,7 +119,7 @@ class ScheduleTripController {
     }
   }
 
-  static async createTravelTripRequest(payload, respond, tripDetails) {
+  static async createTravelTripRequest(payload, tripDetails) {
     try {
       const tripRequest = await this.createRequest(payload, tripDetails);
       const { id } = await this.createTripDetail(tripDetails);
@@ -127,11 +127,9 @@ class ScheduleTripController {
       const tripData = { ...tripRequest, tripDetailId: id };
       const trip = await TripRequest.create(tripData);
       const newPayload = { ...payload, submission: { rider: false } };
+      const travelTripRequest = { newPayload, id: trip.id };
 
-      InteractivePrompts.sendCompletionResponse(newPayload, respond, trip.id);
-      SlackEvents.raise(
-        slackEventNames.NEW_TRAVEL_TRIP_REQUEST, trip.dataValues.id, payload, respond, 'travel'
-      );
+      return travelTripRequest;
     } catch (error) {
       throw error;
     }

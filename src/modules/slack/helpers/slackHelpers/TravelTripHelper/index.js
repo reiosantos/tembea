@@ -4,6 +4,8 @@ import { SlackInteractiveMessage } from '../../../SlackModels/SlackMessageModels
 import Cache from '../../../../../cache';
 import ScheduleTripController from '../../../TripManagement/ScheduleTripController';
 import createTravelTripDetails from './createTravelTripDetails';
+import SlackEvents from '../../../events';
+import { slackEventNames } from '../../../events/slackEvents';
 
 const travelTripHelper = {
   contactDetails: async (payload, respond) => {
@@ -80,14 +82,25 @@ const travelTripHelper = {
       );
     }
   },
-  confirmation: (payload, respond) => {
-    if (payload.actions[0].value === 'cancel') {
-      return InteractivePrompts.sendCancelRequestResponse(respond);
+  confirmation: async (payload, respond) => {
+    try {
+      if (payload.actions[0].value === 'cancel') {
+        return InteractivePrompts.sendCancelRequestResponse(respond);
+      }
+      const { tripDetails } = Cache.fetch(payload.user.id);
+      const tripRequest = await ScheduleTripController.createTravelTripRequest(
+        payload, tripDetails
+      );
+      const { newPayload, id } = tripRequest;
+      InteractivePrompts.sendCompletionResponse(newPayload, respond, id);
+      SlackEvents.raise(
+        slackEventNames.NEW_TRAVEL_TRIP_REQUEST, id, payload, respond, 'travel'
+      );
+    } catch (error) {
+      respond(
+        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
+      );
     }
-    const { tripDetails } = Cache.fetch(payload.user.id);
-    return ScheduleTripController.createTravelTripRequest(
-      payload, respond, tripDetails
-    );
   }
 };
 

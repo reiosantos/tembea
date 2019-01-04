@@ -3,6 +3,7 @@ import cache from '../../../../../../cache';
 import ScheduleTripController from '../../../../TripManagement/ScheduleTripController';
 import InteractivePrompts from '../../../../SlackPrompts/InteractivePrompts';
 import DialogPrompts from '../../../../SlackPrompts/DialogPrompts';
+import SlackEvents from '../../../../events';
 
 jest.mock('../../../../events', () => ({
   slackEvents: jest.fn(() => ({
@@ -268,6 +269,7 @@ describe('travelTripHelper', () => {
 
     it('should test cancel confirmation', async () => {
       payload.actions[0].value = 'cancel';
+
       const sendCancelRequestResponse = jest.spyOn(InteractivePrompts,
         'sendCancelRequestResponse');
       await travelTripHelper.confirmation(payload, respond);
@@ -278,10 +280,16 @@ describe('travelTripHelper', () => {
       payload.user.id = 1;
       const createTravelTripRequest = jest.spyOn(ScheduleTripController,
         'createTravelTripRequest');
-      createTravelTripRequest.mockImplementationOnce(() => []);
+      InteractivePrompts.sendCompletionResponse = jest.fn();
+      SlackEvents.raise = jest.fn();
+
+      createTravelTripRequest.mockImplementationOnce(() => ({ newPayload: 'newPayload', id: 1 }));
+
       await travelTripHelper.confirmation(payload, respond);
       expect(cache.fetch).toHaveBeenCalledTimes(1);
       expect(createTravelTripRequest).toHaveBeenCalled();
+      expect(InteractivePrompts.sendCompletionResponse).toHaveBeenCalled();
+      expect(SlackEvents.raise).toHaveBeenCalled();
     });
   });
 });

@@ -271,17 +271,16 @@ describe('Create Travel Trip request test', () => {
     const payload = createPayload();
     const respond = jest.fn();
 
-    await ScheduleTripController.createTravelTripRequest(payload, respond, 'trip');
-    expect(InteractivePrompts.sendCompletionResponse).toHaveBeenCalled();
-    expect(SlackEvents.raise).toHaveBeenCalled();
+    const result = await ScheduleTripController.createTravelTripRequest(payload, respond, 'trip');
+    expect(result).toHaveProperty('id');
+    expect(result).toHaveProperty('newPayload');
   });
 
   it('should throw an error', async () => {
     ScheduleTripController.createRequest = jest.fn(() => ({ trip: 'Lekki' }));
     ScheduleTripController.createTripDetail = jest.fn(() => ({ id: 12 }));
-    TripRequest.create = jest.fn(() => ({ dataValues: { id: 1 } }));
-    InteractivePrompts.sendCompletionResponse = jest.fn();
-    SlackEvents.raise = jest.fn(() => { throw new Error('failed'); });
+    TripRequest.create = jest.fn(() => { throw new Error('failed'); });
+
     const payload = createPayload();
     const respond = jest.fn();
     try {

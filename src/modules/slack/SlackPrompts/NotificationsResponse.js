@@ -67,7 +67,7 @@ class NotificationsResponse {
     ];
     detailedAttachment.addFieldsOrActions('actions', actions);
     detailedAttachment.addFieldsOrActions('fields', fields);
-    detailedAttachment.addOptionalProps(callbackId, 'fallback', undefined, 'default');
+    detailedAttachment.addOptionalProps(callbackId, '', undefined, 'default');
 
     return new SlackInteractiveMessage(
       '', [detailedAttachment], channelId
