@@ -1,5 +1,5 @@
-import { Marker } from '../../helpers/googleMaps/googleMapsHelpers';
-import GoogleMapsStatic from '../googleMaps/GoogleMapsStatic';
+import { Marker } from '../../../helpers/googleMaps/googleMapsHelpers';
+import GoogleMapsStatic from '../GoogleMapsStatic';
 
 describe('Google map static', () => {
   it('should be able to fetch an image from google', async () => {
