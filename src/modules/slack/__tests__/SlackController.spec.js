@@ -42,4 +42,14 @@ describe('Slack controller test', () => {
     expect(res.body).toHaveProperty('attachments');
     expect(res.body).toHaveProperty('response_type');
   });
+
+  it('should return the lunch meassage for the command /Tembea route', async () => {
+    const res = await request(app)
+      .post('/api/v1/slack/command')
+      .send({ text: 'route' });
+    expect(res.status).toEqual(200);
+    expect(res.body).toHaveProperty('text');
+    expect(res.body).toHaveProperty('attachments');
+    expect(res.body).toHaveProperty('response_type');
+  });
 });

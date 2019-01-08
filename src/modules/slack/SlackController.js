@@ -23,7 +23,7 @@ class SlackController {
   }
 
   static getWelcomeMessage() {
-    const attachment = this.greetings();
+    const attachment = SlackController.greetings();
 
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('book', 'Schedule a Trip', 'book_new_trip'),
@@ -31,11 +31,6 @@ class SlackController {
         'view',
         'See Trip Itinerary',
         'view_trips_itinerary'
-      ),
-      new SlackButtonAction(
-        'view',
-        'See Available Routes',
-        'view_available_routes'
       ),
       new SlackCancelButtonAction()
     ]);
@@ -46,7 +41,7 @@ class SlackController {
   }
 
   static getTravelCommandMsg() {
-    const attachment = this.greetings();
+    const attachment = SlackController.greetings();
 
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('Airport Transfer', 'Airport Transfer', 'airport_transfer'),
@@ -61,8 +56,33 @@ class SlackController {
     return new SlackInteractiveMessage('Welcome to Tembea!', [attachment]);
   }
 
+  static getRouteCommandMsg() {
+    const attachment = SlackController.greetings();
+
+    attachment.addFieldsOrActions('actions', [
+      new SlackButtonAction('Request New Route', 'Request New Route', 'request_new_route'),
+      new SlackButtonAction('See Available Routes',
+        'See Available Routes', 'view_available_routes'),
+      new SlackCancelButtonAction()
+    ]);
+    attachment.addOptionalProps(
+      'tembea_route',
+      '/fallback',
+      '#3AA3E3',
+    );
+    return new SlackInteractiveMessage('Welcome to Tembea!', [attachment]);
+  }
+
   static travel(req, res, next) {
     return (req.body.text && isSlackSubCommand((req.body.text.toLowerCase()), 'travel') ? res.status(200).json(SlackController.getTravelCommandMsg()) : next());
+  }
+
+  static route(req, res, next) {
+    if (req.body.text && isSlackSubCommand((req.body.text.toLowerCase()), 'route')) {
+      return res.status(200)
+        .json(SlackController.getRouteCommandMsg());
+    }
+    return next();
   }
 }
 

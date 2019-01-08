@@ -273,7 +273,7 @@ describe('checkNumberPlate', () => {
     payload.submission.regNumber = '*inalid reg number*';
     const result = UserInputValidator.validateCabDetails(payload);
     expect(result.length).toEqual(1);
-});
+  });
 });
 
 describe('test userInputValidator class', () => {

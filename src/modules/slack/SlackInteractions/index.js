@@ -42,9 +42,6 @@ class SlackInteractions {
       case 'view_trips_itinerary':
         InteractivePrompts.sendTripItinerary(payload, respond);
         break;
-      case 'view_available_routes':
-        respond(new SlackInteractiveMessage('Available routes will be shown soon.'));
-        break;
       default:
         respond(new SlackInteractiveMessage('Thank you for using Tembea'));
         break;
@@ -268,7 +265,23 @@ class SlackInteractions {
     if (tripHandler) {
       return tripHandler(payload, respond);
     }
-    return respond(this.goodByeMessage());
+    return respond(SlackInteractions.goodByeMessage());
+  }
+
+  static handleRouteActions(payload, respond) {
+    const action = payload.actions[0].value;
+    const comingSoon = 'Coming soon...';
+    switch (action) {
+      case 'request_new_route':
+        respond(new SlackInteractiveMessage(comingSoon));
+        break;
+      case 'view_available_routes':
+        respond(new SlackInteractiveMessage(comingSoon));
+        break;
+      default:
+        respond(SlackInteractions.goodByeMessage());
+        break;
+    }
   }
 }
 

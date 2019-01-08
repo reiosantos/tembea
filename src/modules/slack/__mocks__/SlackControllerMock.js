@@ -13,12 +13,6 @@ const SlackControllerMock = {
       type: 'button',
       value: 'view_trips_itinerary'
     }, {
-      name: 'view',
-      style: 'primary',
-      text: 'See Available Routes',
-      type: 'button',
-      value: 'view_available_routes'
-    }, {
       confirm: {
         dismiss_text: 'No',
         ok_text: 'Yes',

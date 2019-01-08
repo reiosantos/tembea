@@ -6,7 +6,7 @@ import RescheduleTripController from '../../TripManagement/RescheduleTripControl
 import CancelTripController from '../../TripManagement/CancelTripController';
 import Cache from '../../../../cache';
 import ScheduleTripInputHandlers from '../../../../helpers/slack/ScheduleTripInputHandlers';
-import { responseMessage, createPayload, respondMock } from '../__mocks__/SlackInteractions.mock';
+import { createPayload, respondMock, responseMessage } from '../__mocks__/SlackInteractions.mock';
 import SlackControllerMock from '../../__mocks__/SlackControllerMock';
 import TripItineraryHelper from '../../helpers/slackHelpers/TripItineraryHelper';
 import TripActionsController from '../../TripManagement/TripActionsController';
@@ -161,14 +161,6 @@ describe('Slack Interactions test: Launch and Welcome Message switch', () => {
     const result = SlackInteractions.welcomeMessage(payload, respond);
     expect(result).toBe(undefined);
     expect(respond).toBeCalled();
-  });
-
-  it('should test view_available_routes action', (done) => {
-    const payload = createPayload('view_available_routes');
-    const result = SlackInteractions.welcomeMessage(payload, respond);
-    expect(result).toBe(undefined);
-    expect(respond).toHaveBeenCalledWith(responseMessage('Available routes will be shown soon.'));
-    done();
   });
 
   it('should test Welcome message default action', (done) => {
@@ -443,18 +435,18 @@ describe('Send comment dialog', () => {
 
 describe('Handle trip actions', () => {
   let response;
-
-  const payload = {
-    submission:
-      {
-        confirmationComment: 'yes',
-        driverName: 'Valid Name',
-        driverPhoneNo: '1234567890',
-        regNumber: 'LNS 8367*'
-      }
-  };
+  let payload;
 
   beforeEach(() => {
+    payload = {
+      submission:
+        {
+          confirmationComment: 'yes',
+          driverName: 'Valid Name',
+          driverPhoneNo: '1234567890',
+          regNumber: 'LNS 8367*'
+        }
+    };
     response = jest.fn();
     DialogPrompts.sendOperationsApprovalDialog = jest.fn();
     DialogPrompts.sendOperationsDeclineDialog = jest.fn();
@@ -479,16 +471,23 @@ describe('Handle trip actions', () => {
     expect(DialogPrompts.sendOperationsDeclineDialog).toBeCalledWith(payload);
   });
 
-  it('should throw an error', () => {
+  it('should throw an error', async () => {
     payload.actions = [{ name: 'declineRequest' }];
     const error = new Error('not working');
-    const rejectMock = jest.fn(() => Promise.reject(error));
-    TripActionsController.changeTripStatus = rejectMock;
+    TripActionsController.changeTripStatus = jest.fn(() => Promise.reject(error));
     try {
-      SlackInteractions.handleTripActions(payload, response);
+      await SlackInteractions.handleTripActions(payload, response);
     } catch (err) {
       expect(response).toHaveBeenCalled();
     }
+  });
+
+  it('should handle validation error', async () => {
+    const errors = [{ message: 'dummy error message' }];
+    TripActionsController.runCabValidation = jest.fn(() => ([...errors]));
+    const error = await SlackInteractions.handleTripActions(payload, response);
+    expect(error).toEqual({ errors });
+    expect(TripActionsController.changeTripStatus).not.toHaveBeenCalled();
   });
 
   it('should handle confirmationComment', () => {
@@ -515,9 +514,13 @@ describe('Manager Approve trip', () => {
   });
 
   it('should handle has approved', async () => {
+    const teamId = 190;
     const payload = {
       submission: {
         approveRequest: 'dfghj'
+      },
+      team: {
+        id: teamId
       },
       user: {},
       state: 'cvbn jhgf ty'
@@ -527,10 +530,17 @@ describe('Manager Approve trip', () => {
     SlackEvents.raise = jest.fn();
     SlackHelpers.getTripRequest = jest.fn();
     InteractivePrompts.sendManagerDeclineOrApprovalCompletion = jest.fn();
+    const getTeamDetailsBotOauthToken = jest.spyOn(TeamDetailsService,
+      'getTeamDetailsBotOauthToken')
+      .mockImplementationOnce(() => Promise.resolve());
 
     await SlackInteractions.handleManagerApprovalDetails(payload, respond);
     expect(SlackEvents.raise).toHaveBeenCalled();
     expect(SlackHelpers.getTripRequest).toHaveBeenCalled();
+    expect(InteractivePrompts.sendManagerDeclineOrApprovalCompletion).toHaveBeenCalledTimes(1);
+    expect(getTeamDetailsBotOauthToken).toHaveBeenCalledTimes(1);
+    expect(getTeamDetailsBotOauthToken).toHaveBeenCalledWith(teamId);
+    getTeamDetailsBotOauthToken.mockRestore();
   });
 
   it('should respond with error', async () => {
@@ -596,6 +606,37 @@ describe('should test handle travelTrip actions', () => {
   it('should call the tripHandler method based on callBackId', () => {
     const payload = createPayload('test', 'cancel');
     SlackInteractions.handleTravelTripActions(payload, respond);
+
+    expect(respond).toHaveBeenCalledWith(
+      responseMessage('Thank you for using Tembea. See you again.')
+    );
+  });
+});
+
+describe('Slack Interactions test: Tembea Route', () => {
+  let respond;
+
+  beforeEach(() => {
+    respond = respondMock();
+  });
+  it('should test view_available_routes action', (done) => {
+    const payload = createPayload('view_available_routes');
+    const result = SlackInteractions.handleRouteActions(payload, respond);
+    expect(result).toBe(undefined);
+    expect(respond).toHaveBeenCalledWith(responseMessage('Coming soon...'));
+    done();
+  });
+
+  it('should test request_new_route action', (done) => {
+    const payload = createPayload('request_new_route');
+    const result = SlackInteractions.handleRouteActions(payload, respond);
+    expect(result).toBe(undefined);
+    expect(respond).toHaveBeenCalledWith(responseMessage('Coming soon...'));
+    done();
+  });
+  it('should call the tripHandler method based on callBackId', () => {
+    const payload = createPayload('test', 'cancel');
+    SlackInteractions.handleRouteActions(payload, respond);
 
     expect(respond).toHaveBeenCalledWith(
       responseMessage('Thank you for using Tembea. See you again.')

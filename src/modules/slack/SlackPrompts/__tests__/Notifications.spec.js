@@ -355,6 +355,8 @@ describe('SlackNotifications Tests: Manager approval', () => {
   });
 
   it('Handle manager approve request', async (done) => {
+    const approveTripRequestByManager = jest.spyOn(SlackInteractions, 'approveTripRequestByManager')
+      .mockImplementationOnce(() => {});
     const payload = {
       actions: [{ name: 'manager_approve' }],
       user: {},
@@ -363,6 +365,7 @@ describe('SlackNotifications Tests: Manager approval', () => {
 
     tripFindByPkStub.returns(Promise.resolve({ dataValues: tripInitial }));
     const manager = await SlackInteractions.handleManagerActions(payload, jest.fn);
+    expect(approveTripRequestByManager).toHaveBeenCalledTimes(1);
     expect(manager).toEqual(undefined);
 
     await SlackInteractions.handleManagerActions({ actions: [{ name: 'm' }] }, jest.fn());

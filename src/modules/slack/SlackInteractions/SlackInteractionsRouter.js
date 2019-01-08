@@ -31,5 +31,7 @@ slackInteractionsRouter.action({ callbackId: 'operations_approval' },
   SlackInteractions.sendCommentDialog);
 slackInteractionsRouter.action({ callbackId: 'operations_reason_dialog' },
   SlackInteractions.handleTripActions);
+slackInteractionsRouter.action({ callbackId: 'tembea_route' },
+  SlackInteractions.handleRouteActions);
 
 export default slackInteractionsRouter;
