@@ -1,27 +1,20 @@
-import LRUCacheFactory from './lruCache';
-
-const cache = LRUCacheFactory(60);
+import { redisCache as cache } from './cacheEngine';
 
 class Cache {
-  static save(key, field, value) {
-    const currentState = this.fetch(key);
-    if (!currentState) {
-      return cache.set(key, { [field]: value });
-    }
-    currentState[field] = value;
-    return cache.set(key, currentState);
+  static async save(key, field, value) {
+    return cache.save(key, field, value);
+  }
+
+  static async fetch(key) {
+    return cache.fetch(key);
   }
 
   static saveObject(key, value) {
-    return cache.set(key, value);
-  }
-
-  static fetch(key) {
-    return cache.get(key);
+    return cache.saveObject(key, value);
   }
 
   static delete(key) {
-    return cache.del(key);
+    return cache.delete(key);
   }
 }
 

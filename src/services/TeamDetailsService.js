@@ -7,7 +7,7 @@ const getTeamDetailsKey = teamId => `teamDetails_${teamId}`;
 
 class TeamDetailsService {
   static async getTeamDetails(teamId) {
-    const fetchedValue = cache.fetch(getTeamDetailsKey(teamId));
+    const fetchedValue = await cache.fetch(getTeamDetailsKey(teamId));
     if (fetchedValue) {
       return fetchedValue;
     }
@@ -23,7 +23,7 @@ class TeamDetailsService {
   }
 
   static async getTeamDetailsByTeamUrl(teamUrl) {
-    const fetchedValue = cache.fetch(getTeamDetailsKey(teamUrl));
+    const fetchedValue = await cache.fetch(getTeamDetailsKey(teamUrl));
     if (fetchedValue) {
       return fetchedValue;
     }

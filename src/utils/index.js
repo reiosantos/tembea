@@ -34,6 +34,10 @@ class Utils {
     const rawDate = moment(date, 'DD/MM/YYYY HH:mm').subtract(noOfHours, 'hours');
     return rawDate.format('DD/MM/YYYY HH:mm');
   }
+
+  static convertMinutesToSeconds(minutes) {
+    return 1000 * 60 * minutes;
+  }
 }
 
 module.exports = Utils;

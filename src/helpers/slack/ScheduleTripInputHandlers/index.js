@@ -19,13 +19,14 @@ const createDepartmentPayloadObject = (payload, respond, forSelf = 'true') => {
 };
 
 const ScheduleTripInputHandlers = {
-  reason: (payload, respond, callbackId) => {
+  reason: async (payload, respond, callbackId) => {
     if (payload.submission) {
       Cache.save(payload.user.id, callbackId, payload.submission.reason);
     }
-
+    
     // check if user clicked for me or for someone
-    if (Cache.fetch(payload.user.id).forSelf === 'true') {
+    const userValue = await Cache.fetch(payload.user.id);
+    if (userValue.forSelf === 'true') {
       InteractivePrompts.sendAddPassengersResponse(respond);
     } else {
       InteractivePrompts.sendRiderSelectList(payload, respond);
@@ -39,14 +40,14 @@ const ScheduleTripInputHandlers = {
 
     InteractivePrompts.sendAddPassengersResponse(respond, 'false');
   },
-  addPassengers: (payload, respond) => {
-    if (payload.actions || payload.actions[0].selected_options) {
+  addPassengers: async (payload, respond) => {
+    if (payload.actions[0].value || payload.actions[0].selected_options[0]) {
       const noOfPassengers = payload.actions[0].value
         ? payload.actions[0].value : payload.actions[0].selected_options[0].value;
       Cache.save(payload.user.id, 'passengers', noOfPassengers);
     }
 
-    const { forSelf } = Cache.fetch(payload.user.id);
+    const { forSelf } = await Cache.fetch(payload.user.id);
     const props = createDepartmentPayloadObject(payload, respond, forSelf);
     return InteractivePrompts.sendListOfDepartments(props, forSelf);
   },
@@ -64,7 +65,8 @@ const ScheduleTripInputHandlers = {
       }
       respond(new SlackInteractiveMessage('Noted...'));
 
-      const tripRequestDetails = { ...Cache.fetch(payload.user.id), ...payload.submission, tripType: 'Regular Trip' };
+      const userObj = await Cache.fetch(payload.user.id);
+      const tripRequestDetails = { ...userObj, ...payload.submission, tripType: 'Regular Trip' };
 
       await ScheduleTripController.createTripRequest(payload, respond, tripRequestDetails);
     } catch (error) {

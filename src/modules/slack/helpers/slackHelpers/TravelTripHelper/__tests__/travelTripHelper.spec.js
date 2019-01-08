@@ -120,9 +120,9 @@ describe('travelTripHelper', () => {
       payload.user.id = 1;
       const sendTripDetailsForm = jest.spyOn(DialogPrompts,
         'sendTripDetailsForm');
-      sendTripDetailsForm.mockImplementationOnce(() => {});
+      await sendTripDetailsForm.mockImplementationOnce(() => {});
 
-      travelTripHelper.department(payload, respond);
+      await travelTripHelper.department(payload, respond);
 
       expect(cache.save).toHaveBeenCalledTimes(2);
       expect(cache.save.mock.calls).toEqual([[1, 'departmentId', ''], [1, 'departmentName', '']]);
@@ -134,9 +134,9 @@ describe('travelTripHelper', () => {
       payload.user.id = 2;
       const sendTripDetailsForm = jest.spyOn(DialogPrompts,
         'sendTripDetailsForm');
-      sendTripDetailsForm.mockImplementationOnce(() => {});
+      await sendTripDetailsForm.mockImplementationOnce(() => {});
 
-      travelTripHelper.department(payload, respond);
+      await travelTripHelper.department(payload, respond);
 
       expect(cache.save).toHaveBeenCalledTimes(2);
       expect(cache.save.mock.calls).toEqual([[2, 'departmentId', ''], [2, 'departmentName', '']]);

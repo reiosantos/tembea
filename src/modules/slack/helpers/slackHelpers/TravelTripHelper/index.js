@@ -36,7 +36,7 @@ const travelTripHelper = {
       );
     }
   },
-  department: (payload, respond) => {
+  department: async (payload, respond) => {
     try {
       respond(new SlackInteractiveMessage('Noted...'));
 
@@ -45,7 +45,8 @@ const travelTripHelper = {
       Cache.save(id, 'departmentId', value);
       Cache.save(id, 'departmentName', name);
 
-      if (Cache.fetch(id).tripType === 'Airport Transfer') {
+      const tripName = await Cache.fetch(id);
+      if (tripName.tripType === 'Airport Transfer') {
         return DialogPrompts.sendTripDetailsForm(payload, 'travelTripFlightDetailsForm', 'travel_trip_flightDetails');
       }
       return DialogPrompts.sendTripDetailsForm(payload, 'travelEmbassyDetailsForm', 'travel_trip_embassyForm');
@@ -62,7 +63,7 @@ const travelTripHelper = {
         return { errors };
       }
 
-      const tripDetails = createTravelTripDetails(payload, 'embassyVisitDateTime');
+      const tripDetails = await createTravelTripDetails(payload, 'embassyVisitDateTime');
       Cache.save(payload.user.id, 'tripDetails', tripDetails);
       InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
     } catch (error) {
@@ -80,7 +81,7 @@ const travelTripHelper = {
       if (errors.length > 0) {
         return { errors };
       }
-      const tripDetails = createTravelTripDetails(payload);
+      const tripDetails = await createTravelTripDetails(payload);
       Cache.save(payload.user.id, 'tripDetails', tripDetails);
       return InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
     } catch (error) {
@@ -95,11 +96,12 @@ const travelTripHelper = {
       if (payload.actions[0].value === 'cancel') {
         return InteractivePrompts.sendCancelRequestResponse(respond);
       }
-      const { tripDetails } = Cache.fetch(payload.user.id);
+      const { tripDetails } = await Cache.fetch(payload.user.id);
       const tripRequest = await ScheduleTripController.createTravelTripRequest(
         payload, tripDetails
       );
       const { newPayload, id } = tripRequest;
+   
       InteractivePrompts.sendCompletionResponse(newPayload, respond, id);
       SlackEvents.raise(
         slackEventNames.NEW_TRAVEL_TRIP_REQUEST, id, payload, respond, 'travel'

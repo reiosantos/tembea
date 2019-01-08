@@ -88,7 +88,6 @@ class SlackHelpers {
       include: ['rider', 'requester', 'destination', 'origin', 'department',
         'approver', 'confirmer', 'decliner', 'cab', 'tripDetail']
     });
-
     return tripRequest.dataValues;
   }
 

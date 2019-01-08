@@ -1,37 +1,66 @@
 import Cache from '../index';
-import { LRUCacheSingleton, cacheOptions } from '../lruCache';
+import { redisCache } from '../cacheEngine';
 
 describe('Cache tests', () => {
-  it('should initialise and save information as an object to the cache for the first time', () => {
-    Cache.save('dummyId', 'someField', 'someValue');
-    const savedValue = Cache.fetch('dummyId');
-    expect(savedValue).toEqual({ someField: 'someValue' });
+  describe('save', () => {
+    it('returns true when save is successful', async (done) => {
+      const sampleObject = {
+        key: 'hello',
+        value: 'allan and shalon'
+      };
+
+      jest.spyOn(redisCache, 'save').mockImplementation().mockResolvedValue(true);
+      const result = await Cache.save(sampleObject.key, sampleObject.value);
+      expect(result).toBeTruthy();
+      done();
+    });
   });
 
-  it('should update the existing object saved to cache with new information passed', () => {
-    const value = Cache.save('dummyId', 'someField', 'someValue');
-    expect(value).toEqual(true);
+  describe('fetch', () => {
+    it('should return the object value', async (done) => {
+      const sampleObject = {
+        key: 'hello',
+        value: 'allan and shalon'
+      };
+      const sampleStore = new Map();
+      sampleStore.set(sampleObject.key, sampleObject.value);
+
+      jest.spyOn(redisCache, 'fetch').mockImplementation(async key => sampleStore.get(key));
+      const result = await Cache.fetch(sampleObject.key);
+      expect(result).toBe(sampleObject.value);
+      done();
+    });
   });
 
-  it('should delete an existing object with the passed key', () => {
-    Cache.save('tempObject', 'someField', 'someValue');
-    const cachedValue = Cache.fetch('tempObject');
-    expect(cachedValue).toBeDefined();
-    Cache.delete('tempObject');
-    const deletedObject = Cache.fetch('tempObject');
-    expect(deletedObject).toBeUndefined();
-  });
-});
+  describe('delete', () => {
+    it('should return true when delete is successful', (done) => {
+      const sampleObject = {
+        key: 'color',
+        value: 'blue'
+      };
+      const sampleStore = new Map();
+      sampleStore.set(sampleObject.key, sampleObject.value);
 
-describe('Cache Singleton', () => {
-  it('should return an existing instance', () => {
-    const cacheInstance = new LRUCacheSingleton(cacheOptions(60));
-    const anotherInstance = new LRUCacheSingleton(cacheOptions(60));
-    expect(cacheInstance).toEqual(anotherInstance);
+      jest.spyOn(redisCache, 'delete').mockImplementation().mockResolvedValue(true);
+      const result = Cache.delete(sampleObject.key);
+      expect(result).toBeTruthy();
+      done();
+    });
   });
 
-  it('should update the existing object saved to cache with new information passed', () => {
-    const value = Cache.save('dummyId', 'someField', 'someValue');
-    expect(value).toEqual(true);
+  describe('saveObject', () => {
+    it('should return true when an object is saved successfully', (done) => {
+      const sampleObject = {
+        key: 'color',
+        value: 'blue'
+      };
+      const sampleStore = new Map();
+      sampleStore.set(sampleObject.key, sampleObject.value);
+
+      jest.spyOn(redisCache, 'saveObject').mockImplementation().mockResolvedValue(true);
+      const result = Cache.saveObject(sampleObject.key, sampleObject.value);
+      expect(result).toBeTruthy();
+      done();
+    });
   });
 });

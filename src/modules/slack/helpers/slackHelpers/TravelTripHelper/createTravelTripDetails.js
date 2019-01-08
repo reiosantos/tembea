@@ -1,10 +1,10 @@
 import Cache from '../../../../../cache';
 import Utils from '../../../../../utils';
 
-export default (payload, dateTimeType = 'flightDateTime') => {
+export default async (payload, dateTimeType = 'flightDateTime') => {
   const {
     departmentId, departmentName, contactDetails, tripType
-  } = Cache.fetch(payload.user.id);
+  } = await Cache.fetch(payload.user.id);
 
   return {
     rider: contactDetails.rider,

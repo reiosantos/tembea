@@ -48,16 +48,16 @@ describe('ScheduleTripInputHandlers Tests', () => {
   });
 
   describe('Response to "reason" dialog', () => {
-    it('should respond with list of departments', () => {
-      ScheduleTripInputHandlers.reason(payload, responder);
+    it('should respond with list of departments', async () => {
+      await ScheduleTripInputHandlers.reason(payload, responder);
       expect(InteractivePrompts.sendAddPassengersResponse)
         .toHaveBeenCalledWith(responder);
     });
 
-    it('should respond with list of users', () => {
+    it('should respond with list of users', async () => {
       Cache.fetch = jest.fn(() => ({ forSelf: 'false' }));
 
-      ScheduleTripInputHandlers.reason(payload, responder, 'reason');
+      await ScheduleTripInputHandlers.reason(payload, responder, 'reason');
       expect(InteractivePrompts.sendRiderSelectList)
         .toHaveBeenCalledWith(payload, responder);
     });
@@ -72,9 +72,9 @@ describe('ScheduleTripInputHandlers Tests', () => {
   });
 
   describe('Response to "addPassengers" interaction', () => {
-    it('should respond with message to add passengers', () => {
+    it('should respond with message to add passengers', async () => {
       Cache.fetch = jest.fn(() => ({ forSelf: 'false' }));
-      ScheduleTripInputHandlers.addPassengers(payload, responder);
+      await ScheduleTripInputHandlers.addPassengers(payload, responder);
       expect(InteractivePrompts.sendListOfDepartments)
         .toHaveBeenCalled();
     });
