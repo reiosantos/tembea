@@ -82,6 +82,7 @@ export default class HomeController {
     const webhookConfigUrl = jsonResponse.incoming_webhook.url;
     const urlObject = url.parse(jsonResponse.incoming_webhook.configuration_url);
     const teamUrl = `https://${urlObject.host}`;
+    const opsChannelId = jsonResponse.incoming_webhook.channel_id;
     return {
       botId,
       botToken,
@@ -90,7 +91,8 @@ export default class HomeController {
       userId,
       userToken,
       webhookConfigUrl,
-      teamUrl
+      teamUrl,
+      opsChannelId
     };
   }
 }

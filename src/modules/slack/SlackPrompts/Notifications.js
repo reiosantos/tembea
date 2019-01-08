@@ -17,10 +17,6 @@ import bugsnagHelper from '../../../helpers/bugsnagHelper';
 const web = new WebClientSingleton();
 
 class SlackNotifications {
-  static getOpsChannel(team) {
-    return team === 'andela-tembea' ? 'CE0F7SZNU' : 'CDZUFP077';
-  }
-
   static async getDMChannelId(user, teamBotOauthToken) {
     const imResponse = await web.getWebClient(teamBotOauthToken).im.open({
       user
@@ -78,7 +74,7 @@ class SlackNotifications {
 
   static async sendOperationsTripRequestNotification(tripId, payload, respond, tripType = 'regular') {
     const tripInformation = await SlackHelpers.getTripRequest(tripId);
-    const { botToken: slackBotOauthToken } = await TeamDetailsService.getTeamDetails(payload.team.id);
+    const { botToken: slackBotOauthToken, opsChannelId } = await TeamDetailsService.getTeamDetails(payload.team.id);
     try {
       const checkTripType = tripType === 'regular';
       SlackNotifications.restructureTripData(tripInformation, checkTripType);
@@ -92,7 +88,7 @@ class SlackNotifications {
       }
 
       const opsRequestMessage = NotificationsResponse.getRequestMessageForOperationsChannel(
-        tripInformation, payload, SlackNotifications.getOpsChannel(payload.team.domain), tripType
+        tripInformation, payload, opsChannelId, tripType
       );
 
       await SlackNotifications.sendNotification(opsRequestMessage, slackBotOauthToken);

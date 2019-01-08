@@ -10,6 +10,7 @@ module.exports = {
     userToken: 'XXXXXXX',
     createdAt: '2018-12-06',
     updatedAt: '2018-12-06',
+    opsChannelId: 'opsChannel'
   }]),
 
   down: queryInterface => queryInterface.bulkDelete('TeamDetails')

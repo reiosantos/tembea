@@ -39,6 +39,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    opsChannelId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   });
   return TeamDetails;
 };

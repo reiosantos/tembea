@@ -52,6 +52,7 @@ describe('Team details service', () => {
       userId: 'XXXXXXXXXXXXX',
       userToken: 'XXXXXXXXXXX',
       webhookConfigUrl: 'XXXXXXXXXXXXX',
+      opsChannelId: 'XXXXXXXXXXXXX',
       teamUrl: 'faketeam.slack.come'
     });
 
@@ -63,6 +64,7 @@ describe('Team details service', () => {
       userId: 'XXXXXXXXXXXXX',
       userToken: 'XXXXXXXXXXX',
       webhookConfigUrl: 'XXXXXXXXXXXXX',
+      opsChannelId: 'XXXXXXXXXXXXX',
       teamUrl: 'faketeam.slack.come'
     });
     done();
