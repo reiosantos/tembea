@@ -27,7 +27,7 @@ class TripActionsController {
   static async changeTripStatus(payload, respond) {
     try {
       const { id } = payload.user;
-      const { id: opsUserId } = await SlackHelpers.findUserByIdOrSlackId(id);
+      const { id: opsUserId } = await SlackHelpers.findOrCreateUserBySlackId(id, payload.team.id);
       const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
       if (payload.submission.confirmationComment) {
         await TripActionsController.changeTripStatusToConfirmed(opsUserId, payload, respond, slackBotOauthToken);

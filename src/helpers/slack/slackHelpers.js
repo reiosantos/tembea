@@ -1,6 +1,8 @@
 import { Sequelize } from 'sequelize';
 import models from '../../database/models';
 import bugsnagHelper from '../bugsnagHelper';
+import WebClientSingleton from '../../utils/WebClientSingleton';
+import TeamDetailsService from '../../services/TeamDetailsService';
 
 const {
   Department, User, TripRequest
@@ -44,6 +46,33 @@ class SlackHelpers {
       userInfo = { ...user.dataValues };
     }
     return userInfo;
+  }
+
+  static async findOrCreateUserBySlackId(slackId, teamId) {
+    const user = await SlackHelpers.getUserBySlackId(slackId);
+    if (user) return user;
+    const userInfo = await SlackHelpers.getUserInfoFromSlack(slackId, teamId);
+    const newUser = await SlackHelpers.createUserFromSlackUserInfo(userInfo);
+    return newUser;
+  }
+
+  static async getUserInfoFromSlack(slackId, teamId) {
+    const slackClient = new WebClientSingleton();
+    const { botToken: slackBotOauthToken } = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+    const { user } = await slackClient.getWebClient(slackBotOauthToken).users.info({
+      user: slackId
+    });
+    return user;
+  }
+
+  static async createUserFromSlackUserInfo(userInfo) {
+    const { real_name, profile: { email }, id } = userInfo; //eslint-disable-line
+
+    const [user] = await User.findOrCreate({
+      where: { slackId: id },
+      defaults: { name: real_name, email }
+    });
+    return user.dataValues;
   }
 
   static findSelectedDepartment(departmentId) {

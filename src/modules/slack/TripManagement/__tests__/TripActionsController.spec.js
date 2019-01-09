@@ -4,6 +4,7 @@ import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import UserInputValidator from '../../../../helpers/slack/UserInputValidator';
 import models from '../../../../database/models';
+import TeamDetailsService from '../../../../services/TeamDetailsService';
 
 const { TripRequest } = models;
 
@@ -78,13 +79,14 @@ describe('TripActionController operations decline tests', () => {
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
     jest.restoreAllMocks();
+    jest.resetAllMocks();
   });
 
   it('should run changeTripToDeclined()', async (done) => {
-    const findUserByIdOrSlackId = jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId');
-    findUserByIdOrSlackId.mockImplementation(() => ({
+    TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => Promise.resolve('token'));
+    const findOrCreateUserBySlackId = jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId');
+    findOrCreateUserBySlackId.mockImplementation(() => ({
       id: 1,
     }));
     const changeTripStatusToDeclined = jest.spyOn(TripActionsController, 'changeTripStatusToDeclined');
@@ -92,20 +94,20 @@ describe('TripActionController operations decline tests', () => {
 
     await TripActionsController.changeTripStatus(payload, respond);
 
-    expect(findUserByIdOrSlackId).toHaveBeenCalledTimes(1);
+    expect(findOrCreateUserBySlackId).toHaveBeenCalledTimes(1);
     expect(changeTripStatusToDeclined).toHaveBeenCalledWith(1, payload, respond, 'token');
     done();
   });
 
   it('should go to the changeTripStatus() catch block on error', async (done) => {
-    const findUserByIdOrSlackId = jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId');
-    findUserByIdOrSlackId.mockImplementation(() => Promise.reject(new Error()));
+    const findOrCreateUserBySlackId = jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId');
+    findOrCreateUserBySlackId.mockImplementation(() => Promise.reject(new Error()));
     const changeTripStatusToConfirmed = jest.spyOn(TripActionsController, 'changeTripStatusToConfirmed');
     changeTripStatusToConfirmed.mockImplementation(() => {});
 
     await TripActionsController.changeTripStatus(payload, respond);
 
-    expect(findUserByIdOrSlackId).toHaveBeenCalledTimes(1);
+    expect(findOrCreateUserBySlackId).toHaveBeenCalledTimes(1);
     expect(changeTripStatusToConfirmed).not.toHaveBeenCalled();
     expect(respond).toHaveBeenCalledTimes(1);
     done();
@@ -190,8 +192,9 @@ describe('TripActionController operations approve tests', () => {
   const opsUserId = 3;
 
   it('should change Trip Status for confirmation comment', async (done) => {
-    const findUserByIdOrSlackId = jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId');
-    findUserByIdOrSlackId.mockImplementation(() => ({
+    TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => Promise.resolve('token'));
+    const findOrCreateUserBySlackId = jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId');
+    findOrCreateUserBySlackId.mockImplementation(() => ({
       id: 1,
     }));
     const changeTripStatusToConfirmed = jest.spyOn(TripActionsController, 'changeTripStatusToConfirmed');
@@ -199,8 +202,8 @@ describe('TripActionController operations approve tests', () => {
 
     await TripActionsController.changeTripStatus(payload, respond);
 
-    expect(findUserByIdOrSlackId).toHaveBeenCalledTimes(1);
-    expect(changeTripStatusToConfirmed).toHaveBeenCalledWith(1, payload, respond, undefined);
+    expect(findOrCreateUserBySlackId).toHaveBeenCalledTimes(1);
+    expect(changeTripStatusToConfirmed).toHaveBeenCalledWith(1, payload, respond, 'token');
     done();
   });
 
