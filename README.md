@@ -136,3 +136,5 @@ To execute all tests, run the command
 ## Deployment
 
 TODO - add deployment commands
+
+## Docker for Local development
