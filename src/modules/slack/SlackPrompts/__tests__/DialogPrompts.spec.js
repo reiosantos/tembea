@@ -1,6 +1,5 @@
 import DialogPrompts from '../DialogPrompts';
 import sendDialogTryCatch from '../../../../helpers/sendDialogTryCatch';
-import createTripDetailsForm from '../../../../helpers/slack/createTripDetailsForm';
 
 jest.mock('../../../../services/TeamDetailsService', () => ({
   getTeamDetailsBotOauthToken: async () => 'just a random token'
@@ -80,6 +79,20 @@ describe('Dialog prompts test', () => {
     'dialogName');
 
     expect(sendDialogTryCatch).toBeCalled();
+    done();
+  });
+
+  it('should test sendLocationForm function', async (done) => {
+    await DialogPrompts.sendLocationForm({
+      actions: ['value', ''],
+      trigger_id: 'trigger',
+      channel: {
+        id: 'XXXXX'
+      },
+      team: { id: 'TEAMID1' }
+    });
+
+    expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
   });
 });

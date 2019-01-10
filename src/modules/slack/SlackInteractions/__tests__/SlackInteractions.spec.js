@@ -16,6 +16,7 @@ import SlackEvents from '../../events';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import travelTripHelper from '../../helpers/slackHelpers/TravelTripHelper';
 import TripRescheduleHelper from '../../helpers/slackHelpers/rescheduleHelper';
+import RouteInputHandlers from '../../RouteManagement';
 
 describe('Manager decline trip interactions', () => {
   beforeAll(() => {
@@ -618,10 +619,11 @@ describe('Slack Interactions test: Tembea Route', () => {
 
   beforeEach(() => {
     respond = respondMock();
+    DialogPrompts.sendLocationForm = jest.fn();
   });
   it('should test view_available_routes action', (done) => {
     const payload = createPayload('view_available_routes');
-    const result = SlackInteractions.handleRouteActions(payload, respond);
+    const result = SlackInteractions.startRouteActions(payload, respond);
     expect(result).toBe(undefined);
     expect(respond).toHaveBeenCalledWith(responseMessage('Coming soon...'));
     done();
@@ -629,12 +631,27 @@ describe('Slack Interactions test: Tembea Route', () => {
 
   it('should test request_new_route action', (done) => {
     const payload = createPayload('request_new_route');
-    const result = SlackInteractions.handleRouteActions(payload, respond);
+    const result = SlackInteractions.startRouteActions(payload, respond);
     expect(result).toBe(undefined);
-    expect(respond).toHaveBeenCalledWith(responseMessage('Coming soon...'));
+    expect(DialogPrompts.sendLocationForm).toHaveBeenCalledWith(payload);
     done();
   });
   it('should call the tripHandler method based on callBackId', () => {
+    const payload = createPayload('test', 'cancel');
+    SlackInteractions.startRouteActions(payload, respond);
+
+    expect(respond).toHaveBeenCalledWith(
+      responseMessage('Thank you for using Tembea. See you again.')
+    );
+  });
+  it('should call handleRouteActions based on the callBackId', () => {
+    const payload = createPayload('testBack', 'cancel');
+    RouteInputHandlers.testBack = jest.fn((value1, value2) => ({ value1, value2 }));
+    SlackInteractions.handleRouteActions(payload, respond);
+
+    expect(RouteInputHandlers.testBack).toHaveBeenCalledWith(payload, respond);
+  });
+  it('should call handleRouteActions based on the callBackId', () => {
     const payload = createPayload('test', 'cancel');
     SlackInteractions.handleRouteActions(payload, respond);
 

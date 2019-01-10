@@ -16,6 +16,7 @@ import ScheduleTripInputHandlers from '../../../helpers/slack/ScheduleTripInputH
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import travelTripHelper from '../helpers/slackHelpers/TravelTripHelper';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
+import RouteInputHandlers from '../RouteManagement';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -268,12 +269,12 @@ class SlackInteractions {
     return respond(SlackInteractions.goodByeMessage());
   }
 
-  static handleRouteActions(payload, respond) {
+  static startRouteActions(payload, respond) {
     const action = payload.actions[0].value;
     const comingSoon = 'Coming soon...';
     switch (action) {
       case 'request_new_route':
-        respond(new SlackInteractiveMessage(comingSoon));
+        DialogPrompts.sendLocationForm(payload);
         break;
       case 'view_available_routes':
         respond(new SlackInteractiveMessage(comingSoon));
@@ -282,6 +283,15 @@ class SlackInteractions {
         respond(SlackInteractions.goodByeMessage());
         break;
     }
+  }
+
+  static handleRouteActions(payload, respond) {
+    const callBackName = payload.callback_id.split('_')[2];
+    const routeHandler = RouteInputHandlers[callBackName];
+    if (routeHandler) {
+      return routeHandler(payload, respond);
+    }
+    return respond(SlackInteractions.goodByeMessage());
   }
 }
 

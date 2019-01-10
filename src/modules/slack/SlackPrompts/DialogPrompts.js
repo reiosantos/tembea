@@ -1,5 +1,5 @@
 import {
-  SlackDialogModel, SlackDialog, SlackDialogText, SlackDialogTextarea
+  SlackDialogModel, SlackDialog, SlackDialogText, SlackDialogTextarea,
 } from '../SlackModels/SlackDialogModels';
 import dateDialogHelper from '../../../helpers/dateHelper';
 import createDialogForm from '../../../helpers/slack/createDialogForm';
@@ -95,6 +95,19 @@ class DialogPrompts {
         'Reason why',
         'Enter reason for approving trip',
       ),
+    ]);
+    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
+  }
+
+  static async sendLocationForm(payload, location = 'home') {
+    const dialog = new SlackDialog(`new_route_${location}`,
+      'Create New Route', 'Submit', true);
+    const hint = 'e.g Andela Kenya, Nairobi';
+    dialog.addElements([
+      new SlackDialogText(`Enter ${location} Address: `,
+        'location', `Type in your ${location} address`, false, hint)
     ]);
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
