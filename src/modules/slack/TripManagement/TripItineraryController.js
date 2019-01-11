@@ -70,12 +70,13 @@ class TripItineraryController {
       const requestType = 'history';
       const trips = await getUserAndTripsRequest(slackId, requestType);
       if (!trips || trips.length < 1) {
-        return respond(tripResponse());
+        respond(tripResponse());
       }
 
       const tripHistory = await filterTripHistory(trips);
       if (tripHistory.length < 1) {
-        return respond(tripResponse('You have no trip history for the last 30 days'));
+        respond(tripResponse('You have no trip history for the last 30 days'));
+        return;
       }
       return InteractivePrompts.sendTripHistory(tripHistory, respond);
     } catch (error) {
@@ -104,7 +105,8 @@ class TripItineraryController {
       const trips = await tripsPayload.getPageItems(page);
       
       if (!Array.isArray(trips) || !trips.length) {
-        return respond(tripResponse('You have no upcoming trips'));
+        respond(tripResponse('You have no upcoming trips'));
+        return;
       }
 
       triggerSkipPage(payload, respond);

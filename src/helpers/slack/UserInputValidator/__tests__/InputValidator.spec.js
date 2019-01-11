@@ -24,4 +24,19 @@ describe('Input Validator test', () => {
     );
     expect(result[0]).toHaveProperty('error', 'pickup and destination cannot be the same.');
   });
+
+  it('should check if values given are coordinated', () => {
+    const result = InputValidator.checkValidCoordinates('fake coordinates');
+    expect(result[0]).toHaveProperty('error', 'Not a valid coordinate. Please input as shown in the hint');
+  });
+
+  it('should not throw error if valid coordinates are input', () => {
+    const result = InputValidator.checkValidCoordinates('-1.9988,3400.99');
+    expect(result).toEqual([]);
+  });
+
+  it('should show error if wrong coordinates are input', () => {
+    const result = InputValidator.checkValidCoordinates('fake coordinates');
+    expect(result[0]).toHaveProperty('error', 'Not a valid coordinate. Please input as shown in the hint');
+  });
 });

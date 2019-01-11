@@ -161,7 +161,9 @@ class InteractivePrompts {
    * @param  {string} channel The channel id to which the notification was sent
    * @param {string} slackBotOauthToken The team bot token
    */
-  static async sendManagerDeclineOrApprovalCompletion(decline, tripInformation, timeStamp, channel, slackBotOauthToken) {
+  static async sendManagerDeclineOrApprovalCompletion(
+    decline, tripInformation, timeStamp, channel, slackBotOauthToken
+  ) {
     const requester = tripInformation.requester.dataValues;
     const attachments = [
       new SlackAttachment(decline ? 'Trip Declined' : 'Trip Approved'),
@@ -213,7 +215,9 @@ class InteractivePrompts {
    * @param  {string} channel
    * @param  {string} slackBotOauthToken
    */
-  static async sendOpsDeclineOrApprovalCompletion(decline, tripInformation, timeStamp, channel, slackBotOauthToken) {
+  static async sendOpsDeclineOrApprovalCompletion(
+    decline, tripInformation, timeStamp, channel, slackBotOauthToken
+  ) {
     const tripDetailsAttachment = new SlackAttachment(decline ? 'Trip Declined' : 'Trip Confirmed');
     const confirmationDetailsAttachment = new SlackAttachment(
       decline
@@ -369,6 +373,12 @@ class InteractivePrompts {
       'Thank you for using Tembea. Your request has been cancelled'
     );
     respond(message);
+  }
+
+  static sendError(
+    message = 'Dang! I hit an error with this request. Please contact Tembea Technical support'
+  ) {
+    return new SlackInteractiveMessage(message);
   }
 }
 

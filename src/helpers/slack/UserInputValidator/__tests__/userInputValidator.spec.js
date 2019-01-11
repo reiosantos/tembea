@@ -323,3 +323,20 @@ describe('test userInputValidator class', () => {
     expect(result[1]).toHaveProperty('error', 'Minimum length is 6 digits');
   });
 });
+
+describe('validateCoordinates', () => {
+  const payload = {
+    submission: {
+      coordinates: '1.000,1.000'
+    }
+  };
+  it('is valid coordinates', async () => {
+    const result = UserInputValidator.validateCoordinates(payload);
+    expect(result.length).toEqual(0);
+  });
+  it('invalid', () => {
+    payload.submission.coordinates = 'invalid coordinates';
+    const result = UserInputValidator.validateCoordinates(payload);
+    expect(result.length).toEqual(1);
+  });
+});

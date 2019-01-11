@@ -1,5 +1,9 @@
 import {
-  SlackDialogModel, SlackDialog, SlackDialogText, SlackDialogTextarea,
+  SlackDialogModel,
+  SlackDialog,
+  SlackDialogText,
+  SlackDialogTextarea,
+  SlackDialogSelectElementWithOptions
 } from '../SlackModels/SlackDialogModels';
 import dateDialogHelper from '../../../helpers/dateHelper';
 import createDialogForm from '../../../helpers/slack/createDialogForm';
@@ -102,6 +106,31 @@ class DialogPrompts {
     await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 
+  static async sendBusStopForm(payload, busStageList) {
+    const { value } = payload.actions[0];
+    const state = { tripId: value, timeStamp: payload.message_ts, channel: payload.channel.id };
+
+    const dialog = new SlackDialog('new_route_handleBusStopSelected',
+      'Drop off', 'Submit', false, JSON.stringify(state));
+
+    const select = new SlackDialogSelectElementWithOptions(
+      'Landmarks', 'selectBusStop', busStageList
+    );
+    select.optional = true;
+    if (busStageList.length > 0) { dialog.addElements([select]); }
+
+    dialog.addElements([
+      new SlackDialogText('Landmark not listed?',
+        'otherBusStop', 'latitude,longitude', true,
+        'The location should be in the format (latitude, longitude), eg. -0.234,23.234'),
+    ]);
+    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(
+      payload.team.id
+    );
+    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
+  }
+
   static async sendLocationForm(payload, location = 'home') {
     const dialog = new SlackDialog(`new_route_${location}`,
       'Create New Route', 'Submit', true);
@@ -129,7 +158,21 @@ class DialogPrompts {
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
+
+  static async sendLocationCoordinatesForm(payload) {
+    const dialog = new SlackDialog(
+      'new_route_suggestions', 'Home address coordinates', 'Submit', true
+    );
+    const hint = 'e.g -1.219539, 36.886215';
+    dialog.addElements([
+      new SlackDialogText(
+        'Address coordinates:', 'coordinates',
+        'Type in your home address lattitude and logitude', false, hint
+      )]);
+    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
+    const slackBotOauthToken = await TeamDetailsService
+      .getTeamDetailsBotOauthToken(payload.team.id);
+    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
+  }
 }
-
-
 export default DialogPrompts;

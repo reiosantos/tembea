@@ -20,6 +20,16 @@ class InputValidator {
     }
     return [];
   }
+
+  static checkValidCoordinates(coordinates, fieldName) {
+    const validCoordinates = coordinates.trim().match(/^[-?\d]+(\.[\d]+)?,[ ]*[-?\d]+(\.[\d]+)?$/);
+    if (!validCoordinates) {
+      return [new SlackDialogError(
+        fieldName, 'Not a valid coordinate. Please input as shown in the hint'
+      )];
+    }
+    return [];
+  }
 }
 
 export default InputValidator;

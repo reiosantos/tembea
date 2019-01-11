@@ -56,9 +56,9 @@ describe('SlackPagination', () => {
   describe('SlackPagination_getSlackPageSize', () => {
     it('should return the page number', () => {
       const slackPageSize = SlackPagination.getSlackPageSize();
-     expect(slackPageSize).not.toBeNull();
-     expect(slackPageSize).not.toBe('string');
-     expect(slackPageSize).not.toBeLessThan(1);
+      expect(slackPageSize).not.toBeNull();
+      expect(slackPageSize).not.toBe('string');
+      expect(slackPageSize).not.toBeLessThan(1);
     });
   });
 });

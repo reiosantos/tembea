@@ -244,6 +244,13 @@ class UserInputValidator {
     errors.push(...this.checkNumberPlate(regNumber, 'regNumber'));
     return errors;
   }
+
+  static validateCoordinates(payload) {
+    const { coordinates } = payload.submission;
+    const errors = [];
+    errors.push(...InputValidator.checkValidCoordinates(coordinates, 'coordinates'));
+    return errors;
+  }
 }
 
 export default UserInputValidator;

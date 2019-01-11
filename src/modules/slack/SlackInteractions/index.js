@@ -294,12 +294,24 @@ class SlackInteractions {
   }
 
   static handleRouteActions(payload, respond) {
-    const callBackName = payload.callback_id.split('_')[2];
-    const routeHandler = RouteInputHandlers[callBackName];
-    if (routeHandler) {
-      return routeHandler(payload, respond);
+    try {
+      const callBackName = payload.callback_id.split('_')[2];
+      const routeHandler = RouteInputHandlers[callBackName];
+      if (routeHandler) {
+        const errors = RouteInputHandlers.runValidations(payload);
+        if (errors && errors.length > 0) {
+          return { errors };
+        }
+        return routeHandler(payload, respond);
+      }
+      respond(SlackInteractions.goodByeMessage());
+      return;
+    } catch (error) {
+      bugsnagHelper.log(error);
+      respond(
+        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
+      );
     }
-    respond(SlackInteractions.goodByeMessage());
   }
 }
 

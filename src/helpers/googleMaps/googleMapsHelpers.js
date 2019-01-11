@@ -1,6 +1,7 @@
 import GoogleMapsClient from '@google/maps';
 import bugsnagHelper from '../bugsnagHelper';
 import GoogleMapsDistanceMatrix from '../../services/googleMaps/GoogleMapsDistanceMatrix';
+import GoogleMapsReverseGeocode from '../../services/googleMaps/GoogleMapsReverseGeocode';
 
 export class Marker {
   /**
@@ -51,6 +52,20 @@ export class RoutesHelper {
     const { distanceInMetres } = result;
     return distanceInMetres <= limitInMetres;
   }
+
+  static async getReverseGeocodePayload(payload) {
+    // Get placeId or coordinates based on the payload values
+    const placeIdOrCoordinates = payload.submission
+      ? payload.submission.coordinates : payload.actions[0].selected_options[0].value;
+    const optionType = payload.submission ? 'coordinates' : 'placeId';
+  
+    const response = await GoogleMapsReverseGeocode.getAddressDetails(
+      optionType, placeIdOrCoordinates
+    );
+
+    const place = response.results[0];
+    return place;
+  }
 }
 export class GoogleMapsLocationSuggestionOptions {
   /**
@@ -75,3 +90,11 @@ export class GoogleMapsLocationSuggestionOptions {
     this.key = process.env.GOOGLE_MAPS_API_KEY;
   }
 }
+
+export const getPayloadFromGoogleMaps = async (response) => {
+  const responseObject = JSON.parse(response);
+  if (!responseObject.error_message) {
+    return responseObject;
+  }
+  throw new Error(responseObject.error_message);
+};

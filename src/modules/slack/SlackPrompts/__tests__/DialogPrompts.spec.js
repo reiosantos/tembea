@@ -102,4 +102,26 @@ describe('Dialog prompts test', () => {
     expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
   });
+
+  it('should sendLocationCoordinatesForm', async (done) => {
+    await DialogPrompts.sendLocationCoordinatesForm({
+      trigger_id: 'XXXXXXX',
+      team: { id: 'TEAMID1' }
+    });
+
+    expect(sendDialogTryCatch).toBeCalledTimes(1);
+    done();
+  });
+});
+
+describe('sendBusStopForm dialog', () => {
+  it('should send dialog for bus stop', async (done) => {
+    const payload = { channel: {}, team: {}, actions: [{ value: 2 }] };
+    const busStageList = [{}];
+
+    await DialogPrompts.sendBusStopForm(payload, busStageList);
+
+    expect(sendDialogTryCatch).toBeCalled();
+    done();
+  });
 });

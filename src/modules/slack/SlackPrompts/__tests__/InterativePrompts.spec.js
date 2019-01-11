@@ -7,6 +7,7 @@ import {
   sendCompletionResponseMock,
   tripHistoryMock
 } from '../__mocks__/InteractivePrompts.mock';
+import LocationPrompts from '../LocationPrompts';
 
 jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../../slack/events/', () => ({
@@ -246,10 +247,33 @@ describe('test send preview response and cancel response', () => {
     InteractivePrompts.sendPreviewTripResponse('trip', respond);
     expect(respond).toBeCalled();
   });
+});
 
-  it('should send cancel request response', () => {
+describe('LocationPrompts', () => {
+  it('should sendLocationSuggestionResponse', () => {
     const respond = jest.fn(value => value);
-    InteractivePrompts.sendCancelRequestResponse(respond);
-    expect(respond).toHaveBeenCalled();
+    LocationPrompts.sendLocationSuggestionsResponse(
+      respond,
+      'https://staticMap',
+      [{ text: 'Location1', value: 'place_id' }]
+    );
+    expect(respond).toBeCalled();
+  });
+
+  it('should sendLocationConfirmationResponse', () => {
+    const respond = jest.fn(value => value);
+    LocationPrompts.sendLocationConfirmationResponse(
+      respond,
+      'https://staticMap',
+      'test location',
+      '1,1'
+    );
+    expect(respond).toBeCalled();
+  });
+
+  it('should sendLocationCoordinatesNotFound', () => {
+    const respond = jest.fn(value => value);
+    LocationPrompts.sendLocationCoordinatesNotFound(respond);
+    expect(respond).toBeCalled();
   });
 });
