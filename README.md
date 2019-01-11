@@ -1,6 +1,6 @@
 # tembea
 
-[![CircleCI](https://circleci.com/gh/andela/tembea/tree/develop.svg?style=svg)](https://circleci.com/gh/andela/tembea/tree/develop)
+[![CircleCI](https://circleci.com/gh/andela/tembea.svg?style=svg)](https://circleci.com/gh/andela/tembea)
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/2c9375e12e9652a7ec9f/maintainability)](https://codeclimate.com/repos/5bf472b3752a29565a00c791/maintainability)
 
