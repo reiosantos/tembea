@@ -22,6 +22,11 @@ module.exports = (sequelize, DataTypes) => {
     Address.hasMany(models.TripRequest, {
       foreignKey: 'destinationId'
     });
+    Address.belongsTo(models.Location, {
+      foreignKey: 'locationId',
+      targetKey: 'id',
+      as: 'location'
+    });
   };
   return Address;
 };

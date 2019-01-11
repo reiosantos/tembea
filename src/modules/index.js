@@ -3,6 +3,7 @@ import slackInteractionsRouter from './slack/SlackInteractions/SlackInteractions
 import homeRouter from './home';
 import userRouter from './users';
 import departmentRouter from './departments';
+import addressRouter from './addresses';
 import slackClientAuth from '../middlewares/slackClientAuth';
 
 const apiPrefix = '/api/v1';
@@ -11,9 +12,13 @@ const routes = (app) => {
   app.use(homeRouter);
   app.use(apiPrefix, userRouter);
   app.use(apiPrefix, departmentRouter);
+  app.use(apiPrefix, addressRouter);
   app.use(apiPrefix, slackClientAuth, slackRouter);
-  app.use(apiPrefix, departmentRouter);
-  app.use(`${apiPrefix}/slack/actions`, slackClientAuth, slackInteractionsRouter.expressMiddleware());
+  app.use(
+    `${apiPrefix}/slack/actions`,
+    slackClientAuth,
+    slackInteractionsRouter.expressMiddleware()
+  );
   return app;
 };
 
