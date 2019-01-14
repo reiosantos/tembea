@@ -67,17 +67,20 @@ class SlackInteractions {
     }
   }
 
-  static async handleUserInputs(payload, respond) {
+  static isCancelMessage(payload) {
+    return (payload.type === 'interactive_message' && payload.actions[0].value === 'cancel');
+  }
+
+  static handleUserInputs(payload, respond) {
     const callbackId = payload.callback_id.split('_')[2];
     const scheduleTripHandler = ScheduleTripInputHandlers[callbackId];
-    if ((payload.type === 'interactive_message' && payload.actions[0].value === 'cancel')
-    || !scheduleTripHandler) {
-      // default response for cancel button
-      return respond(
-        SlackInteractions.goodByeMessage()
-      );
+    if (!(SlackInteractions.isCancelMessage(payload)) && scheduleTripHandler) {
+      return scheduleTripHandler(payload, respond, callbackId);
     }
-    return scheduleTripHandler(payload, respond, callbackId);
+    // default response for cancel button
+    respond(
+      SlackInteractions.goodByeMessage()
+    );
   }
 
   static async handleItineraryActions(payload, respond) {
@@ -252,9 +255,10 @@ class SlackInteractions {
     const { user: { id }, actions } = payload;
     const { name } = actions[0];
     if (name === 'cancel') {
-      return respond(
+      respond(
         new SlackInteractiveMessage('Thank you for using Tembea. See you again.')
       );
+      return;
     }
     Cache.save(id, 'tripType', name);
     return DialogPrompts.sendTripDetailsForm(payload, 'travelTripContactDetailsForm', 'travel_trip_contactDetails');
@@ -266,7 +270,7 @@ class SlackInteractions {
     if (tripHandler) {
       return tripHandler(payload, respond);
     }
-    return respond(SlackInteractions.goodByeMessage());
+    respond(SlackInteractions.goodByeMessage());
   }
 
   static startRouteActions(payload, respond) {
@@ -291,7 +295,7 @@ class SlackInteractions {
     if (routeHandler) {
       return routeHandler(payload, respond);
     }
-    return respond(SlackInteractions.goodByeMessage());
+    respond(SlackInteractions.goodByeMessage());
   }
 }
 

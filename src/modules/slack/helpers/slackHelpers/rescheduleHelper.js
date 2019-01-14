@@ -9,11 +9,12 @@ const { TripRequest } = models;
 export default class TripRescheduleHelper {
   static respondRescheduleError(timedOut, approved, respond) {
     if (timedOut) {
-      return respond(InteractivePrompts.passedTimeOutLimit());
+      respond(InteractivePrompts.passedTimeOutLimit());
+      return;
     }
 
     if (approved) {
-      return respond(InteractivePrompts.rescheduleConfirmedApprovedError());
+      respond(InteractivePrompts.rescheduleConfirmedApprovedError());
     }
   }
 

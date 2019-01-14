@@ -48,12 +48,14 @@ class TripItineraryHelper {
       const requestType = 'history';
       const trips = await getUserAndTripsRequest(slackId, requestType);
       if (!trips || trips.length < 1) {
-        return respond(tripResponse());
+        respond(tripResponse());
+        return;
       }
 
       const tripHistory = await filterTripHistory(trips);
       if (tripHistory.length < 1) {
-        return respond(tripResponse('You have no trip history for the last 30 days'));
+        respond(tripResponse('You have no trip history for the last 30 days'));
+        return;
       }
       return InteractivePrompts.sendTripHistory(tripHistory, respond);
     } catch (error) {
@@ -72,12 +74,14 @@ class TripItineraryHelper {
       const requestType = 'upcoming';
       const trips = await getUserAndTripsRequest(slackId, requestType);
       if (!trips || trips.length < 1) {
-        return respond(tripResponse('You have no upcoming trips'));
+        respond(tripResponse('You have no upcoming trips'));
+        return;
       }
 
       const tripHistory = await filterUpcomingTrips(trips);
       if (tripHistory.length < 1) {
-        return respond(tripResponse('You have no upcoming trips'));
+        respond(tripResponse('You have no upcoming trips'));
+        return;
       }
       return InteractivePrompts.sendUpcomingTrips(trips, respond, payload);
     } catch (error) {

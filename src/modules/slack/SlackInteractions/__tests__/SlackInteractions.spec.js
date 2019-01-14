@@ -570,8 +570,7 @@ describe('should test book travel start', () => {
 
   it('should return thank you message', () => {
     const payload = createPayload('can', 'cancel');
-    const result = SlackInteractions.bookTravelTripStart(payload, respond);
-    expect(result).toHaveProperty('text', 'Thank you for using Tembea. See you again.');
+    SlackInteractions.bookTravelTripStart(payload, respond);
     expect(respond).toHaveBeenCalledWith(
       responseMessage('Thank you for using Tembea. See you again.')
     );

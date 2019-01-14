@@ -8,7 +8,6 @@ export default (callbackId, value) => {
     new SlackButtonAction('back', '< Back', value, '#FFCCAA'),
     new SlackCancelButtonAction()
   ]);
-
   navAttachment.addOptionalProps(callbackId, undefined, '#4285f4');
 
   return navAttachment;
