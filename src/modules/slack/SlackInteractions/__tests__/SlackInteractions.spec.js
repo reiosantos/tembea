@@ -7,7 +7,6 @@ import CancelTripController from '../../TripManagement/CancelTripController';
 import Cache from '../../../../cache';
 import ScheduleTripInputHandlers from '../../../../helpers/slack/ScheduleTripInputHandlers';
 import { createPayload, respondMock, responseMessage } from '../__mocks__/SlackInteractions.mock';
-import SlackControllerMock from '../../__mocks__/SlackControllerMock';
 import TripItineraryController from '../../TripManagement/TripItineraryController';
 import TripActionsController from '../../TripManagement/TripActionsController';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
@@ -17,6 +16,8 @@ import TeamDetailsService from '../../../../services/TeamDetailsService';
 import travelTripHelper from '../../helpers/slackHelpers/TravelTripHelper';
 import TripRescheduleHelper from '../../helpers/slackHelpers/rescheduleHelper';
 import RouteInputHandlers from '../../RouteManagement';
+import bugsnagHelper from '../../../../helpers/bugsnagHelper';
+import SlackController from '../../SlackController';
 
 describe('Manager decline trip interactions', () => {
   beforeAll(() => {
@@ -127,17 +128,25 @@ describe('Slack Interactions test: Launch and Welcome Message switch', () => {
 
   it('should test back_to_launch', (done) => {
     const payload = createPayload('back_to_launch');
-    const result = SlackInteractions.launch(payload, respond);
-    expect(result).toBe(undefined);
-    expect(respond).toHaveBeenCalledWith(SlackControllerMock);
+    SlackController.getWelcomeMessage = jest.fn().mockImplementation().mockReturnValue({});
+    SlackInteractions.launch(payload, respond);
+    expect(SlackController.getWelcomeMessage).toHaveBeenCalled();
     done();
   });
 
   it('should test back_to_launch', (done) => {
     const payload = createPayload('back_to_travel_launch');
-    const result = SlackInteractions.launch(payload, respond);
-    expect(result).toBe(undefined);
-    expect(respond).toHaveBeenCalled();
+    SlackController.getTravelCommandMsg = jest.fn().mockImplementation().mockReturnValue({});
+    SlackInteractions.launch(payload, respond);
+    expect(SlackController.getTravelCommandMsg).toHaveBeenCalled();
+    done();
+  });
+
+  it('should test back_to_routes_launch', (done) => {
+    const payload = createPayload('back_to_routes_launch');
+    SlackController.getRouteCommandMsg = jest.fn().mockImplementation().mockReturnValue({});
+    SlackInteractions.launch(payload, respond);
+    expect(SlackController.getRouteCommandMsg).toHaveBeenCalled();
     done();
   });
 
@@ -655,5 +664,19 @@ describe('Slack Interactions test: Tembea Route', () => {
     expect(respond).toHaveBeenCalledWith(
       responseMessage('Thank you for using Tembea. See you again.')
     );
+  });
+  it('should return validation errors if they exist', () => {
+    const payload = { callback_id: 'new_route_runValidations' };
+    jest.spyOn(RouteInputHandlers, 'runValidations')
+      .mockImplementationOnce().mockReturnValueOnce(['error']);
+    const result = SlackInteractions.handleRouteActions(payload, respond);
+    expect(result).toHaveProperty('errors');
+  });
+  it('should run bugsnag when errors are thrown', () => {
+    // No values in payload will throw an error
+    const payload = {};
+    bugsnagHelper.log = jest.fn().mockReturnValue({});
+    SlackInteractions.handleRouteActions(payload, respond);
+    expect(bugsnagHelper.log).toHaveBeenCalled();
   });
 });

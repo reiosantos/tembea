@@ -12,30 +12,40 @@ describe('SlackPagination', () => {
   describe('SlackPagination_createPaginationAttachment', () => {
     it('Should display the next pagination button', async (done) => {
       payload.actions[0].name = 'upcoming';
-      const pageButtons = SlackPagination.createPaginationAttachment('trip_itinerary', 'view_upcoming_trips', payload, 10, 1);
+      const pageButtons = SlackPagination.createPaginationAttachment(
+        'trip_itinerary', 'view_upcoming_trips', payload, 10, 1
+      );
       expect(pageButtons.actions[1].text).toEqual('Next >');
       done();
     });
     it('Should display previous, next and Skip to page button', async (done) => {
-      const pageButtons = SlackPagination.createPaginationAttachment('trip_itinerary', 'view_upcoming_trips', payload, 21, 3);
+      const pageButtons = SlackPagination.createPaginationAttachment(
+        'trip_itinerary', 'view_upcoming_trips', payload, 21, 3
+      );
       expect(pageButtons.actions[0].text).toEqual('< Prev');
       expect(pageButtons.actions[1].text).toEqual('Next >');
       expect(pageButtons.actions[2].text).toEqual('Skip to page');
       done();
     });
     it('Should display the previous pagination button', async (done) => {
-      const pageButtons = SlackPagination.createPaginationAttachment('trip_itinerary', 'view_upcoming_trips', payload, 1, 1);
+      const pageButtons = SlackPagination.createPaginationAttachment(
+        'trip_itinerary', 'view_upcoming_trips', payload, 1, 1
+      );
       expect(pageButtons.actions[0].text).toEqual('< Prev');
       done();
     });
     it('Should display both next and skip to page buttons', async (done) => {
-      const pageButtons = SlackPagination.createPaginationAttachment('trip_itinerary', 'view_upcoming_trips', 1, 1);
+      const pageButtons = SlackPagination.createPaginationAttachment(
+        'trip_itinerary', 'view_upcoming_trips', 1, 1
+      );
       expect(pageButtons.actions[0].text).toEqual('Next >');
       expect(pageButtons.actions[1].text).toEqual('Skip to page');
       done();
     });
     it('Should display both prev and skip to page buttons', async (done) => {
-      const pageButtons = SlackPagination.createPaginationAttachment('trip_itinerary', 'view_upcoming_trips', 2, 1);
+      const pageButtons = SlackPagination.createPaginationAttachment(
+        'trip_itinerary', 'view_upcoming_trips', 2, 1
+      );
       expect(pageButtons.actions[0].text).toEqual('< Prev');
       expect(pageButtons.actions[1].text).toEqual('Skip to page');
       done();

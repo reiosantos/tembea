@@ -48,8 +48,6 @@ const RouteInputHandlers = {
   },
   suggestions: async (payload, respond) => {
     try {
-      RouteInputHandlers.locationNotFound(payload, respond);
-
       const place = await RoutesHelper.getReverseGeocodePayload(payload);
       if (!place) {
         // inform user if coordinates did not point to a location
@@ -79,9 +77,15 @@ const RouteInputHandlers = {
     }
   },
   locationNotFound: (payload, respond) => {
-    if (payload.actions && payload.actions[0].value === 'no') {
+    const { value } = payload.actions[0];
+    if (value === 'no') {
       respond(new SlackInteractiveMessage('Noted...'));
       return DialogPrompts.sendLocationCoordinatesForm(payload);
+    }
+
+    if (value === 'retry') {
+      respond(new SlackInteractiveMessage('Noted...'));
+      return DialogPrompts.sendLocationForm(payload);
     }
   },
   handleBusStopRoute: async (payload, respond) => {
@@ -101,7 +105,6 @@ const RouteInputHandlers = {
       ));
     }
   },
-
   handleBusStopSelected: async (payload, respond) => {
     const { otherBusStop, selectBusStop } = payload.submission;
     const busStopCoordinate = selectBusStop || otherBusStop;
@@ -111,12 +114,10 @@ const RouteInputHandlers = {
 
     // do operations to save selected place
 
-
     const res = await GoogleMapsStatic.getPathFromDojoToDropOff(busStopCoordinate);
     respond(new SlackInteractiveMessage('Noted...'));
     return res;
   },
-
   runValidations: (payload) => {
     if (payload.submission && payload.submission.coordinates) {
       const errors = [];

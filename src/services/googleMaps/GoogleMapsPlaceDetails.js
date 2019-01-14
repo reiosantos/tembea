@@ -1,5 +1,6 @@
 import request from 'request-promise-native';
-import { getPayloadFromGoogleMaps } from '../../helpers/googleMaps/googleMapsHelpers';
+import bugsnagHelper from '../../helpers/bugsnagHelper';
+import { getGoogleLocationPayload } from '../../helpers/googleMaps/googleMapsHelpers';
 
 export default class GoogleMapsPlaceDetails {
   static async getPlaceDetails(placeId) {
@@ -10,7 +11,11 @@ export default class GoogleMapsPlaceDetails {
         key: process.env.GOOGLE_MAPS_API_KEY
       }
     };
-    const response = await request.get(uri, options);
-    return getPayloadFromGoogleMaps(response);
+    try {
+      const response = await getGoogleLocationPayload(request, uri, options);
+      return response;
+    } catch (error) {
+      bugsnagHelper.log(error);
+    }
   }
 }

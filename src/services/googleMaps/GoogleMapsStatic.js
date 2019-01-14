@@ -1,6 +1,7 @@
 import GoogleMapsDirections from './GoogleMapsDirections';
 import { Marker } from '../../helpers/googleMaps/googleMapsHelpers';
 import AddressService from '../AddressService';
+import bugsnagHelper from '../../helpers/bugsnagHelper';
 
 class GoogleMapsStatic {
   /**
@@ -65,9 +66,7 @@ class GoogleMapsStatic {
       
     
       // Get directions between the two locations
-      console.log('TheDOJO', dojoLocation, '|', 'Drop OFF', dropOffLocation);
       const directions = await GoogleMapsDirections.getDirections(dojoLocation, dropOffLocation);
-      console.log('directions', directions);
 
       // Generate the locations markers
       const originMarker = new Marker('Blue', 'A');
@@ -83,7 +82,7 @@ class GoogleMapsStatic {
       const url = `https://maps.googleapis.com/maps/api/staticmap?${params}`;
       return url;
     } catch (err) {
-      console.log(err);
+      bugsnagHelper.log(err);
     }
   }
 }

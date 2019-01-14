@@ -1,5 +1,6 @@
 import request from 'request-promise-native';
-import { getPayloadFromGoogleMaps } from '../../helpers/googleMaps/googleMapsHelpers';
+import bugsnagHelper from '../../helpers/bugsnagHelper';
+import { getGoogleLocationPayload } from '../../helpers/googleMaps/googleMapsHelpers';
 
 export default class GoogleMapsSuggestions {
   static async getPlacesAutoComplete(placesSuggestionOptions) {
@@ -7,7 +8,11 @@ export default class GoogleMapsSuggestions {
     const options = {
       qs: placesSuggestionOptions
     };
-    const response = await request.get(uri, options);
-    return getPayloadFromGoogleMaps(response);
+    try {
+      const response = await getGoogleLocationPayload(request, uri, options);
+      return response;
+    } catch (error) {
+      bugsnagHelper.log(error);
+    }
   }
 }

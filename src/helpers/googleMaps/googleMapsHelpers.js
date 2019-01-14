@@ -91,7 +91,8 @@ export class GoogleMapsLocationSuggestionOptions {
   }
 }
 
-export const getPayloadFromGoogleMaps = async (response) => {
+export const getGoogleLocationPayload = async (request, uri, options) => {
+  const response = await request.get(uri, options);
   const responseObject = JSON.parse(response);
   if (!responseObject.error_message) {
     return responseObject;

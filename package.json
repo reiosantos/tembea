@@ -52,6 +52,7 @@
     "supertest": "^3.3.0"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "@bugsnag/js": "^5.0.2",
     "@bugsnag/plugin-express": "^5.0.2",
     "@google/maps": "^0.5.5",

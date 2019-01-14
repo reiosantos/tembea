@@ -28,6 +28,9 @@ class SlackInteractions {
       case 'back_to_travel_launch':
         respond(SlackController.getTravelCommandMsg());
         break;
+      case 'back_to_routes_launch':
+        respond(SlackController.getRouteCommandMsg());
+        break;
       default:
         respond(new SlackInteractiveMessage('Thank you for using Tembea'));
         break;

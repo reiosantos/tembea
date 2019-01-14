@@ -170,8 +170,8 @@ class DialogPrompts {
         'Type in your home address lattitude and logitude', false, hint
       )]);
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    const slackBotOauthToken = await TeamDetailsService
-      .getTeamDetailsBotOauthToken(payload.team.id);
+    const { team: { id: teamId } } = payload;
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 }

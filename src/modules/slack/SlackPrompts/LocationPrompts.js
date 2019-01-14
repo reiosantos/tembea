@@ -17,13 +17,14 @@ class LocationPrompts {
     attachment.addFieldsOrActions('actions', [
       predictedLocations.length
         ? new SlackSelectAction('predictedLocations', 'Select Home location', predictedLocations)
-        : new SlackButtonAction('retry', 'Try Again', 'no'),
+        : new SlackButtonAction('retry', 'Try Again', 'retry'),
       new SlackButtonAction('no',
         predictedLocations.length ? 'Location not listed' : 'Enter Location Coordinates', 'no')]);
 
-    attachment.addOptionalProps('new_route_suggestions', '', '#CD0000');
+    attachment.addOptionalProps(predictedLocations.length
+      ? 'new_route_suggestions' : 'new_route_locationNotFound', '', '#CD0000');
 
-    const navAttachment = createNavButtons('tembea_route', 'request_new_route');
+    const navAttachment = createNavButtons('back_to_launch', 'back_to_routes_launch');
 
     const message = new SlackInteractiveMessage(
       'Select your home location', [attachment, navAttachment]
@@ -41,7 +42,7 @@ class LocationPrompts {
 
     attachment.addOptionalProps('new_route_handleBusStopRoute');
 
-    const navAttachment = createNavButtons('tembea_route', 'request_new_route');
+    const navAttachment = createNavButtons('back_to_launch', 'back_to_routes_launch');
 
     const message = new SlackInteractiveMessage(
       'Confirm your home location', [attachment, navAttachment]
@@ -57,9 +58,9 @@ class LocationPrompts {
       new SlackButtonAction('no', 'Re-enter Coordinates', 'no')
     ]);
 
-    attachment.addOptionalProps('new_route_suggestions', '', '#CD0000');
+    attachment.addOptionalProps('new_route_locationNotFound', '', '#CD0000');
 
-    const navAttachment = createNavButtons('tembea_route', 'request_new_route');
+    const navAttachment = createNavButtons('back_to_routes_launch', 'back_to_routes_launch');
 
     const message = new SlackInteractiveMessage(
       'Select your home location', [attachment, navAttachment]
