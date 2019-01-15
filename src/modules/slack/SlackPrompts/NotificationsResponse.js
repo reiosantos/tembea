@@ -56,7 +56,7 @@ class NotificationsResponse {
       'Travel trip request', riderInfo, null, null, null, 'default', color
     );
     const fields = [
-      new SlackAttachmentField('Rider', `<@${rider.slackId}>`, true),
+      new SlackAttachmentField('Passenger', `<@${rider.slackId}>`, true),
       new SlackAttachmentField('Department', department, true),
       new SlackAttachmentField('Pickup Location', pickup.address, true),
       new SlackAttachmentField('Destination', destination.address, true),
@@ -86,7 +86,7 @@ class NotificationsResponse {
       'Manager approved trip request', riderInfo, null, null, null, 'default', color
     );
     const fields = [
-      new SlackAttachmentField('Rider', `<@${rider.slackId}>`, true),
+      new SlackAttachmentField('Passenger', `<@${rider.slackId}>`, true),
       new SlackAttachmentField('Department', `<@${department}>`, true),
       new SlackAttachmentField('Pickup Location', pickup.address, true),
       new SlackAttachmentField('Destination', destination.address, true),

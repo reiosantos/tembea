@@ -253,7 +253,7 @@ class InteractivePrompts {
     const attachments = new SlackAttachment();
 
     attachments.addFieldsOrActions('actions', [
-      new SlackSelectActionWithSlackContent('rider', 'Select a rider')
+      new SlackSelectActionWithSlackContent('rider', 'Select a passenger')
     ]);
     attachments.addOptionalProps('schedule_trip_rider');
     // add navigation buttons
@@ -285,7 +285,7 @@ class InteractivePrompts {
     },
     forSelf = 'true'
   ) {
-    const personify = forSelf === 'true' ? 'your' : "rider's";
+    const personify = forSelf === 'true' ? 'your' : "passenger's";
     const attachment = SlackButtonsAttachmentFromAList.createAttachments(
       await SlackHelpers.getDepartments(),
       attachmentCallbackId

@@ -48,8 +48,8 @@ class UserInputValidator {
   }
 
   static checkNumber(number, name) {
-    const notIntegerRegex = /\D/;
-    if (notIntegerRegex.test(number.trim())) {
+    const notIntegerRegex = /^\+?[0-9]+$/;
+    if (!notIntegerRegex.test(number.trim())) {
       return [new SlackDialogError(name, 'Only numbers are allowed. ')];
     }
     return [];

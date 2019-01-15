@@ -41,7 +41,7 @@ class GenerateExcelBook {
     GenerateExcelBook.prepareSheetMainHeader(pageHeader, 'Details');
     const headers = [
       'S/N', 'Requested On', 'Departure Date', 'Pickup', 'Destination',
-      'Requested By', 'Department', 'Rider', 'Approved By', 'Confirmed By'
+      'Requested By', 'Department', 'Passenger', 'Approved By', 'Confirmed By'
     ];
     GenerateExcelBook.populateSheetRowData(sheet2, headers, 'A', 5, true);
     GenerateExcelBook.generateRows(sheet2, tripData, 'A', 6);

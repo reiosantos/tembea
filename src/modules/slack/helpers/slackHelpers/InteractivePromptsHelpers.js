@@ -17,7 +17,7 @@ class InteractivePromptsHelpers {
     return [
       new SlackAttachmentField('Requested By', `<@${requester.slackId}>`, true),
       new SlackAttachmentField('Department', department.name, true),
-      new SlackAttachmentField('Rider', `<@${rider.slackId}>`, true),
+      new SlackAttachmentField('Passenger', `<@${rider.slackId}>`, true),
       new SlackAttachmentField('Pickup Location', pickup, true),
       new SlackAttachmentField('Destination', destination, true),
       new SlackAttachmentField('Request Date',

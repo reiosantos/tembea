@@ -46,8 +46,8 @@ const createTripDetailsForm = {
     );
 
     const riderPhoneNo = new SlackDialogText(
-      'Rider phone number', 'riderPhoneNo',
-      'Enter Rider phone number', false, 'e.g 0717665593'
+      'Passenger phone number', 'riderPhoneNo',
+      'Enter Passenger\'s phone number', false, 'e.g 0717665593'
     );
 
     const travelTeamPhoneNo = new SlackDialogText(
