@@ -11,7 +11,8 @@
     "start": "NODE_ENV=production yarn run build && yarn run serve",
     "start:dev": "NODE_ENV=development  DEBUG=log  nodemon --exec babel-node src/index.js",
     "lint": "node_modules/.bin/eslint ./src",
-    "pretest": "NODE_ENV=test yarn db:rollback && NODE_ENV=test yarn run db:migrate yarn && NODE_ENV=test yarn run db:seed",
+    "lint:fix": "yarn lint --fix",
+    "pretest": "yarn lint:fix && NODE_ENV=test yarn db:rollback && NODE_ENV=test yarn run db:migrate yarn && NODE_ENV=test yarn run db:seed",
     "test": "jest --no-cache  --detectOpenHandles --runInBand --forceExit",
     "db:seed": "node_modules/.bin/sequelize db:seed:all",
     "db:migrate": "node_modules/.bin/sequelize db:migrate",
@@ -51,7 +52,6 @@
     "supertest": "^3.3.0"
   },
   "dependencies": {
-    "axios": "^0.18.0",
     "@bugsnag/js": "^5.0.2",
     "@bugsnag/plugin-express": "^5.0.2",
     "@google/maps": "^0.5.5",
@@ -81,7 +81,7 @@
     "request-promise-native": "~1.0.5",
     "sequelize": "^4.39.0",
     "sequelize-replace-enum-postgres": "^1.5.0",
-    "short-id": "^0.1.0-1",
+    "short-id": "^0.1.0",
     "sinon": "^7.1.1",
     "slack-mock": "^1.1.1",
     "validator": "^10.9.0"

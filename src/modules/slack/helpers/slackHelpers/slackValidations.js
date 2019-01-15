@@ -1,9 +1,6 @@
 const isTripRequestApproved = (request) => {
   const { approvedById } = request;
-  if (approvedById) {
-    return true;
-  }
-  return false;
+  return !!approvedById;
 };
 
 const isTripRescheduleTimedOut = (tripRequest) => {
@@ -14,6 +11,6 @@ const isTripRescheduleTimedOut = (tripRequest) => {
   return timeOut < 1;
 };
 
-const isSlackSubCommand = (commandTocheck, subCommand) => commandTocheck.includes(subCommand);
+const isSlackSubCommand = (commandToCheck, subCommand) => commandToCheck.includes(subCommand);
 
 export { isSlackSubCommand, isTripRescheduleTimedOut, isTripRequestApproved };

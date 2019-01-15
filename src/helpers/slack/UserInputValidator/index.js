@@ -138,7 +138,9 @@ class UserInputValidator {
     } = payload;
     const errors = [];
     errors.push(...this.checkNumber(noOfPassengers, 'noOfPassengers'));
-    errors.push(...InputValidator.checkNumberGreaterThanZero(noOfPassengers, 'noOfPassengers', 'number of passengers'));
+    errors.push(...InputValidator.checkNumberGreaterThanZero(
+      noOfPassengers, 'noOfPassengers', 'number of passengers'
+    ));
     errors.push(...this.checkNumber(riderPhoneNo, 'riderPhoneNo'));
     errors.push(...this.checkNumber(travelTeamPhoneNo, 'travelTeamPhoneNo'));
 
@@ -188,14 +190,14 @@ class UserInputValidator {
   }
 
   static async validateDateAndTimeEntry(payload, fieldName = 'dateTime') {
-    const { submission } = payload;
+    const { submission, team: { id: teamId } } = payload;
     const date = submission.dateTime
       || submission.flightDateTime || submission.embassyVisitDateTime;
     const sanitizedDate = date.trim().replace(/\s\s+/g, ' ');
     const errors = [];
 
     try {
-      const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+      const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
       const user = await this.fetchUserInformationFromSlack(payload.user.id, slackBotOauthToken);
 
       errors.push(...this.checkDate(sanitizedDate, user.tz_offset, fieldName));

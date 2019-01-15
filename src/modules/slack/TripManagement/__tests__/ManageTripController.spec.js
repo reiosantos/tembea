@@ -22,7 +22,9 @@ describe('Manage trip controller run validations', () => {
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxv
     `);
-    expect(res).toEqual([{ name: 'declineReason', error: 'Character length must be less than or equal to 100' }]);
+    expect(res).toEqual([
+      { name: 'declineReason', error: 'Character length must be less than or equal to 100' }
+    ]);
     done();
   });
 });

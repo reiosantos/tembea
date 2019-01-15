@@ -23,7 +23,7 @@ const ScheduleTripInputHandlers = {
     if (payload.submission) {
       Cache.save(payload.user.id, callbackId, payload.submission.reason);
     }
-    
+
     // check if user clicked for me or for someone
     const userValue = await Cache.fetch(payload.user.id);
     if (userValue.forSelf === 'true') {
@@ -58,20 +58,25 @@ const ScheduleTripInputHandlers = {
     DialogPrompts.sendTripDetailsForm(payload, 'regularTripForm', 'schedule_trip_locationTime');
   },
   locationTime: async (payload, respond) => {
+    const { submission, user: { id: userId } } = payload;
     try {
       const errors = await ScheduleTripController.validateTripDetailsForm(payload);
       if (errors.length > 0) {
         return { errors };
       }
+      const tripType = 'Regular Trip';
+
       respond(new SlackInteractiveMessage('Noted...'));
 
-      const userObj = await Cache.fetch(payload.user.id);
-      const tripRequestDetails = { ...userObj, ...payload.submission, tripType: 'Regular Trip' };
+      const userObj = await Cache.fetch(userId);
+      const tripRequestDetails = { ...userObj, ...submission, tripType };
 
       await ScheduleTripController.createTripRequest(payload, respond, tripRequestDetails);
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+    } finally {
+      Cache.delete(userId);
     }
   }
 };

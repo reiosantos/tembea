@@ -73,16 +73,16 @@ class SlackController {
     return new SlackInteractiveMessage('Welcome to Tembea!', [attachment]);
   }
 
-  static travel(req, res, next) {
-    return (req.body.text && isSlackSubCommand((req.body.text.toLowerCase()), 'travel') ? res.status(200).json(SlackController.getTravelCommandMsg()) : next());
-  }
-
-  static route(req, res, next) {
-    if (req.body.text && isSlackSubCommand((req.body.text.toLowerCase()), 'route')) {
-      return res.status(200)
+  static handleSlackCommands(req, res, next) {
+    const { body: { text } } = req;
+    if (!text) return next();
+    if (isSlackSubCommand((text.toLowerCase()), 'route')) {
+      res.status(200)
         .json(SlackController.getRouteCommandMsg());
+    } else if (isSlackSubCommand((text.toLowerCase()), 'travel')) {
+      res.status(200)
+        .json(SlackController.getTravelCommandMsg());
     }
-    return next();
   }
 }
 

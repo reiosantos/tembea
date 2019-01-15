@@ -1,8 +1,8 @@
 class GeneralValidator {
   /**
    * @description This method checks the object passed for the passed properties
-   * @param  {object} body The body of the request object
-   * @param  {string} ...props The name of the property
+   * @param {object} body The body of the request object
+   * @param {Array<string>} props The name of the property
    * @returns {array} An array of messages of the missing properties
    */
   static validateReqBody(body, ...props) {
@@ -19,8 +19,8 @@ class GeneralValidator {
 
   /**
    * @description This method checks if the objects passed in the request body are empty
-   * @param  {object} body The body of the request object
-   * @param  {string} ...props The name of the property
+   * @param {object} body The body of the request object
+   * @param {Array<string>} props The name of the property
    * @returns {array} An array of messages of the empty properties
    */
   static validateEmptyReqBodyProp(body, ...props) {

@@ -300,7 +300,8 @@ describe('test userInputValidator class', () => {
   it('should test if date is hours from now and return an error message', () => {
     const date = moment().add(1, 'hours');
     const result = UserInputValidator.checkDateTimeIsHoursAfterNow(2, date, 'flightTime');
-    expect(result[0]).toHaveProperty('error', 'flightTime must be at least 2 hours from current time.');
+    const expectedProps = ['error', 'flightTime must be at least 2 hours from current time.'];
+    expect(result[0]).toHaveProperty(...expectedProps);
   });
 
   it('should test if date is hours from now and return an empty array', () => {

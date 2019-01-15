@@ -97,7 +97,8 @@ class DialogPrompts {
       ),
     ]);
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+    const { team: { id: teamId } } = payload;
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 
@@ -110,7 +111,8 @@ class DialogPrompts {
         'location', `Type in your ${location} address`, false, hint)
     ]);
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+    const { team: { id: teamId } } = payload;
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 }

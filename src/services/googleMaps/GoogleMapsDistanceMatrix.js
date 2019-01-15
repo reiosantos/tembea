@@ -11,7 +11,7 @@ class GoogleMapsDistanceMatrix {
    * e.g 'Epic Tower Lagos'
    * @param {string} destinations - destination address (address could be the longitude/latitude)
    * e.g 'Yaba lagos | Lekki lagos | -1.219539, 36.886215'
-   * @returns { {string} distanceInKm, {Number} distanceInMetres } distance between the two addresses
+   * @returns {{distanceInKm: string, distanceInMetres: number }} distance between the two addresses
    * @memberof GoogleMapsDistanceMatrix
    */
   static async calculateDistance(origins, destinations) {

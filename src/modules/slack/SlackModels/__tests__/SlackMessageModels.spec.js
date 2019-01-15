@@ -86,13 +86,13 @@ describe('Slack Message models test', () => {
 
 describe('SlackButtons Attachment Test', () => {
   it('createButtons test', () => {
-    const list = [{ label: 'people', value: 'pValue' }, { label: 'peo', value: 'pValue' }]
+    const list = [{ label: 'people', value: 'pValue' }, { label: 'peo', value: 'pValue' }];
     const result = SlackButtonsAttachmentFromAList.createButtons(list);
     expect(result[0]).toHaveProperty('name', 'people');
   });
 
   it('createAttachments List test', () => {
-    const list = [{ label: 'people', value: 'pValue' }, { label: 'peo', value: 'pValue' }]
+    const list = [{ label: 'people', value: 'pValue' }, { label: 'peo', value: 'pValue' }];
     const result = SlackButtonsAttachmentFromAList.createAttachments(list, 'callback');
     expect(result[0]).toHaveProperty('actions');
   });

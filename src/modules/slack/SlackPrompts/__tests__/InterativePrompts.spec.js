@@ -187,7 +187,9 @@ describe('Interactive Prompts test', () => {
     };
     InteractivePrompts.messageUpdate = jest.fn(() => {});
 
-    await InteractivePrompts.sendOpsDeclineOrApprovalCompletion(false, tripInfo, '3456787654.3456787654', 'DM45676543', 'just a token');
+    await InteractivePrompts.sendOpsDeclineOrApprovalCompletion(
+      false, tripInfo, '3456787654.3456787654', 'DM45676543', 'just a token'
+    );
     expect(InteractivePrompts.messageUpdate).toHaveBeenCalled();
     done();
   });

@@ -30,7 +30,6 @@ export const tripRequestDetails = () => ({
   forSelf: 'false',
   departmentId: 1,
   tripStatus: 'Pending',
-  tripType: 'Regular Trip',
   departureTime: '10/10/2018 22:00',
   requestedById: 4,
   originId: 1,

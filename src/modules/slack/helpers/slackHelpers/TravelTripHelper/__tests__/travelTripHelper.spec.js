@@ -116,7 +116,9 @@ describe('travelTripHelper', () => {
       jest.restoreAllMocks();
     });
 
-    it('department handler should call sendTripDetailsForm with functionName, "travelTripFlightDetailsForm" and callbackId, "travel_trip_flightDetails" when tripType is Airport Transfer', async () => {
+    it('department handler should call sendTripDetailsForm with functionName,'
+      + ' "travelTripFlightDetailsForm" and callbackId, "travel_trip_flightDetails"'
+      + ' when tripType is Airport Transfer', async () => {
       payload.user.id = 1;
       const sendTripDetailsForm = jest.spyOn(DialogPrompts,
         'sendTripDetailsForm');
@@ -127,10 +129,14 @@ describe('travelTripHelper', () => {
       expect(cache.save).toHaveBeenCalledTimes(2);
       expect(cache.save.mock.calls).toEqual([[1, 'departmentId', ''], [1, 'departmentName', '']]);
 
-      expect(sendTripDetailsForm).toHaveBeenCalledWith(payload, 'travelTripFlightDetailsForm', 'travel_trip_flightDetails');
+      expect(sendTripDetailsForm).toHaveBeenCalledWith(
+        payload, 'travelTripFlightDetailsForm', 'travel_trip_flightDetails'
+      );
     });
 
-    it('department handler should call sendTripDetailsForm with functionName, "travelEmbassyDetailsForm" and callbackId, "travel_trip_embassyForm" when tripType is Embassy Visit', async () => {
+    it('department handler should call sendTripDetailsForm with functionName,'
+      + ' "travelEmbassyDetailsForm" and callbackId, "travel_trip_embassyForm"'
+      + ' when tripType is Embassy Visit', async () => {
       payload.user.id = 2;
       const sendTripDetailsForm = jest.spyOn(DialogPrompts,
         'sendTripDetailsForm');
@@ -141,7 +147,9 @@ describe('travelTripHelper', () => {
       expect(cache.save).toHaveBeenCalledTimes(2);
       expect(cache.save.mock.calls).toEqual([[2, 'departmentId', ''], [2, 'departmentName', '']]);
 
-      expect(sendTripDetailsForm).toHaveBeenCalledWith(payload, 'travelEmbassyDetailsForm', 'travel_trip_embassyForm');
+      expect(sendTripDetailsForm).toHaveBeenCalledWith(
+        payload, 'travelEmbassyDetailsForm', 'travel_trip_embassyForm'
+      );
     });
   });
   describe('embassyForm', () => {

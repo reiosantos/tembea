@@ -4,8 +4,7 @@ import SlackController from './SlackController';
 
 const SlackRouter = express.Router();
 const slackCommandHandler = [
-  SlackController.travel,
-  SlackController.route,
+  SlackController.handleSlackCommands,
   SlackController.launch,
 ];
 

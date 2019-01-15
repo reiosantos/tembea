@@ -19,8 +19,8 @@ describe('/Addresses post request for adding new address', () => {
           400,
           {
             success: false,
-            message:
-							'Incomplete address information. Compulsory properties; address, latitude, longitude.'
+            message: 'Incomplete address information. '
+              + 'Compulsory properties; address, latitude, longitude.'
           },
           done
         );
@@ -122,10 +122,9 @@ describe('/Addresses update addresses', () => {
           400,
           {
             success: false,
-            message:
-							'Incomplete update information.'
-							+ '\nOptional properties (at least one); newLongitude, newLatitude or a newAddress.'
-							+ '\nCompulsory property; address.'
+            message: 'Incomplete update information.'
+              + '\nOptional properties (at least one); newLongitude, newLatitude or a newAddress.'
+              + '\nCompulsory property; address.'
           },
           done
         );

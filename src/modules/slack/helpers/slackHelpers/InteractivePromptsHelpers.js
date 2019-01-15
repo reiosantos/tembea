@@ -44,7 +44,6 @@ class InteractivePromptsHelpers {
 
   /**
    * @description Generate cab details attachment
-   * @param  {bool} decline Was this trip declined
    * @param  {object} tripInformation the trip request information
    */
   static generateCabDetailsAttachment(tripInformation) {

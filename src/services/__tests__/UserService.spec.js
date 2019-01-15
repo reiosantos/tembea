@@ -20,7 +20,8 @@ describe('/Users service', () => {
       await UserService.getUserSlackInfo(1);
     } catch (error) {
       expect(error.message).toBe(
-        "User not found. If your are providing a newEmail, it must be the same as the user's email on slack"
+        'User not found. If your are providing a newEmail,'
+        + ' it must be the same as the user\'s email on slack'
       );
     }
     done();

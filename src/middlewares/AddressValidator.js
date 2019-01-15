@@ -5,19 +5,20 @@ import Response from '../helpers/responseHelper';
 
 class AddressValidator {
   /**
-	 * @description This middleware checks for the required properties
-	 * @param  {object} req The HTTP request sent
-	 * @param  {object} res The HTTP responds object
-	 * @param  {function} next The next middleware
-	 * @return {any} The next middleware or the http responds
-	 */
+   * @description This middleware checks for the required properties
+   * @param  {object} req The HTTP request sent
+   * @param  {object} res The HTTP responds object
+   * @param  {function} next The next middleware
+   * @return {any} The next middleware or the http responds
+   */
   static validateAddressBody(req, res, next) {
     const messages = GeneralValidator.validateReqBody(req.body, 'longitude', 'latitude', 'address');
 
     if (messages.length === 0) {
       return next();
     }
-    const message =			'Incomplete address information. Compulsory properties; address, latitude, longitude.';
+    const message = 'Incomplete address information. '
+      + 'Compulsory properties; address, latitude, longitude.';
 
     return Response.sendResponse(res, 400, false, message);
   }
@@ -36,12 +37,12 @@ class AddressValidator {
   }
 
   /**
-	 * @description This middleware checks for the required properties
-	 * @param  {object} req The HTTP request sent
-	 * @param  {object} res The HTTP responds object
-	 * @param  {function} next The next middleware
-	 * @return {any} The next middleware or the http responds
-	 */
+   * @description This middleware checks for the required properties
+   * @param  {object} req The HTTP request sent
+   * @param  {object} res The HTTP responds object
+   * @param  {function} next The next middleware
+   * @return {any} The next middleware or the http responds
+   */
   static validateAddressUpdateBody(req, res, next) {
     const messages = GeneralValidator.validateReqBody(
       req.body,
@@ -54,9 +55,9 @@ class AddressValidator {
     if (messages.length < 3 && messages1.length === 0) {
       return next();
     }
-    const message =			'Incomplete update information.'
-			+ '\nOptional properties (at least one); newLongitude, newLatitude or a newAddress.'
-			+ '\nCompulsory property; address.';
+    const message = 'Incomplete update information.'
+      + '\nOptional properties (at least one); newLongitude, newLatitude or a newAddress.'
+      + '\nCompulsory property; address.';
 
     return Response.sendResponse(res, 400, false, message);
   }

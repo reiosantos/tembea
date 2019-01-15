@@ -100,7 +100,8 @@ class NotificationsResponse {
     detailedAttachment.addOptionalProps(callbackId, 'fallback', undefined, 'default');
 
     return new SlackInteractiveMessage(
-      `<@${payload.user.id}> just approved this trip. Its ready for your action :smiley:`, [detailedAttachment], channelId
+      `<@${payload.user.id}> just approved this trip. Its ready for your action :smiley:`,
+      [detailedAttachment], channelId
     );
   }
 

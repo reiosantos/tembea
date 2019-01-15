@@ -1,7 +1,6 @@
 import RedisCacheSingletonMock from '../__mocks__/CachSingleton';
 import { CacheEngine } from '../cacheEngine';
 
-
 describe('RedisCacheEngine tests', () => {
   let cacheEngine;
 
@@ -18,8 +17,7 @@ describe('RedisCacheEngine tests', () => {
       const fetch = jest.spyOn(cacheEngine, 'fetch')
         .mockResolvedValue(null);
       const saveObject = jest.spyOn(cacheEngine, 'saveObject');
-      const result = await cacheEngine.save('key', 'fieldName', 'value');
-      // expect(result).toBeTruthy();
+      await cacheEngine.save('key', 'fieldName', 'value');
       expect(saveObject).toBeCalledTimes(1);
       expect(fetch).toBeCalledTimes(1);
       expect(saveObject).toBeCalledWith('key', { fieldName: 'value' });

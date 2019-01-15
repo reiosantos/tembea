@@ -116,7 +116,8 @@ class SlackInteractions {
     } = payload;
     const date = `${newDate}/${+newMonth + 1}/${newYear} ${time}`;
     state = state.split(' ');
-    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+    const { team: { id: teamId } } = payload;
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     const errors = await RescheduleTripController.runValidations(date, user, slackBotOauthToken);
     if (errors.length > 0) {
       return { errors };
@@ -163,33 +164,34 @@ class SlackInteractions {
       await ManageTripController.declineTrip(state, declineReason, respond, teamId);
     } catch (error) {
       bugsnagHelper.log(error);
-      const message = new SlackInteractiveMessage('Error:bangbang:: Something went wrong! Please try again.');
+      const errorMessage = 'Error:bangbang:: Something went wrong! Please try again.';
+      const message = new SlackInteractiveMessage(errorMessage);
       respond(message);
     }
   }
 
   static async handleManagerApprovalDetails(payload, respond) {
     try {
-      const { submission, user } = payload;
+      const { submission: { approveReason }, user, team: { id: teamId } } = payload;
       const state = payload.state.split(' ');
-      const timeStamp = state[0];
-      const channelId = state[1];
-      const tripId = state[2];
-      const { approveReason } = submission;
+      const [timeStamp, channelId, tripId] = state;
       const hasApproved = await SlackHelpers.approveRequest(tripId, user.id, approveReason);
 
       if (hasApproved) {
         SlackEvents.raise(slackEventNames.TRIP_APPROVED, tripId, payload, respond);
         const trip = await SlackHelpers.getTripRequest(tripId);
-        const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
-        InteractivePrompts.sendManagerDeclineOrApprovalCompletion(false, trip, timeStamp, channelId, slackBotOauthToken);
+        const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+        InteractivePrompts.sendManagerDeclineOrApprovalCompletion(
+          false, trip, timeStamp, channelId, slackBotOauthToken
+        );
         return;
       }
-      respond(new SlackInteractiveMessage('Error:bangbang: : This request could not be approved. '
-        + 'Consult the administrator'));
+      respond(new SlackInteractiveMessage('Error:bangbang: : '
+        + 'This request could not be approved. Consult the administrator'));
     } catch (error) {
       bugsnagHelper.log(error);
-      respond(new SlackInteractiveMessage('Error:bangbang: : We could not complete this process please try again.'));
+      respond(new SlackInteractiveMessage('Error:bangbang: : '
+        + 'We could not complete this process please try again.'));
     }
   }
 
@@ -261,7 +263,9 @@ class SlackInteractions {
       return;
     }
     Cache.save(id, 'tripType', name);
-    return DialogPrompts.sendTripDetailsForm(payload, 'travelTripContactDetailsForm', 'travel_trip_contactDetails');
+    return DialogPrompts.sendTripDetailsForm(
+      payload, 'travelTripContactDetailsForm', 'travel_trip_contactDetails'
+    );
   }
 
   static handleTravelTripActions(payload, respond) {

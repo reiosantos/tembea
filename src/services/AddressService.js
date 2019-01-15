@@ -37,7 +37,9 @@ class AddressService {
   static async createNewAddress(longitude, latitude, address) {
     try {
       const location = await LocationService.createLocation(longitude, latitude);
-      const addressData = await Address.create({ locationId: location.id, address: (address.toLowerCase()).trim() });
+      const addressData = await Address.create({
+        locationId: location.id, address: (address.toLowerCase()).trim()
+      });
       const newAddressData = { ...addressData.dataValues, ...location };
       return newAddressData;
     } catch (error) {
@@ -48,7 +50,7 @@ class AddressService {
 
   /**
    * @description updates address and location record
-   * @returns {string} The address to be updated
+   * @param  {string} address The address to be updated
    * @param  {string} newAddress The new address
    * @param  {number} newLongitude The new longitude of the location
    * @param  {number} newLatitude The new latitude of the location

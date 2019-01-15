@@ -65,7 +65,8 @@ class ScheduleTripController {
   static async createRequestObject(tripRequestDetails, requester) {
     try {
       const {
-        reason, dateTime, departmentId, destination, pickup, othersPickup, othersDestination, passengers, tripType
+        reason, dateTime, departmentId, destination, pickup,
+        othersPickup, othersDestination, passengers, tripType
       } = tripRequestDetails;
       const { originId, destinationId } = await this.getLocationIds(tripRequestDetails);
       const name = `From ${pickup === 'Others' ? othersPickup : pickup}
@@ -132,9 +133,7 @@ class ScheduleTripController {
       const tripData = { ...tripRequest, tripDetailId: id };
       const trip = await TripRequest.create(tripData);
       const newPayload = { ...payload, submission: { rider: false } };
-      const travelTripRequest = { newPayload, id: trip.id };
-
-      return travelTripRequest;
+      return { newPayload, id: trip.id };
     } catch (error) {
       bugsnagHelper.log(error);
       throw error;
@@ -157,12 +156,14 @@ class ScheduleTripController {
   static async createUser(userId, teamId) {
     try {
       const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-      const userInfo = await UserInputValidator.fetchUserInformationFromSlack(userId, slackBotOauthToken);
-      const { real_name, profile: { email } } = userInfo; //eslint-disable-line
+      const userInfo = await UserInputValidator.fetchUserInformationFromSlack(
+        userId, slackBotOauthToken
+      );
+      const { real_name: name, profile: { email } } = userInfo;
 
       const [user] = await User.findOrCreate({
         where: { slackId: userId },
-        defaults: { name: real_name, email }
+        defaults: { name, email }
       });
       return user.dataValues;
     } catch (error) {

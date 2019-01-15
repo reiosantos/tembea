@@ -58,8 +58,8 @@ class SlackHelpers {
 
   static async getUserInfoFromSlack(slackId, teamId) {
     const slackClient = new WebClientSingleton();
-    const { botToken: slackBotOauthToken } = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-    const { user } = await slackClient.getWebClient(slackBotOauthToken).users.info({
+    const { botToken } = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+    const { user } = await slackClient.getWebClient(botToken).users.info({
       user: slackId
     });
     return user;

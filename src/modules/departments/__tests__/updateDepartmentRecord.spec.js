@@ -1,11 +1,5 @@
 import request from 'supertest';
-import DepartmentController from '../DepartmentsController';
 import app from '../../../app';
-import models from '../../../database/models';
-import UsersController from '../../users/UsersController';
-
-const { Department } = models;
-
 
 describe('/Departments update', () => {
   afterEach(() => {

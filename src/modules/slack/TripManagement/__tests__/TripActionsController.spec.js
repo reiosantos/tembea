@@ -89,7 +89,9 @@ describe('TripActionController operations decline tests', () => {
     findOrCreateUserBySlackId.mockImplementation(() => ({
       id: 1,
     }));
-    const changeTripStatusToDeclined = jest.spyOn(TripActionsController, 'changeTripStatusToDeclined');
+    const changeTripStatusToDeclined = jest.spyOn(
+      TripActionsController, 'changeTripStatusToDeclined'
+    );
     changeTripStatusToDeclined.mockImplementation(() => {});
 
     await TripActionsController.changeTripStatus(payload, respond);
@@ -102,7 +104,9 @@ describe('TripActionController operations decline tests', () => {
   it('should go to the changeTripStatus() catch block on error', async (done) => {
     const findOrCreateUserBySlackId = jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId');
     findOrCreateUserBySlackId.mockImplementation(() => Promise.reject(new Error()));
-    const changeTripStatusToConfirmed = jest.spyOn(TripActionsController, 'changeTripStatusToConfirmed');
+    const changeTripStatusToConfirmed = jest.spyOn(
+      TripActionsController, 'changeTripStatusToConfirmed'
+    );
     changeTripStatusToConfirmed.mockImplementation(() => {});
 
     await TripActionsController.changeTripStatus(payload, respond);
@@ -197,7 +201,9 @@ describe('TripActionController operations approve tests', () => {
     findOrCreateUserBySlackId.mockImplementation(() => ({
       id: 1,
     }));
-    const changeTripStatusToConfirmed = jest.spyOn(TripActionsController, 'changeTripStatusToConfirmed');
+    const changeTripStatusToConfirmed = jest.spyOn(
+      TripActionsController, 'changeTripStatusToConfirmed'
+    );
     changeTripStatusToConfirmed.mockImplementation(() => {});
 
     await TripActionsController.changeTripStatus(payload, respond);

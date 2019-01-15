@@ -37,10 +37,10 @@ describe('ScheduleTripController Tests', () => {
     const userId = 'dummyId';
     const teamId = 'TEAMID2';
     const slackBotOauthToken = 'BOTTOKEN2';
-    let getTeamDetailsBotOauthTokenSpy;
+    let getTeamDetailsBotOauthToken;
     beforeEach(() => {
-      getTeamDetailsBotOauthTokenSpy = jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken');
-      getTeamDetailsBotOauthTokenSpy.mockImplementation(() => slackBotOauthToken);
+      getTeamDetailsBotOauthToken = jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken');
+      getTeamDetailsBotOauthToken.mockImplementation(() => slackBotOauthToken);
     });
 
     afterEach(() => {
@@ -53,7 +53,9 @@ describe('ScheduleTripController Tests', () => {
       User.findOrCreate = jest.fn(() => ([{ dataValues: {} }]));
       const user = await ScheduleTripController
         .createUser(userId, teamId);
-      expect(UserInputValidator.fetchUserInformationFromSlack).toBeCalledWith(userId, slackBotOauthToken);
+      expect(UserInputValidator.fetchUserInformationFromSlack).toBeCalledWith(
+        userId, slackBotOauthToken
+      );
       const expected = {
         where: { slackId: userId },
         defaults: { name: slackUserMock.real_name, email: slackUserMock.profile.email }
@@ -308,7 +310,9 @@ describe('Create Travel Trip request test', () => {
 
 
     it('should test validateTravelDetailsForm', async () => {
-      UserInputValidator.validateTravelDetailsForm = jest.fn(() => { throw new Error('Not working'); });
+      UserInputValidator.validateTravelDetailsForm = jest.fn(() => {
+        throw new Error('Not working');
+      });
       UserInputValidator.validateDateAndTimeEntry = jest.fn(() => errorMock);
       UserInputValidator.checkDateTimeIsHoursAfterNow = jest.fn(() => errorMock);
 

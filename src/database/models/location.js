@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DOUBLE,
     },
   }, {});
-  Location.associate = (models) => {
+  Location.associate = () => {
   };
   return Location;
 };

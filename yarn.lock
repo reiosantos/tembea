@@ -6193,10 +6193,10 @@ shimmer@^1.1.0, shimmer@^1.2.0:
   resolved "https://registry.yarnpkg.com/shimmer/-/shimmer-1.2.0.tgz#f966f7555789763e74d8841193685a5e78736665"
   integrity sha512-xTCx2vohXC2EWWDqY/zb4+5Mu28D+HYNSOuFzsyRDRvI/e1ICb69afwaUwfjr+25ZXldbOLyp+iDUZHq8UnTag==
 
-short-id@^0.1.0-1:
-  version "0.1.0-1"
-  resolved "https://registry.yarnpkg.com/short-id/-/short-id-0.1.0-1.tgz#a4c0f3537fff4623ff84964882b5d43019a24095"
-  integrity sha1-pMDzU3//RiP/hJZIgrXUMBmiQJU=
+short-id@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/short-id/-/short-id-0.1.0.tgz#d8aba209abf826441c66c8bece740479975f1c62"
+  integrity sha1-2KuiCav4JkQcZsi+znQEeZdfHGI=
   dependencies:
     merge-recursive "0.0.3"
     sechash "~0.2.1"

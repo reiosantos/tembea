@@ -4,7 +4,7 @@ import GoogleMapsDistanceMatrix from '../../services/googleMaps/GoogleMapsDistan
 
 export class Marker {
   /**
-   * @description Creats an instance of a google map marker
+   * @description Creates an instance of a google map marker
    * @returns {object} The marker array
    */
   constructor(color = 'blue', label = '') {
@@ -28,6 +28,7 @@ export class RoutesHelper {
    * @description This method checks that the distance between bus-stop and home is <= 2KM
    * @param {string} busStop - the selected busStop
    * @param {string} home - the selected home   *
+   * @param {number} [limit] - drop off limit in meters
    * @returns {string} Accept or Reject message
    * @memberof RoutesHelper
    */
@@ -48,11 +49,7 @@ export class RoutesHelper {
   static async verifyDistanceBetween(origins, destinations, limitInMetres) {
     const result = await GoogleMapsDistanceMatrix.calculateDistance(origins, destinations);
     const { distanceInMetres } = result;
-    const acceptableDistanceInMetres = limitInMetres;
-    if (distanceInMetres > acceptableDistanceInMetres) {
-      return false;
-    }
-    return true;
+    return distanceInMetres <= limitInMetres;
   }
 }
 export class GoogleMapsLocationSuggestionOptions {
@@ -64,6 +61,7 @@ export class GoogleMapsLocationSuggestionOptions {
    * Must be specified as latitude,longitude.
    * @param {string} radius Distance (in meters) within which to return place results.
    * Maximum is 50,000
+   * @param {boolean} [strictBounds]
    * @param {string} location Coordinates of the location the suggestions should be bias to
    * @returns {object} Parameters needed to get map suggestions and session token
    * @memberof RoutesHelper

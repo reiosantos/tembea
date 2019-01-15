@@ -46,7 +46,9 @@ describe('SlackNotifications', () => {
       team: { id: 'HAHJDILYR' }
     };
 
-    const res = await SlackNotifications.sendManagerTripRequestNotification(payload, tripInfo, () => {});
+    const res = await SlackNotifications.sendManagerTripRequestNotification(
+      payload, tripInfo, () => {}
+    );
     expect(res).toEqual({
       data: 'successfully opened chat'
     });
@@ -162,7 +164,9 @@ describe('SlackNotifications', () => {
       team: { id: 'HAHJDILYR' }
     };
     const delineStatus = false;
-    const res = await SlackNotifications.sendManagerConfirmOrDeclineNotification(payload, tripInfo, delineStatus);
+    const res = await SlackNotifications.sendManagerConfirmOrDeclineNotification(
+      payload, tripInfo, delineStatus
+    );
     expect(res).toEqual(undefined);
   });
 
@@ -200,10 +204,14 @@ describe('SlackNotifications', () => {
     const payload = {
       user: { id: 3 },
       team: { id: 'HAHJDILYR' },
-      submission: { driverName: 'driverName', driverPhoneNo: 'driverPhoneNo', regNumber: 'regNumber' }
+      submission: {
+        driverName: 'driverName', driverPhoneNo: 'driverPhoneNo', regNumber: 'regNumber'
+      }
     };
     const delineStatus = true;
-    const res = await SlackNotifications.sendManagerConfirmOrDeclineNotification(payload, tripInfo, delineStatus);
+    const res = await SlackNotifications.sendManagerConfirmOrDeclineNotification(
+      payload, tripInfo, delineStatus
+    );
     expect(res).toEqual(undefined);
   });
 
@@ -242,7 +250,9 @@ describe('SlackNotifications', () => {
     const payload = {
       user: { id: 3 },
       team: { id: 'HAHJDILYR' },
-      submission: { driverName: 'driverName', driverPhoneNo: 'driverPhoneNo', regNumber: 'regNumber' }
+      submission: {
+        driverName: 'driverName', driverPhoneNo: 'driverPhoneNo', regNumber: 'regNumber'
+      }
     };
     it('should send user notification when requester is equal to rider', async () => {
       tripInfo.rider.dataValues.slackId = 3;

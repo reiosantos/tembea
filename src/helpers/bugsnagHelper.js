@@ -3,7 +3,7 @@ import bugsnagExpress from '@bugsnag/plugin-express';
 import env from '../config/environment';
 
 const { NODE_ENV } = env;
-const isDevOrTest = ['development', 'dev', 'testing', 'test'].includes(NODE_ENV);
+const isDev = ['development', 'dev'].includes(NODE_ENV);
 
 class BugsnagHelper {
   constructor() {
@@ -47,9 +47,9 @@ class BugsnagHelper {
   }
 
   log(error) {
-    if (this.bugsnagClient && !isDevOrTest) {
+    if (this.bugsnagClient && !isDev) {
       this.bugsnagClient.notify(error);
-    } else if (isDevOrTest) {
+    } else if (isDev) {
       // eslint-disable-next-line no-console
       console.error('Error: ', error);
     }

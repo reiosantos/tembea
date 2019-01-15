@@ -36,7 +36,8 @@ class UserService {
     } catch (error) {
       HttpError.throwErrorIfNull(
         null,
-        'User not found. If your are providing a newEmail, it must be the same as the user\'s email on slack',
+        'User not found. If your are providing a newEmail, '
+        + 'it must be the same as the user\'s email on slack',
         424
       );
     }
@@ -54,9 +55,9 @@ class UserService {
           email
         }
       });
-  
+
       HttpError.throwErrorIfNull(user, 'User not found');
-  
+
       return user;
     } catch (error) {
       if (error instanceof HttpError) throw error;

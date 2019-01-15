@@ -12,12 +12,16 @@ describe('Input Validator test', () => {
   });
 
   it('should check duplicate values and return no error', () => {
-    const result = InputValidator.checkDuplicateFieldValues('Lekki', 'Kenya', 'pickup', 'destination');
+    const result = InputValidator.checkDuplicateFieldValues(
+      'Lekki', 'Kenya', 'pickup', 'destination'
+    );
     expect(result).toEqual([]);
   });
 
   it('should check duplicate values and return errors', () => {
-    const result = InputValidator.checkDuplicateFieldValues('Kenya', 'Kenya', 'pickup', 'destination');
+    const result = InputValidator.checkDuplicateFieldValues(
+      'Kenya', 'Kenya', 'pickup', 'destination'
+    );
     expect(result[0]).toHaveProperty('error', 'pickup and destination cannot be the same.');
   });
 });

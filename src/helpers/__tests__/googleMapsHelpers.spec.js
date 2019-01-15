@@ -42,11 +42,12 @@ describe('home-busStop route Helper test', () => {
     expect(result).toEqual('Acceptable Distance');
   });
 
-  it('should verify distance between home and busStop and return UnAcceptable message', async () => {
-    GoogleMapsDistanceMatrix.calculateDistance = invalidHomeBStopMock;
-    const result = await RoutesHelper.distanceBetweenDropoffAndHome('busStop, home');
-    expect(result).toEqual("Your Bus-stop can't more be than 2km away from your Home");
-  });
+  it('should verify distance between home and busStop and return UnAcceptable message',
+    async () => {
+      GoogleMapsDistanceMatrix.calculateDistance = invalidHomeBStopMock;
+      const result = await RoutesHelper.distanceBetweenDropoffAndHome('busStop, home');
+      expect(result).toEqual("Your Bus-stop can't more be than 2km away from your Home");
+    });
 
   it('should verify distance between home and busStop and return error message', async () => {
     const errorMessage = new Error('failed');

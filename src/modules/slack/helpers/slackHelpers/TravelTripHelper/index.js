@@ -45,11 +45,15 @@ const travelTripHelper = {
       Cache.save(id, 'departmentId', value);
       Cache.save(id, 'departmentName', name);
 
-      const tripName = await Cache.fetch(id);
-      if (tripName.tripType === 'Airport Transfer') {
-        return DialogPrompts.sendTripDetailsForm(payload, 'travelTripFlightDetailsForm', 'travel_trip_flightDetails');
+      const { tripType } = await Cache.fetch(id);
+      if (tripType === 'Airport Transfer') {
+        return DialogPrompts.sendTripDetailsForm(
+          payload, 'travelTripFlightDetailsForm', 'travel_trip_flightDetails'
+        );
       }
-      return DialogPrompts.sendTripDetailsForm(payload, 'travelEmbassyDetailsForm', 'travel_trip_embassyForm');
+      return DialogPrompts.sendTripDetailsForm(
+        payload, 'travelEmbassyDetailsForm', 'travel_trip_embassyForm'
+      );
     } catch (error) {
       bugsnagHelper.log(error);
     }
@@ -101,7 +105,7 @@ const travelTripHelper = {
         payload, tripDetails
       );
       const { newPayload, id } = tripRequest;
-   
+
       InteractivePrompts.sendCompletionResponse(newPayload, respond, id);
       SlackEvents.raise(
         slackEventNames.NEW_TRAVEL_TRIP_REQUEST, id, payload, respond, 'travel'

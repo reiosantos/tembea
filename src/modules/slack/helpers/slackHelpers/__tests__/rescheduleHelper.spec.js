@@ -48,26 +48,27 @@ describe('Trip Reschedule Helper test', () => {
     done();
   });
 
-  it('should send reschedule confirm error when trip is < 1hr before the departure time', async () => {
-    const tripRequestFindByPkStub = sinon.stub(TripRequest, 'findByPk');
-    const spy = sinon.spy(InteractivePrompts, 'passedTimeOutLimit');
+  it('should send reschedule confirm error when trip is < 1hr before the departure time',
+    async () => {
+      const tripRequestFindByPkStub = sinon.stub(TripRequest, 'findByPk');
+      const spy = sinon.spy(InteractivePrompts, 'passedTimeOutLimit');
 
-    const now = Date.now();
-    const oneHourAfter = new Date(now - 60 * 60 * 1000);
+      const now = Date.now();
+      const oneHourAfter = new Date(now - 60 * 60 * 1000);
 
-    tripRequestFindByPkStub.resolves({
-      departureTime: `${oneHourAfter.toISOString()}`
+      tripRequestFindByPkStub.resolves({
+        departureTime: `${oneHourAfter.toISOString()}`
+      });
+
+      const payload = {};
+      const response = jest.fn();
+      await TripRescheduleHelper.sendTripRescheduleDialog(payload, response, 12);
+      expect(spy.calledOnce)
+        .toEqual(true);
+
+      tripRequestFindByPkStub.restore();
+      spy.restore();
     });
-
-    const payload = {};
-    const response = jest.fn();
-    await TripRescheduleHelper.sendTripRescheduleDialog(payload, response, 12);
-    expect(spy.calledOnce)
-      .toEqual(true);
-
-    tripRequestFindByPkStub.restore();
-    spy.restore();
-  });
 
   it('should send reschedule confirm or approve error when trip has been approved', async () => {
     const tripRequestFindByPkStub = sinon.stub(TripRequest, 'findByPk');

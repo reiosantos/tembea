@@ -96,8 +96,9 @@ class DateDialogHelper {
   }
 
   static dateFormat(date) {
-    const dateFormat = /^(0?[1-9]|[12]\d|3[0-1])[/]([1-9]|[0-1][0-2])[/][2][0][0-9]{2}[ ][0-2]?[0-9][:][0-5][0-9]$/;
-
+    const dateFormat = new RegExp(
+      '^(0?[1-9]|[12]\\d|3[0-1])[/]([1-9]|[0-1][0-2])[/][2][0][0-9]{2}[ ][0-2]?[0-9][:][0-5][0-9]$'
+    );
     return dateFormat.test(date);
   }
 

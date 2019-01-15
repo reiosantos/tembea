@@ -34,13 +34,17 @@ describe('slack Helpers', () => {
   });
 
   it('should create user from userInfo when user is not found', async () => {
-    const slackUserMock = { real_name: 'dummyReal', profile: { email: 'dummyReal@local.host' }, id: 'dummyId' };
+    const slackUserMock = {
+      real_name: 'dummyReal',
+      profile: { email: 'dummyReal@local.host' },
+      id: 'dummyId'
+    };
     User.findOrCreate = jest.fn(() => ([{ dataValues: {} }]));
     const user = await SlackHelpers.createUserFromSlackUserInfo(slackUserMock);
     const expected = {
-        where: { slackId: slackUserMock.id },
-        defaults: { name: slackUserMock.real_name, email: slackUserMock.profile.email }
-      };
+      where: { slackId: slackUserMock.id },
+      defaults: { name: slackUserMock.real_name, email: slackUserMock.profile.email }
+    };
     expect(User.findOrCreate).toBeCalledWith(expected);
     expect(user).toEqual({});
   });

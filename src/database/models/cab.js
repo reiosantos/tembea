@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
     },
   }, {});
-  Cab.associate = (models) => {
+  Cab.associate = () => {
   };
   return Cab;
 };

@@ -26,13 +26,20 @@ class TripActionsController {
 
   static async changeTripStatus(payload, respond) {
     try {
-      const { id } = payload.user;
-      const { id: opsUserId } = await SlackHelpers.findOrCreateUserBySlackId(id, payload.team.id);
-      const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+      const { user: { id }, team: { id: teamId } } = payload;
+      const [ops, slackBotOauthToken] = await Promise.all([
+        SlackHelpers.findOrCreateUserBySlackId(id, teamId),
+        TeamDetailsService.getTeamDetailsBotOauthToken(teamId)
+      ]);
+      const { id: opsUserId } = ops;
       if (payload.submission.confirmationComment) {
-        await TripActionsController.changeTripStatusToConfirmed(opsUserId, payload, respond, slackBotOauthToken);
+        await TripActionsController.changeTripStatusToConfirmed(
+          opsUserId, payload, respond, slackBotOauthToken
+        );
       } else if (payload.submission.opsDeclineComment) {
-        await TripActionsController.changeTripStatusToDeclined(opsUserId, payload, respond, slackBotOauthToken);
+        await TripActionsController.changeTripStatusToDeclined(
+          opsUserId, payload, respond, slackBotOauthToken
+        );
       }
     } catch (error) {
       bugsnagHelper.log(error);
@@ -53,10 +60,13 @@ class TripActionsController {
         cabId: cab.id,
       }, { where: { id: tripId } });
       const trip = await SlackHelpers.getTripRequest(tripId);
-      await SendNotifications.sendUserConfirmOrDeclineNotification(payload, trip, false);
-      await SendNotifications.sendManagerConfirmOrDeclineNotification(payload, trip, false);
-      await InteractivePrompts.sendOpsDeclineOrApprovalCompletion(false, trip, timeStamp, channel, slackBotOauthToken);
-
+      await Promise.all([
+        SendNotifications.sendUserConfirmOrDeclineNotification(payload, trip, false),
+        SendNotifications.sendManagerConfirmOrDeclineNotification(payload, trip, false),
+        InteractivePrompts.sendOpsDeclineOrApprovalCompletion(
+          false, trip, timeStamp, channel, slackBotOauthToken
+        )
+      ]);
       return 'success';
     } catch (error) {
       bugsnagHelper.log(error);
@@ -75,11 +85,13 @@ class TripActionsController {
         declinedById: opsUserId
       }, { where: { id: tripId } });
       const trip = await SlackHelpers.getTripRequest(tripId);
-      await SendNotifications.sendUserConfirmOrDeclineNotification(payload, trip, true);
-      await SendNotifications.sendManagerConfirmOrDeclineNotification(payload, trip, true);
-      await InteractivePrompts.sendOpsDeclineOrApprovalCompletion(
-        true, trip, state.actionTs, payload.channel.id, slackBotOauthToken
-      );
+      await Promise.all([
+        SendNotifications.sendUserConfirmOrDeclineNotification(payload, trip, true),
+        SendNotifications.sendManagerConfirmOrDeclineNotification(payload, trip, true),
+        InteractivePrompts.sendOpsDeclineOrApprovalCompletion(
+          true, trip, state.actionTs, payload.channel.id, slackBotOauthToken
+        )
+      ]);
       return 'success';
     } catch (error) {
       bugsnagHelper.log(error);
