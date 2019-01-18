@@ -81,7 +81,7 @@ class UserValidator {
 
   static validateProps(newName, messages, newPhoneNo, newEmail, slackUrl) {
     const expNameCha = /^[A-Za-z ,.'-]+$/;
-    const nums = /^[0-9]+$/;
+    const nums = /^\+?[0-9]+$/;
     const slackUrlRegex = /.+\.slack\.com$/;
 
     if (newName && !expNameCha.test(newName.trim())) {

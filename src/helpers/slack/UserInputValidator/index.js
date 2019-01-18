@@ -216,7 +216,7 @@ class UserInputValidator {
   }
 
   static checkPhoneNumber(phoneNumber, name) {
-    const num = /^[0-9]{6,16}$/;
+    const num = /^\+?[0-9]{6,16}$/;
 
     if (!num.test(phoneNumber)) {
       return [new SlackDialogError(name, 'Invalid phone number!')];
