@@ -105,7 +105,6 @@ const travelTripHelper = {
         payload, tripDetails
       );
       const { newPayload, id } = tripRequest;
-
       InteractivePrompts.sendCompletionResponse(newPayload, respond, id);
       SlackEvents.raise(
         slackEventNames.NEW_TRAVEL_TRIP_REQUEST, id, payload, respond, 'travel'

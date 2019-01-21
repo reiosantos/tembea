@@ -264,8 +264,8 @@ class SlackNotifications {
 
   static notificationActions(tripInformation) {
     return [
-      new SlackButtonAction('manager_approve', 'Approve', tripInformation.id),
-      new SlackButtonAction('manager_decline', 'Decline', tripInformation.id, 'danger')
+      new SlackButtonAction('managerApprove', 'Approve', tripInformation.id),
+      new SlackButtonAction('managerDecline', 'Decline', tripInformation.id, 'danger')
     ];
   }
 

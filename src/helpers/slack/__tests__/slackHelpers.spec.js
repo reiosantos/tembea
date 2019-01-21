@@ -236,3 +236,18 @@ describe('slackHelpers_approveRequest', () => {
     done();
   });
 });
+
+describe('handleCancellation', () => {
+  it('should return true/false when trip status is Cancelled', async (done) => {
+    const tripRequest = {
+      tripStatus: 'Cancelled'
+    };
+    jest.spyOn(SlackHelpers, 'getTripRequest').mockImplementation().mockResolvedValue(tripRequest);
+    const result = await SlackHelpers.handleCancellation();
+
+    expect(result).toEqual(true);
+
+
+    done();
+  });
+});

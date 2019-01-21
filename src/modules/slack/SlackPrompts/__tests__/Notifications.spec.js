@@ -1,7 +1,6 @@
 import sinon from 'sinon';
 import SlackInteractions from '../../SlackInteractions';
 import SlackNotifications from '../Notifications';
-import DialogPrompts from '../DialogPrompts';
 import models from '../../../../database/models';
 import { SlackEvents } from '../../events/slackEvents';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
@@ -499,27 +498,10 @@ describe('SlackNotifications Tests: Manager approval', () => {
     sandbox.restore();
   });
 
-  it('Handle manager approve request', async (done) => {
-    const approveTripRequestByManager = jest.spyOn(SlackInteractions, 'approveTripRequestByManager')
-      .mockImplementationOnce(() => {});
-    const payload = {
-      actions: [{ name: 'manager_approve' }],
-      user: {},
-      submission: {}
-    };
-
-    tripFindByPkStub.returns(Promise.resolve({ dataValues: tripInitial }));
-    const manager = await SlackInteractions.handleManagerActions(payload, jest.fn);
-    expect(approveTripRequestByManager).toHaveBeenCalledTimes(1);
-    expect(manager).toEqual(undefined);
-
-    await SlackInteractions.handleManagerActions({ actions: [{ name: 'm' }] }, jest.fn());
-    done();
-  });
 
   it('Handle manager approve details request and throw an error', async (done) => {
     const payload = {
-      actions: [{ name: 'manager_approve' }],
+      actions: [{ name: 'managerApprove' }],
       user: {},
       submission: {}
     };
@@ -529,26 +511,6 @@ describe('SlackNotifications Tests: Manager approval', () => {
     done();
   });
 
-  it('Handle manager approve details request', async (done) => {
-    const payload = {
-      actions: [{ name: 'manager_approve' }],
-      user: {},
-      submission: {},
-      original_message: {
-        ts: '1345654321.43212345432'
-      },
-      channel: {
-        id: 'YU789098765'
-      }
-    };
-    DialogPrompts.sendDialogToManager = jest.fn(() => {});
-    tripFindByPkStub.returns(Promise.resolve({ dataValues: tripInitial, update: jest.fn }));
-    const manager = await SlackInteractions.handleManagerApprovalDetails(payload, jest.fn);
-    expect(manager).toEqual(undefined);
-    SlackInteractions.approveTripRequestByManager(payload, {}, { isApproved: true }, jest.fn);
-    expect(DialogPrompts.sendDialogToManager.mock.calls.length).toBe(1);
-    done();
-  });
 
   it('Handle manager approve details request but fail to approve', async (done) => {
     const payload = {

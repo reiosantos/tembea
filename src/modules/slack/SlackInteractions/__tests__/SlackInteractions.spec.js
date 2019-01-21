@@ -18,47 +18,65 @@ import TripRescheduleHelper from '../../helpers/slackHelpers/rescheduleHelper';
 import RouteInputHandlers from '../../RouteManagement';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import SlackController from '../../SlackController';
+import ManagerActionsHelper from '../../helpers/slackHelpers/ManagerActionsHelper';
 
-describe('Manager decline trip interactions', () => {
+describe('Handle manager actions', () => {
+  let payload;
+  let respond;
   beforeAll(() => {
-    DialogPrompts.sendDialogToManager = jest.fn(() => { });
+    respond = jest.fn();
+    payload = {
+      actions: [{
+        value: 'tests'
+      }],
+      channel: { id: 2 },
+      original_message: { ts: 'dsfdf' },
+      user: { id: 3 }
+    };
   });
 
-  it('should handle manager actions', (done) => {
-    SlackInteractions.handleManagerActions({
-      original_message: {
-        ts: 'XXXXXXX'
-      },
-      channel: {
-        id: 'XXXXXXX'
-      },
-      actions: [{
-        name: 'manager_decline',
-        value: 3
-      }]
-    });
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
 
-    expect(DialogPrompts.sendDialogToManager.mock.calls.length).toBe(1);
+  it('should handle manager actions when isCancel is true', async (done) => {
+    jest.spyOn(SlackHelpers, 'handleCancellation').mockImplementation().mockResolvedValue(true);
+    await SlackInteractions.handleManagerActions(payload, respond);
+    expect(respond.mock.calls[0][0].text).toEqual('The trip request has already been cancelled.');
     done();
   });
 
-  it('should catch payload error', (done) => {
-    SlackInteractions.handleManagerActions({
-      actions: [{
-        name: 'manager_decline',
-        value: 3
-      }]
-    }, (res) => {
-      expect(res).toEqual({
-        as_user: false,
-        user: undefined,
-        attachments: undefined,
-        channel: undefined,
-        response_type: 'ephemeral',
-        text: 'Error:bangbang:: I was unable to do that.'
-      });
-      done();
-    });
+  it('should handle manager approve', async (done) => {
+    payload.actions[0].name = 'managerApprove';
+    jest.spyOn(SlackHelpers, 'handleCancellation').mockImplementation().mockResolvedValue(false);
+    jest.spyOn(ManagerActionsHelper, 'managerApprove').mockImplementation().mockResolvedValue({});
+    await SlackInteractions.handleManagerActions(payload, respond);
+
+    expect(ManagerActionsHelper.managerApprove).toHaveBeenCalled();
+    done();
+  });
+
+  it('should handle manager decline', async (done) => {
+    payload.actions[0].name = 'managerDecline';
+    jest.spyOn(SlackHelpers, 'handleCancellation').mockImplementation().mockResolvedValue(false);
+    jest.spyOn(ManagerActionsHelper, 'managerDecline').mockImplementation().mockResolvedValue({});
+    await SlackInteractions.handleManagerActions(payload, respond);
+
+    expect(ManagerActionsHelper.managerDecline).toHaveBeenCalled();
+    done();
+  });
+
+  it('should catch thrown errors', async (done) => {
+    payload.actions[0].name = null;
+    jest.spyOn(SlackHelpers, 'handleCancellation').mockImplementation().mockResolvedValue(false);
+    jest.spyOn(ManagerActionsHelper, 'managerApprove').mockImplementation();
+    jest.spyOn(bugsnagHelper, 'log').mockImplementation().mockReturnValue({});
+    await SlackInteractions.handleManagerActions(payload, respond);
+
+    expect(bugsnagHelper.log).toHaveBeenCalled();
+    expect(respond).toHaveBeenCalled();
+    done();
   });
 });
 

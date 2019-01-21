@@ -3,6 +3,7 @@ import WebClientSingleton from '../../utils/WebClientSingleton';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import UserService from '../../services/UserService';
 
+
 const {
   Department, User, TripRequest
 } = models;
@@ -137,6 +138,10 @@ class SlackHelpers {
     );
     return passengerNumbers;
   }
-}
 
+  static async handleCancellation(tripRequestId) {
+    const { tripStatus } = await SlackHelpers.getTripRequest(tripRequestId);
+    return tripStatus === 'Cancelled';
+  }
+}
 export default SlackHelpers;

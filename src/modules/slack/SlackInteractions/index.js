@@ -17,6 +17,7 @@ import TeamDetailsService from '../../../services/TeamDetailsService';
 import travelTripHelper from '../helpers/slackHelpers/TravelTripHelper';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import RouteInputHandlers from '../RouteManagement';
+import ManagerActionsHelper from '../helpers/slackHelpers/ManagerActionsHelper';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -130,23 +131,16 @@ class SlackInteractions {
   }
 
   static async handleManagerActions(payload, respond) {
-    const { value, name } = payload.actions[0];
-    let trip;
+    const { name, value } = payload.actions[0];
+    const isCancelled = await SlackHelpers.handleCancellation(value);
+ 
+    // Notify manager if trip has been cancelled
+    if (isCancelled) {
+      respond(new SlackInteractiveMessage('The trip request has already been cancelled.'));
+      return;
+    }
     try {
-      switch (name) {
-        case 'manager_decline':
-          DialogPrompts.sendDialogToManager(payload,
-            'decline_trip',
-            `${payload.original_message.ts} ${payload.channel.id} ${value}`,
-            'Decline', 'Decline', 'declineReason');
-          break;
-        case 'manager_approve':
-          trip = await SlackHelpers.isRequestApproved(value, payload.user.id);
-          SlackInteractions.approveTripRequestByManager(payload, trip, respond);
-          break;
-        default:
-          break;
-      }
+      ManagerActionsHelper[name](payload, respond);
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Error:bangbang:: I was unable to do that.'));
