@@ -1,3 +1,4 @@
+import { IncomingWebhook } from '@slack/client';
 import SlackInteractions from '../../SlackInteractions';
 import SlackNotifications from '../Notifications';
 import models from '../../../../database/models';
@@ -7,6 +8,8 @@ import WebClientSingleton from '../../../../utils/WebClientSingleton';
 import NotificationsResponse from '../NotificationsResponse';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import DepartmentService from '../../../../services/DepartmentService';
+import RouteRequestService from '../../../../services/RouteRequestService';
+import { mockRouteRequestData } from '../../../../services/__mocks__/index';
 
 
 const tripInitial = {
@@ -26,27 +29,31 @@ const tripInitial = {
 
 SlackEvents.raise = jest.fn();
 
-jest.mock('@slack/client', () => ({
-  WebClient: jest.fn(() => ({
-    users: {
-      info: jest.fn(() => Promise.resolve({
-        user: { real_name: 'someName', profile: { email: 'someemial@email.com' } },
-        token: 'sdf'
-      })),
-      profile: {
-        get: jest.fn(() => Promise.resolve({
-          profile: {
-            tz_offset: 'someValue',
-            email: 'sekito.ronald@andela.com'
-          }
-        }))
-      }
+const webClientMock = {
+  im: {
+    open: () => Promise.resolve({
+      channel: { id: '419' }
+    })
+  },
+  users: {
+    info: jest.fn(() => Promise.resolve({
+      user: { real_name: 'someName', profile: { email: 'someemial@email.com' } },
+      token: 'sdf'
+    })),
+    profile: {
+      get: jest.fn(() => Promise.resolve({
+        profile: {
+          tz_offset: 'someValue',
+          email: 'sekito.ronald@andela.com'
+        }
+      }))
     }
-  })),
-  IncomingWebhook: jest.fn()
-}));
+  },
+  chat: {
+    postMessage: () => Promise.resolve({ data: 'successfully opened chat' })
+  }
+};
 
-jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../../../services/TeamDetailsService', () => ({
   getTeamDetails: jest.fn(() => Promise.resolve({
     botToken: 'just a token',
@@ -61,7 +68,10 @@ describe('SlackNotifications', () => {
     const mockUser = { slackId: 3 };
     jest.spyOn(SlackHelpers, 'getHeadByDepartmentId').mockResolvedValue(mockUser);
     jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockResolvedValue(mockUser);
+    jest.spyOn(WebClientSingleton.prototype, 'getWebClient').mockReturnValue(webClientMock);
+    jest.spyOn(IncomingWebhook.prototype, 'send').mockResolvedValue(true);
   });
+
   afterEach(() => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
@@ -89,248 +99,271 @@ describe('SlackNotifications', () => {
   });
 
   describe('getManagerMessageAttachment', () => {
-    it('should create a message', () => {
-      // arrange
-      const newTripRequest = tripInitial;
-      const imResponse = 'hello';
-      const requester = { slackId: '112' };
-      const rider = { slackId: 767 };
-      const requestType = 'newTrip';
-      jest.spyOn(SlackNotifications, 'createDirectMessage');
+    const newTripRequest = tripInitial;
+    const imResponse = 'hello';
+    const requester = { slackId: '112' };
+    const rider = { slackId: 767 };
+    const requestType = 'newTrip';
 
+    beforeEach(() => {
+      jest.spyOn(SlackNotifications, 'createDirectMessage');
+    });
+
+    it('should create a message', () => {
       const result = SlackNotifications.getManagerMessageAttachment(newTripRequest,
         imResponse, requester, requestType, rider);
 
       expect(result).toBeDefined();
       expect(SlackNotifications.createDirectMessage).toHaveBeenCalledWith(imResponse, expect.anything(), expect.anything());
     });
+
+    it('should add notification actions when tripStatus is pending', () => {
+      jest.spyOn(SlackNotifications, 'notificationActions');
+      newTripRequest.tripStatus = 'Pending';
+
+      const result = SlackNotifications.getManagerMessageAttachment(newTripRequest,
+        imResponse, requester, requestType, rider);
+
+      expect(SlackNotifications.notificationActions).toHaveBeenCalledTimes(1);
+      expect(result).toBeDefined();
+    });
   });
 
-  it('should fail when departmentId is wrong', async (done) => {
-    const tripInfo = {
-      departmentId: 100,
-      requestedById: 100,
-      id: 100
-    };
-    const payload = {
-      team: { id: 'HAHJDILYR' }
-    };
+  describe('sendManagerTripRequestNotification', () => {
+    it('should fail when departmentId is wrong', async (done) => {
+      jest.spyOn(SlackHelpers, 'getHeadByDepartmentId').mockRejectedValue(true);
+      const tripInfo = {
+        departmentId: 100,
+        requestedById: 100,
+        id: 100
+      };
+      const payload = {
+        team: { id: 'HAHJDILYR' }
+      };
+      const response = jest.fn();
 
-    await SlackNotifications.sendManagerTripRequestNotification(payload, tripInfo, (response) => {
-      expect(response).toEqual({
+      await SlackNotifications.sendManagerTripRequestNotification(payload, tripInfo, response);
+
+      expect(response).toBeCalledWith({
         text: 'Error:warning:: Request saved, but I could not send a notification to your manager.'
       });
+      done();
     });
-    done();
   });
 
-  it('should send notification', async (done) => {
-    const res = await SlackNotifications.sendNotification(
-      { channel: { id: 'XXXXXX' } },
-      {},
-      'some text'
-    );
+  describe('sendNotification', () => {
+    it('should send notification', async (done) => {
+      const res = await SlackNotifications.sendNotification(
+        { channel: { id: 'XXXXXX' } },
+        {},
+        'some text'
+      );
 
-    expect(res).toEqual({
-      data: 'successfully opened chat'
+      expect(res).toEqual({
+        data: 'successfully opened chat'
+      });
+      done();
     });
-    done();
   });
 
-  it('should send error on decline', async (done) => {
-    jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockRejectedValue();
+  describe('sendRequesterDeclinedNotification', () => {
+    it('should send error on decline', async (done) => {
+      jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockRejectedValue();
 
-    const tripInfo = {
-      departmentId: 6,
-      requestedById: 1000,
-      declinedById: 6,
-      origin: {
-        dataValues: {
-          address: 'Someplace'
-        }
-      },
-      destination: {
-        dataValues: {
-          address: 'Someplace'
-        }
-      },
-      id: 3
-    };
-    const response = jest.fn();
-    const responseData = {
-      text: 'Error:warning:: Decline saved but requester will not get the notification'
-    };
-    await SlackNotifications.sendRequesterDeclinedNotification(tripInfo, response);
-    expect(response).toBeCalledWith(responseData);
-    done();
+      const tripInfo = {
+        departmentId: 6,
+        requestedById: 1000,
+        declinedById: 6,
+        origin: {
+          dataValues: {
+            address: 'Someplace'
+          }
+        },
+        destination: {
+          dataValues: {
+            address: 'Someplace'
+          }
+        },
+        id: 3
+      };
+      const response = jest.fn();
+      const responseData = {
+        text: 'Error:warning:: Decline saved but requester will not get the notification'
+      };
+      await SlackNotifications.sendRequesterDeclinedNotification(tripInfo, response);
+      expect(response).toBeCalledWith(responseData);
+      done();
+    });
+
+    it('should send decline notification', async (done) => {
+      const tripInfo = {
+        departmentId: 6,
+        requestedById: 6,
+        declinedById: 6,
+        origin: {
+          dataValues: {
+            address: 'Someplace'
+          }
+        },
+        destination: {
+          dataValues: {
+            address: 'Someplace'
+          }
+        },
+        id: 3
+      };
+
+      jest.spyOn(SlackNotifications, 'getDMChannelId').mockReturnValue(123);
+      jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue();
+      await SlackNotifications.sendRequesterDeclinedNotification(
+        tripInfo,
+        () => {}
+      );
+
+      expect(SlackNotifications.sendNotification).toBeCalledTimes(1);
+      done();
+    });
   });
 
-  it('should send decline notification', async (done) => {
-    const tripInfo = {
-      departmentId: 6,
-      requestedById: 6,
-      declinedById: 6,
-      origin: {
-        dataValues: {
-          address: 'Someplace'
+  describe('sendManagerConfirmOrDeclineNotification', () => {
+    it('should send manager notification', async () => {
+      const tripInfo = {
+        department: {
+          dataValues: {
+            headId: 3,
+          }
+        },
+        rider: {
+          dataValues: {
+            slackId: 3,
+          }
+        },
+        origin: {
+          dataValues: {
+            address: 'never land',
+          }
+        },
+        destination: {
+          dataValues: {
+            address: 'never land',
+          }
+        },
+        cab: {
+          dataValues: {
+            driverName: 'Sunday',
+            driverPhoneNo: '001001001',
+            regNumber: '1928dfsgg'
+          }
         }
-      },
-      destination: {
-        dataValues: {
-          address: 'Someplace'
+      };
+      const payload = {
+        user: { id: 3 },
+        team: { id: 'HAHJDILYR' }
+      };
+      const delineStatus = false;
+      jest.spyOn(SlackNotifications, 'sendNotifications').mockResolvedValue();
+
+      await SlackNotifications.sendManagerConfirmOrDeclineNotification(
+        payload, tripInfo, delineStatus
+      );
+
+      expect(SlackNotifications.sendNotifications).toBeCalledTimes(1);
+    });
+
+    it('should send manager confirmation notification', async () => {
+      const tripInfo = {
+        department: {
+          dataValues: {
+            headId: 3,
+          }
+        },
+        rider: {
+          dataValues: {
+            slackId: 3,
+          }
+        },
+        origin: {
+          dataValues: {
+            address: 'never land',
+          }
+        },
+        destination: {
+          dataValues: {
+            address: 'never land',
+          }
+        },
+        cab: {
+          dataValues: {
+            driverName: 'Dave',
+            driverPhoneNo: '6789009876',
+            regNumber: 'JK 321 LG'
+          }
         }
-      },
-      id: 3
-    };
+      };
 
-    jest.spyOn(SlackNotifications, 'getDMChannelId').mockReturnValue(123);
-    jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue();
-    await SlackNotifications.sendRequesterDeclinedNotification(
-      tripInfo,
-      () => {}
-    );
-
-    expect(SlackNotifications.sendNotification).toBeCalledTimes(1);
-    done();
+      const payload = {
+        user: { id: 3 },
+        team: { id: 'HAHJDILYR' },
+        submission: {
+          driverName: 'driverName', driverPhoneNo: 'driverPhoneNo', regNumber: 'regNumber'
+        }
+      };
+      const delineStatus = true;
+      const res = await SlackNotifications.sendManagerConfirmOrDeclineNotification(
+        payload, tripInfo, delineStatus
+      );
+      expect(res).toEqual(undefined);
+    });
   });
 
-  it('should send manager notification', async () => {
-    const tripInfo = {
-      department: {
-        dataValues: {
-          headId: 3,
-        }
-      },
-      rider: {
-        dataValues: {
-          slackId: 3,
-        }
-      },
-      origin: {
-        dataValues: {
-          address: 'never land',
-        }
-      },
-      destination: {
-        dataValues: {
-          address: 'never land',
-        }
-      },
-      cab: {
-        dataValues: {
-          driverName: 'Sunday',
-          driverPhoneNo: '001001001',
-          regNumber: '1928dfsgg'
-        }
-      }
-    };
-    const payload = {
-      user: { id: 3 },
-      team: { id: 'HAHJDILYR' }
-    };
-    const delineStatus = false;
-    jest.spyOn(SlackNotifications, 'sendNotifications').mockResolvedValue();
+  describe('sendManagerTripRequestNotification', () => {
+    it('should send the manager a notification', async (done) => {
+      const tripInfo = {
+        departmentId: 3,
+        requestedById: 6,
+        id: 3,
+      };
+      const payload = {
+        team: { id: 'HAHJDILYR' }
+      };
+      const head = {
+        email: 'AAAAAA',
+        slackId: 'AAAAAA',
+      };
+      const rider = {
+        ...head
+      };
 
-    await SlackNotifications.sendManagerConfirmOrDeclineNotification(
-      payload, tripInfo, delineStatus
-    );
+      const findUserByIdOrSlackId = jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId');
+      findUserByIdOrSlackId.mockReturnValueOnce(rider);
+      findUserByIdOrSlackId.mockReturnValueOnce({ ...rider, slackId: 'BBBBBB' });
 
-    expect(SlackNotifications.sendNotifications).toBeCalledTimes(1);
+      jest.spyOn(SlackHelpers, 'getHeadByDepartmentId').mockResolvedValue(head);
+      // jest.spyOn(SlackHelpers, 'getTripRequest').mockResolvedValue(newTripRequest);
+      jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue();
+      jest.spyOn(SlackNotifications, 'getManagerMessageAttachment').mockResolvedValue();
+      jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue(
+        { message: 'mockMessageToSlack' }
+      );
+
+      const res = await SlackNotifications.sendManagerTripRequestNotification(
+        payload, tripInfo, () => {}
+      );
+      expect(res).toEqual({ message: 'mockMessageToSlack' });
+      done();
+    });
   });
 
-  it('should send manager confirmation notification', async () => {
-    const tripInfo = {
-      department: {
-        dataValues: {
-          headId: 3,
-        }
-      },
-      rider: {
-        dataValues: {
-          slackId: 3,
-        }
-      },
-      origin: {
-        dataValues: {
-          address: 'never land',
-        }
-      },
-      destination: {
-        dataValues: {
-          address: 'never land',
-        }
-      },
-      cab: {
-        dataValues: {
-          driverName: 'Dave',
-          driverPhoneNo: '6789009876',
-          regNumber: 'JK 321 LG'
-        }
-      }
-    };
+  describe('sendWebhookPushMessage', () => {
+    it('should call IncomingWebhook send method', async (done) => {
+      const [webhookUrl, message] = ['https://hello.com', 'Welcome to tembea'];
 
-    const payload = {
-      user: { id: 3 },
-      team: { id: 'HAHJDILYR' },
-      submission: {
-        driverName: 'driverName', driverPhoneNo: 'driverPhoneNo', regNumber: 'regNumber'
-      }
-    };
-    const delineStatus = true;
-    const res = await SlackNotifications.sendManagerConfirmOrDeclineNotification(
-      payload, tripInfo, delineStatus
-    );
-    expect(res).toEqual(undefined);
-  });
+      const result = await SlackNotifications.sendWebhookPushMessage(webhookUrl, message);
 
-  it('should send the manager a notification', async (done) => {
-    const tripInfo = {
-      departmentId: 3,
-      requestedById: 6,
-      id: 3,
-    };
-    const payload = {
-      team: { id: 'HAHJDILYR' }
-    };
-    const head = {
-      email: 'AAAAAA',
-      slackId: 'AAAAAA',
-    };
-    const rider = {
-      ...head
-    };
-    const newTripRequest = {
-      id: 12,
-      tripStatus: 'Pending',
-      name: 'AAAAAA',
-      departureTime: '01/01/2019',
-      origin: {
-        address: 'YYYYYY'
-      },
-      destination: {
-        address: 'OOOOOO'
-      },
-      reason: 'WWWWWW',
-      createAt: 'QQQQQQ',
-    };
-
-    const findUserByIdOrSlackId = jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId');
-    findUserByIdOrSlackId.mockReturnValueOnce(rider);
-    findUserByIdOrSlackId.mockReturnValueOnce({ ...rider, slackId: 'BBBBBB' });
-
-    jest.spyOn(SlackHelpers, 'getHeadByDepartmentId').mockResolvedValue(head);
-    jest.spyOn(SlackHelpers, 'getTripRequest').mockResolvedValue(newTripRequest);
-    jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue();
-    jest.spyOn(SlackNotifications, 'getManagerMessageAttachment').mockResolvedValue();
-    jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue(
-      { message: 'mockMessageToSlack' }
-    );
-
-    const res = await SlackNotifications.sendManagerTripRequestNotification(
-      payload, tripInfo, () => {}
-    );
-    expect(res).toEqual({ message: 'mockMessageToSlack' });
-    done();
+      expect(IncomingWebhook.prototype.send).toHaveBeenCalledWith(message);
+      expect(result).toBeTruthy();
+      done();
+    });
   });
 
   describe('User Notification', () => {
@@ -400,186 +433,222 @@ describe('SlackNotifications', () => {
       expect(res).toEqual(undefined);
     });
   });
-});
 
-describe('sendRequesterApprovedNotification', () => {
-  afterEach(() => {
-    jest.resetAllMocks();
-    jest.clearAllMocks();
-  });
+  describe('sendRequesterApprovedNotification', () => {
+    afterEach(() => {
+      jest.resetAllMocks();
+      jest.clearAllMocks();
+    });
 
-  const webClient = {
-    im: {
-      open: () => ({ channel: { id: 1 } })
-    }
-  };
-  let getWebClient;
-  let sendNotification;
-  let findSelectedDepartment;
-  let responseForRequester;
-  beforeEach(() => {
-    getWebClient = jest.spyOn(WebClientSingleton.prototype, 'getWebClient');
-    findSelectedDepartment = jest.spyOn(SlackHelpers, 'getHeadByDepartmentId');
-    responseForRequester = jest.spyOn(NotificationsResponse, 'responseForRequester');
-    sendNotification = jest.spyOn(SlackNotifications, 'sendNotification');
-  });
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-  it('should successfully send approve notification to requester', async () => {
-    const fn = () => ({});
-    // mock dependencies
-    getWebClient.mockImplementationOnce(() => (webClient));
-    findSelectedDepartment.mockImplementationOnce(() => ({ dataValues: { name: 'Tembea' } }));
-    responseForRequester.mockImplementationOnce(fn);
-    sendNotification.mockImplementationOnce(fn);
+    let sendNotification;
+    let findSelectedDepartment;
+    let responseForRequester;
+    beforeEach(() => {
+      findSelectedDepartment = jest.spyOn(SlackHelpers, 'getHeadByDepartmentId');
+      responseForRequester = jest.spyOn(NotificationsResponse, 'responseForRequester');
+      sendNotification = jest.spyOn(SlackNotifications, 'sendNotification');
+    });
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+    it('should successfully send approve notification to requester', async () => {
+      const fn = () => ({});
+      // mock dependencies
+      findSelectedDepartment.mockImplementationOnce(() => ({ dataValues: { name: 'Tembea' } }));
+      responseForRequester.mockImplementationOnce(fn);
+      sendNotification.mockImplementationOnce(fn);
 
-    const responseData = { ...tripInitial, requester: { slackId: 2 } };
-    await SlackNotifications
-      .sendRequesterApprovedNotification(responseData, jest.fn(), 'slackBotOauthToken');
+      const responseData = { ...tripInitial, requester: { slackId: 2 } };
+      await SlackNotifications
+        .sendRequesterApprovedNotification(responseData, jest.fn(), 'slackBotOauthToken');
 
-    expect(findSelectedDepartment).toHaveBeenCalledTimes(1);
-    expect(getWebClient).toHaveBeenCalledTimes(1);
-    expect(responseForRequester).toHaveBeenCalledTimes(1);
-    expect(sendNotification).toHaveBeenCalledTimes(1);
-  });
-  it('should handle error', async () => {
-    // mock dependencies
-    const error = new Error('Dummy error message');
-    findSelectedDepartment.mockImplementationOnce(() => Promise.reject(error));
+      expect(findSelectedDepartment).toHaveBeenCalledTimes(1);
+      expect(responseForRequester).toHaveBeenCalledTimes(1);
+      expect(sendNotification).toHaveBeenCalledTimes(1);
+    });
+    it('should handle error', async () => {
+      // mock dependencies
+      const error = new Error('Dummy error message');
+      findSelectedDepartment.mockImplementationOnce(() => Promise.reject(error));
 
-    const responseData = { ...tripInitial, requester: { slackId: 2 } };
-    const respond = jest.fn();
-    await SlackNotifications
-      .sendRequesterApprovedNotification(responseData, respond, 'slackBotOauthToken');
+      const responseData = { ...tripInitial, requester: { slackId: 2 } };
+      const respond = jest.fn();
+      await SlackNotifications
+        .sendRequesterApprovedNotification(responseData, respond, 'slackBotOauthToken');
 
-    expect(findSelectedDepartment).toHaveBeenCalledTimes(1);
-    expect(respond).toHaveBeenCalledTimes(1);
-    expect(getWebClient).not.toHaveBeenCalled();
-    expect(responseForRequester).not.toHaveBeenCalled();
-    expect(sendNotification).not.toHaveBeenCalled();
-  });
-  it('should return undefined if department is null', async () => {
-    // mock dependencies
-    findSelectedDepartment.mockImplementationOnce(() => null);
+      expect(findSelectedDepartment).toHaveBeenCalledTimes(1);
+      expect(respond).toHaveBeenCalledTimes(1);
+      expect(responseForRequester).not.toHaveBeenCalled();
+      expect(sendNotification).not.toHaveBeenCalled();
+    });
+    it('should return undefined if department is null', async () => {
+      // mock dependencies
+      findSelectedDepartment.mockImplementationOnce(() => null);
 
-    const responseData = { ...tripInitial, requester: { slackId: 2 } };
-    const respond = jest.fn();
-    await SlackNotifications
-      .sendRequesterApprovedNotification(responseData, respond, 'slackBotOauthToken');
+      const responseData = { ...tripInitial, requester: { slackId: 2 } };
+      const respond = jest.fn();
+      await SlackNotifications
+        .sendRequesterApprovedNotification(responseData, respond, 'slackBotOauthToken');
 
-    expect(findSelectedDepartment).toHaveBeenCalledTimes(1);
-    expect(respond).not.toHaveBeenCalled();
-    expect(getWebClient).not.toHaveBeenCalled();
-    expect(responseForRequester).not.toHaveBeenCalled();
-    expect(sendNotification).not.toHaveBeenCalled();
-  });
-});
-
-describe('sendOperationsTripRequestNotification', () => {
-  afterEach(() => {
-    jest.resetAllMocks();
-    jest.clearAllMocks();
-  });
-
-  const fn = () => {};
-  const payload = {
-    team: { id: 'AHDJDLKUER' },
-    user: { id: 'AHDJDLKUER' }
-  };
-
-  let respond;
-  let getTripRequest;
-  let getTeamDetails;
-  let getDepartment;
-  let sendRequesterApprovedNotification;
-  let sendNotification;
-  beforeEach(() => {
-    respond = jest.fn(value => value);
-    getTripRequest = jest.spyOn(SlackHelpers, 'getTripRequest');
-    getTeamDetails = jest.spyOn(TeamDetailsService, 'getTeamDetails');
-    getDepartment = jest.spyOn(DepartmentService, 'getDepartment');
-    sendNotification = jest.spyOn(SlackNotifications, 'sendNotification');
-    sendRequesterApprovedNotification = jest.spyOn(SlackNotifications,
-      'sendRequesterApprovedNotification');
-
-    getTripRequest.mockImplementationOnce(() => ({
-      createdAt: '',
-      departureTime: '',
-      rider: { dataValues: { slackId: 1 } },
-      requester: { dataValues: { slackId: 1 } },
-      destination: { dataValues: {} },
-      origin: { dataValues: {} },
-      tripDetail: { dataValues: {} },
-      departmentId: 1,
-      id: 2,
-      tripStatus: 'ca'
-    }));
-    sendRequesterApprovedNotification.mockImplementationOnce(fn);
-    const department = { name: 'Tembea DTP' };
-    getDepartment.mockImplementationOnce(() => (
-      { dataValues: { department }, department }
-    ));
-    getTeamDetails.mockImplementationOnce(() => (
-      { botToken: 'slackBotOauthToken', opsChannelId: 1 }
-    ));
-  });
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-  it('should notify ops on manager\'s approval', async () => {
-    sendNotification.mockImplementationOnce(fn);
-    await SlackNotifications.sendOperationsTripRequestNotification(23, payload, respond);
-    expect(sendNotification).toHaveBeenCalledTimes(1);
-    expect(respond).not.toHaveBeenCalled();
-  });
-
-  it('should throw an error when accessing dataValues form non existing dept', async () => {
-    sendNotification.mockImplementationOnce(() => Promise.reject());
-    await SlackNotifications.sendOperationsTripRequestNotification(
-      23, payload, respond, 'not-regular'
-    );
-    expect(sendNotification).toHaveBeenCalledTimes(1);
-    expect(respond).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('SlackNotifications Tests: Manager approval', () => {
-  const { TripRequest, User, Department } = models;
-
-  beforeEach(() => {
-    jest.spyOn(TripRequest, 'findByPk').mockResolvedValue({ dataValues: tripInitial });
-    jest.spyOn(User, 'findOne').mockResolvedValue({ dataValues: { id: 45 } });
-    jest.spyOn(Department, 'findByPk').mockResolvedValue({
-      dataValues: { head: { dataValues: {} } }
+      expect(findSelectedDepartment).toHaveBeenCalledTimes(1);
+      expect(respond).not.toHaveBeenCalled();
+      expect(responseForRequester).not.toHaveBeenCalled();
+      expect(sendNotification).not.toHaveBeenCalled();
     });
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
+  describe('sendOperationsTripRequestNotification', () => {
+    afterEach(() => {
+      jest.resetAllMocks();
+      jest.clearAllMocks();
+    });
+
+    const fn = () => {};
+    const payload = {
+      team: { id: 'AHDJDLKUER' },
+      user: { id: 'AHDJDLKUER' }
+    };
+
+    let respond;
+    let getTripRequest;
+    let getTeamDetails;
+    let getDepartment;
+    let sendRequesterApprovedNotification;
+    let sendNotification;
+    beforeEach(() => {
+      respond = jest.fn(value => value);
+      getTripRequest = jest.spyOn(SlackHelpers, 'getTripRequest');
+      getTeamDetails = jest.spyOn(TeamDetailsService, 'getTeamDetails');
+      getDepartment = jest.spyOn(DepartmentService, 'getDepartment');
+      sendNotification = jest.spyOn(SlackNotifications, 'sendNotification');
+      sendRequesterApprovedNotification = jest.spyOn(SlackNotifications,
+        'sendRequesterApprovedNotification');
+
+      getTripRequest.mockImplementationOnce(() => ({
+        createdAt: '',
+        departureTime: '',
+        rider: { dataValues: { slackId: 1 } },
+        requester: { dataValues: { slackId: 1 } },
+        destination: { dataValues: {} },
+        origin: { dataValues: {} },
+        tripDetail: { dataValues: {} },
+        departmentId: 1,
+        id: 2,
+        tripStatus: 'ca'
+      }));
+      sendRequesterApprovedNotification.mockImplementationOnce(fn);
+      const department = { name: 'Tembea DTP' };
+      getDepartment.mockImplementationOnce(() => (
+        { dataValues: { department }, department }
+      ));
+      getTeamDetails.mockImplementationOnce(() => (
+        { botToken: 'slackBotOauthToken', opsChannelId: 1 }
+      ));
+    });
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+    it('should notify ops on manager\'s approval', async () => {
+      sendNotification.mockImplementationOnce(fn);
+      await SlackNotifications.sendOperationsTripRequestNotification(23, payload, respond);
+      expect(sendNotification).toHaveBeenCalledTimes(1);
+      expect(respond).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error when accessing dataValues form non existing dept', async () => {
+      sendNotification.mockImplementationOnce(() => Promise.reject());
+      await SlackNotifications.sendOperationsTripRequestNotification(
+        23, payload, respond, 'not-regular'
+      );
+      expect(sendNotification).toHaveBeenCalledTimes(1);
+      expect(respond).toHaveBeenCalledTimes(1);
+    });
   });
 
+  describe('SlackNotifications Tests: Manager approval', () => {
+    const { TripRequest, User, Department } = models;
 
-  it('Handle manager approve details request and throw an error', async (done) => {
-    const payload = {
-      actions: [{ name: 'managerApprove' }],
-      user: {},
-      submission: {}
-    };
-    const manager = await SlackInteractions.handleManagerApprovalDetails(payload, jest.fn);
-    expect(manager).toEqual(undefined);
-    done();
+    beforeEach(() => {
+      jest.spyOn(TripRequest, 'findByPk').mockResolvedValue({ dataValues: tripInitial });
+      jest.spyOn(User, 'findOne').mockResolvedValue({ dataValues: { id: 45 } });
+      jest.spyOn(Department, 'findByPk').mockResolvedValue({
+        dataValues: { head: { dataValues: {} } }
+      });
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+
+    it('Handle manager approve details request and throw an error', async (done) => {
+      const payload = {
+        actions: [{ name: 'managerApprove' }],
+        user: {},
+        submission: {}
+      };
+      const manager = await SlackInteractions.handleManagerApprovalDetails(payload, jest.fn);
+      expect(manager).toEqual(undefined);
+      done();
+    });
+
+
+    it('Handle manager approve details request but fail to approve', async (done) => {
+      const payload = {
+        actions: [{ name: 'manager_approve' }],
+        user: {},
+        submission: {}
+      };
+      const manager = await SlackInteractions.handleManagerApprovalDetails(payload, jest.fn);
+      expect(manager).toEqual(undefined);
+      done();
+    });
   });
 
+  describe('SlackNotifications: receive new route request', () => {
+    let getTeamDetails;
+    let routeRequestDetails;
+    beforeEach(() => {
+      getTeamDetails = jest.spyOn(TeamDetailsService, 'getTeamDetails');
+      getTeamDetails.mockImplementationOnce(() => (
+        { botToken: 'slackBotOauthToken', opsChannelId: 1 }
+      ));
+      routeRequestDetails = jest.spyOn(RouteRequestService, 'getRouteRequest');
+      routeRequestDetails.mockImplementation(() => ({
+        distance: 2,
+        busStopDistance: 3,
+        routeImageUrl: 'image',
+        busStop: { address: 'busstop' },
+        home: { address: 'home' },
+        manager: { slackId: '1234' },
+        engagement: {
+          partner: { name: 'partner' },
+          startDate: '11-12-2018',
+          endDate: '11-12-2019',
+          workHours: '10:00-22:00',
+          fellow: { slackId: '4321' }
+        }
+      }));
+    });
 
-  it('Handle manager approve details request but fail to approve', async (done) => {
-    const payload = {
-      actions: [{ name: 'manager_approve' }],
-      user: {},
-      submission: {}
-    };
-    const manager = await SlackInteractions.handleManagerApprovalDetails(payload, jest.fn);
-    expect(manager).toEqual(undefined);
-    done();
+    afterEach(() => {
+      jest.resetAllMocks();
+      jest.clearAllMocks();
+    });
+
+    it('should send route request to ops channel', async () => {
+      const payload = { team: { id: 'AHDJDLKUER' } };
+      jest.spyOn(RouteRequestService, 'getRouteRequest')
+        .mockResolvedValue(mockRouteRequestData);
+      jest.spyOn(TeamDetailsService, 'getTeamDetails')
+        .mockResolvedValue({ botToken: 'AAAAAA', opsChannelId: 'BBBBBB' });
+      jest.spyOn(SlackNotifications, 'sendOperationsNotificationFields');
+      jest.spyOn(SlackNotifications, 'sendNotifications')
+        .mockResolvedValue();
+      await SlackNotifications.sendOperationsNewRouteRequest(payload, '1');
+      expect(SlackNotifications.sendOperationsNotificationFields)
+        .toHaveBeenCalledWith(mockRouteRequestData);
+      expect(SlackNotifications.sendNotifications).toHaveBeenCalledTimes(1);
+    });
   });
 });

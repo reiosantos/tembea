@@ -1,7 +1,9 @@
 import InteractivePrompts from '../InteractivePrompts';
 import InteractivePromptsHelpers from '../../helpers/slackHelpers/InteractivePromptsHelpers';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
-import { SlackButtonsAttachmentFromAList } from '../../SlackModels/SlackMessageModels';
+import {
+  SlackButtonsAttachmentFromAList, SlackAttachment, SlackSelectAction, SlackButtonAction
+} from '../../SlackModels/SlackMessageModels';
 import {
   sendBookNewTripMock,
   sendCompletionResponseMock,
@@ -259,15 +261,48 @@ describe('test send preview response and cancel response', () => {
 });
 
 describe('LocationPrompts', () => {
-  // it('should sendLocationSuggestionResponse', () => {
-  //   const respond = jest.fn(value => value);
-  //   LocationPrompts.sendLocationSuggestionsResponse(
-  //     respond,
-  //     'https://staticMap',
-  //     [{ text: 'Location1', value: 'place_id' }]
-  //   );
-  //   expect(respond).toBeCalled();
-  // });
+  let fieldsOrActionsSpy;
+  let optionalPropsSpy;
+
+  beforeEach(() => {
+    fieldsOrActionsSpy = jest.spyOn(SlackAttachment.prototype, 'addFieldsOrActions');
+    optionalPropsSpy = jest.spyOn(SlackAttachment.prototype, 'addOptionalProps');
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+  });
+
+  it('should sendLocationSuggestionResponse', () => {
+    const predictedLocations = [{ text: 'Location1', value: 'place_id' }];
+    const selectedActions = new SlackSelectAction('predictedLocations',
+      'Select Home location', predictedLocations);
+    const buttonAction = new SlackButtonAction('no', 'Location not listed', 'no');
+
+    const respond = jest.fn();
+    LocationPrompts.sendLocationSuggestionsResponse(
+      respond,
+      'https://staticMap',
+      predictedLocations
+    );
+    expect(fieldsOrActionsSpy).toBeCalledWith('actions', [selectedActions, buttonAction]);
+    expect(optionalPropsSpy).toBeCalledWith('new_route_suggestions', '', '#CD0000');
+  });
+
+  it('sendLocationSuggestionResponse: empty PredictionLocations', () => {
+    const selectedActions = new SlackButtonAction('retry', 'Try Again', 'retry');
+    const buttonAction = new SlackButtonAction('no', 'Enter Location Coordinates', 'no');
+
+    const respond = jest.fn();
+    LocationPrompts.sendLocationSuggestionsResponse(
+      respond,
+      'https://staticMap',
+      []
+    );
+    expect(fieldsOrActionsSpy).toBeCalledWith('actions', [selectedActions, buttonAction]);
+    expect(optionalPropsSpy).toBeCalledWith('new_route_locationNotFound', '', '#CD0000');
+  });
 
   it('should sendLocationConfirmationResponse', () => {
     const respond = jest.fn(value => value);

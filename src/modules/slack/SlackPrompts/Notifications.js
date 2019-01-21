@@ -13,6 +13,8 @@ import NotificationsResponse from './NotificationsResponse';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import DepartmentService from '../../../services/DepartmentService';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
+import RouteRequestService from '../../../services/RouteRequestService';
+import AttachmentHelper from './notifications/AttachmentHelper';
 
 const web = new WebClientSingleton();
 
@@ -225,7 +227,7 @@ class SlackNotifications {
         payload
       );
       return fields;
-    // eslint-disable-next-line no-else-return
+      // eslint-disable-next-line no-else-return
     } else {
       fields = SlackNotifications.declineNotificationFields(
         tripInformation,
@@ -318,8 +320,47 @@ class SlackNotifications {
     return notifications;
   }
 
-  static sendOperationsNewRouteRequest() {
-    // respond(new SlackInteractiveMessage('Work in progress'));
+  static sendOperationsNotificationFields(routeRequest) {
+    const { routeImageUrl, id: routeRequestId, manager } = routeRequest;
+    const acceptButton = new SlackButtonAction('approve', 'Approve', routeRequestId);
+    const declineButton = new SlackButtonAction('decline', 'Decline',
+      routeRequestId, 'danger');
+    const messageAttachment = new SlackAttachment(undefined, undefined,
+      undefined, undefined, routeImageUrl);
+    const routeAttachmentFields = AttachmentHelper.routeAttachmentFields(routeRequest);
+    const engagementAttachmentFields = AttachmentHelper.engagementAttachmentFields(routeRequest);
+
+    const attachments = [
+      new SlackAttachmentField('`Engagement Information`', null, false),
+      ...engagementAttachmentFields,
+      new SlackAttachmentField('`Manager`', `<@${manager.slackId}>`, false),
+      new SlackAttachmentField('`Route Information`', null, false),
+      ...routeAttachmentFields
+    ];
+    messageAttachment.addFieldsOrActions('actions', [acceptButton, declineButton]);
+    messageAttachment.addFieldsOrActions('fields', attachments);
+
+    messageAttachment.addOptionalProps(
+      'operations_route_actions'
+    );
+    return messageAttachment;
+  }
+
+  static async sendOperationsNewRouteRequest(payload, routeRequestId) {
+    const { team: { id } } = payload;
+    const routeRequestDetails = await RouteRequestService.getRouteRequest(routeRequestId);
+    const { engagement: { fellow: { slackId: fellow } } } = routeRequestDetails;
+    const messageAttachment = SlackNotifications
+      .sendOperationsNotificationFields(routeRequestDetails);
+    const teamDetails = await TeamDetailsService.getTeamDetails(id);
+    const { botToken, opsChannelId } = teamDetails;
+
+    SlackNotifications.sendNotifications(
+      opsChannelId,
+      messageAttachment,
+      `Hey :simple_smile: <@${fellow}> requested a new route`,
+      botToken
+    );
   }
 }
 
