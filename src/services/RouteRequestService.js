@@ -1,5 +1,6 @@
 import models from '../database/models';
 import Cache from '../cache';
+import TeamDetailsService from './TeamDetailsService';
 
 const {
   RouteRequest, Engagement
@@ -44,7 +45,8 @@ class RouteRequestService {
    * to update the route information use {@link RouteRequestService#updateRouteRequest}
    * @param {number} id
    * @return {Promise<{
-   *   id:number,
+   *   id:number, distance:number, busStopDistance:number, status:string
+   *   managerComment:string, opsComment:string,
    *   manager: {
    *      id:number, slackId:string, email:string,
    *   },
@@ -62,7 +64,6 @@ class RouteRequestService {
    *     partner: {
    *       name:string, id:number
    *     }
-   *
    *   }
    * }>}
    *
@@ -113,6 +114,14 @@ class RouteRequestService {
    */
   static async getRouteRequestByPk(id, include = RouteRequestService.defaultInclude) {
     return RouteRequest.findByPk(id, { include });
+  }
+
+  static async getRouteRequestAndToken(routeRequestId, teamId) {
+    const [slackBotOauthToken, routeRequest] = await Promise.all([
+      TeamDetailsService.getTeamDetailsBotOauthToken(teamId),
+      RouteRequestService.getRouteRequest(routeRequestId)
+    ]);
+    return { slackBotOauthToken, routeRequest };
   }
 }
 

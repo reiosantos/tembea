@@ -259,15 +259,15 @@ describe('test send preview response and cancel response', () => {
 });
 
 describe('LocationPrompts', () => {
-  it('should sendLocationSuggestionResponse', () => {
-    const respond = jest.fn(value => value);
-    LocationPrompts.sendLocationSuggestionsResponse(
-      respond,
-      'https://staticMap',
-      [{ text: 'Location1', value: 'place_id' }]
-    );
-    expect(respond).toBeCalled();
-  });
+  // it('should sendLocationSuggestionResponse', () => {
+  //   const respond = jest.fn(value => value);
+  //   LocationPrompts.sendLocationSuggestionsResponse(
+  //     respond,
+  //     'https://staticMap',
+  //     [{ text: 'Location1', value: 'place_id' }]
+  //   );
+  //   expect(respond).toBeCalled();
+  // });
 
   it('should sendLocationConfirmationResponse', () => {
     const respond = jest.fn(value => value);

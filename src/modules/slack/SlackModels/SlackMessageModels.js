@@ -47,7 +47,7 @@ export class SlackAttachment {
   }
 
   /**
-   * @param  {string} type The type you wish to add 'field' or 'actions'
+   * @param  {'fields'|'actions'} type The type you wish to add 'fields' or 'actions'
    * @param  {array} valuesArray The array of fields or actions
    */
   addFieldsOrActions(type, valuesArray) {

@@ -1,4 +1,5 @@
 import SlackNotifications from '../SlackPrompts/Notifications';
+import ManagerNotifications from '../SlackPrompts/notifications/ManagerRouteRequest/index';
 import { SlackEvents, slackEventNames } from './slackEvents';
 
 const slackEvents = SlackEvents;
@@ -8,11 +9,25 @@ slackEvents.handle(slackEventNames.TRIP_APPROVED,
 slackEvents.handle(slackEventNames.TRIP_WAITING_CONFIRMATION,
   SlackNotifications.sendRequesterApprovedNotification);
 
+slackEvents.handle(slackEventNames.RECEIVE_NEW_ROUTE_REQUEST,
+  SlackNotifications.sendOperationsNewRouteRequest);
+
 slackEvents.handle(slackEventNames.NEW_TRIP_REQUEST,
   SlackNotifications.sendManagerTripRequestNotification);
+
 slackEvents.handle(slackEventNames.DECLINED_TRIP_REQUEST,
   SlackNotifications.sendRequesterDeclinedNotification);
+
 slackEvents.handle(slackEventNames.NEW_TRAVEL_TRIP_REQUEST,
   SlackNotifications.sendOperationsTripRequestNotification);
+
+slackEvents.handle(slackEventNames.NEW_ROUTE_REQUEST,
+  ManagerNotifications.sendManagerNotification);
+
+slackEvents.handle(slackEventNames.MANAGER_DECLINED_ROUTE_REQUEST,
+  ManagerNotifications.sendManagerDeclineMessageToFellow);
+
+slackEvents.handle(slackEventNames.MANAGER_APPROVED_ROUTE_REQUEST,
+  ManagerNotifications.sendManagerApproval);
 
 export default slackEvents;

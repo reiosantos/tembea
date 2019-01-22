@@ -6,7 +6,7 @@ const id = 12;
 const fellow = {
   id: 1,
   slackId: 'FFFFFF',
-  email: 'BBBBBB@localhost'
+  email: 'BBBBBB.CCCCCC@localhost'
 };
 const partner = {
   name: 'GGGGGG',
@@ -45,7 +45,7 @@ export const mockRouteRequestData = {
   manager: {
     id: 1,
     slackId: 1,
-    email: 'AAAAAA@localhost',
+    email: 'AAAAAA.BBBBBB@localhost',
   },
   busStop: {
     id: 1,
@@ -59,9 +59,9 @@ export const mockRouteRequestData = {
   },
   engagement: {
     id: 1,
-    startDate: 'CCCCCC',
-    endDate: 'DDDDDD',
-    workHours: 'EEEEEE',
+    startDate: '2018-01-30T23:00:00.000Z',
+    endDate: '2019-01-30T23:00:00.000Z',
+    workHours: '20:00 - 1:20',
     fellow,
     partner
   }

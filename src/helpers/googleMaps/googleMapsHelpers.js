@@ -55,6 +55,7 @@ export class RoutesHelper {
 
   static async getReverseGeocodePayload(payload) {
     // Get placeId or coordinates based on the payload values
+    if (RoutesHelper.isLocationNotFound(payload)) return false;
     const placeIdOrCoordinates = payload.submission
       ? payload.submission.coordinates : payload.actions[0].selected_options[0].value;
     const optionType = payload.submission ? 'coordinates' : 'placeId';
@@ -64,6 +65,13 @@ export class RoutesHelper {
 
     const place = response.results[0];
     return place;
+  }
+
+  static isLocationNotFound(payload) {
+    const { actions } = payload;
+    if (!actions) return false;
+    const [{ name }] = actions;
+    return (name === 'retry' || name === 'no');
   }
 }
 export class GoogleMapsLocationSuggestionOptions {

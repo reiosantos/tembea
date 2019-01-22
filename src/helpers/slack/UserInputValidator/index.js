@@ -74,7 +74,7 @@ class UserInputValidator {
   }
 
   static checkDate(date, tzOffset, fieldName = 'date_time') {
-    if (this.checkDateFormat(date)) {
+    if (this.checkDateTimeFormat(date)) {
       const diff = DateDialogHelper.dateChecker(date, tzOffset);
       if (diff < 0) {
         return [new SlackDialogError(fieldName, 'Date cannot be in the past.')];
@@ -83,8 +83,16 @@ class UserInputValidator {
     return [];
   }
 
-  static checkDateFormat(date, fieldName = 'date_time') {
-    if (!DateDialogHelper.dateFormat(date)) {
+  static checkDateFormat(date, fieldName) {
+    if (!DateDialogHelper.validateDate(date)) {
+      return [new SlackDialogError(fieldName,
+        'Time format must be in Day/Month/Year format. See hint.')];
+    }
+    return [];
+  }
+
+  static checkDateTimeFormat(date, fieldName = 'date_time') {
+    if (!DateDialogHelper.validateDateTime(date)) {
       return [new SlackDialogError(fieldName,
         'Time format must be in Day/Month/Year format. See hint.')];
     }
@@ -201,7 +209,10 @@ class UserInputValidator {
       const user = await this.fetchUserInformationFromSlack(payload.user.id, slackBotOauthToken);
 
       errors.push(...this.checkDate(sanitizedDate, user.tz_offset, fieldName));
-      errors.push(...this.checkDateFormat(sanitizedDate, fieldName));
+      errors.push(...this.checkDateTimeFormat(
+        DateDialogHelper.changeDateTimeFormat(sanitizedDate),
+        fieldName
+      ));
 
       return errors;
     } catch (error) {

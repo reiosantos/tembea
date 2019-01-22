@@ -292,8 +292,34 @@ describe('SlackNotifications', () => {
     const payload = {
       team: { id: 'HAHJDILYR' }
     };
+    const head = {
+      email: 'AAAAAA',
+      slackId: 'AAAAAA',
+    };
+    const rider = {
+      ...head
+    };
+    const newTripRequest = {
+      id: 12,
+      tripStatus: 'Pending',
+      name: 'AAAAAA',
+      departureTime: '01/01/2019',
+      origin: {
+        address: 'YYYYYY'
+      },
+      destination: {
+        address: 'OOOOOO'
+      },
+      reason: 'WWWWWW',
+      createAt: 'QQQQQQ',
+    };
 
-    jest.spyOn(SlackHelpers, 'getTripRequest').mockResolvedValue();
+    const findUserByIdOrSlackId = jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId');
+    findUserByIdOrSlackId.mockReturnValueOnce(rider);
+    findUserByIdOrSlackId.mockReturnValueOnce({ ...rider, slackId: 'BBBBBB' });
+
+    jest.spyOn(SlackHelpers, 'getHeadByDepartmentId').mockResolvedValue(head);
+    jest.spyOn(SlackHelpers, 'getTripRequest').mockResolvedValue(newTripRequest);
     jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue();
     jest.spyOn(SlackNotifications, 'getManagerMessageAttachment').mockResolvedValue();
     jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue(
@@ -490,8 +516,9 @@ describe('sendOperationsTripRequestNotification', () => {
       tripStatus: 'ca'
     }));
     sendRequesterApprovedNotification.mockImplementationOnce(fn);
+    const department = { name: 'Tembea DTP' };
     getDepartment.mockImplementationOnce(() => (
-      { dataValues: { department: { name: 'Tembea DTP' } } }
+      { dataValues: { department }, department }
     ));
     getTeamDetails.mockImplementationOnce(() => (
       { botToken: 'slackBotOauthToken', opsChannelId: 1 }

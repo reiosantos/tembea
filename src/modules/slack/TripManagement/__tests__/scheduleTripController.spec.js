@@ -91,7 +91,7 @@ describe('ScheduleTripController Tests', () => {
   describe('createRequestObject', () => {
     it('should return an object containing trip request details', async () => {
       ScheduleTripController.getLocationIds = jest.fn(() => 2);
-      dateHelper.changeDateFormat = jest.fn(() => '22/12/2018 22:00');
+      dateHelper.changeDateTimeFormat = jest.fn(() => '22/12/2018 22:00');
       const request = await ScheduleTripController
         .createRequestObject(tripRequestDetails(), { id: 4 });
       expect(request).toHaveProperty('riderId', 4);

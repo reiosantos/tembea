@@ -86,7 +86,7 @@ class DateDialogHelper {
 
   static dateChecker(userDateInput, timezoneOffset) {
     // change date format to mm/dd/yyyy
-    const newDate = this.changeDateFormat(userDateInput);
+    const newDate = this.changeDateTimeFormat(userDateInput);
 
     const dateInputTime = new Date(newDate).getTime();
     const now = new Date().getTime();
@@ -95,16 +95,36 @@ class DateDialogHelper {
     return dateInputTime - (now + contextTimezoneOffset + (timezoneOffset * 1000));
   }
 
-  static dateFormat(date) {
+  static validateDate(date) {
+    const month = '([1-9]|0[1-9]|1[0-2])';
+    const day = '(0?[1-9]|[1-2][0-9]|3[0-1])';
+    const year = '([2][0][0-9]{2})';
     const dateFormat = new RegExp(
-      '^(0?[1-9]|[12]\\d|3[0-1])[/]([1-9]|[0-1][0-2])[/][2][0][0-9]{2}[ ][0-2]?[0-9][:][0-5][0-9]$'
+      `^${month}[/]${day}[/]${year}$`
     );
     return dateFormat.test(date);
   }
 
+  static validateTime(time) {
+    const timeDate = new RegExp(
+      '^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$'
+    );
+    return timeDate.test(time);
+  }
+
+  static validateDateTime(dateTime) {
+    const [date, time] = dateTime.split(' ');
+    return DateDialogHelper.validateTime(time || '') && DateDialogHelper.validateDate(date);
+  }
+
   static changeDateFormat(date) {
-    const [day, month, yearAndTime] = date.replace(',', '').split('/');
-    return `${month}/${day}/${yearAndTime}`;
+    const [day, month, year] = date.replace(',', '').split('/');
+    return `${month}/${day}/${year}`;
+  }
+
+  static changeDateTimeFormat(dateTime) {
+    const [date, time] = dateTime.trim().split(' ');
+    return `${DateDialogHelper.changeDateFormat(date)} ${time || ''}`;
   }
 }
 

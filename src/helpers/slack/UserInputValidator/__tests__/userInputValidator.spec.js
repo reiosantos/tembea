@@ -139,15 +139,26 @@ describe('UserInputValidator tests', () => {
     });
   });
 
-  describe('checkDateFormat', () => {
+  describe('checkDateTimeFormat', () => {
     it('should return errors when date is NOT in Day/Month/Year HH:MM format', () => {
-      DateDialogHelper.dateFormat = jest.fn(() => false);
-      const errors = UserInputValidator.checkDateFormat('10/10/2018 22:00');
+      DateDialogHelper.validateDateTime = jest.fn(() => false);
+      const errors = UserInputValidator.checkDateTimeFormat('10/10/2018 22:00');
       expect(errors.length).toEqual(1);
     });
     it('should return an empty array when date is in Day/Month/Year HH:MM format', () => {
-      DateDialogHelper.dateFormat = jest.fn(() => true);
-      const errors = UserInputValidator.checkDateFormat('10/10/2050 22:00');
+      DateDialogHelper.validateDateTime = jest.fn(() => true);
+      const errors = UserInputValidator.checkDateTimeFormat('10/10/2050 22:00');
+      expect(errors.length).toEqual(0);
+    });
+  });
+
+  describe('checkDateFormat', () => {
+    it('should return errors when date is NOT in Month/Day/Year format', () => {
+      const errors = UserInputValidator.checkDateFormat('10/33/2018');
+      expect(errors.length).toEqual(1);
+    });
+    it('should return an empty array when date is in Day/Month/Year format', () => {
+      const errors = UserInputValidator.checkDateFormat('10/10/2050');
       expect(errors.length).toEqual(0);
     });
   });
@@ -194,7 +205,7 @@ describe('UserInputValidator tests', () => {
   describe('validateDateAndTimeEntry', () => {
     it('should return date validation errors if they exist', async () => {
       UserInputValidator.checkDate = jest.fn(() => []);
-      UserInputValidator.checkDateFormat = jest.fn(() => []);
+      UserInputValidator.checkDateTimeFormat = jest.fn(() => []);
       TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => {});
       const payload = createPayload();
       const errors = await UserInputValidator.validateDateAndTimeEntry(payload);
@@ -285,6 +296,11 @@ describe('test userInputValidator class', () => {
   it('should test empty fields', () => {
     const result = UserInputValidator.checkEmpty(' ', 'destination');
     expect(result[0]).toHaveProperty('error', 'destination cannot be empty');
+  });
+
+  it('should test not empty fields', () => {
+    const result = UserInputValidator.checkEmpty('not empty ', 'destination');
+    expect(result.length).toBeFalsy();
   });
 
   it('should test for special characters and return an empty array', () => {

@@ -18,7 +18,6 @@ module.exports = (sequelize, DataTypes) => {
       workHours: DataTypes.STRING
     }, {});
 
-  // UserPartner.removeAttribute('id');
   Engagement.associate = (models) => {
     // associations can be defined here
     Engagement.belongsTo(models.User, {

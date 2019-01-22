@@ -2,8 +2,7 @@ import { IncomingWebhook } from '@slack/client';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import Utils from '../../../utils';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
-import { slackEventNames } from '../events/slackEvents';
-import SlackEvents from '../events';
+import { slackEventNames, SlackEvents } from '../events/slackEvents';
 import {
   SlackAttachment,
   SlackAttachmentField,
@@ -36,11 +35,11 @@ class SlackNotifications {
     });
   }
 
-  static async sendManagerTripRequestNotification(payload, tripInformation, respond, requestType = 'newTrip') {
+  static async sendManagerTripRequestNotification(payload, tripInfo, respond, type = 'newTrip') {
     try {
       const {
         id, departmentId, requestedById, riderId,
-      } = tripInformation;
+      } = tripInfo;
       const [head, requester, rider, newTripRequest, slackBotOauthToken] = await Promise.all([
         SlackHelpers.getHeadByDepartmentId(departmentId),
         SlackHelpers.findUserByIdOrSlackId(requestedById),
@@ -50,7 +49,7 @@ class SlackNotifications {
       ]);
       const imResponse = await SlackNotifications.getDMChannelId(head.slackId, slackBotOauthToken);
       const message = SlackNotifications.getManagerMessageAttachment(
-        newTripRequest, imResponse, requester, requestType, rider
+        newTripRequest, imResponse, requester, type, rider
       );
       return SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (error) {
@@ -83,14 +82,14 @@ class SlackNotifications {
     );
   }
 
-  static async sendOperationsTripRequestNotification(tripId, payload, respond, tripType = 'regular') {
+  static async sendOperationsTripRequestNotification(tripId, payload, respond, type = 'regular') {
     try {
       const [tripInformation, teamDetails] = await Promise.all([SlackHelpers.getTripRequest(tripId),
         TeamDetailsService.getTeamDetails(payload.team.id)]);
       const { botToken: slackBotOauthToken, opsChannelId } = teamDetails;
-      const checkTripType = tripType === 'regular';
+      const checkTripType = type === 'regular';
       SlackNotifications.restructureTripData(tripInformation, checkTripType);
-      const { dataValues: department } = await DepartmentService.getDepartment(tripInformation.departmentId);
+      const { department } = await DepartmentService.getDepartment(tripInformation.departmentId);
       const { name } = department;
       tripInformation.department = name;
       if (checkTripType) {
@@ -98,7 +97,7 @@ class SlackNotifications {
           respond, slackBotOauthToken);
       }
       const opsRequestMessage = NotificationsResponse.getRequestMessageForOperationsChannel(
-        tripInformation, payload, opsChannelId, tripType
+        tripInformation, payload, opsChannelId, type
       );
       await SlackNotifications.sendNotification(opsRequestMessage, slackBotOauthToken);
     } catch (error) {
@@ -188,11 +187,15 @@ class SlackNotifications {
     }
   }
 
-  static createDirectMessage(channelId, text, attachments) {
+  static createDirectMessage(channelId, text, payload) {
+    let attachments = [payload];
+    if (payload instanceof Array) {
+      attachments = payload;
+    }
     return {
       channel: channelId,
       text,
-      attachments: [attachments]
+      attachments
     };
   }
 
@@ -271,8 +274,8 @@ class SlackNotifications {
   }
 
   static notificationFields(tripInformation) {
-    const pickup = tripInformation.origin.dataValues.address;
-    const destination = tripInformation.destination.dataValues.address;
+    const pickup = tripInformation.origin.address;
+    const destination = tripInformation.destination.address;
     return [
       new SlackAttachmentField('Pickup Location', pickup, true),
       new SlackAttachmentField('Destination', destination, true),
@@ -313,6 +316,10 @@ class SlackNotifications {
     ];
     notifications.push(...cabAttachmentFields);
     return notifications;
+  }
+
+  static sendOperationsNewRouteRequest() {
+    // respond(new SlackInteractiveMessage('Work in progress'));
   }
 }
 

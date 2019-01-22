@@ -8,6 +8,10 @@ moment.updateLocale('en', {
 });
 
 class Utils {
+  static toSentenceCase(word) {
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }
+
   static formatDate(dateStr) {
     const date = new Date(dateStr);
     return moment(date).format('ddd, MMM Do YYYY hh:mm a');
@@ -54,6 +58,35 @@ class Utils {
 
   static convertMinutesToSeconds(minutes) {
     return 1000 * 60 * minutes;
+  }
+
+  static getNameFromEmail(fellowEmail) {
+    if (!fellowEmail) return;
+    let name;
+    const email = fellowEmail.substring(0, fellowEmail.indexOf('@'));
+    if (email.indexOf('.') !== -1) {
+      const [firstName, lastName] = email.split('.');
+      name = `${Utils.toSentenceCase(firstName)} ${Utils.toSentenceCase(lastName)}`;
+    }
+    return name;
+  }
+
+  /**
+   * Convert working hours string from HH:mm - HH:mm to clock time object. eg: 20:30 - 01:30
+   * is converted to { from: '08:30 pm', to: '01:30 am' }
+   * @param {string} workHours
+   * @return { {from:string, to:string} }
+   */
+  static formatWorkHours(workHours) {
+    let [from, to] = workHours.split('-');
+    from = moment(from.trim(), 'HH:mm')
+      .format('LT');
+    to = moment(to.trim(), 'HH:mm')
+      .format('LT');
+    return {
+      from,
+      to
+    };
   }
 
   static async verifyToken(token, envSecret) {

@@ -26,10 +26,9 @@ class LocationPrompts {
 
     const navAttachment = createNavButtons('back_to_launch', 'back_to_routes_launch');
 
-    const message = new SlackInteractiveMessage(
+    return new SlackInteractiveMessage(
       'Select your home location', [attachment, navAttachment]
     );
-    respond(message);
   }
 
   static sendLocationConfirmationResponse(respond, staticMapUrl, locationName, locationGeometry) {

@@ -51,12 +51,13 @@ export class SlackDialogTextarea extends SlackDialogElement {
 }
 
 export class SlackDialogText extends SlackDialogElement {
-  constructor(label, name, placeholder, optional = false, hint) {
+  constructor(label, name, placeholder, optional = false, hint, defaultValue) {
     super(label, name);
     this.type = SlackActionTypes.text;
     this.placeholder = placeholder;
     this.hint = hint;
     this.optional = optional;
+    this.value = defaultValue;
   }
 }
 

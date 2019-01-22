@@ -13,18 +13,6 @@ describe('Google map static', () => {
       }]
     }));
 
-    // const loc = await Location.create({
-    //   latitude: 2.432678,
-    //   longitude: 4.324671
-    // });
-
-    // const add = await Address.find({
-    //   where: {
-    //     address: 'the dojo'
-    //   }
-    // });
-    // add.locationId = loc.dataValues.id;
-    // await add.save();
     AddressService.findAddress = jest.fn(() => ({
       dataValues: {
         location: {
@@ -51,16 +39,16 @@ describe('Google map static', () => {
       '5',
       'red'
     );
-  
+
     expect(/^https:\/\/maps.googleapis.com\/maps\/api\/staticmap\?size=500x500/.test(imageUrl))
       .toEqual(true);
   });
-  
+
   it('should get path from dojo to drop off', async () => {
     const imageUrl = await GoogleMapsStatic.getPathFromDojoToDropOff(
       'destination',
     );
-  
+
     expect(/^https:\/\/maps.googleapis.com\/maps\/api\/staticmap\?size=700x700/.test(imageUrl))
       .toEqual(true);
   });

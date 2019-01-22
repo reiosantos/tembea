@@ -112,6 +112,16 @@ describe('Dialog prompts test', () => {
     expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
   });
+
+  it('should test sendEngagementInfoDialogToManager function', async () => {
+    const payload = {
+      callback_id: 'calling',
+      team: { id: 'TEAMID1' }
+    };
+    await DialogPrompts.sendEngagementInfoDialogToManager(payload, 'call', 'state', 'dialog');
+    expect(sendDialogTryCatch)
+      .toBeCalledTimes(1);
+  });
 });
 
 describe('sendBusStopForm dialog', () => {

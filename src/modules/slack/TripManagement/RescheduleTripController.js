@@ -23,7 +23,7 @@ class RescheduleTripController {
     const userInfo = await this.getUserInfo(user.id, slackBotOauthToken);
     const errors = [];
 
-    if (!DateDialogHelper.dateFormat(date)) {
+    if (!DateDialogHelper.validateDateTime(date)) {
       errors.push(
         new SlackDialogError('time', 'The time should be in the 24 hours format hh:mm')
       );

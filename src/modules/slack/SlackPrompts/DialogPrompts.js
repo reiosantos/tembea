@@ -38,11 +38,7 @@ class DialogPrompts {
       'Enter reason for booking the trip');
 
     dialog.addElements([textarea]);
-
-    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    const slackBotOauthToken = await
-    TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
-    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
+    await DialogPrompts.sendDialog(dialog, payload);
   }
 
   static async sendDialogToManager(
@@ -55,11 +51,7 @@ class DialogPrompts {
       submissionName,
       `Why do you want to ${submitButtonText} this trip`);
     dialog.addElements([commentElement]);
-
-    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    const slackBotOauthToken = await
-    TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
-    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
+    await DialogPrompts.sendDialog(dialog, payload);
   }
 
   static async sendOperationsDeclineDialog(payload) {
@@ -74,10 +66,7 @@ class DialogPrompts {
     dialog.addElements([
       new SlackDialogTextarea('Justification', 'opsDeclineComment')
     ]);
-    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    const slackBotOauthToken = await
-    TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
-    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
+    await DialogPrompts.sendDialog(dialog, payload);
   }
 
   static async sendOperationsApprovalDialog(payload) {
@@ -100,10 +89,7 @@ class DialogPrompts {
         'Enter reason for approving trip',
       ),
     ]);
-    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    const { team: { id: teamId } } = payload;
-    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
+    await DialogPrompts.sendDialog(dialog, payload);
   }
 
   static async sendBusStopForm(payload, busStageList) {
@@ -124,11 +110,7 @@ class DialogPrompts {
         'otherBusStop', 'latitude,longitude', true,
         'The location should be in the format (latitude, longitude), eg. -0.234,23.234'),
     ]);
-    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(
-      payload.team.id
-    );
-    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
+    await DialogPrompts.sendDialog(dialog, payload);
   }
 
   static async sendLocationForm(payload, location = 'home') {
@@ -139,10 +121,7 @@ class DialogPrompts {
       new SlackDialogText(`Enter ${location} Address: `,
         'location', `Type in your ${location} address`, false, hint)
     ]);
-    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    const { team: { id: teamId } } = payload;
-    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
+    await DialogPrompts.sendDialog(dialog, payload);
   }
 
   static async sendSkipPage(payload, value) {
@@ -152,11 +131,7 @@ class DialogPrompts {
       'Page to skip to');
 
     dialog.addElements([textarea]);
-
-    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
-    const { team: { id: teamId } } = payload;
-    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
+    await DialogPrompts.sendDialog(dialog, payload);
   }
 
   static async sendLocationCoordinatesForm(payload) {
@@ -167,8 +142,30 @@ class DialogPrompts {
     dialog.addElements([
       new SlackDialogText(
         'Address coordinates:', 'coordinates',
-        'Type in your home address lattitude and logitude', false, hint
+        'Type in your home address latitude and longitude', false, hint
       )]);
+    await DialogPrompts.sendDialog(dialog, payload);
+  }
+
+  static async sendEngagementInfoDialogToManager(payload, callback, state, defaultValues = {}) {
+    const dialog = new SlackDialog(callback,
+      'Fellow\'s Engagement', 'Submit', true, state);
+    const sdName = 'startDate';
+    const edName = 'endDate';
+    const hint = 'hint: dd/mm/yyyy. example: 31/01/2019';
+    const sdPlaceholder = 'Start Date';
+    const edPlaceholder = 'End Date';
+    const startDate = new SlackDialogText(
+      `Engagement ${sdPlaceholder}`, sdName, sdPlaceholder, false, hint, defaultValues[sdName]
+    );
+    const endDate = new SlackDialogText(
+      `Engagement ${edPlaceholder}`, edName, edPlaceholder, false, hint, defaultValues[edName]
+    );
+    dialog.addElements([startDate, endDate]);
+    await DialogPrompts.sendDialog(dialog, payload);
+  }
+
+  static async sendDialog(dialog, payload) {
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
     const { team: { id: teamId } } = payload;
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
