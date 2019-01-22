@@ -34,6 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'requestedById',
       sourceKey: 'id'
     });
+    User.belongsToMany(models.Partner, { through: 'Engagements', foreignKey: 'userId' });
   };
   return User;
 };
