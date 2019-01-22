@@ -1,5 +1,6 @@
 const moment = require('moment');
 const fs = require('fs');
+const DateHelpers = require('../helpers/dateHelper');
 
 moment.updateLocale('en', {
   weekdaysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -17,7 +18,8 @@ class Utils {
 
   static formatDateForDatabase(dateStr) {
     if (!dateStr || typeof dateStr !== 'string') return dateStr;
-    const date = new Date(dateStr);
+    const formattedDate = DateHelpers.changeDateFormat(dateStr);
+    const date = new Date(formattedDate).getTime();
     return moment(date).format('YYYY-MM-DD HH:mm:ss');
   }
 

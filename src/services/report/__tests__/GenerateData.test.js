@@ -90,6 +90,6 @@ describe('Report Generator Service', () => {
   });
 
   it('should return formatted date to save to DB', () => {
-    expect(Utils.formatDateForDatabase('11/15/2018 00:00')).toEqual('2018-11-15 00:00:00');
+    expect(Utils.formatDateForDatabase('31/1/2019 20:00')).toEqual('2019-01-31 20:00:00');
   });
 });

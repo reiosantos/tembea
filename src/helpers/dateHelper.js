@@ -103,9 +103,9 @@ class DateDialogHelper {
   }
 
   static changeDateFormat(date) {
-    const [day, month, yearAndTime] = date.split('/');
+    const [day, month, yearAndTime] = date.replace(',', '').split('/');
     return `${month}/${day}/${yearAndTime}`;
   }
 }
 
-export default DateDialogHelper;
+module.exports = DateDialogHelper;

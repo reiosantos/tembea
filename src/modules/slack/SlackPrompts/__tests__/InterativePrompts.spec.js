@@ -5,7 +5,6 @@ import { SlackButtonsAttachmentFromAList } from '../../SlackModels/SlackMessageM
 import {
   sendBookNewTripMock,
   sendCompletionResponseMock,
-  tripHistoryMock
 } from '../__mocks__/InteractivePrompts.mock';
 import LocationPrompts from '../LocationPrompts';
 import WebClientSingleton from '../../../../utils/WebClientSingleton';
@@ -123,7 +122,7 @@ describe('Interactive Prompts test', () => {
       requester: { slackId: 1, name: '' }
     };
     const trips = [trip];
-    InteractivePrompts.sendUpcomingTrips(trips, 20, 10, response, payload);
+    InteractivePrompts.sendUpcomingTrips(trips, 20, 10, payload, response);
     expect(response).toBeCalledTimes(1);
   });
 
@@ -226,22 +225,6 @@ describe('Interactive Prompts test', () => {
       expect(log).toHaveBeenCalledWith(error);
       done();
     });
-  });
-});
-
-describe('test send Trip History', () => {
-  it('should generate trip history', (done) => {
-    const respond = jest.fn(value => value);
-    const tripHistory = [
-      {
-        departureTime: '22:00 12/12/2018',
-        'origin.address': 'ET',
-        'destination.address': 'DOJO'
-      }
-    ];
-    InteractivePrompts.sendTripHistory(tripHistory, respond);
-    expect(respond).toHaveBeenCalledWith(tripHistoryMock);
-    done();
   });
 });
 

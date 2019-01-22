@@ -1,47 +1,16 @@
 import TripItineraryHelper from '../helpers/slackHelpers/TripItineraryHelper';
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
-import slackHelpers from '../../../helpers/slack/slackHelpers';
 import SlackPagination from '../../../helpers/slack/SlackPaginationHelper';
 import DialogPrompts from '../SlackPrompts/DialogPrompts';
+import SlackHelpers from '../../../helpers/slack/slackHelpers';
 
-const getDateTime = value => new Date(value).getTime();
-
-const currentDate = () => new Date().getTime();
-
-export const tripResponse = (
+export const responseMessage = (
   text = 'You have no trip history'
 ) => new SlackInteractiveMessage(text);
 
-/**
- * @description this function filters tripsRequests by the currentDate and
- * returns the trips have been taken for the last 30days
- * @param trips - [array]
- * @returns filteredTrips [array]
- */
-const filterTripHistory = (trips) => {
-  const thirtyDaysInMilliseconds = 2592000000;
-  const date = currentDate();
-  const difference = date - thirtyDaysInMilliseconds;
 
-  const filteredTrips = trips.filter(
-    trip => getDateTime(trip.departureTime) >= difference && getDateTime(trip.departureTime) <= date
-  );
-  return filteredTrips;
-};
-
-const getUserAndTripsRequest = async (slackId, requestType) => {
-  const user = await slackHelpers.getUserBySlackId(slackId);
-  if (!user) {
-    return false;
-  }
-  const userId = user.id;
-
-  const trips = await TripItineraryHelper.getTripRequests(userId, requestType);
-  return trips;
-};
-
-const getPageNumber = (payload) => {
+export const getPageNumber = (payload) => {
   let pageNumber;
 
   if (payload.submission) {
@@ -56,67 +25,72 @@ const getPageNumber = (payload) => {
   return pageNumber;
 };
 
-const triggerSkipPage = (payload, respond) => {
+export const triggerSkipPage = (payload, respond) => {
   if (payload.actions && payload.actions[0].name === 'skipPage') {
+    const { value: requestType } = payload.actions[0];
     respond(new SlackInteractiveMessage('Noted...'));
-    return DialogPrompts.sendSkipPage(payload, 'view_upcoming_trips');
+    return DialogPrompts.sendSkipPage(payload, requestType);
   }
 };
 
 class TripItineraryController {
   static async handleTripHistory(payload, respond) {
-    const slackId = payload.user.id;
     try {
+      const { user: { id: slackId }, team: { id: teamId } } = payload;
+      await SlackHelpers.findOrCreateUserBySlackId(slackId, teamId);
+      const pageNumber = getPageNumber(payload);
       const requestType = 'history';
-      const trips = await getUserAndTripsRequest(slackId, requestType);
-      if (!trips || trips.length < 1) {
-        respond(tripResponse());
+      const tripsPayload = await TripItineraryHelper.getPaginatedTripRequestsBySlackUserId(
+        slackId, requestType,
+      );
+
+      if (!tripsPayload) {
+        return respond(responseMessage('Could not get trip history'));
+      }
+      const [page, totalPages] = await Promise.all([
+        tripsPayload.getPageNo(pageNumber), tripsPayload.getTotalPages()]);
+      const trips = await tripsPayload.getPageItems(page);
+
+      if (!trips.length) {
+        return respond(responseMessage());
       }
 
-      const tripHistory = await filterTripHistory(trips);
-      if (tripHistory.length < 1) {
-        respond(tripResponse('You have no trip history for the last 30 days'));
-        return;
-      }
-      return InteractivePrompts.sendTripHistory(tripHistory, respond);
+      triggerSkipPage(payload, respond);
+
+      return InteractivePrompts.sendTripHistory(trips, totalPages, page, payload, respond);
     } catch (error) {
-      const message = new SlackInteractiveMessage(
-        `Request could not be processed! ${error.message}`
-      );
-      respond(message);
+      respond(responseMessage(`Could not be processed! ${error.message}`));
     }
   }
 
   static async handleUpcomingTrips(payload, respond) {
-    const slackId = payload.user.id;
     try {
+      const { user: { id: slackId }, team: { id: teamId } } = payload;
+
+      await SlackHelpers.findOrCreateUserBySlackId(slackId, teamId);
       const pageNumber = getPageNumber(payload);
       const requestType = 'upcoming';
       const tripsPayload = await TripItineraryHelper.getPaginatedTripRequestsBySlackUserId(
-        slackId, requestType
+        slackId, requestType,
       );
-      
       if (!tripsPayload) {
-        throw new Error('Something went wrong getting trips');
+        return respond(responseMessage('Something went wrong getting trips'));
       }
 
-      const page = await tripsPayload.getPageNo(pageNumber);
-      const totalPages = await tripsPayload.getTotalPages();
+
+      const [page, totalPages] = await Promise.all([
+        tripsPayload.getPageNo(pageNumber), tripsPayload.getTotalPages()]);
       const trips = await tripsPayload.getPageItems(page);
-      
-      if (!Array.isArray(trips) || !trips.length) {
-        respond(tripResponse('You have no upcoming trips'));
-        return;
+
+      if (!trips.length) {
+        return respond(responseMessage('You have no upcoming trips'));
       }
 
       triggerSkipPage(payload, respond);
-      
-      return InteractivePrompts.sendUpcomingTrips(trips, totalPages, page, respond, payload);
+
+      return InteractivePrompts.sendUpcomingTrips(trips, totalPages, page, payload, respond);
     } catch (error) {
-      const message = new SlackInteractiveMessage(
-        `Request could not be processed! ${error.message}`
-      );
-      respond(message);
+      respond(responseMessage(`Could not be processed! ${error.message}`));
     }
   }
 }

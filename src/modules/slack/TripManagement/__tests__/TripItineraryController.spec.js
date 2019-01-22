@@ -1,38 +1,34 @@
-import TripItineraryController from '../TripItineraryController';
+import TripItineraryController, { responseMessage, triggerSkipPage, getPageNumber } from '../TripItineraryController';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import TripItineraryHelper from '../../helpers/slackHelpers/TripItineraryHelper';
-import DialogPrompts from '../../SlackPrompts/DialogPrompts';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
+import SequelizePaginationHelper from '../../../../helpers/sequelizePaginationHelper';
+import DialogPrompts from '../../SlackPrompts/DialogPrompts';
+import SlackPagination from '../../../../helpers/slack/SlackPaginationHelper';
 
-
-jest.mock('../../SlackPrompts/Notifications');
 jest.mock('../../events/', () => ({
   slackEvents: jest.fn(() => ({
     raise: jest.fn(),
     handle: jest.fn()
   })),
 }));
-jest.mock('../../events/slackEvents', () => ({
-  SlackEvents: jest.fn(() => ({
-    raise: jest.fn(),
-    handle: jest.fn()
-  })),
-  slackEventNames: Object.freeze({
-    TRIP_APPROVED: 'trip_approved',
-    TRIP_WAITING_CONFIRMATION: 'trip_waiting_confirmation',
-    NEW_TRIP_REQUEST: 'new_trip_request',
-    DECLINED_TRIP_REQUEST: 'declined_trip_request'
-  })
-}));
 
-describe('Trip Itinerary Helpers Test', () => {
+
+describe('TripItineraryController', () => {
   let respond;
-
+  const trip = new SequelizePaginationHelper();
   beforeEach(() => {
     respond = jest.fn(value => value);
+
+    jest.spyOn(trip, 'getPageItems').mockResolvedValue(([{}, {}]));
+    jest.spyOn(trip, 'getPageNo').mockResolvedValue(1);
+    jest.spyOn(trip, 'getTotalPages').mockResolvedValue(1);
+
+    jest.spyOn(DialogPrompts, 'sendSkipPage').mockImplementation(value => value);
+    jest.spyOn(SlackPagination, 'getPageNumber').mockImplementation();
     jest.spyOn(InteractivePrompts, 'sendTripHistory').mockImplementationOnce(value => value);
     jest.spyOn(InteractivePrompts, 'sendUpcomingTrips').mockImplementationOnce(value => value);
-    SlackHelpers.getUserBySlackId = jest.fn(() => Promise.resolve({ id: 'id' }));
+    jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId').mockResolvedValueOnce();
   });
 
   afterEach(() => {
@@ -40,113 +36,94 @@ describe('Trip Itinerary Helpers Test', () => {
     jest.restoreAllMocks();
   });
 
-  it('should test handleTripHistory return no trip history', async (done) => {
-    const payload = { user: { id: 'TEST1' } };
-
-    await TripItineraryController.handleTripHistory(payload, respond);
-    expect(respond).toHaveBeenCalled();
-    done();
-  });
-
-  it('should test handleTripHistory return no trip history for last 30 days', async (done) => {
-    const payload = { user: { id: 'TEST1234' } };
-
-    await TripItineraryController.handleTripHistory(payload, respond);
-    expect(respond).toHaveBeenCalled();
-    done();
-  });
-
-  it('should test handleTripHistory', async (done) => {
-    TripItineraryHelper.getTripRequests = jest.fn(() => Promise.resolve([{
-      departureTime: '2019-01-17 01:00:00+01'
-    }]));
-    const payload = { user: { id: 'TEST123' } };
-    
-    await TripItineraryController.handleTripHistory(payload, respond);
-    expect(InteractivePrompts.sendTripHistory).toHaveBeenCalled();
-    done();
-  });
-
-  it('should test handleTripHistory and catch error', async (done) => {
-    const payload = { user: { id: 100000 } };
-
-    await TripItineraryController.handleTripHistory(payload, respond);
-    expect(respond).toHaveBeenCalled();
-    done();
-  });
-
-  it('should test handleUpcomingTrips return no  upcoming trips history', async (done) => {
-    const payload = { user: { id: 'TEST123456' }, actions: [{ name: 'trip_history' }] };
-    jest.spyOn(
-      TripItineraryHelper, 'getPaginatedTripRequestsBySlackUserId'
-    ).mockImplementation().mockResolvedValueOnce({
-      getPageNo: () => (Promise.resolve(1)),
-      getTotalPages: () => (2),
-      getPageItems: () => (Promise.resolve([]))
+  describe('TripItineraryController_handleTripHistory', () => {
+    it('should not get trip history', async () => {
+      jest.spyOn(TripItineraryHelper, 'getPaginatedTripRequestsBySlackUserId')
+        .mockResolvedValueOnce(trip);
+      const payload = { user: { id: 'TEST1' }, team: { id: 'testId' }, actions: [{ name: 'history' }] };
+      await TripItineraryController.handleTripHistory(payload, respond);
+      expect(InteractivePrompts.sendTripHistory).toHaveBeenCalled();
     });
 
-    await TripItineraryController.handleUpcomingTrips(payload, respond);
-    expect(respond).toHaveBeenCalled();
-    done();
+    it('should not get trip history when something goes wrong', async () => {
+      jest.spyOn(TripItineraryHelper, 'getPaginatedTripRequestsBySlackUserId')
+        .mockResolvedValueOnce();
+      const payload = { user: { id: 'TEST1' }, team: { id: 'testId' }, actions: [{ name: 'history' }] };
+      await TripItineraryController.handleTripHistory(payload, respond);
+      expect(respond).toHaveBeenCalledWith(responseMessage('Could not get trip history'));
+    });
+
+    it('should respond with a message when user does not have any trip', async () => {
+      jest.spyOn(TripItineraryHelper, 'getPaginatedTripRequestsBySlackUserId')
+        .mockResolvedValueOnce(trip);
+      trip.getPageItems.mockResolvedValue([]);
+      const payload = { user: { id: 'TEST1' }, team: { id: 'testId' }, actions: [{ name: 'history' }] };
+      await TripItineraryController.handleTripHistory(payload, respond);
+      expect(respond).toHaveBeenCalledWith(responseMessage('You have no trip history'));
+    });
+
+    it('should catch an error when something goes wrong while getting trip history', async () => {
+      jest.spyOn(TripItineraryHelper, 'getPaginatedTripRequestsBySlackUserId')
+        .mockRejectedValueOnce(new Error('Database Error'));
+      const payload = { user: { id: 'TEST1' }, team: { id: 'testId' }, actions: [{ name: 'history' }] };
+      await TripItineraryController.handleTripHistory(payload, respond);
+      expect(respond).toHaveBeenCalledWith(responseMessage('Could not be processed! Database Error'));
+    });
   });
 
-  it('should test handleUpcomingTrips return no upcoming trips', async (done) => {
-    const payload = { user: { id: 'TEST1234' }, actions: [{ name: 'upcoming_trips' }] };
+  describe('TripItineraryController_handleUpcomingTrips', () => {
+    it('should not get upcoming trip', async () => {
+      jest.spyOn(TripItineraryHelper, 'getPaginatedTripRequestsBySlackUserId').mockResolvedValueOnce(trip);
+      const payload = { user: { id: 'TEST2' }, team: { id: 'testId' }, actions: [{ name: 'upcoming' }] };
+      await TripItineraryController.handleUpcomingTrips(payload, respond);
+      expect(InteractivePrompts.sendUpcomingTrips).toHaveBeenCalled();
+    });
 
-    await TripItineraryController.handleUpcomingTrips(payload, respond);
-    expect(respond).toHaveBeenCalled();
-    done();
+    it('should not get upcoming trip when something goes wrong', async () => {
+      jest.spyOn(TripItineraryHelper, 'getPaginatedTripRequestsBySlackUserId').mockResolvedValueOnce();
+      const payload = { user: { id: 'TEST1' }, team: { id: 'testId' }, actions: [{ name: 'upcoming' }] };
+      await TripItineraryController.handleUpcomingTrips(payload, respond);
+      expect(respond).toHaveBeenCalledWith(responseMessage('Something went wrong getting trips'));
+    });
+
+    it('should respond with a message when user does not have any trip', async () => {
+      jest.spyOn(TripItineraryHelper, 'getPaginatedTripRequestsBySlackUserId')
+        .mockResolvedValueOnce(trip);
+      trip.getPageItems.mockResolvedValue([]);
+      const payload = { user: { id: 'TEST1' }, team: { id: 'testId' }, actions: [{ name: 'upcoming' }] };
+      await TripItineraryController.handleUpcomingTrips(payload, respond);
+      expect(respond).toHaveBeenCalledWith(responseMessage('You have no upcoming trips'));
+    });
+
+    it('should catch an error when something goes wrong while getting upcoming trip', async () => {
+      jest.spyOn(TripItineraryHelper, 'getPaginatedTripRequestsBySlackUserId')
+        .mockRejectedValueOnce(new Error('Database Error'));
+      const payload = { user: { id: 'TEST1' }, team: { id: 'testId' }, actions: [{ name: 'upcoming' }] };
+      await TripItineraryController.handleUpcomingTrips(payload, respond);
+      expect(respond).toHaveBeenCalledWith(responseMessage('Could not be processed! Database Error'));
+    });
   });
 
-  it('should test handleUpcomingTrips', async (done) => {
-    TripItineraryHelper.getPaginatedTripRequestsBySlackUserId = jest.fn(() => Promise.resolve({
-      getPageNo: jest.fn(() => {}),
-      getTotalPages: jest.fn(() => {}),
-      getPageItems: jest.fn(() => [{ value: 'value' }])
-    }));
-
-    const payload = { user: { id: 'TEST123' }, actions: [{ name: 'upcoming_trips' }] };
-
-    await TripItineraryController.handleUpcomingTrips(payload, respond);
-    expect(InteractivePrompts.sendUpcomingTrips).toHaveBeenCalled();
-    done();
+  describe('TripItineraryController  triggerSkipPage', () => {
+    it('should sendSkipPage dialog', () => {
+      const payload = { user: { id: 'TEST123' }, actions: [{ name: 'skipPage' }] };
+      triggerSkipPage(payload, respond);
+      expect(DialogPrompts.sendSkipPage).toHaveBeenCalled();
+    });
   });
 
-  it('should test handleUpcomingTrips if request contains page number', async (done) => {
-    TripItineraryHelper.getPaginatedTripRequestsBySlackUserId = jest.fn(() => Promise.resolve({
-      getPageNo: jest.fn(() => {}),
-      getTotalPages: jest.fn(() => {}),
-      getPageItems: jest.fn(() => [{ value: 'value' }])
-    }));
-    const payload = { user: { id: 'TEST123' }, actions: [{ name: 'upcoming_trips' }], submission: { pageNumber: '1' } };
+  describe('TripItineraryController  getPageNumber', () => {
+    it('should return a number', () => {
+      const payload = { submission: 1, user: { id: 'TEST123' }, actions: [{ name: 'page_1' }] };
+      const res = getPageNumber(payload);
+      expect(res).toBeGreaterThanOrEqual(1);
+      expect(SlackPagination.getPageNumber).toHaveBeenCalled();
+    });
 
-    await TripItineraryController.handleUpcomingTrips(payload, respond);
-    expect(InteractivePrompts.sendUpcomingTrips).toHaveBeenCalled();
-    done();
-  });
-  it('should test handleUpcomingTrips and catch error', async (done) => {
-    const payload = { user: { id: 100000 }, actions: [{ name: 'upcoming_trips' }] };
-
-    await TripItineraryController.handleUpcomingTrips(payload, respond);
-    expect(respond).toHaveBeenCalled();
-    done();
-  });
-  it('should handle error when tripHistory payload is undefined', async () => {
-    const payload = { user: { id: 'TEST123' }, submission: { pageNumber: 1 } };
-    jest.spyOn(TripItineraryHelper, 'getPaginatedTripRequestsBySlackUserId').mockImplementationOnce(() => false);
-    await TripItineraryController.handleUpcomingTrips(payload, respond);
-    expect(respond).toHaveBeenCalled();
-  });
-
-  it('should sendSkipPage dialog', async () => {
-    TripItineraryHelper.getPaginatedTripRequestsBySlackUserId = jest.fn(() => Promise.resolve({
-      getPageNo: jest.fn(() => {}),
-      getTotalPages: jest.fn(() => {}),
-      getPageItems: jest.fn(() => [{ value: 'value' }])
-    }));
-    const payload = { user: { id: 'TEST123' }, actions: [{ name: 'skipPage' }] };
-    DialogPrompts.sendSkipPage = jest.fn().mockResolvedValueOnce({});
-    await TripItineraryController.handleUpcomingTrips(payload, respond);
-    expect(DialogPrompts.sendSkipPage).toHaveBeenCalled();
+    it('should return a default value of one', () => {
+      const payload = { actions: [{ name: 'page_1' }] };
+      const res = getPageNumber(payload);
+      expect(res).toEqual(1);
+    });
   });
 });

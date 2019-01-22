@@ -106,7 +106,7 @@ class InteractivePrompts {
   }
 
 
-  static async sendUpcomingTrips(trips, totalPages, pageNumber, respond, payload) {
+  static async sendUpcomingTrips(trips, totalPages, pageNumber, payload, respond) {
     const attachments = [];
 
     trips.forEach(
@@ -256,13 +256,21 @@ class InteractivePrompts {
     );
   }
 
-  static sendTripHistory(tripHistory, respond) {
-    const attachments = InteractivePromptsHelpers.formatTripHistory(tripHistory);
+  static sendTripHistory(trips, totalPages, pageNumber, payload, respond) {
+    const attachments = InteractivePromptsHelpers.formatTripHistory(trips);
     const text = '*Your trip history for the last 30 days*';
     const navButtonsAttachment = createNavButtons(
       'welcome_message', 'view_trips_itinerary'
     );
-    const message = new SlackInteractiveMessage(text, [...attachments, navButtonsAttachment]);
+ 
+    let pageButtonsAttachment;
+    if (totalPages > 1) {
+      pageButtonsAttachment = SlackPagination.createPaginationAttachment(
+        'trip_itinerary', 'view_trips_history', pageNumber, totalPages
+      );
+    }
+
+    const message = new SlackInteractiveMessage(text, [...attachments, pageButtonsAttachment, navButtonsAttachment]);
     respond(message);
   }
 

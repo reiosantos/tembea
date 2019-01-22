@@ -4,7 +4,6 @@ import { slackEventNames } from '../events/slackEvents';
 import models from '../../../database/models';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
-import dateHelper from '../../../helpers/dateHelper';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
 
@@ -73,7 +72,7 @@ class ScheduleTripController {
       to ${destination === 'Others' ? othersDestination : destination}
       on ${dateTime}`;
 
-      const departureTime = Utils.formatDateForDatabase(dateHelper.changeDateFormat(dateTime));
+      const departureTime = Utils.formatDateForDatabase(dateTime);
 
       return {
         riderId: requester.id,
@@ -96,11 +95,13 @@ class ScheduleTripController {
 
   static async createRequest(payload, tripRequestDetails) {
     try {
-      const requester = await SlackHelpers.findOrCreateUserBySlackId(payload.user.id, payload.team.id);
+      const { user: { id: slackUserId }, team: { id: teamId } } = payload;
+      const requester = await SlackHelpers.findOrCreateUserBySlackId(slackUserId, teamId);
       const request = await this.createRequestObject(tripRequestDetails, requester);
 
       if (tripRequestDetails.forSelf === 'false') {
-        const passenger = await SlackHelpers.findOrCreateUserBySlackId(tripRequestDetails.rider, payload.team.id);
+        const { rider } = tripRequestDetails;
+        const passenger = await SlackHelpers.findOrCreateUserBySlackId(rider, teamId);
         request.riderId = passenger.id;
       }
       return request;

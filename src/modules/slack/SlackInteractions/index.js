@@ -7,7 +7,7 @@ import DialogPrompts from '../SlackPrompts/DialogPrompts';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import RescheduleTripController from '../TripManagement/RescheduleTripController';
 import CancelTripController from '../TripManagement/CancelTripController';
-import TripItineraryController from '../TripManagement/TripItineraryController';
+import TripItineraryController, { getPageNumber } from '../TripManagement/TripItineraryController';
 import ManageTripController from '../TripManagement/ManageTripController';
 import TripActionsController from '../TripManagement/TripActionsController';
 import TripRescheduleHelper from '../helpers/slackHelpers/rescheduleHelper';
@@ -18,6 +18,7 @@ import travelTripHelper from '../helpers/slackHelpers/TravelTripHelper';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import RouteInputHandlers from '../RouteManagement';
 import ManagerActionsHelper from '../helpers/slackHelpers/ManagerActionsHelper';
+import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -133,7 +134,7 @@ class SlackInteractions {
   static async handleManagerActions(payload, respond) {
     const { name, value } = payload.actions[0];
     const isCancelled = await SlackHelpers.handleCancellation(value);
- 
+
     // Notify manager if trip has been cancelled
     if (isCancelled) {
       respond(new SlackInteractiveMessage('The trip request has already been cancelled.'));
@@ -209,6 +210,14 @@ class SlackInteractions {
 
   static viewTripItineraryActions(payload, respond) {
     const value = payload.state || payload.actions[0].value;
+    const page = Number(getPageNumber(payload) || -1);
+    if (Number.isNaN(page) || page === -1) {
+      return {
+        errors: [
+          new SlackDialogError('pageNumber', 'Not a number')
+        ]
+      };
+    }
     switch (value) {
       case 'view_trips_history':
         TripItineraryController.handleTripHistory(payload, respond);
@@ -302,7 +311,6 @@ class SlackInteractions {
         return routeHandler(payload, respond);
       }
       respond(SlackInteractions.goodByeMessage());
-      return;
     } catch (error) {
       bugsnagHelper.log(error);
       respond(
