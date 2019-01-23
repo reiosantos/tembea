@@ -75,6 +75,8 @@ const ScheduleTripInputHandlers = {
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+    } finally {
+      Cache.delete(userId);
     }
   }
 };

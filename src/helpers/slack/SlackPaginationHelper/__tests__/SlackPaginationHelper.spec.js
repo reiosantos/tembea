@@ -51,7 +51,6 @@ describe('SlackPagination', () => {
       done();
     });
   });
-
   describe('SlackPagination_getPageNumber', () => {
     it('should return the page number', () => {
       const pageNumber = SlackPagination.getPageNumber('page_2');
@@ -62,7 +61,6 @@ describe('SlackPagination', () => {
       expect(pageNumber).toEqual(1);
     });
   });
-
   describe('SlackPagination_getSlackPageSize', () => {
     it('should return the page number', () => {
       const slackPageSize = SlackPagination.getSlackPageSize();

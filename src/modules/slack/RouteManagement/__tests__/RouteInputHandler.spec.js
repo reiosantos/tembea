@@ -244,7 +244,10 @@ describe('RouteInputHandler Tests', () => {
           ...payload,
           submission: { selectBusStop: '34,45' }
         };
+        jest.spyOn(GoogleMapsStatic, 'getPathFromDojoToDropOff')
+          .mockResolvedValue('https://maps.googleapis.com/maps/api/staticmap?eikks');
         await RouteInputHandlers.handleBusStopSelected(payload, respond);
+        expect(GoogleMapsStatic.getPathFromDojoToDropOff).toHaveBeenCalledTimes(1);
         expect(respond).toHaveBeenCalledTimes(1);
         done();
       });

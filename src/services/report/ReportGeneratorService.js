@@ -34,16 +34,19 @@ class ReportGeneratorService {
 
   static async getMonthlyTripsSummary(monthsBack) {
     const monthOneTripData = await GenerateReportData.getReportData(monthsBack);
-    return GenerateReportData.generateTotalsSummary(monthOneTripData);
+    const totalSummary = GenerateReportData.generateTotalsSummary(monthOneTripData);
+    return totalSummary;
   }
 
   static async getOverallTripsSummary() {
     const monthOneSummary = await ReportGeneratorService.getMonthlyTripsSummary(1);
-    const previousTwoSummary = await ReportGeneratorService.getMonthlyTripsSummary(2);
+    const { totalTripsCompleted: monthTwoTripsCompleted } = await ReportGeneratorService.getMonthlyTripsSummary(2);
 
-    return GenerateReportData.calculateLastMonthPercentageChange(
-      monthOneSummary, previousTwoSummary
+    const percentage = GenerateReportData.calculateLastMonthPercentageChange(
+      monthOneSummary.totalTripsCompleted, monthTwoTripsCompleted
     );
+
+    return { ...monthOneSummary, percentageChange: percentage };
   }
 }
 

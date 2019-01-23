@@ -1,6 +1,5 @@
 import express from 'express';
 import path from 'path';
-import exphbs from 'express-handlebars';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -10,6 +9,7 @@ import MonthlyReportSender from './helpers/email/monthlyReportSender';
 import modules from './modules';
 import SlackBodyParserFilter from './helpers/slackBodyParserFilter';
 import './modules/slack/events/index';
+import hbsConfig from './hbsConfig';
 
 dotenv.config();
 
@@ -36,13 +36,7 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.set('views', path.join(__dirname, 'views'));
 
-const hbs = exphbs.create({
-  defaultLayout: '_layout.html',
-  baseTemplates: app.get('views'),
-  layoutsDir: `${app.get('views')}/layouts`,
-  partialsDir: [`${app.get('views')}/partials`]
-});
-
+const hbs = hbsConfig(app);
 app.engine('html', hbs.engine);
 app.set('view engine', 'html');
 
@@ -54,7 +48,7 @@ app.use('*', (req, res) => res.status(404).json({
   message: 'Not Found. Use /api/v1 to access the api'
 }));
 
-MonthlyReportSender.scheduleReporting(app);
+MonthlyReportSender.scheduleReporting(hbs);
 
 /* This handles any errors that Express catches,
    it should come last in the pipeline */

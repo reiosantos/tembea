@@ -23,7 +23,8 @@ export const testTripFromDb = {
   dataValues: {
     tripStatus: 'Approved',
     approvedById: testUserFromDb.dataValues.slackId
-  }
+  },
+  update: () => Promise.resolve(true)
 };
 
 export const testDepartmentFromDb = {

@@ -34,9 +34,10 @@ class GenerateReportData {
       departments: {}
     };
     trips.forEach((trip) => {
-      if (!Object.prototype.hasOwnProperty.call(summary.departments, trip['department.name'])) {
+      if (!summary.departments[trip['department.name']]) {
         summary.departments[trip['department.name']] = { completed: 0, declined: 0, total: 0 };
       }
+
       if (trip.tripStatus === 'Completed') {
         summary.departments[trip['department.name']].completed += 1;
         summary.totalTripsCompleted += 1;
@@ -49,14 +50,11 @@ class GenerateReportData {
     return summary;
   }
 
-  static calculateLastMonthPercentageChange(monthOneSummary, monthTwoSummary) {
-    const totalTakenOneMonthBack = monthOneSummary.totalTripsCompleted;
-    const totalTakenTwoMonthsBack = monthTwoSummary.totalTripsCompleted;
+  static calculateLastMonthPercentageChange(totalTripsCompletedLastMonth, totalTakenTwoMonthsBack) {
+    const percentage = (((totalTripsCompletedLastMonth - totalTakenTwoMonthsBack)
+      / (totalTakenTwoMonthsBack || totalTripsCompletedLastMonth || 1)) * 100).toFixed(2);
 
-    const percentage = (((totalTakenOneMonthBack - totalTakenTwoMonthsBack)
-      / (totalTakenTwoMonthsBack || totalTakenOneMonthBack || 1)) * 100).toFixed(2);
-
-    return { ...monthOneSummary, percentageChange: percentage };
+    return percentage;
   }
 }
 

@@ -1,27 +1,29 @@
 import schedule from 'node-schedule';
-import request from 'request-promise-native';
 import EmailService from '../../services/EmailService';
 import ReportGeneratorService from '../../services/report/ReportGeneratorService';
 import SlackHelpers from '../slack/slackHelpers';
 import Utils from '../../utils';
 import BugsnagHelper from '../bugsnagHelper';
+import TeamDetailsService from '../../services/TeamDetailsService';
 
+let hbsHelper;
+const emailService = new EmailService();
 class MonthlyReportSender {
   /**
-   * Must return an array of two objects,
-   * Each object contains an email and a name
-   * The first object is the receiver,
-   * The last object is the CC.
-   * ie: [{email: '', name: ''}, {email: '', name: ''}]
-   *
-   * @returns {*[]}
-   */
-  static async getAddresses() {
-    const departments = await SlackHelpers.getDepartments();
+  * Must return an array of two objects,
+  * Each object contains an email and a name
+  * The first object is the receiver,
+  * The last object is the CC.
+  * ie: [{email: '', name: ''}, {email: '', name: ''}]
+  *
+  * @returns {*[]}
+  */
+  static async getAddresses(teamId) {
+    const departments = await SlackHelpers.getDepartments(teamId);
 
     let filtered = departments.filter(department => !!(department.label && (
       department.label.toLowerCase() === 'operations'
-        || department.label.toLowerCase() === 'finance')));
+                        || department.label.toLowerCase() === 'finance')));
 
     filtered.sort((a, b) => {
       if (a.label.toLowerCase() > b.label.toLowerCase()) return 1;
@@ -44,12 +46,13 @@ class MonthlyReportSender {
     const report = new ReportGeneratorService(1);
     const tripData = await report.generateMonthlyReport();
     const excelWorkBook = report.getEmailAttachmentFile(tripData);
-    return ReportGeneratorService.writeAttachmentToStream(excelWorkBook);
+    const attachment = await ReportGeneratorService.writeAttachmentToStream(excelWorkBook);
+    return attachment;
   }
 
-  static getTemplate(data) {
-    const host = this.app.get('host');
-    return request({ url: `${host}/api/v1/template/email/report`, body: data, json: true });
+  static async getTemplate(data) {
+    const template = await hbsHelper.render(`${hbsHelper.baseTemplates}/email/email.html`, data);
+    return template;
   }
 
   static departmentToArray(departments) {
@@ -64,19 +67,31 @@ class MonthlyReportSender {
     return data;
   }
 
-  static async send(callbackFunction) {
+  static async send() {
     try {
-      const emailService = new EmailService();
+      const allTeams = await TeamDetailsService.getAllTeams();
+      const promises = allTeams.map(team => MonthlyReportSender.sendMail(team));
+      await Promise.all(promises);
+      return;
+    } catch (e) {
+      BugsnagHelper.log(e);
+      throw Error(e);
+    }
+  }
 
-      const receivers = await MonthlyReportSender.getAddresses();
+  static async sendMail(team) {
+    const receivers = await MonthlyReportSender.getAddresses(team.teamId);
+
+    if (receivers && receivers.length > 0) {
       const summary = await ReportGeneratorService.getOverallTripsSummary();
       const subject = 'Monthly Report for trips taken by Andelans';
+      const mainReceiver = receivers[1] || receivers[0];
 
       const html = await MonthlyReportSender.getTemplate({
-        name: receivers[1].name,
+        name: mainReceiver.name,
         month: summary.month,
         increased: Number.parseFloat(summary.percentageChange) > 0,
-        departments: this.departmentToArray(summary.departments),
+        departments: MonthlyReportSender.departmentToArray(summary.departments),
         summary
       });
 
@@ -86,26 +101,23 @@ class MonthlyReportSender {
         filename: `${summary.month} Report.xlsx`.replace(/[, ]/g, '_'),
         content: Utils.writableToReadableStream(fileAttachment),
       }];
-
+      const copyReceiverEmail = receivers[1] ? receivers[1].email : '';
       const mailOptions = emailService.createEmailOptions(
-        receivers[0].email, [receivers[1].email], subject, html, attachments
+        mainReceiver.email, [copyReceiverEmail], subject, html, attachments
       );
-      return emailService.sendMail(mailOptions, callbackFunction);
-    } catch (e) {
-      BugsnagHelper.log(e);
-      throw Error(e);
+      emailService.sendMail(mailOptions);
     }
   }
 
-  static recurringFunction() {
-    MonthlyReportSender.send().then();
+  static async recurringFunction() {
+    await MonthlyReportSender.send();
   }
 
   /**
-   * Scheduling a recurring execution of a method
-   */
-  static scheduleReporting(app) {
-    this.app = app;
+  * Scheduling a recurring execution of a method
+  */
+  static scheduleReporting(hbs) {
+    hbsHelper = hbs;
     // schedule.scheduleJob('* * * * * *', MonthlyReportSender.recurringFunction);
     schedule.scheduleJob('0 0 1 2 * *', MonthlyReportSender.recurringFunction);
   }

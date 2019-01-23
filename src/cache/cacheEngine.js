@@ -15,7 +15,6 @@ export class CacheEngine {
         return this.saveObject(key, { [field]: value });
       }
       currentState[field] = value;
-
       return this.cache.getClient().set(key, JSON.stringify(currentState));
     } catch (error) {
       bugsnagHelper.log(error);
@@ -41,7 +40,6 @@ export class CacheEngine {
     return this.cache.getClient().del(key);
   }
 }
-
 const redisCache = new CacheEngine(new RedisCacheSingleton());
 const lruCache = new CacheEngine(LRUCache(5));
 

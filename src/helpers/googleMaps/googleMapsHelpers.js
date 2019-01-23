@@ -58,7 +58,6 @@ export class RoutesHelper {
     const placeIdOrCoordinates = payload.submission
       ? payload.submission.coordinates : payload.actions[0].selected_options[0].value;
     const optionType = payload.submission ? 'coordinates' : 'placeId';
-
     const response = await GoogleMapsReverseGeocode.getAddressDetails(
       optionType, placeIdOrCoordinates
     );

@@ -3,9 +3,7 @@ import SlackHelpers from '../../../../../services/UserService';
 import models from '../../../../../database/models';
 import SequelizePaginationHelper from '../../../../../helpers/sequelizePaginationHelper';
 
-
 const { TripRequest, User } = models;
-
 
 describe('TripItineraryHelper ', () => {
   beforeEach(() => {
