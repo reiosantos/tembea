@@ -1,4 +1,7 @@
 import UserService from '../UserService';
+import models from '../../database/models';
+
+const { User } = models;
 
 
 describe('/Users service', () => {
@@ -45,12 +48,42 @@ describe('/Users service', () => {
     done();
   });
 
-  it('should not get team details', async (done) => {
-    try {
-      await UserService.fetchTeamDetails(1);
-    } catch (error) {
-      expect(error.message).toBe('Could not get team details');
-    }
-    done();
+  describe('getUserById', () => {
+    beforeEach(() => {
+      jest.resetAllMocks();
+      User.findByPk = jest.fn().mockResolvedValue({});
+    });
+
+    it('should return valid user when found', async (done) => {
+      const user = await UserService.getUserById(1);
+      expect(user).toBeInstanceOf(Object);
+      done();
+    });
+  });
+
+  describe('getUserBySlackId', () => {
+    beforeEach(() => {
+      jest.resetAllMocks();
+      User.findOne = jest.fn().mockResolvedValue({});
+    });
+
+    it('should return valid user when found', async (done) => {
+      const user = await UserService.getUserBySlackId(1);
+      expect(user).toBeInstanceOf(Object);
+      done();
+    });
+  });
+
+  describe('getUserByEmail', () => {
+    beforeEach(() => {
+      jest.resetAllMocks();
+      User.findOne = jest.fn().mockResolvedValue({});
+    });
+
+    it('should return valid user when found', async (done) => {
+      const user = await UserService.getUserByEmail(1);
+      expect(user).toBeInstanceOf(Object);
+      done();
+    });
   });
 });

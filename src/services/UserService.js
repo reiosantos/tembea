@@ -7,22 +7,6 @@ const { User } = models;
 
 class UserService {
   /**
-    * @description Fetches the team details and handles it's errors
-    * @param  {string} slackUrl The teams slack url
-    * @returns {object} The complete team details
-    */
-  static async fetchTeamDetails(slackUrl) {
-    try {
-      const teamDetails = await TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl.trim());
-      HttpError.throwErrorIfNull(teamDetails, 'Slack team not found');
-      return teamDetails;
-    } catch (error) {
-      if (error instanceof HttpError) throw error;
-      HttpError.throwErrorIfNull(null, 'Could not get team details', 500);
-    }
-  }
-
-  /**
    * @description Fetch the user's slack info
    * @param  {object} web The slack web client
    * @param  {string} email The user's email on slack
@@ -64,6 +48,16 @@ class UserService {
       HttpError.throwErrorIfNull(null, 'Could not update the user record', 500);
     }
   }
+
+
+  static async findOrCreateNewUserWithSlackId(user) {
+    const [newUser] = await User.findOrCreate({
+      where: { slackId: user.slackId },
+      defaults: { name: user.name, email: user.email }
+    });
+    return newUser.dataValues;
+  }
+
 
   /**
    * @description Saves the new user record
@@ -114,8 +108,9 @@ class UserService {
   }
 
   static async getUserInfo(slackUrl, email, newEmail) {
-    const teamDetails = await UserService.fetchTeamDetails(slackUrl);
+    const teamDetails = await TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl);
     // Create the web client from team details
+    if (!teamDetails) throw new HttpError('Slack team not found', 404);
     const web = new WebClient(teamDetails.userToken);
     // Get user's slack Id
     return UserService.getUserSlackInfo(web, newEmail || email);
@@ -134,6 +129,39 @@ class UserService {
       offset: (size * (page - 1)),
       order: [['id', 'DESC']]
     });
+  }
+
+  static async getUserById(id) {
+    const user = await User.findByPk(id);
+    return user;
+  }
+
+  /**
+ * @static async getUserBySlackId
+ * @description this methods queries the DB for users by slackId
+ * @param {*} slackId
+ * @returns user object
+ * @memberof DataHelper
+ */
+  static async getUserBySlackId(slackId) {
+    const user = await User.findOne({
+      where: { slackId },
+    });
+    return user;
+  }
+
+  /**
+ * @static async getUserByEmail
+ * @description this methods queries the DB for users by slackId
+ * @param {*} email
+ * @returns user object
+ * @memberof DataHelper
+ */
+  static async getUserByEmail(email) {
+    const user = await User.findOne({
+      where: { email },
+    });
+    return user;
   }
 }
 

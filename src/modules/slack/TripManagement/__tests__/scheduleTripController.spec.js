@@ -5,9 +5,9 @@ import {
   createPayload, tripRequestDetails, respondMock
 } from '../../SlackInteractions/__mocks__/SlackInteractions.mock';
 import models from '../../../../database/models';
-import TeamDetailsService from '../../../../services/TeamDetailsService';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import SlackEvents from '../../events';
+import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
@@ -32,50 +32,6 @@ const err = new Error('Dummy error');
 const rejectMock = jest.fn(() => Promise.reject(err));
 
 describe('ScheduleTripController Tests', () => {
-  describe('createUser', () => {
-    const { User } = models;
-    const userId = 'dummyId';
-    const teamId = 'TEAMID2';
-    const slackBotOauthToken = 'BOTTOKEN2';
-    let getTeamDetailsBotOauthToken;
-    beforeEach(() => {
-      getTeamDetailsBotOauthToken = jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken');
-      getTeamDetailsBotOauthToken.mockImplementation(() => slackBotOauthToken);
-    });
-
-    afterEach(() => {
-      jest.restoreAllMocks();
-    });
-
-    it('should create and return user', async () => {
-      const slackUserMock = { real_name: 'dummyReal', profile: { email: 'dummyReal@local.host' } };
-      UserInputValidator.fetchUserInformationFromSlack = jest.fn(() => (slackUserMock));
-      User.findOrCreate = jest.fn(() => ([{ dataValues: {} }]));
-      const user = await ScheduleTripController
-        .createUser(userId, teamId);
-      expect(UserInputValidator.fetchUserInformationFromSlack).toBeCalledWith(
-        userId, slackBotOauthToken
-      );
-      const expected = {
-        where: { slackId: userId },
-        defaults: { name: slackUserMock.real_name, email: slackUserMock.profile.email }
-      };
-      expect(User.findOrCreate).toBeCalledWith(expected);
-      expect(user).toEqual({});
-    });
-
-    it('should throw an error', async () => {
-      try {
-        UserInputValidator.fetchUserInformationFromSlack = rejectMock;
-        await ScheduleTripController
-          .createUser(userId, teamId);
-      } catch (e) {
-        expect(e)
-          .toEqual(err);
-      }
-    });
-  });
-
   describe('createLocation', () => {
     const { Location, Address } = models;
     const longitude = 23;
@@ -159,7 +115,7 @@ describe('ScheduleTripController Tests', () => {
       payload = createPayload();
     });
     it('should return an object with details of the trip to persist', async () => {
-      ScheduleTripController.createUser = jest.fn(() => 4);
+      SlackHelpers.findOrCreateUserBySlackId = jest.fn(() => 4);
       ScheduleTripController.createRequestObject = jest.fn(() => tripRequestDetails());
       const request = await ScheduleTripController
         .createRequest(payload, payload.submission);
@@ -170,18 +126,18 @@ describe('ScheduleTripController Tests', () => {
     it('should return an object with details of the trip to persist when forSelf is false',
       async () => {
         payload.submission.forSelf = 'false';
-        ScheduleTripController.createUser = jest.fn(() => ({ id: 4 }));
+        SlackHelpers.findOrCreateUserBySlackId = jest.fn(() => ({ id: 4 }));
         ScheduleTripController.createRequestObject = jest.fn(() => tripRequestDetails());
 
         const request = await ScheduleTripController
           .createRequest(payload, payload.submission);
-        expect(ScheduleTripController.createUser).toBeCalledTimes(2);
+        expect(SlackHelpers.findOrCreateUserBySlackId).toBeCalledTimes(2);
         expect(request).toHaveProperty('riderId', 4);
         expect(request).toHaveProperty('reason', tripRequestDetails().reason);
       });
 
     it('should throw error', async () => {
-      ScheduleTripController.createUser = rejectMock;
+      SlackHelpers.findOrCreateUserBySlackId = rejectMock;
       ScheduleTripController.createRequestObject = jest.fn(() => tripRequestDetails());
       try {
         await ScheduleTripController

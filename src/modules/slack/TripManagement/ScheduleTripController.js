@@ -5,11 +5,11 @@ import models from '../../../database/models';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import dateHelper from '../../../helpers/dateHelper';
-import TeamDetailsService from '../../../services/TeamDetailsService';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
+import SlackHelpers from '../../../helpers/slack/slackHelpers';
 
 const {
-  TripRequest, User, Location, Address, TripDetail
+  TripRequest, Location, Address, TripDetail
 } = models;
 
 class ScheduleTripController {
@@ -96,11 +96,11 @@ class ScheduleTripController {
 
   static async createRequest(payload, tripRequestDetails) {
     try {
-      const requester = await ScheduleTripController.createUser(payload.user.id, payload.team.id);
+      const requester = await SlackHelpers.findOrCreateUserBySlackId(payload.user.id, payload.team.id);
       const request = await this.createRequestObject(tripRequestDetails, requester);
 
       if (tripRequestDetails.forSelf === 'false') {
-        const passenger = await this.createUser(tripRequestDetails.rider, payload.team.id);
+        const passenger = await SlackHelpers.findOrCreateUserBySlackId(tripRequestDetails.rider, payload.team.id);
         request.riderId = passenger.id;
       }
       return request;
@@ -147,25 +147,6 @@ class ScheduleTripController {
       });
       const addressData = await Address.create({ locationId: location.dataValues.id, address });
       return addressData.dataValues.id;
-    } catch (error) {
-      bugsnagHelper.log(error);
-      throw error;
-    }
-  }
-
-  static async createUser(userId, teamId) {
-    try {
-      const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-      const userInfo = await UserInputValidator.fetchUserInformationFromSlack(
-        userId, slackBotOauthToken
-      );
-      const { real_name: name, profile: { email } } = userInfo;
-
-      const [user] = await User.findOrCreate({
-        where: { slackId: userId },
-        defaults: { name, email }
-      });
-      return user.dataValues;
     } catch (error) {
       bugsnagHelper.log(error);
       throw error;

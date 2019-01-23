@@ -3,6 +3,12 @@ import models from '../../../../database/models';
 import SequelizePaginationHelper from '../../../../helpers/sequelizePaginationHelper';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import SlackPagination from '../../../../helpers/slack/SlackPaginationHelper';
+import { SlackInteractiveMessage } from '../../SlackModels/SlackMessageModels';
+
+export const tripResponse = (
+  text = 'You have no trip history'
+) => new SlackInteractiveMessage(text);
+
 
 const { TripRequest, User, Address } = models;
 const { Op } = Sequelize;

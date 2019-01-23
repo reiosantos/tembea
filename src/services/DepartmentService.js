@@ -109,6 +109,14 @@ class DepartmentService {
     department.save();
     return true;
   }
+
+  static async getDepartment(departmentId) {
+    if (Number.isNaN(parseInt(departmentId, 10))) {
+      throw Error('The parameter provided is not valid. It must be a valid number');
+    }
+
+    return Department.findByPk(departmentId, { include: ['head'] });
+  }
 }
 
 export default DepartmentService;

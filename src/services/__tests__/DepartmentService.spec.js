@@ -41,4 +41,13 @@ describe('/Departments update', () => {
     await dept.destroy();
     done();
   });
+
+  it('should return a single instance of a department', async (done) => {
+    Department.findByPk = jest.fn(() => Promise.resolve({}));
+    const dept = await DepartmentService.getDepartment(1);
+    expect(typeof dept).toEqual('object');
+    expect(dept).toEqual({});
+    expect(Department.findByPk).toBeCalled();
+    done();
+  });
 });

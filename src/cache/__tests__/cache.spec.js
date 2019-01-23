@@ -1,8 +1,50 @@
 import Cache from '../index';
 import { redisCache } from '../cacheEngine';
+import bugsnagHelper from '../../helpers/bugsnagHelper';
 
 describe('Cache tests', () => {
   describe('save', () => {
+    afterEach(() => {
+      jest.resetAllMocks();
+    });
+
+    it('should update the cached information already saved with new information', async () => {
+      const mockObject = { mockedValue: 'mockedValue' };
+      redisCache.cache = {
+        getClient: () => ({
+          set: () => mockObject
+        })
+      };
+      redisCache.fetch = jest.fn().mockReturnValue({ testValue: 'testValue' });
+
+      const result = await redisCache.save('key', 'field', 'value');
+      expect(result).toEqual(mockObject);
+    });
+
+    it('should throw an exception if an error occurs while saving to the cache', async () => {
+      const err = new Error();
+      redisCache.fetch = jest.fn(() => Promise.reject(err));
+      bugsnagHelper.log = jest.fn(() => {});
+
+      try {
+        await redisCache.save('key', 'field', 'value');
+      } catch (e) {
+        expect(bugsnagHelper.log).toHaveBeenCalled();
+      }
+    });
+
+    it('should throw an exception if an error occurs while fetching from the cache', async () => {
+      const err = new Error();
+      redisCache.cache.getAsync = jest.fn(() => Promise.reject(err));
+      bugsnagHelper.log = jest.fn(() => {});
+
+      try {
+        await redisCache.fetch('key');
+      } catch (e) {
+        expect(bugsnagHelper.log).toHaveBeenCalled();
+      }
+    });
+
     it('returns true when save is successful', async (done) => {
       const sampleObject = {
         key: 'hello',

@@ -1,8 +1,7 @@
-import { Sequelize } from 'sequelize';
 import models from '../../database/models';
-import bugsnagHelper from '../bugsnagHelper';
 import WebClientSingleton from '../../utils/WebClientSingleton';
 import TeamDetailsService from '../../services/TeamDetailsService';
+import UserService from '../../services/UserService';
 
 const {
   Department, User, TripRequest
@@ -28,28 +27,25 @@ class SlackHelpers {
       }]
     });
 
-    return department.dataValues.head.dataValues;
+    const { dataValues: { head: { dataValues: theHead } } } = department;
+
+    return theHead;
   }
 
   static async findUserByIdOrSlackId(userId) {
-    let userInfo = {};
-    let normalizedId = userId;
-
-    if (!Number.isInteger(Number.parseInt(userId, 10))) {
-      normalizedId = 0;
+    let user;
+    const normalizedId = Number.parseInt(userId, 10);
+    if (Number.isInteger(normalizedId)) {
+      user = await UserService.getUserById(normalizedId);
+    } else {
+      user = await UserService.getUserBySlackId(userId);
     }
-    const user = await User.findOne(
-      { where: { [Sequelize.Op.or]: [{ slackId: `${userId}` }, { id: normalizedId }] } }
-    );
-
-    if (user && user.dataValues) {
-      userInfo = { ...user.dataValues };
-    }
-    return userInfo;
+    const result = user ? user.dataValues : undefined;
+    return result;
   }
 
   static async findOrCreateUserBySlackId(slackId, teamId) {
-    const user = await SlackHelpers.getUserBySlackId(slackId);
+    const user = await UserService.getUserBySlackId(slackId);
     if (user) return user;
     const userInfo = await SlackHelpers.getUserInfoFromSlack(slackId, teamId);
     const newUser = await SlackHelpers.createUserFromSlackUserInfo(userInfo);
@@ -57,30 +53,27 @@ class SlackHelpers {
   }
 
   static async getUserInfoFromSlack(slackId, teamId) {
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+    const userInfo = await SlackHelpers.fetchUserInformationFromSlack(slackId, slackBotOauthToken);
+    return userInfo;
+  }
+
+  static async fetchUserInformationFromSlack(slackId, token) {
     const slackClient = new WebClientSingleton();
-    const { botToken } = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-    const { user } = await slackClient.getWebClient(botToken).users.info({
+    const { user } = await slackClient.getWebClient(token).users.info({
       user: slackId
     });
     return user;
   }
 
   static async createUserFromSlackUserInfo(userInfo) {
-    const { real_name, profile: { email }, id } = userInfo; //eslint-disable-line
-
-    const [user] = await User.findOrCreate({
-      where: { slackId: id },
-      defaults: { name: real_name, email }
-    });
-    return user.dataValues;
-  }
-
-  static findSelectedDepartment(departmentId) {
-    if (Number.isNaN(parseInt(departmentId, 10))) {
-      throw Error('The parameter provided is not valid. It must be a valid number');
-    }
-
-    return Department.findByPk(departmentId, { include: ['head'] });
+    const { real_name: name, profile: { email }, id } = userInfo;
+    const user = {
+      slackId: id,
+      name,
+      email
+    };
+    return UserService.findOrCreateNewUserWithSlackId(user);
   }
 
   static async getTripRequest(tripId) {
@@ -101,8 +94,12 @@ class SlackHelpers {
       return { isApproved: false, approvedBy };
     }
 
-    const { dataValues: tripRequest } = trip;
-    const { tripStatus, approvedById } = tripRequest;
+    const {
+      dataValues: {
+        tripStatus,
+        approvedById
+      }
+    } = trip;
 
     if (approvedById && tripStatus && tripStatus.toLowerCase() !== 'pending') {
       isApproved = true;
@@ -134,31 +131,10 @@ class SlackHelpers {
     return approved;
   }
 
-  /**
- * @static async getUserBySlackId
- * @description this methods queries the DB for users by slackId
- * @param {*} slackId
- * @returns user object
- * @memberof DataHelper
- */
-  static async getUserBySlackId(slackId) {
-    try {
-      const user = await User.findOne({
-        where: { slackId },
-        raw: true
-      });
-      return user;
-    } catch (error) {
-      bugsnagHelper.log(error);
-      throw error;
-    }
-  }
-
   static noOfPassengers() {
     const passengerNumbers = [...Array(10)].map(
       (label, value) => ({ text: value + 1, value: value + 1 })
     );
-
     return passengerNumbers;
   }
 }

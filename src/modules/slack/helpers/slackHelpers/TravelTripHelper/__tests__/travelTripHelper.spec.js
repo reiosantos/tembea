@@ -4,6 +4,7 @@ import ScheduleTripController from '../../../../TripManagement/ScheduleTripContr
 import InteractivePrompts from '../../../../SlackPrompts/InteractivePrompts';
 import DialogPrompts from '../../../../SlackPrompts/DialogPrompts';
 import SlackEvents from '../../../../events';
+import BugsnagHelper from '../../../../../../helpers/bugsnagHelper';
 
 jest.mock('../../../../events', () => ({
   slackEvents: jest.fn(() => ({
@@ -151,7 +152,20 @@ describe('travelTripHelper', () => {
         payload, 'travelEmbassyDetailsForm', 'travel_trip_embassyForm'
       );
     });
+
+    it('should handle errors', async () => {
+      payload.user.id = 2;
+      const log = jest.spyOn(BugsnagHelper, 'log');
+      const sendTripDetailsForm = jest.spyOn(DialogPrompts,
+        'sendTripDetailsForm');
+      sendTripDetailsForm.mockImplementationOnce(() => {
+        throw new Error();
+      });
+      await travelTripHelper.department(payload, respond);
+      expect(log).toHaveBeenCalledTimes(1);
+    });
   });
+
   describe('embassyForm', () => {
     let respond;
 
@@ -267,8 +281,11 @@ describe('travelTripHelper', () => {
   });
   describe('confirmation', () => {
     let respond;
+    let createTravelTripRequest;
 
     beforeEach(() => {
+      createTravelTripRequest = jest.spyOn(ScheduleTripController,
+        'createTravelTripRequest');
       respond = jest.fn();
     });
     afterEach(() => {
@@ -286,8 +303,6 @@ describe('travelTripHelper', () => {
 
     it('should test confirmation ', async () => {
       payload.user.id = 1;
-      const createTravelTripRequest = jest.spyOn(ScheduleTripController,
-        'createTravelTripRequest');
       InteractivePrompts.sendCompletionResponse = jest.fn();
       SlackEvents.raise = jest.fn();
 
@@ -298,6 +313,18 @@ describe('travelTripHelper', () => {
       expect(createTravelTripRequest).toHaveBeenCalled();
       expect(InteractivePrompts.sendCompletionResponse).toHaveBeenCalled();
       expect(SlackEvents.raise).toHaveBeenCalled();
+    });
+
+    it('should test confirmation error handling', async () => {
+      payload.user.id = 1;
+      const log = jest.spyOn(BugsnagHelper, 'log');
+      InteractivePrompts.sendCompletionResponse = jest.fn();
+      SlackEvents.raise = jest.fn();
+
+      createTravelTripRequest.mockRejectedValue(new Error());
+
+      await travelTripHelper.confirmation(payload, respond);
+      expect(log).toHaveBeenCalledTimes(1);
     });
   });
 });

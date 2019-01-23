@@ -12,7 +12,7 @@ describe('Report Generator Service', () => {
 
   beforeAll(() => {
     reportService = new ReportGeneratorService(1);
-    TripRequest.findAll = jest.fn(() => Promise.resolve(response));
+    TripRequest.findAll = jest.fn().mockResolvedValue(response);
   });
 
   it('should return data to generate report', async (done) => {

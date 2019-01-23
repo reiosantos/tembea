@@ -1,4 +1,6 @@
 import NotificationsResponse from '../NotificationsResponse';
+import SlackHelpers from '../../../../helpers/slack/slackHelpers';
+import * as SlackModels from '../../SlackModels/SlackMessageModels';
 import responseData from '../__mocks__/NotificationResponseMock';
 
 describe('Notifications Response Test', () => {
@@ -59,5 +61,49 @@ describe('Notifications Response Test', () => {
     );
     expect(result[0]).toHaveProperty('actions');
     expect(result[0]).toHaveProperty('attachment_type');
+  });
+
+  it('should create notification header', async () => {
+    const isApproved = { approvedBy: 'testUser' };
+    const trip = {
+      pickup: { address: 'testAddress' },
+      destination: { address: 'testAddress' }
+    };
+    const messageHeader = `Your request from *${trip.pickup.address}* to *${trip.destination.address
+    }* has been approved by ${isApproved.approvedBy
+    }. The request has now been forwarded to the operations team for confirmation.`;
+
+    SlackHelpers.isRequestApproved = jest.fn(() => isApproved);
+    const result = await NotificationsResponse.getMessageHeader(trip);
+
+    expect(result).toEqual(messageHeader);
+  });
+
+  it('should create interactive message for sending a response to requester with color as "good"', async () => {
+    jest.mock('../../SlackModels/SlackMessageModels');
+    const objectFromNewInstance = { someProp: 'someValue' };
+    SlackModels.SlackAttachment = jest.fn(() => objectFromNewInstance);
+    SlackModels.SlackInteractiveMessage = jest.fn(() => objectFromNewInstance);
+    NotificationsResponse.getMessageHeader = jest.fn().mockResolvedValue();
+    NotificationsResponse.getRequesterAttachment = jest.fn().mockReturnValue([{}]);
+    const data = { tripStatus: 'cancel' };
+
+    const result = await NotificationsResponse.responseForRequester(data);
+
+    expect(result).toEqual(objectFromNewInstance);
+  });
+
+  it('should create interactive message for sending a response to requester with color as "undefined"', async () => {
+    jest.mock('../../SlackModels/SlackMessageModels');
+    const objectFromNewInstance = { someProp: 'someValue' };
+    SlackModels.SlackAttachment = jest.fn(() => objectFromNewInstance);
+    SlackModels.SlackInteractiveMessage = jest.fn(() => objectFromNewInstance);
+    NotificationsResponse.getMessageHeader = jest.fn().mockResolvedValue();
+    NotificationsResponse.getRequesterAttachment = jest.fn().mockReturnValue([{}]);
+    const data = {};
+
+    const result = await NotificationsResponse.responseForRequester(data);
+
+    expect(result).toEqual(objectFromNewInstance);
   });
 });

@@ -12,6 +12,7 @@ import {
 } from '../SlackModels/SlackMessageModels';
 import NotificationsResponse from './NotificationsResponse';
 import TeamDetailsService from '../../../services/TeamDetailsService';
+import DepartmentService from '../../../services/DepartmentService';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 
 const web = new WebClientSingleton();
@@ -89,7 +90,8 @@ class SlackNotifications {
       const { botToken: slackBotOauthToken, opsChannelId } = teamDetails;
       const checkTripType = tripType === 'regular';
       SlackNotifications.restructureTripData(tripInformation, checkTripType);
-      const { name } = await SlackHelpers.findSelectedDepartment(tripInformation.departmentId);
+      const { dataValues: department } = await DepartmentService.getDepartment(tripInformation.departmentId);
+      const { name } = department;
       tripInformation.department = name;
       if (checkTripType) {
         SlackEvents.raise(slackEventNames.TRIP_WAITING_CONFIRMATION, tripInformation,
@@ -102,7 +104,7 @@ class SlackNotifications {
     } catch (error) {
       bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
-        'We could not get the details of the department selected. '
+        'An error occurred while processing your request. '
         + 'Please contact the administrator.', [], undefined, '#b52833'
       );
       respond(message);
@@ -125,7 +127,7 @@ class SlackNotifications {
 
   static async sendRequesterApprovedNotification(responseData, respond, slackBotOauthToken) {
     try {
-      const dept = await SlackHelpers.findSelectedDepartment(responseData.departmentId);
+      const dept = await SlackHelpers.getHeadByDepartmentId(responseData.departmentId);
 
       if (!dept || !dept.dataValues) return;
 
@@ -137,7 +139,6 @@ class SlackNotifications {
       const imResponse = await web.getWebClient(slackBotOauthToken).im.open({
         user: responseData.requester.slackId
       });
-
       const response = await NotificationsResponse.responseForRequester(
         responseData, imResponse.channel.id
       );

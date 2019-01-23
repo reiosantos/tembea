@@ -63,8 +63,7 @@ class GoogleMapsStatic {
       }
       const { latitude, longitude } = theDojo.dataValues.location;
       const dojoLocation = `${latitude}, ${longitude}`;
-      
-    
+
       // Get directions between the two locations
       const directions = await GoogleMapsDirections.getDirections(dojoLocation, dropOffLocation);
 

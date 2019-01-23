@@ -32,7 +32,9 @@ class SlackPagination {
       return paginationAttachment;
     }
 
-    paginationAttachment.addFieldsOrActions('actions', [prevPageButton, nextPageButton, skipToPageButton]);
+    paginationAttachment.addFieldsOrActions(
+      'actions', [prevPageButton, nextPageButton, skipToPageButton]
+    );
     
     return paginationAttachment;
   }

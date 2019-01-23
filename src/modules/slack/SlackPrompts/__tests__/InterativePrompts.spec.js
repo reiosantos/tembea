@@ -8,6 +8,8 @@ import {
   tripHistoryMock
 } from '../__mocks__/InteractivePrompts.mock';
 import LocationPrompts from '../LocationPrompts';
+import WebClientSingleton from '../../../../utils/WebClientSingleton';
+import BugsnagHelper from '../../../../helpers/bugsnagHelper';
 
 jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../../slack/events/', () => ({
@@ -30,6 +32,20 @@ jest.mock('../../events/slackEvents', () => ({
 }));
 
 describe('Interactive Prompts test', () => {
+  let getWebClient;
+  const update = jest.fn(() => {});
+  beforeEach(() => {
+    getWebClient = jest.spyOn(WebClientSingleton.prototype, 'getWebClient');
+    getWebClient.mockImplementationOnce(() => ({
+      chat: { update }
+    }));
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
   it('should sendBookNewTrip Response', (done) => {
     const respond = jest.fn(value => value);
     const payload = jest.fn(() => 'respond');
@@ -50,7 +66,6 @@ describe('Interactive Prompts test', () => {
   });
 
   it('should send decline response', (done) => {
-    InteractivePrompts.messageUpdate = jest.fn();
     const tripInitial = {
       id: 2,
       requestId: null,
@@ -66,7 +81,7 @@ describe('Interactive Prompts test', () => {
       rider: { dataValues: { slackId: 2 } },
     };
     InteractivePrompts.sendManagerDeclineOrApprovalCompletion(true, tripInitial, 'timeStamp', 1);
-    expect(InteractivePrompts.messageUpdate).toBeCalled();
+    expect(update).toHaveBeenCalledTimes(1);
     done();
   });
 
@@ -149,8 +164,7 @@ describe('Interactive Prompts test', () => {
     await InteractivePrompts.sendListOfDepartments(props, 'false');
     expect(response).toBeCalledTimes(1);
   });
-
-  it('should send ops decline or approval', async (done) => {
+  describe('sendOpsDeclineOrApprovalCompletion', () => {
     const tripInfo = {
       decliner: {
         dataValues: {
@@ -193,13 +207,25 @@ describe('Interactive Prompts test', () => {
         }
       }
     };
-    InteractivePrompts.messageUpdate = jest.fn(() => {});
-
-    await InteractivePrompts.sendOpsDeclineOrApprovalCompletion(
-      false, tripInfo, '3456787654.3456787654', 'DM45676543', 'just a token'
-    );
-    expect(InteractivePrompts.messageUpdate).toHaveBeenCalled();
-    done();
+    it('should send ops decline or approval', async (done) => {
+      await InteractivePrompts.sendOpsDeclineOrApprovalCompletion(
+        false, tripInfo, '3456787654.3456787654', 'DM45676543', 'just a token'
+      );
+      expect(update).toHaveBeenCalledTimes(1);
+      done();
+    });
+    it('should handle errors', async (done) => {
+      const log = jest.spyOn(BugsnagHelper, 'log');
+      const error = new Error('Async error');
+      update.mockRejectedValue(error);
+      await InteractivePrompts.sendOpsDeclineOrApprovalCompletion(
+        false, tripInfo, '3456787654.3456787654', 'DM45676543', 'just a token'
+      );
+      expect(update).toHaveBeenCalledTimes(1);
+      expect(log).toHaveBeenCalledTimes(1);
+      expect(log).toHaveBeenCalledWith(error);
+      done();
+    });
   });
 });
 
