@@ -13,6 +13,10 @@ module.exports = (sequelize, DataTypes) => {
     headId: {
       type: DataTypes.INTEGER,
     },
+    teamId: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
     status: {
       allowNull: false,
       defaultValue: 'Active',

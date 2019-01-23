@@ -44,5 +44,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
   });
+  TeamDetails.associate = (models) => {
+    TeamDetails.hasMany(models.Department, {
+      foreignKey: 'teamId'
+    });
+  };
   return TeamDetails;
 };
