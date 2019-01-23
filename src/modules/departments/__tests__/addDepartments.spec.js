@@ -9,6 +9,7 @@ describe('/Departments create', () => {
       .send({
         email: 'unKnownEmail@test.com',
         name: 'test',
+        slackUrl: 'ACME.slack.com'
       })
       .set({
         Accept: 'application/json'
@@ -25,6 +26,7 @@ describe('/Departments create', () => {
       .post('/api/v1/departments')
       .send({
         name: 'test',
+        slackUrl: 'ACME.slack.com'
       })
       .set({
         Accept: 'application/json'
@@ -41,6 +43,7 @@ describe('/Departments create', () => {
       .send({
         email: 'alll.com',
         name: 'test',
+        slackUrl: 'ACME.slack.com'
       })
       .expect(400)
       .end((err, res) => {
@@ -55,6 +58,7 @@ describe('/Departments create', () => {
       .send({
         email: 'opeoluwa.iyi-kuyoro@andela.com',
         name: '  ',
+        slackUrl: 'ACME.slack.com'
       })
       .set({
         Accept: 'application/json'
@@ -71,6 +75,7 @@ describe('/Departments create', () => {
       .send({
         email: 'opeoluwa.iyi-kuyoro@andela.com',
         name: '1111111',
+        slackUrl: 'ACME.slack.com'
       })
       .set({
         Accept: 'application/json'
@@ -86,6 +91,7 @@ describe('/Departments create', () => {
       .post('/api/v1/departments')
       .send({
         email: 'test.test@test.com',
+        slackUrl: 'ACME.slack.com'
       })
       .set({
         Accept: 'application/json'
@@ -102,6 +108,7 @@ describe('/Departments create', () => {
       .send({
         email: 'opeoluwa.iyi-kuyoro@andela.com',
         name: 'tembea',
+        slackUrl: 'ACME.slack.com'
       })
       .set({
         Accept: 'application/json'
@@ -115,6 +122,7 @@ describe('/Departments create', () => {
       .send({
         email: 'opeoluwa.iyi-kuyoro@andela.com',
         name: 'tembea',
+        slackUrl: 'ACME.slack.com'
       })
       .set({
         Accept: 'application/json'

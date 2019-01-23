@@ -3,6 +3,7 @@ import DepartmentService from '../../services/DepartmentService';
 import UserService from '../../services/UserService';
 import bugsnagHelper from '../../helpers/bugsnagHelper';
 import defaultSize from '../../helpers/constants';
+import TeamDetailsService from '../../services/TeamDetailsService';
 
 
 class DepartmentController {
@@ -35,10 +36,11 @@ class DepartmentController {
   }
 
   static async addDepartment(req, res) {
-    const { name, email } = req.body;
+    const { name, email, slackUrl } = req.body;
     try {
       const user = await UserService.getUser(email);
-      const [dept, created] = await DepartmentService.createDepartment(user, name);
+      const { teamId } = await TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl);
+      const [dept, created] = await DepartmentService.createDepartment(user, name, teamId);
 
       if (created) {
         return res

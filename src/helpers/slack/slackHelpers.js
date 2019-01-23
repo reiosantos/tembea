@@ -9,8 +9,11 @@ const {
 } = models;
 
 class SlackHelpers {
-  static async getDepartments() {
-    const departments = await Department.findAll({
+  static async getDepartments(teamId) {
+    const departments = teamId ? await Department.findAll({
+      where: { teamId },
+      include: ['head']
+    }) : await Department.findAll({
       include: ['head']
     });
     return departments.map(item => ({

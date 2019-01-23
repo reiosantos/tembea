@@ -137,7 +137,7 @@ describe('Interactive Prompts test', () => {
     SlackHelpers.getDepartments = jest.fn(() => 'attachment');
     SlackButtonsAttachmentFromAList.createAttachments = jest.fn(() => []);
     const props = {
-      payload: { channel: { id: 1 }, user: { id: 2 } },
+      payload: { channel: { id: 1 }, user: { id: 2 }, team: { id: '45THKULE' } },
       respond: response,
       attachmentCallbackId: 'aata',
       navButtonCallbackId: 'atab',
@@ -153,7 +153,7 @@ describe('Interactive Prompts test', () => {
     SlackHelpers.getDepartments = jest.fn(() => 'attachment');
     SlackButtonsAttachmentFromAList.createAttachments = jest.fn(() => []);
     const props = {
-      payload: { channel: { id: 1 }, user: { id: 2 } },
+      payload: { channel: { id: 1 }, user: { id: 2 }, team: { id: '45THKULE' } },
       respond: response,
       attachmentCallbackId: 'aata',
       navButtonCallbackId: 'atab',

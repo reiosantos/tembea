@@ -48,6 +48,16 @@ class TeamDetailsService {
     return slackBotOauthToken;
   }
 
+  static async getAllTeams() {
+    try {
+      const allTeams = await TeamDetails.findAll();
+      return allTeams;
+    } catch (error) {
+      bugsnagHelper.log(error);
+      throw new Error('Could not get all teamDetails from DB');
+    }
+  }
+
   static async saveTeamDetails(teamObject) {
     try {
       await TeamDetails.upsert({ ...teamObject });

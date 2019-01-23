@@ -10,7 +10,8 @@ describe('Delete department record', () => {
   beforeAll(async () => {
     await Department.create({
       name: 'Test Department 1',
-      headId: 1
+      headId: 1,
+      teamId: 'TEAMID2'
     });
   });
 

@@ -312,7 +312,7 @@ class InteractivePrompts {
   ) {
     const personify = forSelf === 'true' ? 'your' : "passenger's";
     const attachment = SlackButtonsAttachmentFromAList.createAttachments(
-      await SlackHelpers.getDepartments(),
+      await SlackHelpers.getDepartments(payload.team.id),
       attachmentCallbackId
     );
     attachment.push(createNavButtons(navButtonCallbackId, navButtonValue));

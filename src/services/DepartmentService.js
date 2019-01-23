@@ -9,12 +9,13 @@ import SlackHelpers from '../helpers/slack/slackHelpers';
 const { Department, User } = models;
 
 class DepartmentService {
-  static async createDepartment(user, name) {
+  static async createDepartment(user, name, teamId) {
     const department = await Department.scope('all').findOrCreate({
       where: { name: { [Op.iLike]: `${name}%` } },
       defaults: {
         name,
-        headId: user.id
+        headId: user.id,
+        teamId
       }
     });
 

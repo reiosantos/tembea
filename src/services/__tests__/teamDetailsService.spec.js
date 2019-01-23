@@ -6,7 +6,7 @@ const { TeamDetails } = models;
 
 describe('Team details service', () => {
   beforeAll(() => {
-    cache.saveObject = jest.fn(() => {});
+    cache.saveObject = jest.fn(() => { });
     cache.fetch = jest.fn((teamId) => {
       if (teamId === 'teamDetails_SAVEDTEAMID') {
         return {
@@ -78,6 +78,43 @@ describe('Team details service', () => {
       done();
     }
   });
+
+  describe('TeamDetailsService_getAllTeams', () => {
+    beforeEach(() => {
+      jest.spyOn(TeamDetails, 'findAll').mockImplementation().mockResolvedValue([{
+        teamId: 'TEAMID2',
+        botId: 'BOTID2',
+        botToken: 'BOTTOKEN2',
+        teamName: 'TEAMNAME2',
+        teamUrl: 'https://ACME.slack.com'
+      }]);
+    });
+
+    afterEach(() => {
+      jest.resetAllMocks();
+    });
+
+    it('should fetch all team details from DB', async (done) => {
+      const allTeams = await TeamDetailsService.getAllTeams();
+
+      expect(TeamDetails.findAll).toBeCalled();
+      expect(allTeams[0].teamId).toEqual('TEAMID2');
+      expect(allTeams).not.toBeNaN();
+      done();
+    });
+
+    it('should throw an error when it cannot get team details', async (done) => {
+      jest.spyOn(TeamDetails, 'findAll').mockImplementation(() => {
+        throw new Error();
+      });
+      try {
+        await TeamDetailsService.getAllTeams();
+      } catch (error) {
+        expect(error.message).toEqual('Could not get all teamDetails from DB');
+      }
+      done();
+    });
+  });
 });
 
 describe('getTeamDetailsByTeamUrl', () => {
@@ -101,7 +138,7 @@ describe('getTeamDetailsByTeamUrl', () => {
   it('should fetch team details from database and save it in cache', async () => {
     cache.fetch = jest.fn(() => null);
     TeamDetails.findOne = jest.fn(() => data);
-    cache.saveObject = jest.fn(() => {});
+    cache.saveObject = jest.fn(() => { });
 
     const result = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
     expect(cache.fetch).toBeCalledTimes(1);

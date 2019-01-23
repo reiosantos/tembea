@@ -32,6 +32,7 @@ describe('/Departments update', () => {
     const dept = await Department.create({
       name: 'DSTD',
       headId: 1,
+      teamId: '45THKULE',
       status: 'Inactive'
     });
 
