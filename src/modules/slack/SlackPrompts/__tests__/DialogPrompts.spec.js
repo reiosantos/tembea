@@ -113,6 +113,21 @@ describe('Dialog prompts test', () => {
     done();
   });
 
+  it('should send sendOperationsNewRouteApprovalDialog dialog', async (done) => {
+    const state = JSON.stringify({
+      approve: {
+        timeStamp: '123848', channelId: 'XXXXXX', routeRequestId: '1'
+      }
+    });
+    await DialogPrompts.sendOperationsNewRouteApprovalDialog({
+      trigger_id: 'XXXXXXX',
+      team: { id: 'TEAMID1' }
+    }, state);
+
+    expect(sendDialogTryCatch).toBeCalledTimes(1);
+    done();
+  });
+
   it('should test sendEngagementInfoDialogToManager function', async () => {
     const payload = {
       callback_id: 'calling',

@@ -1,0 +1,106 @@
+import SlackNotifications from '../../../Notifications';
+import { mockRouteRequestData } from '../../../../../../services/__mocks__';
+import OperationsNotifications from '..';
+import InteractivePrompts from '../../../InteractivePrompts';
+import bugsnagHelper from '../../../../../../helpers/bugsnagHelper';
+import OpsAttachmentHelper from '../helper';
+
+describe('OperationsNotifications', () => {
+  const submission = {
+    routeName: 'Yaba',
+    routeCapacity: 12,
+    takeOffTime: '12:30',
+    regNumber: 'JKEO284'
+  };
+  const botToken = 'XXXXXX';
+  let requestData;
+  beforeEach(() => {
+    jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue({});
+    jest.spyOn(OpsAttachmentHelper, 'getFellowApproveAttachment');
+    jest.spyOn(OpsAttachmentHelper, 'getManagerApproveAttachment');
+    jest.spyOn(OpsAttachmentHelper, 'getOperationCompleteAttachment');
+    jest.spyOn(InteractivePrompts, 'messageUpdate').mockResolvedValue({});
+    jest.spyOn(SlackNotifications, 'sendNotification').mockReturnValue({});
+    jest.spyOn(bugsnagHelper, 'log');
+  });
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  describe('completeOperationsApproveActions', () => {
+    const channelId = 'channelId';
+    const timestamp = 'timestamp';
+    const opsId = 'XXXXXX';
+    jest.spyOn(OperationsNotifications, 'sendOpsApproveMessageToFellow').mockResolvedValue({});
+    jest.spyOn(OperationsNotifications, 'sendOpsApproveMessageToManager').mockResolvedValue({});
+    it('should complete the approve new route action', async (done) => {
+      requestData = {
+        ...mockRouteRequestData,
+        status: 'Approved',
+      };
+      await OperationsNotifications.completeOperationsApprovedAction(
+        requestData, channelId, timestamp, opsId, botToken, submission
+      );
+      expect(InteractivePrompts.messageUpdate).toHaveBeenCalled();
+      expect(OperationsNotifications.sendOpsApproveMessageToFellow).toHaveBeenCalled();
+      expect(OperationsNotifications.sendOpsApproveMessageToManager).toHaveBeenCalled();
+      expect(OpsAttachmentHelper.getOperationCompleteAttachment).toHaveBeenCalled();
+      done();
+    });
+  });
+
+  describe('sendOpsApprovedMessageToFellow', () => {
+    requestData = {
+      ...mockRouteRequestData,
+      status: 'Approved',
+    };
+    it('should send  ops approve notification to fellow', async (done) => {
+      await OperationsNotifications.sendOpsApproveMessageToFellow(
+        requestData, botToken, submission
+      );
+      expect(SlackNotifications.getDMChannelId).toHaveBeenCalledTimes(1);
+      expect(OpsAttachmentHelper.getFellowApproveAttachment).toHaveBeenCalledTimes(1);
+      expect(SlackNotifications.sendNotification).toHaveBeenCalled();
+
+      done();
+    });
+
+    it('should catch errors', async (done) => {
+      SlackNotifications.getDMChannelId
+        .mockRejectedValue(new Error('Fail'));
+      await OperationsNotifications.sendOpsApproveMessageToFellow(
+        requestData, botToken, submission
+      );
+      expect(bugsnagHelper.log.mock.calls[0][0].message).toEqual('Fail');
+      done();
+    });
+  });
+
+  describe('sendOpsApprovedMessageToManager', () => {
+    requestData = {
+      ...mockRouteRequestData,
+      status: 'Approved',
+    };
+    it('should send ops approve notification to manager', async (done) => {
+      await OperationsNotifications.sendOpsApproveMessageToManager(
+        requestData, botToken, submission
+      );
+      expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
+      expect(OpsAttachmentHelper.getManagerApproveAttachment).toHaveBeenCalled();
+      expect(SlackNotifications.sendNotification).toHaveBeenCalled();
+
+      done();
+    });
+
+    it('should catch errors', async (done) => {
+      SlackNotifications.getDMChannelId
+        .mockRejectedValue(new Error('Failed'));
+      await OperationsNotifications.sendOpsApproveMessageToManager(
+        requestData, botToken, submission
+      );
+      expect(bugsnagHelper.log.mock.calls[0][0].message).toEqual('Failed');
+      done();
+    });
+  });
+});

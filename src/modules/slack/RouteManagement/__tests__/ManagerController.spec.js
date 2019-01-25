@@ -90,11 +90,11 @@ describe('Manager Route controller', () => {
           await ManagerController.handleManagerActions(payload, respond);
           expect(validateStatus).toHaveBeenCalledWith({
             ...mockRouteRequestData, status: 'Declined'
-          });
+          }, 'pending');
           await ManagerController.handleManagerActions(payload, respond);
           expect(validateStatus).toHaveBeenCalledWith({
             ...mockRouteRequestData, status: 'Confirmed'
-          });
+          }, 'pending');
           expect(completeManagerAction).toHaveBeenCalledTimes(2);
         });
     });
@@ -126,11 +126,11 @@ describe('Manager Route controller', () => {
           await ManagerController.handleManagerActions(payload, respond);
           expect(validateStatus).toHaveBeenCalledWith({
             ...mockRouteRequestData, status: 'Declined'
-          });
+          }, 'pending');
           await ManagerController.handleManagerActions(payload, respond);
           expect(validateStatus).toHaveBeenCalledWith({
             ...mockRouteRequestData, status: 'Confirmed'
-          });
+          }, 'pending');
           expect(completeManagerAction).toHaveBeenCalledTimes(2);
         });
     });

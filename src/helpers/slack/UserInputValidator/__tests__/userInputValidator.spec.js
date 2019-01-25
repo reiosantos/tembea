@@ -5,6 +5,7 @@ import {
   createPayload
 } from '../../../../modules/slack/SlackInteractions/__mocks__/SlackInteractions.mock';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
+import ManagerFormValidator from '../managerFormValidator';
 
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
@@ -223,6 +224,13 @@ describe('UserInputValidator tests', () => {
     });
   });
 
+  describe('compareDate', () => {
+    it('invalid end date', () => {
+      const result = ManagerFormValidator.compareDate('02/02/2019', '03/02/2018');
+      expect(result[0].error).toEqual('End date cannot less than start date');
+    });
+  });
+
   describe('checkUsername', () => {
     it('valid user name', () => {
       const result = UserInputValidator.checkUsername('dummyUser', 'driver');
@@ -236,7 +244,6 @@ describe('UserInputValidator tests', () => {
     });
   });
 });
-
 
 describe('checkPhoneNumber', () => {
   it('valid phone number', () => {

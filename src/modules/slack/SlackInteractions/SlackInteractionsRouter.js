@@ -1,6 +1,7 @@
 import { createMessageAdapter } from '@slack/interactive-messages';
 import SlackInteractions from './index';
 import ManagerController from '../RouteManagement/ManagerController';
+import OperationsController from '../RouteManagement/OperationsController';
 
 const slackInteractionsRouter = createMessageAdapter(process.env.SLACK_SIGNING_SECRET);
 
@@ -38,5 +39,7 @@ slackInteractionsRouter.action({ callbackId: /^new_route/ },
   SlackInteractions.handleRouteActions);
 slackInteractionsRouter.action({ callbackId: /^manager_route/ },
   ManagerController.handleManagerActions);
+slackInteractionsRouter.action({ callbackId: /^operations_route/ },
+  OperationsController.handleOperationsActions);
 
 export default slackInteractionsRouter;

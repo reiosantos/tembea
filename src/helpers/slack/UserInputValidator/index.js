@@ -262,6 +262,26 @@ class UserInputValidator {
     errors.push(...InputValidator.checkValidCoordinates(coordinates, 'coordinates'));
     return errors;
   }
+
+  static validateApproveRoutesDetails(payload) {
+    const {
+      routeName, routeCapacity, takeOffTime, regNumber
+    } = payload.submission;
+    const errors = [];
+    errors.push(...this.checkWord(routeName, 'routeName'));
+    errors.push(...this.checkNumber(routeCapacity, 'routeCapacity'));
+    errors.push(...this.checkTimeFormat(takeOffTime, 'takeOffTime'));
+    errors.push(...this.checkNumberPlate(regNumber, 'regNumber'));
+    return errors;
+  }
+
+  static checkTimeFormat(time, field) {
+    const errors = [];
+    if (!DateDialogHelper.validateTime(time)) {
+      errors.push(new SlackDialogError(field, 'Invalid time'));
+    }
+    return errors;
+  }
 }
 
 export default UserInputValidator;

@@ -58,7 +58,7 @@ const handlers = {
     const { actions, channel: { id: channelId }, original_message: { ts: timeStamp } } = payload;
     const [{ value: routeRequestId }] = actions;
     const routeRequest = await RouteRequestService.getRouteRequest(routeRequestId);
-    if (!ManagerFormValidator.validateStatus(routeRequest)) {
+    if (!ManagerFormValidator.validateStatus(routeRequest, 'pending')) {
       await handleStatusValidationError(payload, routeRequest);
       return;
     }
@@ -77,7 +77,7 @@ const handlers = {
     const { actions, channel: { id: channelId }, original_message: { ts: timeStamp } } = payload;
     const [{ value: routeRequestId }] = actions;
     const routeRequest = await RouteRequestService.getRouteRequest(routeRequestId);
-    if (!ManagerFormValidator.validateStatus(routeRequest)) {
+    if (!ManagerFormValidator.validateStatus(routeRequest, 'pending')) {
       await handleStatusValidationError(payload, routeRequest);
       return;
     }

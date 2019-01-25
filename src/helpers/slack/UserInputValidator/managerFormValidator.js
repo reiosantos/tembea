@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { SlackDialogError } from '../../../modules/slack/SlackModels/SlackDialogModels';
+import UserInputValidator from './index';
 
 export default class ManagerFormValidator {
   static validateReasons(reason, field) {
@@ -42,8 +43,18 @@ export default class ManagerFormValidator {
       .concat(ManagerFormValidator.compareDate(startDate, endDate));
   }
 
-  static validateStatus(routeRequest) {
+  static validateStatus(routeRequest, statusText) {
     const { status } = routeRequest;
-    return status.toLowerCase() === 'pending';
+    return status.toLowerCase() === statusText;
+  }
+
+  static approveRequestFormValidation(payload) {
+    if (!payload.submission.routeName) {
+      return;
+    }
+    const errors = [];
+    const err = UserInputValidator.validateApproveRoutesDetails(payload);
+    errors.push(...err);
+    return errors;
   }
 }

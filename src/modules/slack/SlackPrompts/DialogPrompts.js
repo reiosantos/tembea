@@ -92,6 +92,20 @@ class DialogPrompts {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
+  static async sendOperationsNewRouteApprovalDialog(payload, state) {
+    const dialog = new SlackDialog('operations_route_approvedRequest',
+      'Approve Route Request', 'Submit', false, state);
+    dialog.addElements([
+      new SlackDialogText('Route\'s name', 'routeName', 'Enter route\'s name'),
+      new SlackDialogText('Route\'s capacity', 'routeCapacity', 'Enter route\'s capacity'),
+      new SlackDialogText('Route\'s take-off time', 'takeOffTime', 'Enter take-off time',
+        false, 'The time should be in the format (HH:mm), eg. 01:30'),
+      new SlackDialogText('Cab Registration number', 'regNumber',
+        'Enter the Cab\'s registration number'),
+    ]);
+    await DialogPrompts.sendDialog(dialog, payload);
+  }
+
   static async sendBusStopForm(payload, busStageList) {
     const { value } = payload.actions[0];
     const state = { tripId: value, timeStamp: payload.message_ts, channel: payload.channel.id };
