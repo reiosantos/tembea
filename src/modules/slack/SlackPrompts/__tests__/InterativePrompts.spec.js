@@ -2,7 +2,8 @@ import InteractivePrompts from '../InteractivePrompts';
 import InteractivePromptsHelpers from '../../helpers/slackHelpers/InteractivePromptsHelpers';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import {
-  SlackButtonsAttachmentFromAList, SlackAttachment, SlackSelectAction, SlackButtonAction
+  SlackButtonsAttachmentFromAList, SlackAttachment, SlackSelectAction,
+  SlackButtonAction, SlackCancelButtonAction
 } from '../../SlackModels/SlackMessageModels';
 import {
   sendBookNewTripMock,
@@ -274,34 +275,39 @@ describe('LocationPrompts', () => {
     jest.clearAllMocks();
   });
 
-  it('should sendLocationSuggestionResponse', () => {
-    const predictedLocations = [{ text: 'Location1', value: 'place_id' }];
-    const selectedActions = new SlackSelectAction('predictedLocations',
-      'Select Home location', predictedLocations);
-    const buttonAction = new SlackButtonAction('no', 'Location not listed', 'no');
-
-    const respond = jest.fn();
-    LocationPrompts.sendLocationSuggestionsResponse(
-      respond,
-      'https://staticMap',
-      predictedLocations
+  describe('sendLocationSuggestionResponse', () => {
+    const backButtonAction = new SlackButtonAction(
+      'back', '< Back', 'back_to_routes_launch', '#FFCCAA'
     );
-    expect(fieldsOrActionsSpy).toBeCalledWith('actions', [selectedActions, buttonAction]);
-    expect(optionalPropsSpy).toBeCalledWith('new_route_suggestions', '', '#CD0000');
-  });
+    const cancelButtonAction = new SlackCancelButtonAction();
 
-  it('sendLocationSuggestionResponse: empty PredictionLocations', () => {
-    const selectedActions = new SlackButtonAction('retry', 'Try Again', 'retry');
-    const buttonAction = new SlackButtonAction('no', 'Enter Location Coordinates', 'no');
+    it('should sendLocationSuggestionResponse: atleast one prediction location', () => {
+      const predictedLocations = [{ text: 'Location1', value: 'place_id' }];
+      const selectedActions = new SlackSelectAction('predictedLocations',
+        'Select Home location', predictedLocations);
+      const buttonAction = new SlackButtonAction('no', 'Location not listed', 'no');
+      LocationPrompts.sendLocationSuggestionsResponse(
+        'https://staticMap',
+        predictedLocations
+      );
+      expect(fieldsOrActionsSpy).toBeCalledWith('actions', [selectedActions, buttonAction]);
+      expect(fieldsOrActionsSpy).toBeCalledWith('actions', [backButtonAction, cancelButtonAction]);
+      expect(optionalPropsSpy).toBeCalledWith('new_route_suggestions', '', '#CD0000');
+      expect(optionalPropsSpy).toBeCalledWith('back_to_launch', undefined, '#4285f4');
+    });
 
-    const respond = jest.fn();
-    LocationPrompts.sendLocationSuggestionsResponse(
-      respond,
-      'https://staticMap',
-      []
-    );
-    expect(fieldsOrActionsSpy).toBeCalledWith('actions', [selectedActions, buttonAction]);
-    expect(optionalPropsSpy).toBeCalledWith('new_route_locationNotFound', '', '#CD0000');
+    it('sendLocationSuggestionResponse: empty PredictionLocations', () => {
+      const selectedActions = new SlackButtonAction('retry', 'Try Again', 'retry');
+      const buttonAction = new SlackButtonAction('no', 'Enter Location Coordinates', 'no');
+      LocationPrompts.sendLocationSuggestionsResponse(
+        'https://staticMap',
+        []
+      );
+      expect(fieldsOrActionsSpy).toBeCalledWith('actions', [selectedActions, buttonAction]);
+      expect(fieldsOrActionsSpy).toBeCalledWith('actions', [backButtonAction, cancelButtonAction]);
+      expect(optionalPropsSpy).toBeCalledWith('new_route_locationNotFound', '', '#CD0000');
+      expect(optionalPropsSpy).toBeCalledWith('back_to_launch', undefined, '#4285f4');
+    });
   });
 
   it('should sendLocationConfirmationResponse', () => {
@@ -319,5 +325,15 @@ describe('LocationPrompts', () => {
     const respond = jest.fn(value => value);
     LocationPrompts.sendLocationCoordinatesNotFound(respond);
     expect(respond).toBeCalled();
+  });
+  describe('InteractivePrompts_sendTripHistory', () => {
+    const respond = jest.fn();
+    beforeEach(() => {
+      jest.spyOn(InteractivePromptsHelpers, 'formatTripHistory').mockReturnValue([]);
+    });
+    it('Should trip histroy Dialog', () => {
+      InteractivePrompts.sendTripHistory([], 2, 1, [], respond);
+      expect(InteractivePromptsHelpers.formatTripHistory).toBeCalled();
+    });
   });
 });

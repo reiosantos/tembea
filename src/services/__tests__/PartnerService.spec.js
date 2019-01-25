@@ -32,7 +32,7 @@ describe('Partner Service', () => {
     } = engagement;
     engagementFindOrCreate.mockResolvedValue([engagement]);
     const result = await PartnerService.findOrCreateEngagement(
-      startDate, endDate, workHours, fellow, partner
+      workHours, fellow, partner, startDate, endDate
     );
     expect(engagementFindOrCreate)
       .toHaveBeenCalled();

@@ -1,6 +1,6 @@
 import GoogleMapsDirections from './GoogleMapsDirections';
-import { Marker } from '../../helpers/googleMaps/googleMapsHelpers';
-import AddressService from '../AddressService';
+import { Marker, RoutesHelper } from '../../helpers/googleMaps/googleMapsHelpers';
+import bugsnagHelper from '../../helpers/bugsnagHelper';
 
 class GoogleMapsStatic {
   /**
@@ -17,8 +17,7 @@ class GoogleMapsStatic {
   ) {
     const stringedMarkers = GoogleMapsStatic.generateQueryParams(markers);
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-    const params = `size=${size}${stringedMarkers}&zoom=${zoom}$&key=${apiKey}`;
-    const url = `https://maps.googleapis.com/maps/api/staticmap?${params}`;
+    const url = `https://maps.googleapis.com/maps/api/staticmap?size=${size}${stringedMarkers}&zoom=${zoom}&key=${apiKey}`;
     return url;
   }
 
@@ -54,32 +53,32 @@ class GoogleMapsStatic {
     weight = '5',
     color = 'red'
   ) {
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-    // Get the Dojos location from service
-    const theDojo = await AddressService.findAddress('The Dojo');
-    if (!theDojo) {
-      throw new Error('Cannot find the location The Dojo in the database');
+    try {
+      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+
+      const theDojo = await RoutesHelper.getDojoCoordinateFromDb();
+      const { dataValues: { location: { latitude, longitude } } } = theDojo;
+      const dojoLocation = `${latitude}, ${longitude}`;
+
+      // Get directions between the two locations
+      const directions = await GoogleMapsDirections.getDirections(dojoLocation, dropOffLocation);
+
+      // Generate the locations markers
+      const originMarker = new Marker('Blue', 'A');
+      originMarker.addLocation(dojoLocation);
+      const destinationMarker = new Marker('Blue', 'D');
+      destinationMarker.addLocation(dropOffLocation);
+
+      const markersString = GoogleMapsStatic.generateQueryParams([originMarker, destinationMarker]);
+
+      // Generate the URL for the image showing the path between the two locations
+      const path = encodeURI(directions.routes[0].overview_polyline.points);
+      const params = `size=${size}${markersString}&path=weight:${weight}|color:${color}|enc:${path}&zoom=${zoom}$&key=${apiKey}`;
+      const url = `https://maps.googleapis.com/maps/api/staticmap?${params}`;
+      return url;
+    } catch (err) {
+      bugsnagHelper.log(err);
     }
-    const { latitude, longitude } = theDojo.dataValues.location;
-    const dojoLocation = `${latitude}, ${longitude}`;
-
-    // Get directions between the two locations
-    const directions = await GoogleMapsDirections.getDirections(dojoLocation, dropOffLocation);
-
-    // Generate the locations markers
-    const originMarker = new Marker('Blue', 'A');
-    originMarker.addLocation(dojoLocation);
-    const destinationMarker = new Marker('Blue', 'D');
-    destinationMarker.addLocation(dropOffLocation);
-
-    const markersString = GoogleMapsStatic.generateQueryParams([originMarker, destinationMarker]);
-
-    // Generate the URL for the image showing the path between the two locations
-    const path = encodeURI(directions.routes[0].overview_polyline.points);
-    const params = `size=${size}${markersString}&path=weight:${weight}|color:${color}|enc:${path}&zoom=${zoom}$&key=${apiKey}`;
-    const url = `https://maps.googleapis.com/maps/api/staticmap?${params}`;
-
-    return url;
   }
 }
 

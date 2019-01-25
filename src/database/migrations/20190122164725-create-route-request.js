@@ -19,7 +19,7 @@ module.exports = {
       type: Sequelize.DOUBLE
     },
     routeImageUrl: {
-      type: Sequelize.STRING
+      type: Sequelize.TEXT
     },
     status: {
       allowNull: false,

@@ -28,7 +28,7 @@ class PartnerService {
    * @return {Promise<Engagement>}
    * @throws {Error}
    */
-  static async findOrCreateEngagement(startDate, endDate, workHours, fellow, partner) {
+  static async findOrCreateEngagement(workHours, fellow, partner, startDate, endDate) {
     const { id: fellowId } = fellow;
     const { id: partnerId } = partner;
     const [engagement] = await Engagement.findOrCreate({

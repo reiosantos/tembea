@@ -5,7 +5,6 @@ export default async (payload, dateTimeType = 'flightDateTime') => {
   const {
     departmentId, departmentName, contactDetails, tripType
   } = await Cache.fetch(payload.user.id);
-
   return {
     rider: contactDetails.rider,
     departmentId,

@@ -2,6 +2,7 @@ import GoogleMapsClient from '@google/maps';
 import bugsnagHelper from '../bugsnagHelper';
 import GoogleMapsDistanceMatrix from '../../services/googleMaps/GoogleMapsDistanceMatrix';
 import GoogleMapsReverseGeocode from '../../services/googleMaps/GoogleMapsReverseGeocode';
+import AddressService from '../../services/AddressService';
 
 export class Marker {
   /**
@@ -45,6 +46,15 @@ export class RoutesHelper {
       bugsnagHelper.log(error);
       throw error;
     }
+  }
+
+  static async getDojoCoordinateFromDb() {
+    // Get the Dojos location from service
+    const theDojo = await AddressService.findAddress('the dojo');
+    if (!theDojo) {
+      throw new Error('Cannot find the location The Dojo in the database');
+    }
+    return theDojo;
   }
 
   static async verifyDistanceBetween(origins, destinations, limitInMetres) {

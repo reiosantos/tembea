@@ -1,3 +1,4 @@
+import googleClient from '@google/maps';
 import GoogleMapsMock from '../../../../helpers/googleMaps/__mocks__/GoogleMapsMock';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import SlackClientMock from '../../__mocks__/SlackClientMock';
@@ -11,16 +12,28 @@ import DialogPrompts from '../../SlackPrompts/DialogPrompts';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import Cache from '../../../../cache';
 import UserInputValidator from '../../../../helpers/slack/UserInputValidator';
-import { slackEventNames, SlackEvents } from '../../events/slackEvents';
+import GoogleMapsService from '../../../../services/googleMaps';
+import RouteInputHandlerHelper from '../RouteInputHandlerHelper';
+import PreviewPrompts from '../../SlackPrompts/PreviewPrompts';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
-import AddressService from '../../../../services/AddressService';
-import PartnerService from '../../../../services/PartnerService';
-import RouteRequestService from '../../../../services/RouteRequestService';
-import { mockRouteRequestData } from '../../../../services/__mocks__';
+import dummyMockData from './dummyMockData';
+
+import { SlackInteractiveMessage } from '../../SlackModels/SlackMessageModels';
+import { SlackEvents, slackEventNames } from '../../events/slackEvents';
 
 jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../events/index.js');
 jest.mock('../../../../services/TeamDetailsService');
+jest.mock('@google/maps');
+
+jest.mock('../../events/', () => ({
+  slackEvents: jest.fn(() => ({
+    raise: jest.fn(),
+    handle: jest.fn()
+  })),
+}));
+
+const mockedCreateClient = { placesNearby: jest.fn() };
 SlackClientMock();
 GoogleMapsMock();
 
@@ -30,20 +43,15 @@ describe('RouteInputHandler Tests', () => {
   let respond;
   beforeEach(() => {
     respond = jest.fn();
+    googleClient.createClient.mockImplementation(() => (mockedCreateClient));
   });
 
   afterEach(() => {
     jest.resetAllMocks();
-    jest.restoreAllMocks();
+    jest.resetAllMocks();
   });
 
   describe('RouteInputHandler.home Tests', () => {
-    beforeEach(() => {
-      jest.spyOn(GoogleMapsSuggestions, 'getPlacesAutoComplete');
-      jest.spyOn(GoogleMapsStatic, 'getLocationScreenShotUrl');
-      jest.spyOn(GoogleMapsStatic, 'getLocationScreenShotUrl');
-      jest.spyOn(bugsnagHelper, 'log');
-    });
     it('should call sendLocationSuggestionsResponse', async () => {
       const payload = {
         type: 'dialog_submission',
@@ -51,11 +59,11 @@ describe('RouteInputHandler Tests', () => {
           location: 'test location'
         }
       };
-      GoogleMapsSuggestions.getPlacesAutoComplete.mockResolvedValue(
+      GoogleMapsSuggestions.getPlacesAutoComplete = jest.fn().mockResolvedValue(
         { predictions: [{ description: 'Test Location', place_id: 'xxxxx' }] }
       );
-      GoogleMapsStatic.getLocationScreenShotUrl.mockReturnValue('staticMapUrl');
-      jest.spyOn(LocationPrompts, 'sendLocationSuggestionsResponse');
+      GoogleMapsStatic.getLocationScreenShotUrl = jest.fn().mockReturnValue('staticMapUrl');
+      LocationPrompts.sendLocationSuggestionsResponse = jest.fn().mockReturnValue({});
       await RouteInputHandlers.home(payload, respond);
       expect(LocationPrompts.sendLocationSuggestionsResponse).toHaveBeenCalled();
     });
@@ -67,9 +75,10 @@ describe('RouteInputHandler Tests', () => {
           location: 'test location'
         }
       };
-      GoogleMapsSuggestions.getPlacesAutoComplete.mockImplementation(() => {
+      GoogleMapsSuggestions.getPlacesAutoComplete = jest.fn().mockImplementation(() => {
         throw new Error('Dummy error');
       });
+      bugsnagHelper.log = jest.fn().mockReturnValue({});
       await RouteInputHandlers.home(payload, respond);
       expect(bugsnagHelper.log).toHaveBeenCalled();
     });
@@ -177,8 +186,8 @@ describe('RouteInputHandler Tests', () => {
     beforeEach(() => {
       payload = {
         channel: {},
-        team: {},
-        user: { id: '1' },
+        team: { id: 1 },
+        user: { id: 1 },
         actions: [{ value: '12' }],
         submission:
           {
@@ -194,6 +203,25 @@ describe('RouteInputHandler Tests', () => {
     });
 
     describe('handleBusStopRoute', () => {
+      beforeEach(() => {
+        const asPromise = jest.fn().mockResolvedValue({ json: { results: ['Test'] } });
+        mockedCreateClient.placesNearby.mockImplementation(() => ({
+          asPromise
+        }));
+        jest.spyOn(DialogPrompts, 'sendBusStopForm').mockResolvedValue({});
+        jest.spyOn(Cache, 'save').mockResolvedValue();
+        jest.spyOn(GoogleMapsService, 'mapResultsToCoordinates').mockResolvedValue(
+          [{
+            label: 'USIU Stage',
+            text: 'USIU Stage',
+            value: '-1.2249681,36.8853843'
+          }]
+        );
+      });
+      afterEach(() => {
+        jest.resetModules();
+        jest.resetAllMocks();
+      });
       it('handleBusStopRoute throw error', async (done) => {
         await RouteInputHandlers.handleBusStopRoute(payload, respond);
         expect(respond).toHaveBeenCalled();
@@ -202,14 +230,35 @@ describe('RouteInputHandler Tests', () => {
 
       it('handleBusStopRoute: send dialog', async (done) => {
         payload.actions[0].value = '23,23';
-
         await RouteInputHandlers.handleBusStopRoute(payload, respond);
         expect(respond).toHaveBeenCalledTimes(1);
         done();
       });
+
+      it('should get the value for the nearest bus stop', async () => {
+        const maps = new GoogleMapsService();
+        jest.spyOn(maps, 'findNearestBusStops').mockImplementation([{}]);
+        payload.actions[0].value = '23,23';
+
+        await RouteInputHandlers.handleBusStopRoute(payload, respond);
+        expect(GoogleMapsService.mapResultsToCoordinates).toBeCalled();
+      });
+
+      it('should send bus stop Dialog form ', async () => {
+        payload.actions[0].value = '23,23';
+        await RouteInputHandlers.handleBusStopRoute(payload, respond);
+        expect(DialogPrompts.sendBusStopForm).toBeCalled();
+      });
     });
 
     describe('handleBusStopSelected', () => {
+      jest.spyOn(DialogPrompts, 'sendBusStopForm').mockResolvedValue();
+      jest.spyOn(GoogleMapsStatic, 'getPathFromDojoToDropOff')
+        .mockResolvedValue('https://sampleMapurl');
+      jest.spyOn(Cache, 'fetch').mockResolvedValue([{}, {}]);
+      jest.spyOn(Cache, 'save').mockResolvedValue();
+      // jest.spyOn(mockedGetLocationDetailsFromCache, 'getLocationDetailsFromCache')
+      // mockedValidateBusStop.validateBusStop.mockImplementation(null);
       it('handleBusStopSelected error. invalid coordinate', async (done) => {
         const resp = await RouteInputHandlers.handleBusStopSelected(payload, respond);
         expect(respond).toHaveBeenCalledTimes(0);
@@ -251,98 +300,117 @@ describe('RouteInputHandler Tests', () => {
         done();
       });
 
-      it('handleBusStopSelected with valid coordinates', async (done) => {
+      it('handleBusStopSelected with valid coordinates', async () => {
         payload = {
           ...payload,
           submission: { selectBusStop: '34,45' }
         };
-        jest.spyOn(RouteInputHandlers, 'handlePartnerForm')
-          .mockReturnValue();
-        jest.spyOn(Cache, 'save')
-          .mockReturnValue();
-        jest.spyOn(Cache, 'fetch')
-          .mockReturnValue({ busStageList: [{ value: '34,45', text: '' }] });
-        jest.spyOn(GoogleMapsStatic, 'getPathFromDojoToDropOff')
-          .mockReturnValue('https://dummy-url');
+        const previewData = {};
+        jest.spyOn(RouteInputHandlerHelper, 'resolveDestinationPreviewData')
+          .mockReturnValue(previewData);
+        jest.spyOn(PreviewPrompts, 'displayDestinationPreview')
+          .mockReturnValue({});
+        jest.spyOn(RouteInputHandlerHelper, 'savePreviewDataToCache')
+          .mockReturnValue({});
         await RouteInputHandlers.handleBusStopSelected(payload, respond);
-        expect(GoogleMapsStatic.getPathFromDojoToDropOff).toHaveBeenCalledTimes(1);
-        expect(respond).toHaveBeenCalledTimes(1);
-        done();
+        expect(PreviewPrompts.displayDestinationPreview).toHaveBeenCalledWith(previewData);
+      });
+      it('handleBusStopSelected with invalid distance coordinates', async () => {
+        payload = {
+          ...payload,
+          submission: { selectBusStop: '34,45' }
+        };
+        const previewData = { validationError: { test: 'AAAAAA' } };
+        jest.spyOn(RouteInputHandlerHelper, 'resolveDestinationPreviewData')
+          .mockReturnValue(previewData);
+        jest.spyOn(PreviewPrompts, 'displayDestinationPreview')
+          .mockReturnValue({});
+        jest.spyOn(RouteInputHandlerHelper, 'savePreviewDataToCache')
+          .mockReturnValue({});
+        const result = await RouteInputHandlers.handleBusStopSelected(payload, respond);
+        expect(result).toBe(previewData.validationError);
+        expect(PreviewPrompts.displayDestinationPreview).not.toHaveBeenCalled();
+      });
+      it('handleBusStopSelected should handle error properly', async () => {
+        payload = {
+          ...payload,
+          submission: { selectBusStop: '34,45' }
+        };
+        const previewData = { validationError: { test: 'AAAAAA' } };
+        jest.spyOn(RouteInputHandlerHelper, 'resolveDestinationPreviewData')
+          .mockRejectedValue(previewData);
+        jest.spyOn(PreviewPrompts, 'displayDestinationPreview')
+          .mockReturnValue({});
+        jest.spyOn(RouteInputHandlerHelper, 'savePreviewDataToCache')
+          .mockReturnValue({});
+        jest.spyOn(bugsnagHelper, 'log')
+          .mockReturnValue({});
+        await RouteInputHandlers.handleBusStopSelected(payload, respond);
+        expect(bugsnagHelper.log).toHaveBeenCalled();
+        expect(PreviewPrompts.displayDestinationPreview).not.toHaveBeenCalled();
       });
     });
   });
 
-  describe('RouteInputHandler: handle partner form', () => {
+  describe('RouteInputHandlers_handleNewRouteRequest', () => {
+    beforeEach(() => {
+      jest.spyOn(DialogPrompts, 'sendNewRouteForm').mockResolvedValue();
+    });
+    it('should handle route request', async () => {
+      const payload = { actions: [{ value: 'lunchNewRoutePrompt' }] };
+      await RouteInputHandlers.handleNewRouteRequest(payload, respond);
+      expect(DialogPrompts.sendNewRouteForm).toBeCalled();
+    });
+  });
+  describe('RouteInputHandlers_handlePreviewPartnerInfo', () => {
+    const { partnerInfo: { userId, teamId }, locationInfo, partnerInfo } = dummyMockData;
+    beforeEach(() => {
+      jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId').mockResolvedValue(partnerInfo);
+      jest.spyOn(Cache, 'fetch').mockResolvedValue({ locationInfo });
+      jest.spyOn(PreviewPrompts, 'sendPartnerInfoPreview').mockResolvedValue();
+    });
+    it('should display a preview of the fellows information', async () => {
+      const payload = { user: { id: userId }, team: { id: teamId } };
+      await RouteInputHandlers.handlePreviewPartnerInfo(payload, respond);
+      expect(PreviewPrompts.sendPartnerInfoPreview).toBeCalled();
+    });
+  });
+  describe('RouteInputHandlers_handlePartnerForm', () => {
+    const { partnerInfo: { userId, teamId } } = dummyMockData;
+    beforeEach(() => {
+      jest.spyOn(RouteInputHandlerHelper, 'handleRouteRequestSubmission')
+        .mockResolvedValue({ id: userId });
+    });
+    it('should submit the preview form', async () => {
+      const payload = { team: { id: teamId } };
+      await RouteInputHandlers.handlePartnerForm(payload, respond);
+      expect(RouteInputHandlerHelper.handleRouteRequestSubmission).toBeCalled();
+    });
+
+    it('should throw an error when it cannot trigger notification', async () => {
+      jest.spyOn(RouteInputHandlerHelper, 'handleRouteRequestSubmission').mockResolvedValue();
+      const payload = { team: { id: null } };
+      const res = await RouteInputHandlers.handlePartnerForm(payload, respond);
+      expect(res).toBeFalsy();
+    });
+  });
+
+  describe('handleNewRouteRequest', () => {
     let payload;
     beforeEach(() => {
       payload = {
-        user: { id: 'AAAAAA' },
-        team: { id: 'BBBBBB' },
-        submission: {
-          partnerName: 'CCCCCC',
-          managerId: 'DDDDDD',
-          workHours: '20:30-02:30',
-          distance: 2.2,
-          busStopDistance: 1.7,
-        }
+        team: { id: 'AAAAAA' }
       };
-      jest.spyOn(Cache, 'fetch')
-        .mockResolvedValue({
-          homeAddress: {
-            longitude: 'AAAAAA',
-            latitude: 'BBBBBB',
-            address: 'CCCCCC'
-          },
-          busStop: {
-            longitude: 'DDDDDD',
-            latitude: 'EEEEEE',
-            address: 'FFFFFF'
-          },
-        });
-
-      const {
-        busStop, engagement, home, manager
-      } = mockRouteRequestData;
-      const { partner, fellow } = engagement;
-
-      jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId');
-      SlackHelpers.findOrCreateUserBySlackId.mockResolvedValue(manager);
-      SlackHelpers.findOrCreateUserBySlackId.mockResolvedValue(fellow);
-
-      jest.spyOn(AddressService, 'createNewAddress');
-      AddressService.createNewAddress.mockResolvedValue(busStop);
-      AddressService.createNewAddress.mockResolvedValue(home);
-
-      jest.spyOn(PartnerService, 'findOrCreatePartner')
-        .mockResolvedValue(partner);
-      jest.spyOn(PartnerService, 'findOrCreateEngagement')
-        .mockResolvedValue(engagement);
-
-      jest.spyOn(SlackEvents, 'raise')
-        .mockResolvedValue();
-
-      jest.spyOn(RouteRequestService, 'createRoute');
     });
-    it('should properly handle errors', async () => {
-      RouteRequestService.createRoute.mockResolvedValue(mockRouteRequestData);
-
+    it('should notify manager when submission is valid', async () => {
+      jest.spyOn(RouteInputHandlerHelper, 'handleRouteRequestSubmission')
+        .mockResolvedValue({ id: 'BBBBBB' });
+      jest.spyOn(SlackEvents, 'raise').mockReturnValue();
       await RouteInputHandlers.handlePartnerForm(payload, respond);
-
-      expect(SlackEvents.raise)
-        .toHaveBeenCalledTimes(1);
-      expect(SlackEvents.raise.mock.calls[0][0])
-        .toBe(slackEventNames.NEW_ROUTE_REQUEST);
-    });
-    it('should raise event to send manager notification when success', async () => {
-      const msg = 'Random message';
-      RouteRequestService.createRoute.mockRejectedValue(new Error(msg));
-      jest.spyOn(bugsnagHelper, 'log');
-      await RouteInputHandlers.handlePartnerForm(payload, respond);
-
-      expect(SlackEvents.raise).not.toHaveBeenCalled();
-      expect(bugsnagHelper.log).toHaveBeenCalled();
-      expect(bugsnagHelper.log.mock.calls[0][0].message)
-        .toBe(msg);
+      expect(SlackEvents.raise.mock.calls[0][0]).toBe(slackEventNames.NEW_ROUTE_REQUEST);
+      expect(respond).toHaveBeenCalledWith(
+        new SlackInteractiveMessage('Your request have been successfully saved ')
+      );
     });
   });
 });

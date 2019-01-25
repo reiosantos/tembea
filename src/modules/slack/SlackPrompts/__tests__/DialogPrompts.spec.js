@@ -149,4 +149,11 @@ describe('sendBusStopForm dialog', () => {
     expect(sendDialogTryCatch).toBeCalled();
     done();
   });
+  describe('DialogPrompts_sendNewRouteForm', () => {
+    it('should lunch new route form', async () => {
+      const payload = { team: { id: '123' } };
+      await DialogPrompts.sendNewRouteForm(payload);
+      expect(sendDialogTryCatch).toBeCalled();
+    });
+  });
 });

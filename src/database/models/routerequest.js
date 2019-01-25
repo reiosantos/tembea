@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
     busStopId: DataTypes.INTEGER,
     homeId: DataTypes.INTEGER,
     busStopDistance: DataTypes.DOUBLE,
-    routeImageUrl: DataTypes.STRING,
+    routeImageUrl: DataTypes.TEXT,
     status: {
       allowNull: false,
       type: DataTypes.ENUM(

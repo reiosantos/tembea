@@ -3,7 +3,8 @@ import {
   SlackDialog,
   SlackDialogText,
   SlackDialogTextarea,
-  SlackDialogSelectElementWithOptions
+  SlackDialogSelectElementWithOptions,
+  SlackDialogElementWithDataSource
 } from '../SlackModels/SlackDialogModels';
 import dateDialogHelper from '../../../helpers/dateHelper';
 import createDialogForm from '../../../helpers/slack/createDialogForm';
@@ -147,6 +148,31 @@ class DialogPrompts {
 
     dialog.addElements([textarea]);
     await DialogPrompts.sendDialog(dialog, payload);
+  }
+
+  static async sendNewRouteForm(payload) {
+    const selectManager = new SlackDialogElementWithDataSource('Select Manager', 'manager');
+
+    const partnerName = new SlackDialogText(
+      'Partner Name', 'nameOfPartner',
+      'Enter Partner Name', false, 'e.g John Mike LTD'
+    );
+
+    const workingHours = new SlackDialogText(
+      'Working Hours', 'workingHours',
+      'Enter Working Hours', false, 'Hint: hh:mm - hh:mm. e.g 20:30 - 02:30'
+    );
+
+    const dialog = new SlackDialog(
+      'new_route_handlePreviewPartnerInfo', 'Engangement Information', 'Submit', true
+    );
+
+    dialog.addElements([selectManager, partnerName, workingHours]);
+
+    const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
+    const { team: { id: teamId } } = payload;
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 
   static async sendLocationCoordinatesForm(payload) {

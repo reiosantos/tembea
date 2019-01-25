@@ -25,10 +25,13 @@ class GoogleMapsDistanceMatrix {
         'https://maps.googleapis.com/maps/api/distancematrix/json',
         { params }
       );
-
+      const element = response.data.rows[0].elements[0];
+      if (element.status === 'ZERO_RESULTS') {
+        return null;
+      }
       const {
         distance: { text: distanceInKm, value: distanceInMetres }
-      } = response.data.rows[0].elements[0];
+      } = element;
 
       return { distanceInKm, distanceInMetres };
     } catch (error) {

@@ -2,11 +2,11 @@ import createNavButtons from '../../../helpers/slack/navButtons';
 import {
   SlackAttachment,
   SlackButtonAction, SlackInteractiveMessage,
-  SlackSelectAction
+  SlackSelectAction,
 } from '../SlackModels/SlackMessageModels';
 
 class LocationPrompts {
-  static sendLocationSuggestionsResponse(respond, staticMapUrl, predictedLocations) {
+  static sendLocationSuggestionsResponse(staticMapUrl, predictedLocations) {
     const title = predictedLocations.length
       ? 'Locations on the map are marked in the order they appear on the list'
       : 'The location you searched for is not in the acceptable radius :disappointed:';
