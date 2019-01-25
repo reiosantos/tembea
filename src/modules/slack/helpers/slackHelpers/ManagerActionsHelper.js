@@ -6,7 +6,7 @@ class ManagerActionsHelper {
   static async managerDecline(payload) {
     const { value } = payload.actions[0];
 
-    DialogPrompts.sendDialogToManager(payload,
+    DialogPrompts.sendReasonDialog(payload,
       'decline_trip',
       `${payload.original_message.ts} ${payload.channel.id} ${value}`,
       'Decline', 'Decline', 'declineReason');

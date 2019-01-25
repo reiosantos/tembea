@@ -69,7 +69,7 @@ const handlers = {
         routeRequestId
       }
     };
-    DialogPrompts.sendDialogToManager(payload,
+    DialogPrompts.sendReasonDialog(payload,
       'manager_route_declinedRequest',
       JSON.stringify(state), 'Decline', 'Decline', 'declineReason');
   },

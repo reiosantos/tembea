@@ -202,7 +202,7 @@ class SlackInteractions {
       ));
       return;
     }
-    return DialogPrompts.sendDialogToManager(payload,
+    return DialogPrompts.sendReasonDialog(payload,
       'approve_trip',
       `${payload.original_message.ts} ${channel.id} ${actions[0].value}`,
       'Approve', 'Approve', 'approveReason');

@@ -41,27 +41,28 @@ class DialogPrompts {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
-  static async sendDialogToManager(
-    payload, callbackId, state, dialogName, submitButtonText, submissionName
+  static async sendReasonDialog(
+    payload, callbackId, state, dialogName, submitButtonText, submissionName, type = 'trip'
   ) {
+    const tripOrRoute = type === 'trip' ? 'trip' : 'route';
     const dialog = new SlackDialog(callbackId || payload.callbackId,
       dialogName, submitButtonText, false, state);
 
     const commentElement = new SlackDialogTextarea('Reason',
       submissionName,
-      `Why do you want to ${submitButtonText} this trip`);
+      `Why do you want to ${submitButtonText} this ${tripOrRoute}`);
     dialog.addElements([commentElement]);
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
-  static async sendOperationsDeclineDialog(payload) {
+  static async sendOperationsDeclineDialog(payload, callback_id = 'operations_reason_dialog') {
     const actionTs = payload.message_ts;
     const { value } = payload.actions[0];
     const state = {
       trip: value,
       actionTs
     };
-    const dialog = new SlackDialog('operations_reason_dialog',
+    const dialog = new SlackDialog(callback_id,
       'Reason for declining', 'Submit', false, JSON.stringify(state));
     dialog.addElements([
       new SlackDialogTextarea('Justification', 'opsDeclineComment')

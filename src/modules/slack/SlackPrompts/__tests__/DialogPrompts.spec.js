@@ -77,7 +77,7 @@ describe('Dialog prompts test', () => {
   });
 
   it('should send decline dialog', async (done) => {
-    await DialogPrompts.sendDialogToManager({
+    await DialogPrompts.sendReasonDialog({
       trigger_id: 'XXXXXXX',
       team: { id: 'TEAMID1' }
     },

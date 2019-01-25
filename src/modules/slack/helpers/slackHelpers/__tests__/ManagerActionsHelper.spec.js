@@ -18,9 +18,9 @@ describe('ManagerActionsHelper', () => {
   });
   
   it('should handle manager decline', async (done) => {
-    jest.spyOn(DialogPrompts, 'sendDialogToManager').mockImplementation().mockResolvedValue({});
+    jest.spyOn(DialogPrompts, 'sendReasonDialog').mockImplementation().mockResolvedValue({});
     await ManagerActionsHelper.managerDecline(payload);
-    expect(DialogPrompts.sendDialogToManager).toHaveBeenCalled();
+    expect(DialogPrompts.sendReasonDialog).toHaveBeenCalled();
     done();
   });
 

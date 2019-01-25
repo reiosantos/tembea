@@ -1,6 +1,7 @@
 import SlackNotifications from '../SlackPrompts/Notifications';
 import ManagerNotifications from '../SlackPrompts/notifications/ManagerRouteRequest/index';
 import { SlackEvents, slackEventNames } from './slackEvents';
+import OperationsNotifications from '../SlackPrompts/notifications/OperationsRouteRequest';
 
 const slackEvents = SlackEvents;
 
@@ -29,5 +30,8 @@ slackEvents.handle(slackEventNames.MANAGER_DECLINED_ROUTE_REQUEST,
 
 slackEvents.handle(slackEventNames.MANAGER_APPROVED_ROUTE_REQUEST,
   ManagerNotifications.sendManagerApproval);
+
+slackEvents.handle(slackEventNames.OPERATIONS_DECLINE_ROUTE_REQUEST,
+  OperationsNotifications.sendOpsDeclineMessageToFellow);
 
 export default slackEvents;

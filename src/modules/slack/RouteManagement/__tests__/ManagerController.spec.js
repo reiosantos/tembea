@@ -70,13 +70,13 @@ describe('Manager Route controller', () => {
     describe('decline', () => {
       beforeEach(() => {
         payload = { ...payload, callback_id: 'manager_route_decline', };
-        jest.spyOn(DialogPrompts, 'sendDialogToManager')
+        jest.spyOn(DialogPrompts, 'sendReasonDialog')
           .mockImplementation(() => ({}));
       });
       it('should launch decline dialog prompt', async () => {
         getRouteRequest.mockReturnValue(mockRouteRequestData);
         await ManagerController.handleManagerActions(payload, respond);
-        expect(DialogPrompts.sendDialogToManager).toHaveBeenCalledTimes(1);
+        expect(DialogPrompts.sendReasonDialog).toHaveBeenCalledTimes(1);
       });
       it('should not launch decline dialog prompt, request has been approved or declined',
         async () => {

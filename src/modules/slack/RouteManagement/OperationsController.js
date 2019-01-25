@@ -6,6 +6,44 @@ import ManagerFormValidator from '../../../helpers/slack/UserInputValidator/mana
 import OperationsNotifications from '../SlackPrompts/notifications/OperationsRouteRequest/index';
 
 const handlers = {
+  decline: async (payload) => {
+    const { actions, channel: { id: channelId }, original_message: { ts: timeStamp } } = payload;
+    const [{ value: routeRequestId }] = actions;
+
+    const state = {
+      decline: {
+        timeStamp,
+        channelId,
+        routeRequestId
+      }
+    };
+    DialogPrompts.sendReasonDialog(payload,
+      'operations_route_declinedRequest',
+      JSON.stringify(state), 'Decline', 'Decline', 'declineReason', 'route');
+  },
+  declinedRequest: async (payload, respond) => {
+    try {
+      const { submission: { declineReason }, team: { id: teamId } } = payload;
+      const { decline } = JSON.parse(payload.state);
+      const { timeStamp, channelId, routeRequestId } = decline;
+      const {
+        slackBotOauthToken: oauthToken, routeRequest
+      } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
+      // should change  to ops comment
+      const updatedRequest = await RouteRequestService.updateRouteRequest(routeRequest.id, {
+        status: 'Declined',
+        opsComment: declineReason
+      });
+      await OperationsNotifications.completeOperationsDeclineAction(
+        updatedRequest, channelId, teamId, routeRequestId, timeStamp, oauthToken, payload, respond
+      );
+    } catch (error) {
+      bugsnagHelper.log(error);
+      respond(
+        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
+      );
+    }
+  },
   approve: async (payload) => {
     const { actions, channel: { id: channelId }, original_message: { ts: timeStamp } } = payload;
     const [{ value: routeRequestId }] = actions;
