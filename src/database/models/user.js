@@ -35,6 +35,12 @@ module.exports = (sequelize, DataTypes) => {
       sourceKey: 'id'
     });
     User.belongsToMany(models.Partner, { through: 'Engagements', foreignKey: 'userId' });
+    User.belongsToMany(models.Role, {
+      as: 'roles',
+      through: 'UserRole',
+      foreignKey: 'userId',
+    });
   };
+
   return User;
 };

@@ -15,9 +15,9 @@ module.exports = {
       updatedAt: '2018-11-27'
     },
     {
-      name: 'Oluwatominiyi Adebanjo',
+      name: 'Oluwatominiyin Adebanjo',
       slackId: 'UE144LRAQ',
-      email: 'oluwat',
+      email: 'oluwatominiyin.adebanjo@andela.com',
       createdAt: '2018-11-28',
       updatedAt: '2018-11-28'
     },

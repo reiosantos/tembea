@@ -1,5 +1,6 @@
 import validator from 'validator';
 import GeneralValidator from './GeneralValidator';
+import Response from '../helpers/responseHelper';
 
 class UserValidator {
   /**
@@ -10,7 +11,7 @@ class UserValidator {
    * @return {any} The next middleware or the http responds
    */
   static validateEmail(req, res, next) {
-    const email = req.body.email || '';
+    const email = req.query.email || req.body.email || '';
     if (!validator.isEmail(email.trim())) {
       return res.status(400).json({
         success: false,
@@ -115,6 +116,25 @@ class UserValidator {
       success: false,
       message: 'Compulsory property; slackUrl e.g: ACME.slack.com'
     });
+  }
+
+  static getPropName(req) {
+    const {
+      body: { roleName }, query: { email }, path, method
+    } = req;
+
+    return path.startsWith('/roles/user') && method === 'GET'
+      ? [email, 'email as a query param'] : [roleName, 'roleName'];
+  }
+
+  static validateEmailOrRoleName(req, res, next) {
+    const [prop, propName] = UserValidator.getPropName(req);
+
+    const errors = GeneralValidator.validateProp(prop, propName);
+    if (errors.length > 0) {
+      return Response.sendResponse(res, 401, false, errors);
+    }
+    next();
   }
 }
 

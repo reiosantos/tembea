@@ -10,6 +10,7 @@ import modules from './modules';
 import SlackBodyParserFilter from './helpers/slackBodyParserFilter';
 import './modules/slack/events/index';
 import hbsConfig from './hbsConfig';
+import StartUpHelper from './scripts/startUpHelper';
 
 dotenv.config();
 
@@ -48,7 +49,10 @@ app.use('*', (req, res) => res.status(404).json({
   message: 'Not Found. Use /api/v1 to access the api'
 }));
 
-MonthlyReportSender.scheduleReporting(hbs);
+// create super admin method
+StartUpHelper.ensureSuperAdminExists();
+
+MonthlyReportSender.scheduleReporting(app);
 
 /* This handles any errors that Express catches,
    it should come last in the pipeline */

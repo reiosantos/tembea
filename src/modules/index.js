@@ -6,6 +6,8 @@ import userRouter from './users';
 import departmentRouter from './departments';
 import addressRouter from './addresses';
 import slackClientAuth from '../middlewares/slackClientAuth';
+import roleManagementRouter from './roleManagement';
+import authenticationRouter from './authentication';
 
 const apiPrefix = '/api/v1';
 
@@ -21,6 +23,9 @@ const routes = (app, hbs) => {
 
   app.use(`${apiPrefix}/template/email/report`,
     (req, res) => EmailController.generateTemplate(req, res, hbs));
+
+  app.use(apiPrefix, authenticationRouter);
+  app.use(apiPrefix, roleManagementRouter);
 
   return app;
 };
