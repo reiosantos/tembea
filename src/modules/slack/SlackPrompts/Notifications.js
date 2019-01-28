@@ -178,7 +178,8 @@ class SlackNotifications {
         `Sorry, <@${decliner.slackId}> has just declined your trip. :disappointed:`,
         attachments
       );
-      return SlackNotifications.sendNotification(message, slackBotOauthToken);
+      await SlackNotifications.sendNotification(message, slackBotOauthToken);
+      return;
     } catch (error) {
       bugsnagHelper.log(error);
       respond({
@@ -210,7 +211,7 @@ class SlackNotifications {
     attachments.addOptionalProps('', '/fallback', !decline ? '#007F00' : '#FF0000');
     const fields = SlackNotifications.getFieldsToDisplay(tripInformation, payload, decline);
     attachments.addFieldsOrActions('fields', fields);
-    SlackNotifications.sendNotifications(channelId, attachments, message, slackBotOauthToken);
+    await SlackNotifications.sendNotifications(channelId, attachments, message, slackBotOauthToken);
   }
 
   static getFieldsToDisplay(tripInformation, payload, decline) {
