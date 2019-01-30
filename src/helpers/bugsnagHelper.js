@@ -2,19 +2,14 @@ import bugsnag from '@bugsnag/js';
 import bugsnagExpress from '@bugsnag/plugin-express';
 import env from '../config/environment';
 
-const { NODE_ENV } = env;
-const isDev = ['development', 'dev'].includes(NODE_ENV);
-
-class BugsnagHelper {
-  constructor() {
+export class Bugsnag {
+  constructor(bugsnagApiKey) {
     this.bugsnagClient = null;
-    if (!NODE_ENV.match('test')
-      /* istanbul ignore next */
-      && process.env.BUGSNAG_API_KEY
-    ) {
+    const isTestEnv = Bugsnag.checkEnvironments('test');
+    if (!isTestEnv && bugsnagApiKey) {
       /* istanbul ignore next */
       this.bugsnagClient = bugsnag({
-        apiKey: process.env.BUGSNAG_API_KEY,
+        apiKey: bugsnagApiKey,
         autoNotify: true,
         appVersion: '0.0.1',
         appType: 'web_server'
@@ -22,6 +17,11 @@ class BugsnagHelper {
 
       this.bugsnagClient.use(bugsnagExpress);
     }
+  }
+
+  static checkEnvironments(...environments) {
+    const { NODE_ENV } = env;
+    return environments.includes(NODE_ENV);
   }
 
   createMiddleware() {
@@ -47,6 +47,7 @@ class BugsnagHelper {
   }
 
   log(error) {
+    const isDev = Bugsnag.checkEnvironments('development', 'dev');
     if (this.bugsnagClient && !isDev) {
       this.bugsnagClient.notify(error);
     } else if (isDev) {
@@ -56,5 +57,5 @@ class BugsnagHelper {
   }
 }
 
-const bugsnagHelper = new BugsnagHelper();
-export default bugsnagHelper;
+const BugsnagHelper = new Bugsnag(process.env.BUGSNAG_API_KEY);
+export default BugsnagHelper;
