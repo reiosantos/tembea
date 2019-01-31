@@ -1,8 +1,23 @@
-import Cache from '../index';
+import LRUCache from 'lru-cache';
+import Cache, { cache } from '../index';
 import { redisCache } from '../cacheEngine';
 import bugsnagHelper from '../../helpers/bugsnagHelper';
+import { LRUCacheSingleton } from '../lruCache';
+import RedisCacheSingleton from '../redisCache';
 
 describe('Cache tests', () => {
+  describe.only('cache selection logic', () => {
+    it('should use RedisCache when REDIS_URL is valid', () => {
+      const thisCache = cache;
+      expect(thisCache.cache instanceof RedisCacheSingleton).toBeTruthy();
+    });
+
+    it.only('should use lruCache when REDIS_URL is invalid', () => {
+      const thisCache = cache;
+      expect(thisCache.cache instanceof LRUCache).toBeTruthy();
+    });
+  });
+
   describe('save', () => {
     afterEach(() => {
       jest.resetAllMocks();

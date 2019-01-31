@@ -7,7 +7,7 @@ const env = {
   DATABASE_DIALECT: process.env.DATABASE_DIALECT,
   BUGSNAG_API_KEY: process.env.BUGSNAG_API_KEY,
   NODE_ENV: process.env.NODE_ENV || 'production',
-  REDIS_URL: process.env.REDIS_URL || 'redis://127.0.0.1:6379'
+  REDIS_URL: process.env.REDIS_URL
 };
 
 module.exports = envExists(env);

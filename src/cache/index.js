@@ -1,21 +1,11 @@
-import { redisCache as cache } from './cacheEngine';
+import CacheEngine from './cacheEngine';
+import env from '../config/environment';
+import RedisCacheSingleton from './redisCache';
+import LRUCacheSingleton from './lruCache';
 
-class Cache {
-  static async save(key, field, value) {
-    return cache.save(key, field, value);
-  }
+export const cache = env.REDIS_URL.startsWith('redis')
+  ? new RedisCacheSingleton()
+  : new LRUCacheSingleton();
 
-  static async fetch(key) {
-    return cache.fetch(key);
-  }
-
-  static saveObject(key, value) {
-    return cache.saveObject(key, value);
-  }
-
-  static delete(key) {
-    return cache.delete(key);
-  }
-}
-
-export default Cache;
+const cacheEngine = new CacheEngine(cache);
+export default cacheEngine;
