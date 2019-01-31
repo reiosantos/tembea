@@ -1,5 +1,4 @@
 import LRUCache from 'lru-cache';
-import util from 'util';
 import Utils from '../utils';
 
 export const cacheOptions = maxAgeInMinutes => ({
@@ -12,7 +11,6 @@ class LRUCacheSingleton {
       return LRUCacheSingleton.instance;
     }
     this.cache = new LRUCache(cacheOptions(maxAgeInMinutes));
-    this.getAsync = util.promisify(this.cache.get).bind(this.cache);
     LRUCacheSingleton.instance = this;
     LRUCacheSingleton.exists = this;
   }
@@ -21,28 +19,52 @@ class LRUCacheSingleton {
     return this.cache;
   }
 
+  getAsync(key) {
+    return new Promise((resolve, reject) => {
+      try {
+        const result = this.cache.get(key);
+        resolve(result);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
   async save(key, field, value) {
     const currentState = await this.fetch(key);
     if (!currentState) {
       return this.saveObject(key, { [field]: value });
     }
     currentState[field] = value;
-    return this.cache.set(key, JSON.stringify(currentState));
+    return this.cache.set(key, currentState);
   }
 
   async fetch(key) {
     const result = await this.getAsync(key);
-    const data = JSON.parse(result);
-    return data;
+    return result;
   }
 
-  saveObject(key, value) {
+  async saveObject(key, value) {
     const maxCacheAge = Utils.convertMinutesToSeconds(5);
-    return this.cache.set(key, maxCacheAge, JSON.stringify(value));
+    return new Promise((resolve, reject) => {
+      try {
+        const data = this.cache.set(key, value, maxCacheAge);
+        resolve(data);
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 
-  delete(key) {
-    return this.cache.del(key);
+  async delete(key) {
+    return new Promise((resolve, reject) => {
+      try {
+        this.cache.del(key);
+        resolve();
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 }
 

@@ -7,7 +7,7 @@ class CacheEngine {
 
   async save(key, field, value) {
     try {
-      const result = this.cache.save(key, field, value);
+      const result = await this.cache.save(key, field, value);
       return result;
     } catch (error) {
       bugsnagHelper.log(error);
@@ -23,18 +23,18 @@ class CacheEngine {
     }
   }
 
-  saveObject(key, value) {
+  async saveObject(key, value) {
     try {
-      const result = this.cache.saveObject(key, value);
+      const result = await this.cache.saveObject(key, value);
       return result;
     } catch (error) {
       bugsnagHelper.log(error);
     }
   }
 
-  delete(key) {
+  async delete(key) {
     try {
-      const result = this.cache.del(key);
+      const result = await this.cache.delete(key);
       return result;
     } catch (error) {
       bugsnagHelper.log(error);

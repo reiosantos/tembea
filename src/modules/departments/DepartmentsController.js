@@ -22,7 +22,7 @@ class DepartmentController {
         newName ? newName.trim() : newName,
         newHeadEmail ? newHeadEmail.trim() : newHeadEmail
       );
-      return res
+      res
         .status(200)
         .json({
           success: true,
@@ -43,20 +43,21 @@ class DepartmentController {
       const [dept, created] = await DepartmentService.createDepartment(user, name, teamId);
 
       if (created) {
-        return res
+        res
           .status(201)
           .json({
             success: true,
             message: 'Department created successfully',
             department: dept.dataValues
           });
+      } else {
+        res
+          .status(409)
+          .json({
+            success: false,
+            message: 'Department already exists.',
+          });
       }
-      return res
-        .status(409)
-        .json({
-          success: false,
-          message: 'Department already exists.',
-        });
     } catch (error) {
       bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
@@ -82,7 +83,7 @@ class DepartmentController {
 
       const totalPages = Math.ceil(count / size);
 
-      return res.status(200).json({
+      res.status(200).json({
         success: true,
         message: `${page} of ${totalPages} page(s).`,
         pageMeta: {
@@ -109,10 +110,11 @@ class DepartmentController {
       const success = await DepartmentService.deleteDepartmentByNameOrId(id, name);
 
       if (success) {
-        return res.status(200).json({
+        res.status(200).json({
           success,
           message: 'The department has been deleted'
         });
+        return;
       }
     } catch (error) {
       bugsnagHelper.log(error);

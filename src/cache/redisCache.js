@@ -1,5 +1,5 @@
 import redis from 'redis';
-import util from 'util';
+import { promisify } from 'util';
 import env from '../config/environment';
 import Utils from '../utils';
 
@@ -9,7 +9,11 @@ class RedisCacheSingleton {
       return RedisCacheSingleton.instance;
     }
     this.client = redis.createClient(env.REDIS_URL);
-    this.getAsync = util.promisify(this.client.get).bind(this.client);
+    this.client.getAsync = promisify(this.getClient().get);
+    this.client.setAsync = promisify(this.getClient().set);
+    this.client.setexAsync = promisify(this.getClient().setex);
+    this.client.delAsync = promisify(this.getClient().del);
+
     RedisCacheSingleton.instance = this;
     RedisCacheSingleton.exists = this;
   }
@@ -24,22 +28,21 @@ class RedisCacheSingleton {
       return this.saveObject(key, { [field]: value });
     }
     currentState[field] = value;
-    return this.client.set(key, JSON.stringify(currentState));
+    return this.getClient().setAsync(key, JSON.stringify(currentState));
   }
 
   async fetch(key) {
-    const result = await this.getAsync(key);
-    const data = JSON.parse(result);
-    return data;
+    const result = await this.getClient().getAsync(key);
+    return result ? JSON.parse(result) : result;
   }
 
-  saveObject(key, value) {
+  async saveObject(key, value) {
     const maxCacheAge = Utils.convertMinutesToSeconds(5);
-    return this.client.setex(key, maxCacheAge, JSON.stringify(value));
+    return this.getClient().setexAsync(key, maxCacheAge, JSON.stringify(value));
   }
 
-  delete(key) {
-    return this.client.del(key);
+  async delete(key) {
+    return this.getClient().delAsync(key);
   }
 }
 

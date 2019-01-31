@@ -1,7 +1,6 @@
 import request from 'supertest';
 import app from '../../../app';
 
-
 describe('/Departments create', () => {
   it('should return a no user found error with wrong email', (done) => {
     request(app)

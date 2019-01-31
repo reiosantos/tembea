@@ -14,7 +14,7 @@ class TeamDetailsService {
 
     try {
       const { dataValues } = await TeamDetails.findByPk(teamId);
-      cache.saveObject(getTeamDetailsKey(teamId), dataValues);
+      await cache.saveObject(getTeamDetailsKey(teamId), dataValues);
       return dataValues;
     } catch (error) {
       bugsnagHelper.log(error);
@@ -35,7 +35,7 @@ class TeamDetailsService {
           teamUrl: `https://${teamUrl}`
         }
       });
-      cache.saveObject(getTeamDetailsKey(teamUrl), teamDetails);
+      await cache.saveObject(getTeamDetailsKey(teamUrl), teamDetails);
       return teamDetails;
     } catch (error) {
       bugsnagHelper.log(error);
@@ -61,7 +61,7 @@ class TeamDetailsService {
   static async saveTeamDetails(teamObject) {
     try {
       await TeamDetails.upsert({ ...teamObject });
-      cache.saveObject(getTeamDetailsKey(teamObject.teamId), teamObject);
+      await cache.saveObject(getTeamDetailsKey(teamObject.teamId), teamObject);
       return teamObject;
     } catch (error) {
       bugsnagHelper.log(error);
