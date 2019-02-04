@@ -15,7 +15,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DOUBLE,
     },
   }, {});
-  Location.associate = () => {
+  Location.associate = (models) => {
+    Location.hasOne(models.Address, {
+      foreignKey: 'locationId',
+      as: 'address'
+    });
   };
   return Location;
 };
