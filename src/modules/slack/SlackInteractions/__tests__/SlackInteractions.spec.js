@@ -20,8 +20,7 @@ import BugsnagHelper from '../../../../helpers/bugsnagHelper';
 import SlackController from '../../SlackController';
 import ManagerActionsHelper from '../../helpers/slackHelpers/ManagerActionsHelper';
 import ViewTripHelper from '../../helpers/slackHelpers/ViewTripHelper';
-import JoinRouteInputHandlers from '../../RouteManagement/JoinRoute/JoinRouteInputHandlers';
-
+import JoinRouteInteractions from '../../RouteManagement/JoinRoute/JoinRouteInteractions';
 
 describe('SlackInteractions', () => {
   let payload1;
@@ -646,12 +645,12 @@ describe('SlackInteractions', () => {
     beforeEach(() => {
       respond = respondMock();
       DialogPrompts.sendLocationForm = jest.fn();
-      jest.spyOn(JoinRouteInputHandlers, 'sendAvailableRoutesMessage').mockResolvedValue();
+      jest.spyOn(JoinRouteInteractions, 'sendAvailableRoutesMessage').mockResolvedValue();
     });
     it('should test view_available_routes action', (done) => {
       const payload = createPayload('view_available_routes');
       SlackInteractions.startRouteActions(payload, respond);
-      expect(JoinRouteInputHandlers.sendAvailableRoutesMessage).toBeCalled();
+      expect(JoinRouteInteractions.sendAvailableRoutesMessage).toBeCalled();
       done();
     });
 

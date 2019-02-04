@@ -73,7 +73,7 @@ class Validators {
 
   static checkEmpty(param, fieldName) {
     if (param.trim().length < 1) {
-      return [new SlackDialogError(fieldName, `${fieldName} cannot be empty`)];
+      return [new SlackDialogError(fieldName, 'This field cannot be empty')];
     }
     return [];
   }

@@ -3,6 +3,7 @@ import ManagerNotifications from '../SlackPrompts/notifications/ManagerRouteRequ
 import { SlackEvents, slackEventNames } from './slackEvents';
 import OperationsNotifications from '../SlackPrompts/notifications/OperationsRouteRequest';
 import RouteNotifications from '../SlackPrompts/notifications/RouteNotifications';
+import JoinRouteNotifications from '../RouteManagement/JoinRoute/JoinRouteNotifications';
 
 const slackEvents = SlackEvents;
 
@@ -41,5 +42,8 @@ slackEvents.handle(slackEventNames.RIDERS_ROUTE_DEACTIVATED,
 
 slackEvents.handle(slackEventNames.APPROVE_ROUTE_REQUEST,
   OperationsNotifications.sendOpsApproveMessageToFellow);
+
+SlackEvents.handle(slackEventNames.MANAGER_RECEIVE_JOIN_ROUTE,
+  JoinRouteNotifications.sendManagerJoinRequest);
 
 export default slackEvents;

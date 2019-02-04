@@ -19,8 +19,9 @@ import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import RouteInputHandlers from '../RouteManagement';
 import ManagerActionsHelper from '../helpers/slackHelpers/ManagerActionsHelper';
 import ViewTripHelper from '../helpers/slackHelpers/ViewTripHelper';
-import JoinRouteInputHandlers from '../RouteManagement/JoinRoute/JoinRouteInputHandlers';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
+import handleActions from './SlackInteractionsHelper';
+import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInteractions';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -267,12 +268,7 @@ class SlackInteractions {
   }
 
   static handleTravelTripActions(payload, respond) {
-    const callBackName = payload.callback_id.split('_')[2];
-    const tripHandler = travelTripHelper[callBackName];
-    if (tripHandler) {
-      return tripHandler(payload, respond);
-    }
-    respond(SlackInteractions.goodByeMessage());
+    handleActions(payload, respond, travelTripHelper);
   }
 
   static async startRouteActions(payload, respond) {
@@ -284,7 +280,7 @@ class SlackInteractions {
         DialogPrompts.sendLocationForm(payload);
         break;
       case 'view_available_routes':
-        await JoinRouteInputHandlers.sendAvailableRoutesMessage(payload, respond);
+        await JoinRouteInteractions.sendAvailableRoutesMessage(payload, respond);
         break;
       default:
         respond(SlackInteractions.goodByeMessage());

@@ -1,6 +1,6 @@
 import models from '../database/models';
-import Cache from '../cache';
 import TeamDetailsService from './TeamDetailsService';
+import { getRequest, updateRequest } from './SerivceUtils';
 
 const {
   RouteRequest, Engagement
@@ -70,15 +70,7 @@ class RouteRequestService {
    * @throws {Error}
    */
   static async getRouteRequest(id) {
-    let routeRequest;
-    const result = await Cache.fetch(`RouteRequest_${id}`);
-    if (result && result.routeRequest) {
-      ({ routeRequest } = result);
-    } else {
-      routeRequest = await RouteRequestService.getRouteRequestByPk(id);
-      await Cache.saveObject(`RouteRequest_${routeRequest.id}`, { routeRequest });
-    }
-    return routeRequest;
+    return getRequest(id, 'Route', RouteRequestService.getRouteRequestByPk);
   }
 
   /**
@@ -97,10 +89,7 @@ class RouteRequestService {
    * @throws {Error}
    */
   static async updateRouteRequest(id, data) {
-    const routeRequest = await RouteRequestService.getRouteRequestByPk(id);
-    await routeRequest.update(data);
-    await Cache.save(`RouteRequest_${routeRequest.id}`, 'routeRequest', routeRequest);
-    return routeRequest;
+    return updateRequest(id, data, RouteRequestService.getRouteRequestByPk, 'Route');
   }
 
   /**

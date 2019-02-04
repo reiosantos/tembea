@@ -92,6 +92,7 @@ export const mockRouteData = {
   status: 'Inactive',
   vehicle: 'ZZZZZZZ',
   name: 'XXXXXX',
+  imageUrl: 'IIIIII',
   takeOff: 'Pending',
   capacity: 3,
   comments: 'AAAAAA',

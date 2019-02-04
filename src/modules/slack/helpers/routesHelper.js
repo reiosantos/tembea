@@ -48,7 +48,7 @@ class RoutesHelpers {
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('joinRoute', 'Join Route', routeId)
     ]);
-    attachment.addOptionalProps('join_route_actions');
+    attachment.addOptionalProps('join_route_routeSelected');
     return attachment;
   }
 }

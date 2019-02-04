@@ -89,6 +89,11 @@ class Utils {
     };
   }
 
+  static formatTime(time) {
+    return moment(time.trim(), 'HH:mm')
+      .format('LT');
+  }
+
   static async verifyToken(token, envSecret) {
     const secret = process.env[envSecret];
     try {

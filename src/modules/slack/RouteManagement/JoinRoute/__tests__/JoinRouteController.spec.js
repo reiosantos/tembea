@@ -1,4 +1,4 @@
-import JoinRouteInputHandlers from '../JoinRouteInputHandlers';
+import JoinRouteInteractions from '../JoinRouteInteractions';
 import RoutesHelpers from '../../../helpers/routesHelper';
 
 describe('JoinRouteInputHandlers', () => {
@@ -15,7 +15,7 @@ describe('JoinRouteInputHandlers', () => {
 
     it('should display all routes', async () => {
       const payload = {};
-      await JoinRouteInputHandlers.sendAvailableRoutesMessage(payload, respond);
+      await JoinRouteInteractions.sendAvailableRoutesMessage(payload, respond);
       expect(RoutesHelpers.toAvailableRoutesAttachment).toBeCalled();
     });
   });

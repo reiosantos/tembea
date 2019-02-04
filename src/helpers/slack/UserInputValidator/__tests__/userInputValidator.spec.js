@@ -315,7 +315,7 @@ describe('test Validators class', () => {
 
   it('should test empty fields', () => {
     const result = Validators.checkEmpty(' ', 'destination');
-    expect(result[0]).toHaveProperty('error', 'destination cannot be empty');
+    expect(result[0]).toHaveProperty('error', 'This field cannot be empty');
   });
 
   it('should test not empty fields', () => {

@@ -2,6 +2,7 @@ import { createMessageAdapter } from '@slack/interactive-messages';
 import SlackInteractions from './index';
 import ManagerController from '../RouteManagement/ManagerController';
 import OperationsController from '../RouteManagement/OperationsController';
+import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInteractions';
 
 const slackInteractionsRouter = createMessageAdapter(process.env.SLACK_SIGNING_SECRET);
 
@@ -43,5 +44,7 @@ slackInteractionsRouter.action({ callbackId: /^operations_route/ },
   OperationsController.handleOperationsActions);
 slackInteractionsRouter.action({ callbackId: 'view_new_trip' },
   SlackInteractions.completeTripResponse);
+slackInteractionsRouter.action({ callbackId: /^join_route/ },
+  JoinRouteInteractions.handleJoinRouteActions);
 
 export default slackInteractionsRouter;
