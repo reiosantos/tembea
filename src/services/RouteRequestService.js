@@ -123,6 +123,17 @@ class RouteRequestService {
     ]);
     return { slackBotOauthToken, routeRequest };
   }
+
+  /**
+   * Retrieves all route requests
+   * @returns {Promise<Promise<Array<Model>>|Promise<Instance[]>|Promise<TInstance[]>|*|Array>}
+   */
+  static async getAllConfirmedRouteRequests() {
+    return RouteRequest.findAll({
+      where: { status: 'Confirmed' },
+      include: RouteRequestService.defaultInclude
+    });
+  }
 }
 
 RouteRequestService.defaultInclude = ['manager', 'busStop', 'home',

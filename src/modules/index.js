@@ -1,4 +1,5 @@
 import EmailController from './report/EmailController';
+import routesRouter from './routes';
 import slackRouter from './slack';
 import slackInteractionsRouter from './slack/SlackInteractions/SlackInteractionsRouter';
 import homeRouter from './home';
@@ -18,6 +19,7 @@ const routes = (app, hbs) => {
   app.use(apiPrefix, addressRouter);
   app.use(apiPrefix, slackClientAuth, slackRouter);
   app.use(apiPrefix, departmentRouter);
+  app.use(apiPrefix, routesRouter);
   app.use(`${apiPrefix}/slack/actions`, slackClientAuth,
     slackInteractionsRouter.expressMiddleware());
 
