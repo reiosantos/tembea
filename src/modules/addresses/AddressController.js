@@ -1,7 +1,7 @@
 import HttpError from '../../helpers/errorHandler';
 import bugsnagHelper from '../../helpers/bugsnagHelper';
 import AddressService from '../../services/AddressService';
-import defaultSize from '../../helpers/constants';
+import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
 import Response from '../../helpers/responseHelper';
 
 class AddressController {

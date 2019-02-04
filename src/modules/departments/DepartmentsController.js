@@ -2,7 +2,7 @@ import HttpError from '../../helpers/errorHandler';
 import DepartmentService from '../../services/DepartmentService';
 import UserService from '../../services/UserService';
 import bugsnagHelper from '../../helpers/bugsnagHelper';
-import defaultSize from '../../helpers/constants';
+import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
 import TeamDetailsService from '../../services/TeamDetailsService';
 
 
@@ -22,7 +22,7 @@ class DepartmentController {
         newName ? newName.trim() : newName,
         newHeadEmail ? newHeadEmail.trim() : newHeadEmail
       );
-      res
+      return res
         .status(200)
         .json({
           success: true,
@@ -43,21 +43,20 @@ class DepartmentController {
       const [dept, created] = await DepartmentService.createDepartment(user, name, teamId);
 
       if (created) {
-        res
+        return res
           .status(201)
           .json({
             success: true,
             message: 'Department created successfully',
             department: dept.dataValues
           });
-      } else {
-        res
-          .status(409)
-          .json({
-            success: false,
-            message: 'Department already exists.',
-          });
       }
+      return res
+        .status(409)
+        .json({
+          success: false,
+          message: 'Department already exists.',
+        });
     } catch (error) {
       bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
@@ -83,7 +82,7 @@ class DepartmentController {
 
       const totalPages = Math.ceil(count / size);
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: `${page} of ${totalPages} page(s).`,
         pageMeta: {
@@ -110,11 +109,10 @@ class DepartmentController {
       const success = await DepartmentService.deleteDepartmentByNameOrId(id, name);
 
       if (success) {
-        res.status(200).json({
+        return res.status(200).json({
           success,
           message: 'The department has been deleted'
         });
-        return;
       }
     } catch (error) {
       bugsnagHelper.log(error);

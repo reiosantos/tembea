@@ -66,3 +66,34 @@ export const mockRouteRequestData = {
     partner
   }
 };
+export const mockRouteData = {
+  id: 12,
+  status: 'Inactive',
+  vehicle: 'ZZZZZZZ',
+  name: 'XXXXXX',
+  takeOff: 'Pending',
+  capacity: 3,
+  comments: 'AAAAAA',
+  destination: 'AAAAAA',
+  inUse: 'AAAAAA',
+};
+
+const riders = [{ email: 'AAA.BBB@CCC.DDD', slackId: 'ABCDEF', id: 123 }];
+const destination = { id: 456, address: 'BBBBBB' };
+const route = {
+  name: 'ZZZZZZ', imageUrl: 'https://image-url', destination, routeBatch: [{ batch: 'A' }]
+};
+const cabDetails = {
+  driverName: 'AAAAAA', driverPhoneNo: '+123456789', regNumber: 'CCCCCC'
+};
+const batchDetails = {
+  batch: 'A',
+  capacity: 1,
+  takeOff: 'DD:DD',
+  comments: 'EEEEEE',
+  imageUrl: 'https://image-url',
+  status: 'Active',
+};
+export const mockRouteBatchData = {
+  cabDetails, route, riders, ...batchDetails
+};

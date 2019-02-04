@@ -10,15 +10,21 @@ class LocationService {
    * @param {number} longitude The longitude of the location on the db
    * @param {number} latitude The latitude of the location on the db
    * @param {boolean} raiseError
+   * @param {boolean} includeAddress
    * @return {Promise<object>} location model
    */
-  static async findLocation(longitude, latitude, raiseError = false) {
+  static async findLocation(longitude, latitude, raiseError = false, includeAddress = false) {
     try {
+      let include;
+      if (includeAddress) {
+        include = ['address'];
+      }
       const location = await Location.findOne({
         where: {
           longitude,
           latitude
-        }
+        },
+        include
       });
 
       if (raiseError) {

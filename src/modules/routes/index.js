@@ -1,12 +1,25 @@
 import express from 'express';
 import TokenValidator from '../../middlewares/TokenValidator';
-import RouteController from './RouteController';
+import RoutesController from './RouteController';
+import middlewares from '../../middlewares';
 
+const { GeneralValidator } = middlewares;
 const routesRouter = express.Router();
+
+routesRouter.get(
+  '/routes',
+  GeneralValidator.validateQueryParams,
+  RoutesController.getRoutes
+);
+
+routesRouter.post(
+  '/routes',
+  RoutesController.createRoute
+);
 
 routesRouter.get('/routes/requests',
   TokenValidator.attachJwtSecretKey,
   TokenValidator.authenticateToken,
-  RouteController.getAll);
+  RoutesController.getAll);
 
 export default routesRouter;
