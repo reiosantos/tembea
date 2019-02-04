@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import models from '../database/models';
 import HttpError from '../helpers/errorHandler';
 import bugsnagHelper from '../helpers/bugsnagHelper';
@@ -16,7 +17,7 @@ class AddressService {
     try {
       const place = await Address.findOne({
         where: {
-          address: address.toLowerCase()
+          address: { [Op.iLike]: `${address}%` }
         },
         include: ['location']
       });
@@ -38,7 +39,7 @@ class AddressService {
     try {
       const location = await LocationService.createLocation(longitude, latitude);
       const addressData = await Address.create({
-        locationId: location.id, address: (address.toLowerCase()).trim()
+        locationId: location.id, address
       });
       const newAddressData = { ...addressData.dataValues, ...location };
       return newAddressData;
@@ -69,6 +70,7 @@ class AddressService {
       const updatedAddressData = { ...modAddress.dataValues, ...modAddress.location.dataValues };
       return updatedAddressData;
     } catch (error) {
+      bugsnagHelper.log(error);
       HttpError.throwErrorIfNull(
         null,
         'Could not update address record',

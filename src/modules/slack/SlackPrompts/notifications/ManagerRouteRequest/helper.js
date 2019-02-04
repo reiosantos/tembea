@@ -70,24 +70,29 @@ export default class ManagerAttachmentHelper {
     );
   }
 
+  static labelsHelper(status, fellow) {
+    const lowerStatus = status.toLowerCase();
+    const emoji = status === 'Confirmed' ? ':white_check_mark:' : ':x:';
+    const title = `Route Request ${status}`;
+    const message = `${emoji} You have ${lowerStatus} this route`;
+    const text = `You have just ${lowerStatus} <@${fellow.slackId}> route request`;
+    const color = status === 'Confirmed' ? '#3359DF' : '#FF0000';
+
+    return {
+      title, message, text, color
+    };
+  }
+
   static completeManagerActionLabels(routeRequest) {
     const { status, engagement: { fellow } } = routeRequest;
-    const confirmed = status === 'Confirmed';
-    const declined = status === 'Declined';
     let title;
     let message;
     let text;
     let color;
-    if (declined) {
-      title = 'Route Request Declined';
-      message = ':x: You have declined this route';
-      text = `You have just declined <@${fellow.slackId}> route request`;
-      color = '#FF0000';
-    } else if (confirmed) {
-      title = 'Route Request Confirmed';
-      message = ':white_check_mark: You have confirmed this route';
-      text = `You have just confirmed <@${fellow.slackId}> route request`;
-      color = '#3359DF';
+    if (status === 'Confirmed' || status === 'Declined') {
+      ({
+        title, message, text, color
+      } = this.labelsHelper(status, fellow));
     }
     return {
       title, message, text, color

@@ -4,6 +4,7 @@ import DialogPrompts from '../SlackPrompts/DialogPrompts';
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import ManagerFormValidator from '../../../helpers/slack/UserInputValidator/managerFormValidator';
 import OperationsNotifications from '../SlackPrompts/notifications/OperationsRouteRequest/index';
+import { getAction } from './rootFile';
 
 const handlers = {
   decline: async (payload) => {
@@ -95,11 +96,7 @@ class OperationsController {
 
   static handleOperationsActions(payload, respond) {
     try {
-      const { actions, callback_id: callBackId } = payload;
-      let action = callBackId.split('_')[2];
-      if (action === 'actions') {
-        ([{ name: action }] = actions);
-      }
+      const action = getAction(payload, 'actions');
       const actionHandler = OperationsController.operationsRouteController(action);
       return actionHandler(payload, respond);
     } catch (error) {

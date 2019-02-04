@@ -12,6 +12,7 @@ jest.mock('nodemailer', () => ({
 }));
 
 jest.mock('request-promise-native');
+jest.mock('node-schedule');
 jest.mock('../../../services/EmailService');
 
 const summary = {
@@ -137,6 +138,32 @@ describe('MonthlyReportSender', () => {
       expect(result[0]).toHaveProperty('name');
       expect(result[1]).toHaveProperty('email');
       done();
+    });
+  });
+  describe('getTemplate', () => {
+    it('should ', async () => {
+      const mockTemplate = '<div>This is a template</div>';
+      const mockHbs = {
+        baseTemplates: 'baseTemplate',
+        render: jest.fn()
+          .mockResolvedValue(mockTemplate),
+      };
+      MonthlyReportSender.scheduleReporting(mockHbs);
+      const data = { test: 'dummy data' };
+      const template = await MonthlyReportSender.getTemplate(data);
+      expect(template)
+        .toBe(mockTemplate);
+      expect(mockHbs.render.mock.calls[0][0])
+        .toBe(`${mockHbs.baseTemplates}/email/email.html`);
+      expect(mockHbs.render.mock.calls[0][1])
+        .toBe(data);
+    });
+  });
+  describe('recurringFunction', () => {
+    it('should ', async () => {
+      jest.spyOn(MonthlyReportSender, 'send').mockResolvedValue();
+      await MonthlyReportSender.recurringFunction();
+      expect(MonthlyReportSender.send).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -152,13 +152,16 @@ const RouteInputHandlers = {
     }
   },
   handlePreviewPartnerInfo: async (payload, respond) => {
-    // save partner info to cache
     const { user: { id: userId }, team: { id: teamId } } = payload;
     const [requester, cached] = await Promise.all([
       SlackHelpers.findOrCreateUserBySlackId(userId, teamId),
       Cache.fetch(userId)
     ]);
     const { locationInfo } = cached;
+    const { submission } = payload;
+    const errors = UserInputValidator.validateEngagementForm(submission);
+
+    if (errors) return errors;
 
     if (locationInfo) {
       const message = PreviewPrompts.sendPartnerInfoPreview(payload, locationInfo, requester);

@@ -25,6 +25,15 @@ import { slackEventNames, SlackEvents } from '../events/slackEvents';
 import createNavButtons from '../../../helpers/slack/navButtons';
 import GoogleMapsDistanceMatrix from '../../../services/googleMaps/GoogleMapsDistanceMatrix';
 
+const getAction = (payload, btnAction) => {
+  const { actions, callback_id: callBackId } = payload;
+  let action = callBackId.split('_')[2];
+  if (action === btnAction) {
+    ([{ name: action }] = actions);
+  }
+  return action;
+};
+
 export {
   moment, GoogleMapsLocationSuggestionOptions,
   Marker,
@@ -38,4 +47,5 @@ export {
   LocationPrompts, AddressService, SlackHelpers,
   slackEventNames, SlackEvents,
   createNavButtons,
+  getAction,
 };

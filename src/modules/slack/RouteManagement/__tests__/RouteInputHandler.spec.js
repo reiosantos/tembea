@@ -370,9 +370,29 @@ describe('RouteInputHandler Tests', () => {
       jest.spyOn(PreviewPrompts, 'sendPartnerInfoPreview').mockResolvedValue();
     });
     it('should display a preview of the fellows information', async () => {
-      const payload = { user: { id: userId }, team: { id: teamId } };
+      const submission = { nameOfPartner: 'Test Partner', workingHours: '20:30 - 02:30' };
+      const payload = { user: { id: userId }, team: { id: teamId }, submission };
       await RouteInputHandlers.handlePreviewPartnerInfo(payload, respond);
       expect(PreviewPrompts.sendPartnerInfoPreview).toBeCalled();
+    });
+
+    it('should return an error when the user do not input their partner name', async () => {
+      const submission = { nameOfPartner: '', workingHours: '20:30 - 02:30' };
+      const payload = { user: { id: userId }, team: { id: teamId }, submission };
+      const res = await RouteInputHandlers.handlePreviewPartnerInfo(payload, respond);
+      const { errors: [SlackDialogError] } = res;
+      const { name, error } = SlackDialogError;
+      expect(name).toEqual('nameOfPartner');
+      expect(error).toEqual("Please enter your partner's name");
+    });
+    it('should return an error when user enter invalid date', async () => {
+      const submission = { nameOfPartner: '', workingHours: '20:30 - hello' };
+      const payload = { user: { id: userId }, team: { id: teamId }, submission };
+      const res = await RouteInputHandlers.handlePreviewPartnerInfo(payload, respond);
+      const { errors: [SlackDialogError] } = res;
+      const { name, error } = SlackDialogError;
+      expect(name).toEqual('workingHours');
+      expect(error).toEqual('Invalid date');
     });
   });
   describe('RouteInputHandlers_handlePartnerForm', () => {

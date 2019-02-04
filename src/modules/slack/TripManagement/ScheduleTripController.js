@@ -4,6 +4,7 @@ import { slackEventNames } from '../events/slackEvents';
 import models from '../../../database/models';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
+import Validators from '../../../helpers/slack/UserInputValidator/Validators';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
 
@@ -28,7 +29,7 @@ class ScheduleTripController {
     errors.push(...await UserInputValidator.validateTravelFormSubmission(submission));
     errors.push(...await UserInputValidator.validateDateAndTimeEntry(payload,
       dateFieldName));
-    errors.push(...await UserInputValidator.checkDateTimeIsHoursAfterNow(allowedHours,
+    errors.push(...await Validators.checkDateTimeIsHoursAfterNow(allowedHours,
       travelDateTime, dateFieldName));
 
     return errors;

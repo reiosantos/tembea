@@ -1,5 +1,6 @@
 import ScheduleTripController from '../ScheduleTripController';
 import UserInputValidator from '../../../../helpers/slack/UserInputValidator';
+import Validators from '../../../../helpers/slack/UserInputValidator/Validators';
 import dateHelper from '../../../../helpers/dateHelper';
 import {
   createPayload, tripRequestDetails, respondMock
@@ -270,7 +271,7 @@ describe('Create Travel Trip request test', () => {
         throw new Error('Not working');
       });
       UserInputValidator.validateDateAndTimeEntry = jest.fn(() => errorMock);
-      UserInputValidator.checkDateTimeIsHoursAfterNow = jest.fn(() => errorMock);
+      Validators.checkDateTimeIsHoursAfterNow = jest.fn(() => errorMock);
 
       try {
         await ScheduleTripController.validateTravelDetailsForm('payload');

@@ -292,7 +292,7 @@ describe('LocationPrompts', () => {
       );
       expect(fieldsOrActionsSpy).toBeCalledWith('actions', [selectedActions, buttonAction]);
       expect(fieldsOrActionsSpy).toBeCalledWith('actions', [backButtonAction, cancelButtonAction]);
-      expect(optionalPropsSpy).toBeCalledWith('new_route_suggestions', '', '#CD0000');
+      expect(optionalPropsSpy).toBeCalledWith('new_route_suggestions', '', '#3AAF85');
       expect(optionalPropsSpy).toBeCalledWith('back_to_launch', undefined, '#4285f4');
     });
 
@@ -305,7 +305,7 @@ describe('LocationPrompts', () => {
       );
       expect(fieldsOrActionsSpy).toBeCalledWith('actions', [selectedActions, buttonAction]);
       expect(fieldsOrActionsSpy).toBeCalledWith('actions', [backButtonAction, cancelButtonAction]);
-      expect(optionalPropsSpy).toBeCalledWith('new_route_locationNotFound', '', '#CD0000');
+      expect(optionalPropsSpy).toBeCalledWith('new_route_locationNotFound', '', '#3AAF85');
       expect(optionalPropsSpy).toBeCalledWith('back_to_launch', undefined, '#4285f4');
     });
   });

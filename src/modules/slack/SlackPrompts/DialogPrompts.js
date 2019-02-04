@@ -160,11 +160,11 @@ class DialogPrompts {
 
     const workingHours = new SlackDialogText(
       'Working Hours', 'workingHours',
-      'Enter Working Hours', false, 'Hint: hh:mm - hh:mm. e.g 20:30 - 02:30'
+      'Enter Working Hours', false, 'Hint: (From - To) hh:mm - hh:mm. e.g 20:30 - 02:30'
     );
 
     const dialog = new SlackDialog(
-      'new_route_handlePreviewPartnerInfo', 'Engangement Information', 'Submit', true
+      'new_route_handlePreviewPartnerInfo', 'Engagement Information', 'Submit', true
     );
 
     dialog.addElements([selectManager, partnerName, workingHours]);

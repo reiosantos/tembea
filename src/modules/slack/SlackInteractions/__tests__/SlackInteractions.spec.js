@@ -529,7 +529,7 @@ describe('Handle trip actions', () => {
 });
 
 describe('Manager Approve trip', () => {
-  it('manager should be able to approve trip', () => {
+  it('approveTripRequestByManager:  trip already approved', () => {
     const trip = {
       isApproved: true
     };
@@ -537,6 +537,18 @@ describe('Manager Approve trip', () => {
     SlackInteractions.approveTripRequestByManager({}, trip, respond);
 
     expect(respond).toHaveBeenCalled();
+  });
+
+  it('approveTripRequestByManager: trip not yet approved', () => {
+    const trip = { isApproved: false };
+    const payload = {
+      original_message: { ts: '123.123456' },
+      channel: { id: '1' },
+      actions: [{ value: 'value' }]
+    };
+    DialogPrompts.sendReasonDialog = jest.fn();
+    SlackInteractions.approveTripRequestByManager(payload, trip);
+    expect(DialogPrompts.sendReasonDialog).toBeCalled();
   });
 
   it('should handle has approved', async () => {

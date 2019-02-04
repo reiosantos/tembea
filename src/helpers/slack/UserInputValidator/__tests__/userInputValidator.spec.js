@@ -1,5 +1,6 @@
 import moment from 'moment';
 import UserInputValidator from '../index';
+import Validators from '../Validators';
 import DateDialogHelper from '../../../dateHelper';
 import {
   createPayload
@@ -27,41 +28,42 @@ jest.mock('@slack/client', () => ({
   }))
 }));
 
-describe('checkNumberAndLetters', () => {
+
+describe('checkNumbersAndLetters', () => {
   it('should accept numbers and letters', () => {
-    const errors = UserInputValidator.checkNumberAndLetters('0A', 'name');
+    const errors = Validators.validateRegex('checkNumbersAndLetters', '0A', 'name');
     expect(errors.length).toEqual(0);
   });
   it('should not accept letters and special characters', () => {
-    const errors = UserInputValidator.checkNumberAndLetters('***testthis***', 'name');
+    const errors = Validators.validateRegex('checkNumbersAndLetters', '***testthis***', 'name');
     expect(errors.length).toEqual(1);
   });
 });
 
 describe('checkMinLengthNumber', () => {
   it('should accept numbers of a defined length in the parameters', () => {
-    const errors = UserInputValidator.checkMinLengthNumber('5', '12345', 'number');
+    const errors = Validators.checkMinLengthNumber('5', '12345', 'number');
     expect(errors.length).toEqual(0);
   });
   it('should not accept numbers less than the defined length in the parameters', () => {
-    const errors = UserInputValidator.checkMinLengthNumber('5', '1', 'number');
+    const errors = Validators.checkMinLengthNumber('5', '1', 'number');
     expect(errors.length).toEqual(1);
   });
 });
 
 describe('validateEmptyAndSpaces', () => {
   it('should not allow empty spaces', () => {
-    const result = UserInputValidator.validateEmptyAndSpaces('           ');
+    const result = Validators.validateEmptyAndSpaces('           ');
     expect(result.length).toBeGreaterThan(0);
   });
 });
 
 describe('checkLocationsWithoutOthersField', () => {
   it('should not allow empty spaces', () => {
-    let result = UserInputValidator.checkLocationsWithoutOthersField('equal', 'equal');
+    let result = Validators.checkLocationsWithoutOthersField('equal', 'equal');
     expect(result.length).toBeGreaterThan(0);
 
-    result = UserInputValidator.checkLocationsWithoutOthersField('equal', 'not equal');
+    result = Validators.checkLocationsWithoutOthersField('equal', 'not equal');
     expect(result.length).toEqual(0);
   });
 });
@@ -91,11 +93,11 @@ describe('validateTravelFormSubmission', () => {
 
 describe('checkNumber', () => {
   it('should accept numbers', () => {
-    const errors = UserInputValidator.checkNumber('0', 'number');
+    const errors = Validators.validateRegex('checkNumber', '0', 'number');
     expect(errors.length).toEqual(0);
   });
   it('should not accept letters and special characters', () => {
-    const errors = UserInputValidator.checkNumber('***test***', 'number');
+    const errors = Validators.validateRegex('checkNumber', '***test***', 'number');
     expect(errors.length).toEqual(1);
   });
 });
@@ -103,24 +105,24 @@ describe('checkNumber', () => {
 describe('UserInputValidator tests', () => {
   describe('checkWord', () => {
     it('should return an error when address contains special characters', () => {
-      const errors = UserInputValidator.checkWord('13, Androse road $$$');
+      const errors = Validators.validateRegex('checkWord', '13, Androse road $$$');
       expect(errors.length).toEqual(1);
     });
     it('should return an empty array when address is good', () => {
-      const errors = UserInputValidator.checkWord('13, Androse road');
+      const errors = Validators.validateRegex('checkWord', '13, Androse road');
       expect(errors.length).toEqual(0);
     });
   });
 
   describe('checkOriginAnDestination', () => {
     it('should return errors when pickup and destination are NOT Others but are the same', () => {
-      const errors = UserInputValidator.checkOriginAnDestination(
+      const errors = Validators.checkOriginAnDestination(
         'Andela-Nairobi', 'Andela-Nairobi', 'pickupName', 'destinationName'
       );
       expect(errors.length).toEqual(2);
     });
     it('should return errors when pickup and destination are NOT Others and NOT the same', () => {
-      const errors = UserInputValidator.checkOriginAnDestination(
+      const errors = Validators.checkOriginAnDestination(
         'Andela-Nairobi', 'Andela-Kigali', 'pickupName', 'destinationName'
       );
       expect(errors.length).toEqual(0);
@@ -130,12 +132,12 @@ describe('UserInputValidator tests', () => {
   describe('checkDate', () => {
     it('should return errors when date is less than now', () => {
       DateDialogHelper.dateChecker = jest.fn(() => -20);
-      const errors = UserInputValidator.checkDate('10/10/2018 22:00', 3600);
+      const errors = Validators.checkDate('10/10/2018 22:00', 3600);
       expect(errors.length).toEqual(1);
     });
     it('should return an empty array when date is greater than now', () => {
       DateDialogHelper.dateChecker = jest.fn(() => 20);
-      const errors = UserInputValidator.checkDate('10/10/2050 22:00', 3600);
+      const errors = Validators.checkDate('10/10/2050 22:00', 3600);
       expect(errors.length).toEqual(0);
     });
   });
@@ -143,23 +145,23 @@ describe('UserInputValidator tests', () => {
   describe('checkDateTimeFormat', () => {
     it('should return errors when date is NOT in Day/Month/Year HH:MM format', () => {
       DateDialogHelper.validateDateTime = jest.fn(() => false);
-      const errors = UserInputValidator.checkDateTimeFormat('10/10/2018 22:00');
+      const errors = Validators.checkDateTimeFormat('10/10/2018 22:00');
       expect(errors.length).toEqual(1);
     });
     it('should return an empty array when date is in Day/Month/Year HH:MM format', () => {
       DateDialogHelper.validateDateTime = jest.fn(() => true);
-      const errors = UserInputValidator.checkDateTimeFormat('10/10/2050 22:00');
+      const errors = Validators.checkDateTimeFormat('10/10/2050 22:00');
       expect(errors.length).toEqual(0);
     });
   });
 
   describe('checkDateFormat', () => {
     it('should return errors when date is NOT in Month/Day/Year format', () => {
-      const errors = UserInputValidator.checkDateFormat('10/33/2018');
+      const errors = Validators.checkDateFormat('10/33/2018');
       expect(errors.length).toEqual(1);
     });
     it('should return an empty array when date is in Day/Month/Year format', () => {
-      const errors = UserInputValidator.checkDateFormat('10/10/2050');
+      const errors = Validators.checkDateFormat('10/10/2050');
       expect(errors.length).toEqual(0);
     });
   });
@@ -205,8 +207,8 @@ describe('UserInputValidator tests', () => {
 
   describe('validateDateAndTimeEntry', () => {
     it('should return date validation errors if they exist', async () => {
-      UserInputValidator.checkDate = jest.fn(() => []);
-      UserInputValidator.checkDateTimeFormat = jest.fn(() => []);
+      Validators.checkDate = jest.fn(() => []);
+      Validators.checkDateTimeFormat = jest.fn(() => []);
       TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => {});
       const payload = createPayload();
       const errors = await UserInputValidator.validateDateAndTimeEntry(payload);
@@ -233,13 +235,13 @@ describe('UserInputValidator tests', () => {
 
   describe('checkUsername', () => {
     it('valid user name', () => {
-      const result = UserInputValidator.checkUsername('dummyUser', 'driver');
+      const result = Validators.validateRegex('checkUsername', 'dummyUser', 'driver');
       expect(result.length).toEqual(0);
     });
     it('invalid username', () => {
-      let result = UserInputValidator.checkUsername('*****dummyUser*****', 'driver');
+      let result = Validators.validateRegex('checkUsername', '*****dummyUser*****', 'driver');
       expect(result.length).toEqual(1);
-      result = UserInputValidator.checkUsername(null, 'driver');
+      result = Validators.validateRegex('checkUsername', null, 'driver');
       expect(result.length).toEqual(1);
     });
   });
@@ -247,30 +249,30 @@ describe('UserInputValidator tests', () => {
 
 describe('checkPhoneNumber', () => {
   it('valid phone number', () => {
-    const result = UserInputValidator.checkPhoneNumber('23481234567', 'driver');
+    const result = Validators.validateRegex('checkPhoneNumber', '23481234567', 'driver');
     expect(result.length).toEqual(0);
   });
   it('invalid phone number', () => {
-    let result = UserInputValidator.checkPhoneNumber('*****dummyUser*****', 'driver');
+    let result = Validators.validateRegex('checkPhoneNumber', '*****dummyUser*****', 'driver');
     expect(result.length).toEqual(1);
-    result = UserInputValidator.checkPhoneNumber('1233', 'driver');
+    result = Validators.validateRegex('checkPhoneNumber', '1233', 'driver');
     expect(result.length).toEqual(1);
-    result = UserInputValidator.checkPhoneNumber(null, 'driver');
+    result = Validators.validateRegex('checkPhoneNumber', null, 'driver');
     expect(result.length).toEqual(1);
   });
 });
 
 describe('checkNumberPlate', () => {
   it('valid plate number', () => {
-    let result = UserInputValidator.checkNumberPlate('LND 419 SMC', 'driver');
+    let result = Validators.validateRegex('checkNumberPlate', 'LND 419 SMC', 'driver');
     expect(result.length).toEqual(0);
-    result = UserInputValidator.checkNumberPlate('LND 419 smn', 'driver');
+    result = Validators.validateRegex('checkNumberPlate', 'LND 419 smn', 'driver');
     expect(result.length).toEqual(0);
   });
   it('invalid plate number', () => {
-    let result = UserInputValidator.checkNumberPlate('*****Invalid Plate******', 'driver');
+    let result = Validators.validateRegex('checkNumberPlate', '*****Invalid Plate******', 'driver');
     expect(result.length).toEqual(1);
-    result = UserInputValidator.checkNumberPlate(null, 'driver');
+    result = Validators.validateRegex('checkNumberPlate', null, 'driver');
     expect(result.length).toEqual(1);
   });
 });
@@ -294,42 +296,42 @@ describe('checkNumberPlate', () => {
   });
 });
 
-describe('test userInputValidator class', () => {
+describe('test Validators class', () => {
   it('should not digit characters', () => {
-    const result = UserInputValidator.checkNumber('aass');
+    const result = Validators.validateRegex('checkNumber', 'aass', 'number');
     expect(result[0]).toHaveProperty('error', 'Only numbers are allowed. ');
   });
 
   it('should test empty fields', () => {
-    const result = UserInputValidator.checkEmpty(' ', 'destination');
+    const result = Validators.checkEmpty(' ', 'destination');
     expect(result[0]).toHaveProperty('error', 'destination cannot be empty');
   });
 
   it('should test not empty fields', () => {
-    const result = UserInputValidator.checkEmpty('not empty ', 'destination');
+    const result = Validators.checkEmpty('not empty ', 'destination');
     expect(result.length).toBeFalsy();
   });
 
   it('should test for special characters and return an empty array', () => {
-    const result = UserInputValidator.checkNumberAndLetters('11221', 'phoneNo');
+    const result = Validators.validateRegex('checkNumbersAndLetters', '11221', 'phoneNo');
     expect(result).toEqual([]);
   });
 
   it('should test fields with white space', () => {
-    const result = UserInputValidator.validateEmptyAndSpaces('aa ', 'destination');
+    const result = Validators.validateEmptyAndSpaces('aa ', 'destination');
     expect(result[0]).toHaveProperty('error', 'Spaces are not allowed');
   });
 
   it('should test if date is hours from now and return an error message', () => {
     const date = moment().add(1, 'hours');
-    const result = UserInputValidator.checkDateTimeIsHoursAfterNow(2, date, 'flightTime');
+    const result = Validators.checkDateTimeIsHoursAfterNow(2, date, 'flightTime');
     const expectedProps = ['error', 'flightTime must be at least 2 hours from current time.'];
     expect(result[0]).toHaveProperty(...expectedProps);
   });
 
   it('should test if date is hours from now and return an empty array', () => {
     const date = moment().add(4, 'hours');
-    const result = UserInputValidator.checkDateTimeIsHoursAfterNow(2, date, 'flightTime');
+    const result = Validators.checkDateTimeIsHoursAfterNow(2, date, 'flightTime');
     expect(result).toEqual([]);
   });
 
@@ -361,5 +363,20 @@ describe('validateCoordinates', () => {
     payload.submission.coordinates = 'invalid coordinates';
     const result = UserInputValidator.validateCoordinates(payload);
     expect(result.length).toEqual(1);
+  });
+  describe('UserInputValidator_checkTimeFormat', () => {
+    it('should respond with a message when an invalid time is passed', () => {
+      const time = '08:A2';
+      const res = Validators.checkTimeFormat(time, 'testField');
+      const [SlackDialogError] = res;
+      const { name, error } = SlackDialogError;
+      expect(name).toEqual('testField');
+      expect(error).toEqual('Invalid time');
+    });
+    it('should return an empty array when time is valid', () => {
+      const time = '08:02';
+      const res = Validators.checkTimeFormat(time, 'testField');
+      expect(res).toEqual([]);
+    });
   });
 });

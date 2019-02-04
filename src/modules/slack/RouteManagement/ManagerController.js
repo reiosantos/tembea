@@ -11,6 +11,7 @@ import PartnerService from '../../../services/PartnerService';
 import DateDialogHelper from '../../../helpers/dateHelper';
 import AttachmentHelper from '../SlackPrompts/notifications/ManagerRouteRequest/helper';
 import ManagerFormValidator from '../../../helpers/slack/UserInputValidator/managerFormValidator';
+import { getAction } from './rootFile';
 
 export const handleStatusValidationError = async (payload, routeRequest) => {
   const { channel: { id: channelId }, original_message: { ts } } = payload;
@@ -192,13 +193,8 @@ export default class ManagerController {
 
   static async handleManagerActions(payload, respond) {
     try {
-      const { actions, callback_id: callBackId } = payload;
-      let action = callBackId.split('_')[2];
-      if (action === 'btnActions') {
-        ([{ name: action }] = actions);
-      }
-      const actionHandler = ManagerController.managerRouteController(action);
-      return actionHandler(payload, respond);
+      const action = getAction(payload, 'btnActions');
+      return ManagerController.managerRouteController(action)(payload, respond);
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Error:bangbang:: I was unable to do that.'));

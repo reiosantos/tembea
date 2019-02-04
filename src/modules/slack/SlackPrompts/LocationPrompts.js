@@ -22,7 +22,7 @@ class LocationPrompts {
         predictedLocations.length ? 'Location not listed' : 'Enter Location Coordinates', 'no')]);
 
     attachment.addOptionalProps(predictedLocations.length
-      ? 'new_route_suggestions' : 'new_route_locationNotFound', '', '#CD0000');
+      ? 'new_route_suggestions' : 'new_route_locationNotFound', '', '#3AAF85');
 
     const navAttachment = createNavButtons('back_to_launch', 'back_to_routes_launch');
 
