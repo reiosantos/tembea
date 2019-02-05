@@ -4,6 +4,7 @@ import AddressValidator from './AddressValidator';
 import GeneralValidator from './GeneralValidator';
 import TokenValidator from './TokenValidator';
 import RouteValidator from './RouteValidator';
+import RouteRequestValidator from './RouteRequestValidator';
 
 const middleware = {
   UserValidator,
@@ -11,7 +12,8 @@ const middleware = {
   AddressValidator,
   GeneralValidator,
   TokenValidator,
-  RouteValidator
+  RouteValidator,
+  RouteRequestValidator
 };
 
 export default middleware;

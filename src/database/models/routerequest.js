@@ -1,4 +1,3 @@
-
 module.exports = (sequelize, DataTypes) => {
   const RouteRequest = sequelize.define('RouteRequest', {
     distance: DataTypes.DOUBLE,
@@ -19,9 +18,9 @@ module.exports = (sequelize, DataTypes) => {
         'Confirmed',
       ),
     },
+    opsReviewerId: DataTypes.INTEGER
   }, {});
   RouteRequest.associate = (models) => {
-    // associations can be defined here
     RouteRequest.belongsTo(models.Engagement, {
       foreignKey: 'engagementId',
       targetKey: 'id',
@@ -41,6 +40,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'homeId',
       targetKey: 'id',
       as: 'home',
+    });
+    RouteRequest.belongsTo(models.User, {
+      foreignKey: 'opsReviewerId',
+      targetKey: 'id',
+      as: 'opsReviewer',
     });
   };
   return RouteRequest;

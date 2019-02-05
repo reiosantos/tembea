@@ -14,24 +14,23 @@ export default class OperationsNotifications {
    * @param routeRequestId
    * @param teamId
    */
-  static async sendOpsDeclineMessageToFellow(routeRequestId, teamId) {
+  static async sendOpsDeclineMessageToFellow(routeRequestId, teamId, teamUrl) {
     try {
       const routeRequest = await RouteRequestService.getRouteRequest(routeRequestId);
-      const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-
+      let slackBotOauthToken;
+      if (teamId) {
+        slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+      } else {
+        const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
+        slackBotOauthToken = botToken;
+      }
       const { fellow } = routeRequest.engagement;
-      const { manager: slackId } = routeRequest;
-
-      const fellowChannelID = await SlackNotifications.getDMChannelId(
-        fellow.slackId, slackBotOauthToken
-      );
-      const managerChannelID = await SlackNotifications.getDMChannelId(
-        slackId.slackId, slackBotOauthToken
-      );
-      const fellowMessage = OpsAttachmentHelper.getOperationDeclineAttachment(
-        routeRequest, fellowChannelID, 'fellow'
-      );
-
+      const fellowChannelID = await SlackNotifications.getDMChannelId(fellow.slackId,
+        slackBotOauthToken);
+      const managerChannelID = await SlackNotifications.getDMChannelId(routeRequest.manager.slackId,
+        slackBotOauthToken);
+      const fellowMessage = OpsAttachmentHelper.getOperationDeclineAttachment(routeRequest,
+        fellowChannelID, 'fellow');
       const managerMessage = OpsAttachmentHelper.getOperationDeclineAttachment(
         routeRequest, managerChannelID
       );
@@ -56,7 +55,7 @@ export default class OperationsNotifications {
    * @return {Promise<void>}
    */
   static async completeOperationsApprovedAction(
-    routeRequest, channel, timestamp, opsId, botToken, submission
+    routeRequest, channel, timestamp, opsId, botToken, submission, update
   ) {
     const { engagement: { fellow } } = routeRequest;
     const title = 'Route Request Approved';
@@ -71,10 +70,13 @@ export default class OperationsNotifications {
       attachments,
       botToken
     );
-    OperationsNotifications
-      .sendOpsApproveMessageToFellow(routeRequest, botToken, submission);
-    OperationsNotifications
-      .sendOpsApproveMessageToManager(routeRequest, botToken, submission);
+
+    if (!update) {
+      OperationsNotifications
+        .sendOpsApproveMessageToFellow(routeRequest, botToken, submission);
+      OperationsNotifications
+        .sendOpsApproveMessageToManager(routeRequest, botToken, submission);
+    }
   }
 
   /**
@@ -110,10 +112,14 @@ export default class OperationsNotifications {
    * @param submission
    */
   static async sendOpsApproveMessageToFellow(
-    routeRequest, slackBotOauthToken, submission
+    routeRequest, slackBotOauthToken, submission, teamUrl
   ) {
     try {
       const { fellow } = routeRequest.engagement;
+      if (!slackBotOauthToken) {
+        const { botToken } = await (TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl));
+        slackBotOauthToken = botToken; // eslint-disable-line no-param-reassign
+      }
       const channelID = await SlackNotifications.getDMChannelId(
         fellow.slackId, slackBotOauthToken
       );
@@ -127,7 +133,7 @@ export default class OperationsNotifications {
   }
 
   static async completeOperationsDeclineAction(
-    routeRequest, channel, teamId, routeRequestId, timestamp, botToken, payload
+    routeRequest, channel, teamId, routeRequestId, timestamp, botToken, payload, update
   ) {
     try {
       const { user: { id } } = payload;
@@ -143,8 +149,11 @@ export default class OperationsNotifications {
         attachments,
         botToken
       );
-      await OperationsNotifications
-        .sendOpsDeclineMessageToFellow(routeRequestId, teamId);
+
+      if (!update) {
+        await OperationsNotifications
+          .sendOpsDeclineMessageToFellow(routeRequestId, teamId);
+      }
     } catch (error) {
       bugsnagHelper.log(error);
     }

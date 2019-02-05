@@ -35,6 +35,27 @@ export const updateEngagement = {
   workHours: updateWorkHours
 };
 export const mockRouteRequestData = {
+  routeRequest: {
+    dataValues: {
+      id: 12,
+      status: 'Pending',
+      managerComment: 'ZZZZZZZ',
+      opsComment: 'XXXXXX',
+      routeImageUrl: 'Pending',
+      distance: 3.02,
+      busStopDistance: 1.02,
+    },
+    botToken: 'XXXXXXXXX'
+  },
+  dataValues: {
+    id: 12,
+    status: 'Pending',
+    managerComment: 'ZZZZZZZ',
+    opsComment: 'XXXXXX',
+    routeImageUrl: 'Pending',
+    distance: 3.02,
+    busStopDistance: 1.02,
+  },
   id: 12,
   status: 'Pending',
   managerComment: 'ZZZZZZZ',

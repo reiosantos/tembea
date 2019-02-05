@@ -1,14 +1,18 @@
 import HttpError from '../../helpers/errorHandler';
-import bugsnagHelper from '../../helpers/bugsnagHelper';
+import BugSnagHelper from '../../helpers/bugsnagHelper';
 import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
 import Response from '../../helpers/responseHelper';
 import RouteService from '../../services/RouteService';
 import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
 import { RoutesHelper } from '../../helpers/googleMaps/googleMapsHelpers';
-import { GoogleMapsPlaceDetails } from '../slack/RouteManagement/rootFile';
+import {
+  GoogleMapsPlaceDetails,
+  slackEventNames,
+  SlackEvents
+} from '../slack/RouteManagement/rootFile';
 import AddressService from '../../services/AddressService';
 import RouteRequestService from '../../services/RouteRequestService';
-import { SlackEvents, slackEventNames } from '../slack/events/slackEvents';
+import UserService from '../../services/UserService';
 
 class RoutesController {
   /**
@@ -43,7 +47,7 @@ class RoutesController {
       };
       return Response.sendResponse(res, 200, true, message, pageData);
     } catch (error) {
-      bugsnagHelper.log(error);
+      BugSnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
     }
   }
@@ -72,7 +76,7 @@ class RoutesController {
       const routeInfo = await RouteService.createRouteBatch(data);
       res.status(200).json(routeInfo);
     } catch (error) {
-      bugsnagHelper.log(error);
+      BugSnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
     }
   }
@@ -164,9 +168,82 @@ class RoutesController {
       const message = 'Route batch successfully updated';
       return Response.sendResponse(res, 200, true, message, result);
     } catch (error) {
-      bugsnagHelper.log(error);
+      BugSnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
     }
+  }
+
+  /**
+   * @description This method changes the status of a route request
+   * @param  {Object} req The HTTP request object
+   * @param  {Object} res The HTTP response object
+   */
+  static async changeRouteRequestStatus(req, res) {
+    try {
+      const { params: { requestId } } = req;
+      const { body } = req;
+      const { routeRequest, updatedRouteRequest } = await RoutesController
+        .getUpdatedRouteRequest(requestId, body);
+      if (routeRequest.status === 'Approved') {
+        const submission = await RoutesController.saveRoute(routeRequest, body);
+        RoutesController.sendApprovalNotificationToFellow(requestId,
+          body.teamUrl,
+          submission);
+      } else {
+        RoutesController.sendDeclineNotificationToFellow(requestId, body.teamUrl);
+      }
+      return res.status(201).json({
+        success: true,
+        message: 'This route request has been updated',
+        data: updatedRouteRequest.dataValues
+      });
+    } catch (error) {
+      BugSnagHelper.log(error);
+      HttpError.sendErrorResponse(error, res);
+    }
+  }
+
+  static async getUpdatedRouteRequest(requestId, body) {
+    const routeRequest = await RouteRequestService.getRouteRequest(requestId);
+    if (!routeRequest) {
+      HttpError.throwErrorIfNull(null, 'Route request not found');
+    }
+    routeRequest.status = body.newOpsStatus.trim().toLowerCase() === 'approve'
+      ? 'Approved' : 'Declined';
+    routeRequest.opsComment = body.comment.trim();
+    const reviewer = await UserService.getUserByEmail(body.reviewerEmail);
+    routeRequest.opsReviewerId = reviewer.dataValues.id;
+    const updatedRouteRequest = await RouteRequestService.updateRouteRequest(requestId,
+      routeRequest.dataValues);
+    return { routeRequest, updatedRouteRequest };
+  }
+
+  static async saveRoute(routeRequest, body) {
+    const data = {
+      destinationName: routeRequest.home.dataValues.address,
+      name: body.routeName.trim().toLowerCase(),
+      capacity: body.capacity,
+      takeOff: body.takeOff.trim(),
+      vehicleRegNumber: body.cabRegNumber.trim()
+    };
+
+    const submission = {
+      routeName: data.name,
+      routeCapacity: data.capacity,
+      takeOffTime: data.takeOff,
+      regNumber: data.vehicleRegNumber
+    };
+    await RouteService.createRouteBatch(data);
+    return submission;
+  }
+
+  static async sendDeclineNotificationToFellow(requestId, teamUrl) {
+    SlackEvents.raise(slackEventNames.OPERATIONS_DECLINE_ROUTE_REQUEST, requestId, '', teamUrl);
+  }
+
+  static async sendApprovalNotificationToFellow(requestId, teamUrl, submission) {
+    const route = await RouteRequestService.getRouteRequest(requestId);
+    SlackEvents.raise(slackEventNames.APPROVE_ROUTE_REQUEST, route, '', submission, teamUrl);
   }
 }
 

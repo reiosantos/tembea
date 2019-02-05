@@ -136,7 +136,7 @@ class RouteRequestService {
   }
 }
 
-RouteRequestService.defaultInclude = ['manager', 'busStop', 'home',
+RouteRequestService.defaultInclude = ['opsReviewer', 'manager', 'busStop', 'home',
   {
     model: Engagement,
     as: 'engagement',

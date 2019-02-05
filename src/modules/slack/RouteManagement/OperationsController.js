@@ -53,7 +53,8 @@ const handlers = {
         opsComment: declineReason
       });
       await OperationsNotifications.completeOperationsDeclineAction(
-        updatedRequest, channelId, teamId, routeRequestId, timeStamp, oauthToken, payload, respond
+        updatedRequest, channelId, teamId, routeRequestId,
+        timeStamp, oauthToken, payload, respond, false
       );
     } catch (error) {
       bugsnagHelper.log(error);
@@ -93,7 +94,7 @@ const handlers = {
       const save = saveRoute(updatedRequest, submission);
       const complete = OperationsNotifications
         .completeOperationsApprovedAction(
-          updatedRequest, channelId, timeStamp, userId, slackBotOauthToken, submission
+          updatedRequest, channelId, timeStamp, userId, slackBotOauthToken, submission, false
         );
       Promise.all([complete, save]);
     } catch (error) {
@@ -110,7 +111,47 @@ class OperationsController {
     return handlers[action] || errorHandler;
   }
 
-  static handleOperationsActions(payload, respond) {
+  static async handleOperationsActions(payload, respond) {
+    let routeRequestId;
+    if (payload.actions) {
+      routeRequestId = payload.actions[0].value;
+
+      const { botToken, routeRequest } = await RouteRequestService
+        .getRouteRequestAndToken(routeRequestId, payload.team.id);
+
+      if (routeRequest.dataValues.status !== 'Confirmed'
+      && routeRequest.dataValues.status !== 'Pending') {
+        return OperationsController.updateMessage(payload, routeRequest, botToken);
+      }
+
+      return OperationsController.handleAction(payload, respond);
+    }
+
+    return OperationsController.handleAction(payload, respond);
+  }
+
+  static async updateMessage(payload, routeRequest, botToken) {
+    const {
+      channel, message_ts: timeStamp, team, actions
+    } = payload;
+
+    if (routeRequest.dataValues.status === 'Approved') {
+      return OperationsNotifications
+        .completeOperationsApprovedAction(routeRequest,
+          channel.id, timeStamp,
+          routeRequest.dataValues.opsReviewer.dataValues.slackId,
+          botToken, {}, true);
+    }
+    
+    if (routeRequest.dataValues.status === 'Declined') {
+      return OperationsNotifications
+        .completeOperationsDeclineAction(routeRequest,
+          channel.id, team.id, actions[0].value,
+          timeStamp, botToken, payload, true);
+    }
+  }
+
+  static handleAction(payload, respond) {
     try {
       const action = getAction(payload, 'actions');
       const actionHandler = OperationsController.operationsRouteController(action);

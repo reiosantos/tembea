@@ -39,9 +39,9 @@ describe('Operations Route Controller', () => {
         submission: {
           declineReason: 'QQQQQQ', startDate: '31/01/2019', endDate: '20/02/2019'
         },
-        actions: [{ name: 'action', value: 'routeRequestId' }],
+        actions: [{ name: 'action', value: '1' }],
         channel: { id: 1 },
-        team: { id: 1 },
+        team: { id: 'TEAMID1' },
         original_message: { ts: 'timestamp' },
         user: { id: '4' }
       };
@@ -115,14 +115,15 @@ describe('Operations Route Controller', () => {
         completeOperationsApprovedAction.mockReturnValue('Token');
         const result = await OperationsController.handleOperationsActions(payload, respond);
         expect(result.errors[0]).toBeInstanceOf(SlackDialogError);
-        expect(RouteRequestService.getRouteRequestAndToken).not.toHaveBeenCalled();
         expect(RouteRequestService.updateRouteRequest).not.toHaveBeenCalled();
         expect(OperationsNotifications.completeOperationsApprovedAction).not.toHaveBeenCalled();
         done();
       });
 
       it('should handle errors', async (done) => {
-        getRouteRequestAndToken.mockResolvedValue();
+        getRouteRequestAndToken.mockResolvedValue(
+          { routeRequest: { ...mockRouteRequestData }, slackBotOauthToken: 'dfdf' }
+        );
         updateRouteRequest.mockResolvedValue();
         jest.spyOn(bugsnagHelper, 'log');
         await OperationsController.handleOperationsActions(payload, respond);
@@ -151,7 +152,7 @@ describe('Operations Route Controller', () => {
       let mockHandler;
       let payload2;
       beforeEach(() => {
-        payload2 = { actions: [{ name: 'action' }], callback_id: 'dummy_callback_actions' };
+        payload2 = { actions: [{ name: 'action', value: 1 }], callback_id: 'dummy_callback_actions', team: { id: 'TEAMID1' } };
         mockHandler = jest.fn().mockReturnValue({ test: 'dummy test' });
         jest.spyOn(OperationsController, 'operationsRouteController')
           .mockImplementation(() => mockHandler);
@@ -208,7 +209,7 @@ describe('Operations Route Controller', () => {
         submission: {
           declineReason: 'QQQQQQ', startDate: '31/01/2019', endDate: '20/02/2019'
         },
-        actions: [{ name: 'action', value: 'routeRequestId' }],
+        actions: [{ name: 'action', value: 1 }],
         channel: { id: 1 },
         team: { id: 1 },
         original_message: { ts: 'timestamp' }
@@ -263,8 +264,10 @@ describe('Operations Route Controller', () => {
       });
 
       it('should handle errors', async (done) => {
-        getRouteRequestAndToken.mockResolvedValue();
-        updateRouteRequest.mockResolvedValue();
+        getRouteRequestAndToken.mockResolvedValue({ ...mockRouteRequestData });
+        updateRouteRequest.mockImplementation(() => {
+          throw new Error();
+        });
         jest.spyOn(bugsnagHelper, 'log');
         await OperationsController.handleOperationsActions(payload, respond);
         expect(bugsnagHelper.log).toHaveBeenCalled();
@@ -291,7 +294,7 @@ describe('Operations Route Controller', () => {
       let mockHandler;
       let payload2;
       beforeEach(() => {
-        payload2 = { actions: [{ name: 'action' }], callback_id: 'dummy_callback_actions' };
+        payload2 = { actions: [{ name: 'action', value: 1 }], callback_id: 'dummy_callback_actions', team: { id: 'TEAMID1' } };
         mockHandler = jest.fn().mockReturnValue({ test: 'dummy test' });
         jest.spyOn(OperationsController, 'operationsRouteController')
           .mockImplementation(() => mockHandler);

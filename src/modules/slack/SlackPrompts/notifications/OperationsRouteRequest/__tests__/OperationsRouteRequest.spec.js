@@ -135,7 +135,7 @@ describe('OperationsNotifications', () => {
 
       };
       RouteRequestService.getRouteRequest.mockResolvedValue(requestData);
-      await OperationsNotifications.sendOpsDeclineMessageToFellow(data);
+      await OperationsNotifications.sendOpsDeclineMessageToFellow(data, 'TEMBEA');
       expect(RouteRequestService.getRouteRequest).toHaveBeenCalled();
       expect(TeamDetailsService.getTeamDetailsBotOauthToken).toHaveBeenCalled();
       expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
