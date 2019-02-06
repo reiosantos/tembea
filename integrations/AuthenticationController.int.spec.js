@@ -1,6 +1,6 @@
 import request from 'supertest';
-import app from '../../../app';
-import Utils from '../../../utils';
+import app from '../src/app';
+import Utils from '../src/utils';
 
 describe('Authentication Controller Integration Test', () => {
   describe('Verify User from frontend endpoint', () => {

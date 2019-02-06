@@ -15,10 +15,6 @@ class LRUCacheSingleton {
     LRUCacheSingleton.exists = this;
   }
 
-  getCache() {
-    return this.cache;
-  }
-
   getAsync(key) {
     return new Promise((resolve, reject) => {
       try {

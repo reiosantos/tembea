@@ -21,12 +21,6 @@ describe('LRUCacheSingleton', () => {
     expect(cacheInstance).toHaveProperty('cache');
   });
 
-  describe('getCache', () => {
-    it('should return an instance of redis.RedisClient', () => {
-      expect(cache.getCache() instanceof LRUCache);// redis.RedisClient);
-    });
-  });
-
   describe('getAsync', () => {
     it('should wrap call to cache.get', () => {
       jest.spyOn(LRUCache.prototype, 'get').mockRejectedValue(new Error());

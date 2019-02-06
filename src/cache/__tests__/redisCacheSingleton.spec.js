@@ -1,13 +1,11 @@
+import redis from 'redis';
 import RedisCacheSingleton from '../redisCache';
-import redisClientMock from '../__mocks__/redisClientMock';
+import redisClientMock, { redisMockBackend } from '../__mocks__/redisClientMock';
 
+
+jest.spyOn(redis, 'createClient').mockReturnValue(redisClientMock);
 describe('RedisCacheSingleton', () => {
-  let cache = new RedisCacheSingleton();
-  beforeEach(() => {
-    jest.spyOn(RedisCacheSingleton.prototype, 'getClient').mockReturnValue(redisClientMock);
-    cache = new RedisCacheSingleton();
-  });
-
+  const cache = new RedisCacheSingleton();
   afterEach(() => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
@@ -24,7 +22,7 @@ describe('RedisCacheSingleton', () => {
     it('should save to cache', async (done) => {
       await cache.save('hello', 'world', 'earth');
 
-      const data = await redisClientMock.getAsync('hello');
+      const data = redisMockBackend.get('hello');
       const result = JSON.parse(data);
       expect(result).toBeDefined();
       expect(result).toHaveProperty('world');
@@ -36,7 +34,7 @@ describe('RedisCacheSingleton', () => {
       await cache.save('theKey', 'firstValue', 'tembea-backend');
       await cache.save('theKey', 'secondValue', 'tembea-frontend');
 
-      const data = await redisClientMock.getAsync('theKey');
+      const data = redisMockBackend.get('theKey');
       const result = JSON.parse(data);
       expect(result).toBeDefined();
       expect(result).toHaveProperty('firstValue');
@@ -49,7 +47,7 @@ describe('RedisCacheSingleton', () => {
     it('should return object if it exists', async (done) => {
       const [testKey, testValue] = ['ade', 'bendel'];
 
-      await redisClientMock.setAsync(testKey, JSON.stringify(testValue));
+      redisMockBackend.set(testKey, JSON.stringify(testValue));
       const result = await cache.fetch(testKey);
       expect(result).toBeDefined();
       expect(result).toEqual(testValue);
@@ -64,7 +62,7 @@ describe('RedisCacheSingleton', () => {
 
       await cache.saveObject(testKey, testObject);
 
-      const result = await redisClientMock.getAsync(testKey);
+      const result = redisMockBackend.get(testKey);
       expect(JSON.parse(result)).toEqual(testObject);
       done();
     });
@@ -75,21 +73,13 @@ describe('RedisCacheSingleton', () => {
       const [testKey, testValue] = ['mc', 'oluomo'];
       await cache.saveObject(testKey, testValue);
 
-      const resultBeforeDelete = await redisClientMock.getAsync(testKey);
+      const resultBeforeDelete = redisMockBackend.get(testKey);
       expect(JSON.parse(resultBeforeDelete)).toEqual(testValue);
 
       await cache.delete(testKey);
-      const resultAfterDelete = await redisClientMock.getAsync(testKey);
-      expect(resultAfterDelete).toBeNull();
+      const resultAfterDelete = redisMockBackend.get(testKey);
+      expect(resultAfterDelete).toBeUndefined();
       done();
-    });
-  });
-
-  describe('getClient', () => {
-    it('should be an instance of redis client', () => {
-      jest.restoreAllMocks();
-      const redisClient = cache.getClient();
-      expect(redisClient).toBeDefined();
     });
   });
 });

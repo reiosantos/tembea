@@ -1,4 +1,3 @@
-import sinon from 'sinon';
 import models from '../../../../../database/models';
 import TripRescheduleHelper from '../rescheduleHelper';
 import DialogPrompts from '../../../SlackPrompts/DialogPrompts';
@@ -25,86 +24,67 @@ jest.mock('../../../events/slackEvents', () => ({
 }));
 
 describe('Trip Reschedule Helper test', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
   const { TripRequest } = models;
 
   it('should send Reschedule Trip Form ', async (done) => {
-    const tripRequestFindByPkStub = sinon.stub(TripRequest, 'findByPk');
-    const sendRescheduleTripFormSpy = sinon.spy(DialogPrompts, 'sendRescheduleTripForm');
-
-    const now = Date.now();
-    const twoHoursAfter = new Date(now + 2 * 60 * 60 * 1000);
-    tripRequestFindByPkStub.resolves({
+    const twoHoursAfter = new Date(Date.now() + 2 * 60 * 60 * 1000);
+    jest.spyOn(TripRequest, 'findByPk').mockResolvedValue({
       confirmedById: 0,
       departureTime: `${twoHoursAfter.toISOString()}`
     });
+    const sendRescheduleTripFormSpy = jest.spyOn(DialogPrompts, 'sendRescheduleTripForm').mockResolvedValue();
+
     const payload = {};
     const response = jest.fn();
     await TripRescheduleHelper.sendTripRescheduleDialog(payload, response, 12);
-    expect(sendRescheduleTripFormSpy.calledOnce)
-      .toEqual(true);
+    expect(sendRescheduleTripFormSpy).toBeCalledTimes(1);
 
-    tripRequestFindByPkStub.restore();
-    sendRescheduleTripFormSpy.restore();
     done();
   });
 
   it('should send reschedule confirm error when trip is < 1hr before the departure time',
     async () => {
-      const tripRequestFindByPkStub = sinon.stub(TripRequest, 'findByPk');
-      const spy = sinon.spy(InteractivePrompts, 'passedTimeOutLimit');
-
-      const now = Date.now();
-      const oneHourAfter = new Date(now - 60 * 60 * 1000);
-
-      tripRequestFindByPkStub.resolves({
-        departureTime: `${oneHourAfter.toISOString()}`
-      });
+      const oneHourAfter = new Date(Date.now() - 60 * 60 * 1000);
+      jest.spyOn(TripRequest, 'findByPk')
+        .mockResolvedValue({
+          departureTime: `${oneHourAfter.toISOString()}`
+        });
+      const spy = jest.spyOn(InteractivePrompts, 'passedTimeOutLimit');
 
       const payload = {};
       const response = jest.fn();
       await TripRescheduleHelper.sendTripRescheduleDialog(payload, response, 12);
-      expect(spy.calledOnce)
-        .toEqual(true);
-
-      tripRequestFindByPkStub.restore();
-      spy.restore();
+      expect(spy).toHaveBeenCalledTimes(1);
     });
 
   it('should send reschedule confirm or approve error when trip has been approved', async () => {
-    const tripRequestFindByPkStub = sinon.stub(TripRequest, 'findByPk');
-    const spy = sinon.spy(InteractivePrompts, 'rescheduleConfirmedApprovedError');
-
-    const now = Date.now();
-    const twoHourBefore = new Date(now + 2 * 60 * 60 * 1000);
-
-    tripRequestFindByPkStub.resolves({
-      approvedById: 1,
-      // Set departure time to two hour from the current time.
-      departureTime: `${twoHourBefore.toISOString()}`
-    });
+    const twoHourBefore = new Date(Date.now() + 2 * 60 * 60 * 1000);
+    jest.spyOn(TripRequest, 'findByPk')
+      .mockResolvedValue({
+        approvedById: 1,
+        // Set departure time to two hour from the current time.
+        departureTime: `${twoHourBefore.toISOString()}`
+      });
+    const spy = jest.spyOn(InteractivePrompts, 'rescheduleConfirmedApprovedError');
 
     const payload = {};
     const response = jest.fn();
     await TripRescheduleHelper.sendTripRescheduleDialog(payload, response, 12);
-    expect(spy.calledOnce)
-      .toEqual(true);
 
-    tripRequestFindByPkStub.restore();
-    spy.restore();
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 
   it('should handle unexpected errors', async () => {
-    const tripRequestFindByPkStub = sinon.stub(TripRequest, 'findByPk');
-    const spy = sinon.spy(InteractivePrompts, 'sendTripError');
+    jest.spyOn(TripRequest, 'findByPk').mockRejectedValue();
+    const spy = jest.spyOn(InteractivePrompts, 'sendTripError');
 
-    tripRequestFindByPkStub.rejects();
     const payload = {};
     const response = jest.fn();
     await TripRescheduleHelper.sendTripRescheduleDialog(payload, response, 12);
-    expect(spy.calledOnce)
-      .toEqual(true);
-
-    tripRequestFindByPkStub.restore();
-    spy.restore();
+    expect(spy).toBeCalledTimes(1);
   });
 });

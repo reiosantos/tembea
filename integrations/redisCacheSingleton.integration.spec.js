@@ -1,4 +1,4 @@
-import RedisCacheSingleton from '../redisCache';
+import RedisCacheSingleton from '../src/cache/redisCache';
 
 describe.skip('RedisCacheSingleton', () => {
   let cache = new RedisCacheSingleton();
