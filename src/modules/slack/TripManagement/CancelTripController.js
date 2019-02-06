@@ -1,5 +1,6 @@
 import models from '../../../database/models';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
+import { SlackInteractiveMessage } from '../RouteManagement/rootFile';
 
 const { TripRequest } = models;
 
@@ -10,19 +11,18 @@ class CancelTripController {
       const trip = await TripRequest.findById(Number(tripId));
       if (!trip) {
         message = 'Trip not found';
-        return message;
+      } else {
+        await TripRequest.update(
+          { tripStatus: 'Cancelled' },
+          { where: { id: tripId }, returning: true }
+        );
+        message = 'Success! Your Trip request has been cancelled';
       }
-      await TripRequest.update(
-        { tripStatus: 'Cancelled' },
-        { where: { id: tripId }, returning: true }
-      );
-      message = 'Success! Your Trip request has been cancelled';
-      return message;
     } catch (error) {
       bugsnagHelper.log(error);
       message = `Request could not be processed, ${error.message}`;
-      return message;
     }
+    return new SlackInteractiveMessage(message);
   }
 }
 

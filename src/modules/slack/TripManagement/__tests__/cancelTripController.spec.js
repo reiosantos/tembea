@@ -4,13 +4,13 @@ import models from '../../../../database/models';
 describe('cancel trip test', () => {
   it('should return trip not found', async (done) => {
     const result = await CancelTripController.cancelTrip(300000000);
-    expect(result).toBe('Trip not found');
+    expect(result.text).toBe('Trip not found');
     done();
   });
 
   it('should return success', async (done) => {
     const result = await CancelTripController.cancelTrip(1);
-    expect(result).toBe('Success! Your Trip request has been cancelled');
+    expect(result.text).toBe('Success! Your Trip request has been cancelled');
     done();
   });
 
@@ -19,7 +19,7 @@ describe('cancel trip test', () => {
     const err = new Error('dummy message');
     TripRequest.findById = jest.fn(() => Promise.reject(err));
     const result = await CancelTripController.cancelTrip(1);
-    expect(result).toBe(`Request could not be processed, ${err.message}`);
+    expect(result.text).toBe(`Request could not be processed, ${err.message}`);
     done();
   });
 });

@@ -30,14 +30,11 @@ class InteractivePrompts {
     respond(message);
   }
 
-  static sendCompletionResponse(payload, respond, requestId) {
-    const requester = payload.user.id;
-    const rider = payload.submission.rider || 'self';
-
+  static sendCompletionResponse(respond, requestId) {
     const attachment = new SlackAttachment();
     attachment.addFieldsOrActions('actions', [
       // sample button actions
-      new SlackButtonAction('view', 'View', `${requester} ${rider}`),
+      new SlackButtonAction('view', 'View', requestId),
       new SlackButtonAction('reschedule', 'Reschedule ', requestId),
       new SlackCancelButtonAction(
         'Cancel Trip', requestId,

@@ -7,24 +7,23 @@ import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 const { TripRequest } = models;
 
 export default class TripRescheduleHelper {
-  static respondRescheduleError(timedOut, approved, respond) {
+  static respondRescheduleError(timedOut, approved) {
     if (timedOut) {
-      respond(InteractivePrompts.passedTimeOutLimit());
-      return;
+      return InteractivePrompts.passedTimeOutLimit();
     }
 
     if (approved) {
-      respond(InteractivePrompts.rescheduleConfirmedApprovedError());
+      return InteractivePrompts.rescheduleConfirmedApprovedError();
     }
   }
 
-  static async sendTripRescheduleDialog(payload, respond, requestId) {
+  static async sendTripRescheduleDialog(payload, requestId) {
     try {
       const tripRequest = await TripRequest.findByPk(requestId);
       const approved = isTripRequestApproved(tripRequest);
       const timedOut = isTripRescheduleTimedOut(tripRequest);
 
-      TripRescheduleHelper.respondRescheduleError(timedOut, approved, respond);
+      const rescheduleError = TripRescheduleHelper.respondRescheduleError(timedOut, approved);
 
       if (!timedOut && !approved) {
         await DialogPrompts.sendRescheduleTripForm(
@@ -34,9 +33,10 @@ export default class TripRescheduleHelper {
           'Reschedule Trip'
         );
       }
+      return rescheduleError;
     } catch (error) {
       bugsnagHelper.log(error);
-      respond(InteractivePrompts.sendTripError());
+      return InteractivePrompts.sendTripError();
     }
   }
 }

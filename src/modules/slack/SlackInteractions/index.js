@@ -19,6 +19,7 @@ import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import RouteInputHandlers from '../RouteManagement';
 import ManagerActionsHelper from '../helpers/slackHelpers/ManagerActionsHelper';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
+import ViewTripHelper from '../helpers/slackHelpers/ViewTripHelper';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -90,25 +91,21 @@ class SlackInteractions {
 
   static async handleItineraryActions(payload, respond) {
     const { name, value } = payload.actions[0];
+    let message;
     switch (name) {
       case 'view':
-        respond({ text: 'Coming soon...' });
+        message = await ViewTripHelper.displayTripRequest(value, payload.user.id);
         break;
       case 'reschedule':
-        TripRescheduleHelper.sendTripRescheduleDialog(payload, respond, value);
+        message = await TripRescheduleHelper.sendTripRescheduleDialog(payload, value);
         break;
       case 'cancel_trip':
-        try {
-          const message = await CancelTripController.cancelTrip(value);
-          respond(new SlackInteractiveMessage(message));
-        } catch (error) {
-          bugsnagHelper.log(error);
-          respond(new SlackInteractiveMessage(error.message));
-        }
+        message = await CancelTripController.cancelTrip(value);
         break;
       default:
-        respond(SlackInteractions.goodByeMessage());
+        message = SlackInteractions.goodByeMessage();
     }
+    respond(message);
   }
 
   static async handleReschedule(payload, respond) {
@@ -316,6 +313,17 @@ class SlackInteractions {
       respond(
         new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
       );
+    }
+  }
+
+  static completeTripResponse(payload, respond) {
+    try {
+      const { value } = payload.actions[0];
+      InteractivePrompts.sendCompletionResponse(respond, value);
+    } catch (error) {
+      bugsnagHelper.log(error);
+      respond(new SlackInteractiveMessage('Error:bangbang: : '
+      + 'We could not complete this process please try again.'));
     }
   }
 }

@@ -59,8 +59,7 @@ describe('Interactive Prompts test', () => {
 
   it('should create view open trips response', (done) => {
     const respond = jest.fn(value => value);
-    const payload = { user: { id: 1 }, submission: { rider: 1 } };
-    const result = InteractivePrompts.sendCompletionResponse(payload, respond, 1);
+    const result = InteractivePrompts.sendCompletionResponse(respond, 1);
     expect(result).toBe(undefined);
     expect(respond).toHaveBeenCalledWith(sendCompletionResponseMock);
 

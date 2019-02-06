@@ -41,5 +41,7 @@ slackInteractionsRouter.action({ callbackId: /^manager_route/ },
   ManagerController.handleManagerActions);
 slackInteractionsRouter.action({ callbackId: /^operations_route/ },
   OperationsController.handleOperationsActions);
+slackInteractionsRouter.action({ callbackId: 'view_new_trip' },
+  SlackInteractions.completeTripResponse);
 
 export default slackInteractionsRouter;

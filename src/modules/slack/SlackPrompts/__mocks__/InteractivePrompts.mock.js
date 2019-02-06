@@ -73,7 +73,7 @@ export const sendBookNewTripMock = {
 export const sendCompletionResponseMock = {
   attachments: [{
     actions: [{
-      name: 'view', style: 'primary', text: 'View', type: 'button', value: '1 1'
+      name: 'view', style: 'primary', text: 'View', type: 'button', value: 1
     }, {
       name: 'reschedule', style: 'primary', text: 'Reschedule ', type: 'button', value: 1
     }, {
