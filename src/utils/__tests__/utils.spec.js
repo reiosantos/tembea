@@ -66,4 +66,15 @@ describe('Utils Method', () => {
     expect(result).toHaveProperty('id', 1);
     expect(result).toHaveProperty('roles', ['role']);
   });
+
+  describe('convertToImageAndSaveToLocal', () => {
+    const urls = 'http://maps.googleapis.com/maps/api/staticmap?size=700x700';
+    const destination = './files';
+    it('should convert googleMap url into jpeg and save it to local', async (done) => {
+      const result = await Utils.convertToImageAndSaveToLocal(urls, destination);
+
+      expect(result).toBeDefined();
+      done();
+    });
+  });
 });

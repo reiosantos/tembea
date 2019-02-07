@@ -1,6 +1,20 @@
+// import moment from 'moment';
+// import fs from 'fs';
+// import url from 'url';
+// import fileSystem from 'fs-extra';
+// import https from 'https';
+// import http from 'http';
+// import * as jwt from 'jsonwebtoken';
+// import uuid from 'uuid/v4';
+// import DateHelpers from '../helpers/dateHelper';
 const moment = require('moment');
 const fs = require('fs');
+const fileSystem = require('fs-extra');
+const https = require('https');
+const http = require('http');
 const jwt = require('jsonwebtoken');
+const uuid = require('uuid/v4');
+const url = require('url');
 const DateHelpers = require('../helpers/dateHelper');
 
 moment.updateLocale('en', {
@@ -139,6 +153,57 @@ class Utils {
       roles: roleNames
     };
     return userInfo;
+  }
+
+  /**
+    * @static convertToImageAndSaveToLocal
+    * @description This function convert the google map image url into a jpeg file
+    * @param  {string} uri of the google map image url
+    * @param  {string} destination - location to save the image
+    * @param  {string} filename - the name of the new jpeg image file
+    * @returns {string} Save.
+    */
+  static convertToImageAndSaveToLocal(uri, destination) {
+    const theUrl = url.parse(uri);
+    if (!theUrl.host) throw new Error('Requested URL is invalid');
+    const client = (theUrl.protocol === 'https:') ? https : http;
+    Utils.createDirectory(destination);
+    const filename = uuid();
+    return new Promise((resolve, reject) => {
+      const fileDir = `${destination}/${filename}`;
+      const file = fs.createWriteStream(fileDir);
+      client.get(uri, (response) => {
+        response.pipe(file);
+        file.on('finish', () => {
+          file.close(() => {
+            resolve(file.path);
+          });
+        });
+      }).on('error', (err) => {
+        fs.unlink(fileDir, () => {});
+        reject(err);
+      });
+    });
+  }
+
+  /**
+    * @static createDirectory
+    * @description This function create directory to store dowloaded files
+    * @param  {string} filePath the file directory to create
+    * @returns {void}.
+  */
+  static createDirectory(filePath) {
+    if (!fs.existsSync(filePath)) {
+      fs.mkdirSync(filePath);
+    }
+  }
+
+  static async removeFile(fileDir) {
+    try {
+      await fileSystem.unlink(fileDir);
+    } catch (error) {
+      throw error;
+    }
   }
 }
 

@@ -87,3 +87,7 @@ dist/
 
 package-lock.json
 excel.xlsx
+
+# json file
+googleCloudKeys.json
+files
