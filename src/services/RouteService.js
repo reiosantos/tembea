@@ -125,6 +125,8 @@ class RouteService {
    */
   static async updateRouteBatch(id, data) {
     const route = await RouteService.getRouteBatchByPk(id);
+    HttpError.throwErrorIfNull(route, 'Route Batch not found');
+
     await route.update(data);
     await Cache.save(`Route_${route.id}`, 'route', route);
     return route;

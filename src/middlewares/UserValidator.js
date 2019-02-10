@@ -132,7 +132,7 @@ class UserValidator {
 
     const errors = GeneralValidator.validateProp(prop, propName);
     if (errors.length > 0) {
-      return Response.sendResponse(res, 401, false, errors);
+      return Response.sendResponse(res, 400, false, errors);
     }
     next();
   }

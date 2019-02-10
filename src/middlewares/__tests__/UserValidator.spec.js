@@ -48,8 +48,8 @@ describe('UserValidator', () => {
       expect(getPropMock).toHaveBeenCalledWith('req');
       expect(validatePropMock).toHaveBeenCalledWith('p1', 'pName');
       expect(resMock).toHaveBeenCalledTimes(1);
-      expect(resMock).toHaveBeenCalledWith('res', 401, false, ['']);
-      expect(nextMock).toHaveBeenCalledTimes(0);
+      expect(resMock).toHaveBeenCalledWith('res', 400, false, ['']);
+      expect(nextMock).not.toHaveBeenCalled();
     });
 
     it('should call next method', () => {
@@ -61,7 +61,7 @@ describe('UserValidator', () => {
       expect(getPropMock).toHaveBeenCalledTimes(1);
       expect(getPropMock).toHaveBeenCalledWith('req');
       expect(validatePropMock).toHaveBeenCalledWith('p1', 'pName');
-      expect(resMock).toHaveBeenCalledTimes(0);
+      expect(resMock).not.toHaveBeenCalled();
       expect(nextMock).toHaveBeenCalledTimes(1);
     });
   });

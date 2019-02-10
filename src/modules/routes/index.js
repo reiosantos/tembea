@@ -3,7 +3,7 @@ import TokenValidator from '../../middlewares/TokenValidator';
 import RoutesController from './RouteController';
 import middlewares from '../../middlewares';
 
-const { GeneralValidator } = middlewares;
+const { GeneralValidator, RouteValidator } = middlewares;
 const routesRouter = express.Router();
 
 routesRouter.get(
@@ -15,6 +15,17 @@ routesRouter.get(
 routesRouter.post(
   '/routes',
   RoutesController.createRoute
+);
+
+routesRouter.put(
+  '/routes/:routeId',
+  TokenValidator.attachJwtSecretKey,
+  TokenValidator.authenticateToken,
+  RouteValidator.validateRouteIdParam,
+  GeneralValidator.validateTeamUrlInRequestBody,
+  GeneralValidator.validateAllProvidedReqBody,
+  RouteValidator.validateRouteBatchStatus,
+  RoutesController.updateRouteBatchStatus
 );
 
 routesRouter.get('/routes/requests',

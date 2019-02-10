@@ -69,7 +69,7 @@ const genRouteBatch = (num, cabSize, routeSize) => {
     const status = ['Inactive', 'Active'];
     routes.push({
       takeOff: '03:00',
-      capacity: Math.floor(Math.random() * 6) + 4,
+      capacity: 3,
       status: status[Math.floor(Math.random() * 2)],
       comments: faker.lorem.sentence(),
       batch: faker.lorem.word()
@@ -77,6 +77,7 @@ const genRouteBatch = (num, cabSize, routeSize) => {
         .toUpperCase(),
       cabId: Math.floor(Math.random() * cabSize) + 1,
       routeId: Math.floor(Math.random() * routeSize) + 1,
+      inUse: 3,
       createdAt,
       updatedAt
     });
@@ -88,7 +89,7 @@ module.exports = {
   up: queryInterface => queryInterface.bulkInsert('Locations', genLocations(routeSize))
     .then(queryInterface.bulkInsert('Addresses', genAddresses(routeSize)))
     .then(() => queryInterface.bulkInsert('Routes', genRoutes(routeSize)))
-    .then(() => queryInterface.bulkInsert('RouteBatches', genRouteBatch(100, 4, routeSize)))
+    .then(() => queryInterface.bulkInsert('RouteBatches', genRouteBatch(10, 4, routeSize)))
     .then(() => queryInterface.bulkInsert('Users', genFakerUser(8, 3))),
   down: queryInterface => queryInterface.bulkDelete('Routes')
     .then(() => queryInterface.bulkDelete('RouteBatches'))

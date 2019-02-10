@@ -13,7 +13,8 @@ export const slackEventNames = Object.freeze({
   MANAGER_APPROVED_ROUTE_REQUEST: 'manager_approved_route_request',
   RECEIVE_NEW_ROUTE_REQUEST: 'receive_new_route_request',
   APPROVE_ROUTE_REQUEST: 'approved_route_request',
-  OPERATIONS_DECLINE_ROUTE_REQUEST: 'operations_decline_route_request'
+  OPERATIONS_DECLINE_ROUTE_REQUEST: 'operations_decline_route_request',
+  RIDERS_ROUTE_DEACTIVATED: 'riders_route_deactivated'
 });
 
 export class SlackEvents {

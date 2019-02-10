@@ -10,6 +10,8 @@ import HttpError from '../../../helpers/errorHandler';
 import RouteService from '../../../services/RouteService';
 import RouteRequestService from '../../../services/RouteRequestService';
 import { mockRouteRequestData } from '../../../services/__mocks__';
+import Response from '../../../helpers/responseHelper';
+import { SlackEvents } from '../../slack/events/slackEvents';
 
 const assertRouteInfo = (body) => {
   expect(body)
@@ -214,6 +216,48 @@ describe('RoutesController', () => {
         expect(error.statusCode).toEqual(400);
         expect(error.message).toEqual('Invalid Coordinates');
       }
+    });
+  });
+});
+
+describe('RouteController unit test', () => {
+  beforeEach(() => {
+    jest.restoreAllMocks();
+    jest.resetAllMocks();
+  });
+
+  const reqMock = {
+    body: { status: 'Inactive', teamUrl: 'team@slack.com' },
+    params: { routeId: 1 }
+  };
+
+  describe('Update RouteBatch Details', () => {
+    it('should call the response method with a success message', async () => {
+      jest.spyOn(Response, 'sendResponse').mockImplementation();
+      jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue('good');
+      const eventsMock = jest.spyOn(SlackEvents, 'raise').mockImplementation();
+      const errMessage = 'Route batch successfully updated';
+
+      await RoutesController.updateRouteBatchStatus(reqMock, 'res');
+      expect(eventsMock).toHaveBeenCalledTimes(1);
+      expect(eventsMock).toHaveBeenCalledWith('riders_route_deactivated', 'team@slack.com', 'good');
+      expect(Response.sendResponse).toHaveBeenCalledTimes(1);
+      expect(Response.sendResponse).toHaveBeenCalledWith('res', 200, true, errMessage, 'good');
+    });
+
+    it('should call HTTPError response method when an error is caught', async () => {
+      const err = new Error('Try Again');
+      jest.spyOn(RouteService, 'updateRouteBatch').mockRejectedValue(err);
+      const responseMock = jest.spyOn(Response, 'sendResponse').mockImplementation();
+      const httpErrorResponseMock = jest.spyOn(HttpError, 'sendErrorResponse').mockImplementation();
+      const eventsMock = jest.spyOn(SlackEvents, 'raise').mockImplementation();
+
+      await RoutesController.updateRouteBatchStatus(reqMock, 'res');
+
+      expect(eventsMock).not.toHaveBeenCalled();
+      expect(responseMock).not.toHaveBeenCalled();
+      expect(httpErrorResponseMock).toHaveBeenCalledTimes(1);
+      expect(httpErrorResponseMock).toHaveBeenCalledWith(err, 'res');
     });
   });
 });
