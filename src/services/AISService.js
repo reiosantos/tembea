@@ -3,7 +3,7 @@ import BugsnagHelper from '../helpers/bugsnagHelper';
 
 export class AISService {
   constructor(apiKey, baseUrl) {
-    if (!apiKey || !baseUrl) throw new Error('AIS_API_KEY and AIS_API_BASEURL must be defined in the env variables');
+    // if (!apiKey || !baseUrl) throw new Error('AIS_API_KEY and AIS_API_BASEURL must be defined in the env variables');
     this.apiKey = apiKey;
     this.baseUrl = baseUrl;
     this.headers = {
