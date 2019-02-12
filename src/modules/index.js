@@ -28,7 +28,7 @@ const routes = (app, hbs) => {
 
   app.use(apiPrefix, authenticationRouter);
   app.use(apiPrefix, roleManagementRouter);
-  app.use(apiPrefix, routesRouter);
+
   return app;
 };
 

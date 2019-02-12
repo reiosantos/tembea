@@ -69,10 +69,6 @@ export class RoutesHelper {
     const placeIdOrCoordinates = payload.submission
       ? payload.submission.coordinates : payload.actions[0].selected_options[0].value;
     const optionType = payload.submission ? 'coordinates' : 'placeId';
-    return this.getPlaceInfo(optionType, placeIdOrCoordinates);
-  }
-
-  static async getPlaceInfo(optionType, placeIdOrCoordinates) {
     const response = await GoogleMapsReverseGeocode.getAddressDetails(
       optionType, placeIdOrCoordinates
     );

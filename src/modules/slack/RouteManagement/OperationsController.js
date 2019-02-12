@@ -5,23 +5,6 @@ import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import ManagerFormValidator from '../../../helpers/slack/UserInputValidator/managerFormValidator';
 import OperationsNotifications from '../SlackPrompts/notifications/OperationsRouteRequest/index';
 import { getAction } from './rootFile';
-import RouteService from '../../../services/RouteService';
-
-const saveRoute = async (updatedRequest, submission) => {
-  const { busStop, routeImageUrl } = updatedRequest;
-  const {
-    routeName, routeCapacity, takeOffTime, regNumber
-  } = submission;
-  const data = {
-    destinationName: busStop.address,
-    imageUrl: routeImageUrl,
-    name: routeName,
-    capacity: routeCapacity,
-    takeOff: takeOffTime,
-    vehicleRegNumber: regNumber
-  };
-  await RouteService.createRouteBatch(data);
-};
 
 const handlers = {
   decline: async (payload) => {
@@ -90,15 +73,16 @@ const handlers = {
       const updatedRequest = await RouteRequestService.updateRouteRequest(routeRequest.id, {
         status: 'Approved'
       });
-      const save = saveRoute(updatedRequest, submission);
-      const complete = OperationsNotifications
+
+      await OperationsNotifications
         .completeOperationsApprovedAction(
           updatedRequest, channelId, timeStamp, userId, slackBotOauthToken, submission
         );
-      Promise.all([complete, save]);
     } catch (error) {
       bugsnagHelper.log(error);
-      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+      respond(
+        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
+      );
     }
   }
 };

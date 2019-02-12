@@ -7,7 +7,6 @@ import OperationsNotifications from '../../SlackPrompts/notifications/Operations
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import ManagerFormValidator
   from '../../../../helpers/slack/UserInputValidator/managerFormValidator';
-import RouteService from '../../../../services/RouteService';
 
 describe('Operations Route Controller', () => {
   let respond;
@@ -77,7 +76,6 @@ describe('Operations Route Controller', () => {
         };
         jest.spyOn(OperationsNotifications, 'completeOperationsApprovedAction')
           .mockImplementation();
-        jest.spyOn(RouteService, 'createRouteBatch').mockResolvedValue();
         payload = { ...payload, state };
       });
 

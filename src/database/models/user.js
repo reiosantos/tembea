@@ -27,14 +27,6 @@ module.exports = (sequelize, DataTypes) => {
     defaultDestinationId: {
       allowNull: true,
       type: DataTypes.INTEGER,
-    },
-    routeBatchId: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: 'RouteBatches',
-        key: 'id',
-        as: 'routeBatch'
-      },
     }
   }, {});
   User.associate = (models) => {

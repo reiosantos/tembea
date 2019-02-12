@@ -28,11 +28,6 @@ class AddressService {
     }
   }
 
-  static async findAddressByCoordinates(longitude, latitude) {
-    const location = await LocationService.findLocation(longitude, latitude, false, true);
-    if (location) return location.address;
-  }
-
   /**
    * @description Saves the new address and location record
    * @param  {number} longitude The longitude of the location
