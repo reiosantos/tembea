@@ -1,6 +1,7 @@
 import { Marker, RoutesHelper } from '../googleMaps/googleMapsHelpers';
 import GoogleMapsDistanceMatrix from '../../services/googleMaps/GoogleMapsDistanceMatrix';
 import { validHomeBStopMock, invalidHomeBStopMock } from '../__mocks__/googleMapHelpersMock';
+import AddressService from '../../services/AddressService';
 
 describe('Marker', () => {
   it('should construct a new marker', () => {
@@ -32,6 +33,25 @@ describe('Marker', () => {
       label: 'A',
       locations: '|Lagos'
     });
+  });
+});
+
+describe('getDojoCoordinateFromDb', () => {
+  beforeEach(() => {
+    jest.spyOn(AddressService, 'findAddress').mockResolvedValue(null);
+  });
+  it('should throw an error when it cannot find dojo location in the database', async () => {
+    try {
+      await RoutesHelper.getDojoCoordinateFromDb();
+    } catch (err) {
+      expect(err).toEqual(new Error('Cannot find the location The Dojo in the database'));
+    }
+  });
+  it('should get the location of dojo from the database', async () => {
+    jest.spyOn(AddressService, 'findAddress').mockResolvedValue({ coordinate: '12038902,-212131232' });
+    const res = await RoutesHelper.getDojoCoordinateFromDb();
+    expect(res).toBeTruthy();
+    expect(res).toHaveProperty('coordinate');
   });
 });
 

@@ -4,6 +4,7 @@ import DateDialogHelper from '../../dateHelper';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import InputValidator from './InputValidator';
 import Validators from './Validators';
+import { getPageNumber } from '../../../modules/slack/TripManagement/TripItineraryController';
 
 class UserInputValidator {
   static async fetchUserInformationFromSlack(userId, slackBotOauthToken) {
@@ -145,6 +146,17 @@ class UserInputValidator {
     errors.push(...Validators.checkTimeFormat(takeOffTime, 'takeOffTime'));
     errors.push(...Validators.validateRegex('checkNumberPlate', regNumber, 'regNumber'));
     return errors;
+  }
+
+  static validateSkipToPage(payload) {
+    const page = Number(getPageNumber(payload) || -1);
+    if (Number.isNaN(page) || page === -1) {
+      return {
+        errors: [
+          new SlackDialogError('pageNumber', 'Not a number')
+        ]
+      };
+    }
   }
 
   static validateEngagementForm(engagementFormData) {

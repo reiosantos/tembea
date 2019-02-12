@@ -196,7 +196,18 @@ describe('UserInputValidator tests', () => {
       expect(user.real_name).toEqual('someName');
     });
   });
-
+  describe('UserInputValidator__validateSkipToPage', () => {
+    it('should throw an error when the imputed value is not a number', () => {
+      const payload = { submission: { pageNumber: 'test' } };
+      const result = UserInputValidator.validateSkipToPage(payload);
+      expect(result).toHaveProperty('errors');
+    });
+    it('should not throw an error if imputed value is a number ', () => {
+      const payload = { submission: { pageNumber: 1 } };
+      const result = UserInputValidator.validateSkipToPage(payload);
+      expect(result).toBeUndefined();
+    });
+  });
   describe('validateLocationEntries', () => {
     it('should return location validation errors if they exist', () => {
       const payload = createPayload();

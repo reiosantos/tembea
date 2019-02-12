@@ -140,8 +140,8 @@ class DialogPrompts {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
-  static async sendSkipPage(payload, value) {
-    const dialog = new SlackDialog('trip_itinerary',
+  static async sendSkipPage(payload, value, callbackId) {
+    const dialog = new SlackDialog(callbackId,
       'Page to skip to', 'Submit', false, value);
     const textarea = new SlackDialogText('Page Number', 'pageNumber',
       'Page to skip to');

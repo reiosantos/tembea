@@ -7,7 +7,7 @@ import DialogPrompts from '../SlackPrompts/DialogPrompts';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import RescheduleTripController from '../TripManagement/RescheduleTripController';
 import CancelTripController from '../TripManagement/CancelTripController';
-import TripItineraryController, { getPageNumber } from '../TripManagement/TripItineraryController';
+import TripItineraryController from '../TripManagement/TripItineraryController';
 import ManageTripController from '../TripManagement/ManageTripController';
 import TripActionsController from '../TripManagement/TripActionsController';
 import TripRescheduleHelper from '../helpers/slackHelpers/rescheduleHelper';
@@ -18,8 +18,9 @@ import travelTripHelper from '../helpers/slackHelpers/TravelTripHelper';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import RouteInputHandlers from '../RouteManagement';
 import ManagerActionsHelper from '../helpers/slackHelpers/ManagerActionsHelper';
-import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import ViewTripHelper from '../helpers/slackHelpers/ViewTripHelper';
+import JoinRouteInputHandlers from '../RouteManagement/JoinRoute/JoinRouteInputHandlers';
+import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -207,14 +208,8 @@ class SlackInteractions {
 
   static viewTripItineraryActions(payload, respond) {
     const value = payload.state || payload.actions[0].value;
-    const page = Number(getPageNumber(payload) || -1);
-    if (Number.isNaN(page) || page === -1) {
-      return {
-        errors: [
-          new SlackDialogError('pageNumber', 'Not a number')
-        ]
-      };
-    }
+    const errors = UserInputValidator.validateSkipToPage(payload);
+    if (errors) return errors;
     switch (value) {
       case 'view_trips_history':
         TripItineraryController.handleTripHistory(payload, respond);
@@ -280,15 +275,16 @@ class SlackInteractions {
     respond(SlackInteractions.goodByeMessage());
   }
 
-  static startRouteActions(payload, respond) {
-    const action = payload.actions[0].value;
-    const comingSoon = 'Coming soon...';
+  static async startRouteActions(payload, respond) {
+    const action = payload.state || payload.actions[0].value;
+    const errors = UserInputValidator.validateSkipToPage(payload);
+    if (errors) return errors;
     switch (action) {
       case 'request_new_route':
         DialogPrompts.sendLocationForm(payload);
         break;
       case 'view_available_routes':
-        respond(new SlackInteractiveMessage(comingSoon));
+        await JoinRouteInputHandlers.sendAvailableRoutesMessage(payload, respond);
         break;
       default:
         respond(SlackInteractions.goodByeMessage());

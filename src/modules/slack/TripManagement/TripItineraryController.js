@@ -27,9 +27,9 @@ export const getPageNumber = (payload) => {
 
 export const triggerSkipPage = (payload, respond) => {
   if (payload.actions && payload.actions[0].name === 'skipPage') {
-    const { value: requestType } = payload.actions[0];
+    const { actions: [{ value: requestType }], callback_id: callbackId } = payload;
     respond(new SlackInteractiveMessage('Noted...'));
-    return DialogPrompts.sendSkipPage(payload, requestType);
+    return DialogPrompts.sendSkipPage(payload, requestType, callbackId);
   }
 };
 
