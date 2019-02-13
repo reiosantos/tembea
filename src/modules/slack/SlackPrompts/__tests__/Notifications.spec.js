@@ -339,7 +339,6 @@ describe('SlackNotifications', () => {
       findUserByIdOrSlackId.mockReturnValueOnce({ ...rider, slackId: 'BBBBBB' });
 
       jest.spyOn(SlackHelpers, 'getHeadByDepartmentId').mockResolvedValue(head);
-      // jest.spyOn(SlackHelpers, 'getTripRequest').mockResolvedValue(newTripRequest);
       jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue();
       jest.spyOn(SlackNotifications, 'getManagerMessageAttachment').mockResolvedValue();
       jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue(

@@ -71,7 +71,7 @@ class RouteRequestValidator {
         'Some properties are missing for approval', messages);
     }
     const { capacity, takeOff } = req.body;
-    
+
     if (!/^\d*[1-9]\d*$/.test(capacity)) {
       return RouteRequestValidator.sendResponse(res,
         'Capacity must be an integer greater than zero');
@@ -116,17 +116,19 @@ class RouteRequestValidator {
     const { requestId } = req.params;
 
     try {
-      const { dataValues } = await RouteRequestService.getRouteRequest(requestId);
+      const { status } = await RouteRequestService.getRouteRequest(requestId);
 
-      if (dataValues.status === 'Approved' || dataValues.status === 'Declined') {
-        throw new HttpError(
-          `This request has already been ${dataValues.status.toLowerCase()}`,
+      if (status === 'Approved' || status === 'Declined') {
+        HttpError.throwErrorIfNull(
+          null,
+          `This request has already been ${status.toLowerCase()}`,
           409
         );
       }
-        
-      if (dataValues.status !== 'Confirmed') {
-        throw new HttpError(
+
+      if (status !== 'Confirmed') {
+        HttpError.throwErrorIfNull(
+          null,
           'This request needs to be confirmed by the manager first',
           403
         );

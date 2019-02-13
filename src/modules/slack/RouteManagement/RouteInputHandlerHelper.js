@@ -97,12 +97,12 @@ export default class RouteInputHandlerHelper {
     if (!homeToDropOffDistance) {
       errors.push(new SlackDialogError('selectBusStop', 'Unable to calculate distance'));
     }
-    // const { distanceInMetres } = homeToDropOffDistance;
-    // if (distanceInMetres > 2000) {
-    //   errors.push(
-    //     new SlackDialogError('selectBusStop', 'Selected bus stop is more than 2km from home')
-    //   );
-    // }
+    const { distanceInMetres } = homeToDropOffDistance || {};
+    if (distanceInMetres > 2000) {
+      errors.push(
+        new SlackDialogError('selectBusStop', 'Selected bus stop is more than 2km from home')
+      );
+    }
     let validationError;
     if (errors.length > 0) {
       validationError = {

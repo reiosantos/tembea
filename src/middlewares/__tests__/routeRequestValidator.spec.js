@@ -43,7 +43,7 @@ describe('RouteRequestValidator', () => {
       expect(res.status).toHaveBeenCalledWith(400);
       expect(next).toHaveBeenCalledTimes(0);
     });
-    
+
     it('should return 400 if comment has a forbidden character', () => {
       const req = {
         params: {
@@ -55,13 +55,13 @@ describe('RouteRequestValidator', () => {
           comment: 'some = comment'
         }
       };
-      
+
       RouteRequestValidator.validateParams(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(next).toHaveBeenCalledTimes(0);
     });
-    
+
     it('should return 400 if reviewerEmail is invalid', () => {
       const req = {
         params: {
@@ -73,13 +73,13 @@ describe('RouteRequestValidator', () => {
           comment: 'some comment'
         }
       };
-      
+
       RouteRequestValidator.validateParams(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(next).toHaveBeenCalledTimes(0);
     });
-    
+
     it('should respond with invalid slackURL', () => {
       const req = {
         params: {
@@ -92,10 +92,10 @@ describe('RouteRequestValidator', () => {
           teamUrl: 'stuffslack.com'
         }
       };
-      
+
       RouteRequestValidator.validateParams(req, res, next);
       jest.spyOn(RouteRequestValidator, 'sendResponse');
-      
+
       RouteRequestValidator.validateParams(req, res, next);
       expect(next).toHaveBeenCalledTimes(0);
       expect(RouteRequestValidator.sendResponse).toHaveBeenCalledWith(res, 'teamUrl must be in the format "*.slack.com"');
@@ -114,7 +114,7 @@ describe('RouteRequestValidator', () => {
         }
       };
       jest.spyOn(RouteRequestValidator, 'validateApprovalBody');
-      
+
       RouteRequestValidator.validateParams(req, res, next);
       expect(next).toHaveBeenCalledTimes(0);
       expect(RouteRequestValidator.validateApprovalBody).toHaveBeenCalledWith(req, res, next);
@@ -132,7 +132,7 @@ describe('RouteRequestValidator', () => {
           teamUrl: 'stuff.slack.com'
         }
       };
-  
+
       RouteRequestValidator.validateParams(req, res, next);
       expect(next).toHaveBeenCalledTimes(1);
     });
@@ -200,61 +200,53 @@ describe('RouteRequestValidator', () => {
       jest.spyOn(res, 'status');
       jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation();
     });
-    
+
     it('should call getRouteRequest with id of 1', async () => {
       await RouteRequestValidator.validateRouteStatus(req, res, next);
-      
+
       expect(RouteRequestService.getRouteRequest).toHaveBeenCalledWith(1);
     });
 
     it('should respond with 409 if route has been approved', async () => {
       jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
-        dataValues: {
-          status: 'Approved'
-        }
+        status: 'Approved'
       }));
 
       await RouteRequestValidator.validateRouteStatus(req, res, next);
-      
+
       expect(res.status).toHaveBeenCalledWith(409);
       expect(next).toHaveBeenCalledTimes(0);
     });
 
     it('should respond with 409 if route has been declined', async () => {
       jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
-        dataValues: {
-          status: 'Declined'
-        }
+        status: 'Declined'
       }));
 
       await RouteRequestValidator.validateRouteStatus(req, res, next);
-      
+
       expect(res.status).toHaveBeenCalledWith(409);
       expect(next).toHaveBeenCalledTimes(0);
     });
 
     it('should respond with 403 if route has been confirmed', async () => {
       jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
-        dataValues: {
-          status: 'Pending'
-        }
+        status: 'Pending'
       }));
 
       await RouteRequestValidator.validateRouteStatus(req, res, next);
-      
+
       expect(res.status).toHaveBeenCalledWith(403);
       expect(next).toHaveBeenCalledTimes(0);
     });
 
     it('should call the next middleware if no error was found', async () => {
       jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
-        dataValues: {
-          status: 'Confirmed'
-        }
+        status: 'Confirmed'
       }));
 
       await RouteRequestValidator.validateRouteStatus(req, res, next);
-      
+
       expect(next).toHaveBeenCalled();
     });
 
@@ -265,7 +257,7 @@ describe('RouteRequestValidator', () => {
       jest.spyOn(HttpError, 'sendErrorResponse').mockImplementation();
 
       await RouteRequestValidator.validateRouteStatus(req, res, next);
-      
+
       expect(HttpError.sendErrorResponse).toHaveBeenCalled();
     });
   });
@@ -331,11 +323,11 @@ describe('RouteRequestValidator', () => {
         }
       };
       jest.spyOn(RouteRequestValidator, 'sendResponse');
-      
+
       RouteRequestValidator.validateApprovalBody(req, res, next);
       expect(RouteRequestValidator.sendResponse).toHaveBeenCalledWith(res, 'Take off time must be in the right format e.g 11:30');
     });
-    
+
     it('should call the next middleware', () => {
       const req = {
         params: {
@@ -351,7 +343,7 @@ describe('RouteRequestValidator', () => {
           cabRegNumber: 'ABC 123'
         }
       };
-      
+
       RouteRequestValidator.validateApprovalBody(req, res, next);
       expect(next).toHaveBeenCalledTimes(1);
     });

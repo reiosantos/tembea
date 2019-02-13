@@ -32,23 +32,23 @@ class RoutesHelpers {
 
   static createRouteAttachment(routesInfo) {
     const {
-      id: routeId, takeOff: departureTime, driverName, batch, capacity, name: routeName, inUse: passenger
+      id: routeId, takeOff: departureTime, regNumber, batch, capacity, name: routeName, inUse: passenger
     } = routesInfo;
     const attachment = new SlackAttachment();
     const route = `Route: ${routeName}`;
     const takeOffTime = `Departure Time:  ${departureTime}`;
     const availablePassenger = `Available Passengers: ${passenger} `;
     const cabCapacity = `Cab Capacity: ${capacity} `;
-    const RouteDriverName = `Driver Name: ${driverName} `;
+    const routeDriverName = `Cab Registration Number: ${regNumber} `;
     const cabBatch = `Batch: ${batch} `;
 
     attachment.addFieldsOrActions('fields', [new SlackAttachmentField(route, takeOffTime)]);
-    attachment.addFieldsOrActions('fields', [new SlackAttachmentField(cabBatch, RouteDriverName)]);
+    attachment.addFieldsOrActions('fields', [new SlackAttachmentField(cabBatch, routeDriverName)]);
     attachment.addFieldsOrActions('fields', [new SlackAttachmentField(availablePassenger, cabCapacity)]);
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('joinRoute', 'Join Route', routeId)
     ]);
-    attachment.addOptionalProps('join_route_routeSelected');
+    attachment.addOptionalProps('join_route_actions');
     return attachment;
   }
 }

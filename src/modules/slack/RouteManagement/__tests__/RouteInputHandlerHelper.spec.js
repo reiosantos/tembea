@@ -119,6 +119,19 @@ describe('RouteInputHandlerHelper', () => {
       };
       expect(res).toEqual(expectedRes);
     });
+    it('should check if distance is less than 2km', async () => {
+      const res = RouteInputHandlerHelper.validateDistance({
+        distanceInMetres: 2001
+      });
+      const expectedRes = {
+        errors: [
+          {
+            error: 'Selected bus stop is more than 2km from home', name: 'selectBusStop'
+          }
+        ]
+      };
+      expect(res).toEqual(expectedRes);
+    });
     it('should return an empty', () => {
       const res = RouteInputHandlerHelper.validateDistance('test');
       expect(res).toBeFalsy();

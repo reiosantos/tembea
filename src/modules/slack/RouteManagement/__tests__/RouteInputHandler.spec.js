@@ -257,8 +257,6 @@ describe('RouteInputHandler Tests', () => {
         .mockResolvedValue('https://sampleMapurl');
       jest.spyOn(Cache, 'fetch').mockResolvedValue([{}, {}]);
       jest.spyOn(Cache, 'save').mockResolvedValue();
-      // jest.spyOn(mockedGetLocationDetailsFromCache, 'getLocationDetailsFromCache')
-      // mockedValidateBusStop.validateBusStop.mockImplementation(null);
       it('handleBusStopSelected error. invalid coordinate', async (done) => {
         const resp = await RouteInputHandlers.handleBusStopSelected(payload, respond);
         expect(respond).toHaveBeenCalledTimes(0);

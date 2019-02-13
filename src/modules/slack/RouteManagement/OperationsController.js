@@ -4,8 +4,8 @@ import DialogPrompts from '../SlackPrompts/DialogPrompts';
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import ManagerFormValidator from '../../../helpers/slack/UserInputValidator/managerFormValidator';
 import OperationsNotifications from '../SlackPrompts/notifications/OperationsRouteRequest/index';
-import { getAction } from './rootFile';
 import RouteService from '../../../services/RouteService';
+import { getAction } from './rootFile';
 
 const saveRoute = async (updatedRequest, submission) => {
   const { busStop, routeImageUrl } = updatedRequest;
@@ -18,7 +18,8 @@ const saveRoute = async (updatedRequest, submission) => {
     name: routeName,
     capacity: routeCapacity,
     takeOff: takeOffTime,
-    vehicleRegNumber: regNumber
+    vehicleRegNumber: regNumber,
+    status: 'Active',
   };
   await RouteService.createRouteBatch(data);
 };
@@ -28,6 +29,17 @@ const handlers = {
     const { actions, channel: { id: channelId }, original_message: { ts: timeStamp } } = payload;
     const [{ value: routeRequestId }] = actions;
 
+    const { botToken, routeRequest } = await RouteRequestService
+      .getRouteRequestAndToken(routeRequestId, payload.team.id);
+
+    const declined = routeRequest.status === 'Declined';
+    const approved = routeRequest.status === 'Approved';
+
+    if (approved || declined) {
+      OperationsNotifications.updateOpsStatusNotificationMessage(payload, routeRequest, botToken);
+      return;
+    }
+
     const state = {
       decline: {
         timeStamp,
@@ -35,6 +47,7 @@ const handlers = {
         routeRequestId
       }
     };
+
     DialogPrompts.sendReasonDialog(payload,
       'operations_route_declinedRequest',
       JSON.stringify(state), 'Decline', 'Decline', 'declineReason', 'route');
@@ -67,6 +80,16 @@ const handlers = {
     const { actions, channel: { id: channelId }, original_message: { ts: timeStamp } } = payload;
     const [{ value: routeRequestId }] = actions;
 
+    const { botToken, routeRequest, routeRequest: { status } } = await RouteRequestService
+      .getRouteRequestAndToken(routeRequestId, payload.team.id);
+
+    const declined = status === 'Declined';
+    const approved = status === 'Approved';
+
+    if (approved || declined) {
+      OperationsNotifications.updateOpsStatusNotificationMessage(payload, routeRequest, botToken);
+      return;
+    }
     const state = {
       approve: {
         timeStamp,
@@ -112,46 +135,6 @@ class OperationsController {
   }
 
   static async handleOperationsActions(payload, respond) {
-    let routeRequestId;
-    if (payload.actions) {
-      routeRequestId = payload.actions[0].value;
-
-      const { botToken, routeRequest } = await RouteRequestService
-        .getRouteRequestAndToken(routeRequestId, payload.team.id);
-
-      if (routeRequest.dataValues.status !== 'Confirmed'
-      && routeRequest.dataValues.status !== 'Pending') {
-        return OperationsController.updateMessage(payload, routeRequest, botToken);
-      }
-
-      return OperationsController.handleAction(payload, respond);
-    }
-
-    return OperationsController.handleAction(payload, respond);
-  }
-
-  static async updateMessage(payload, routeRequest, botToken) {
-    const {
-      channel, message_ts: timeStamp, team, actions
-    } = payload;
-
-    if (routeRequest.dataValues.status === 'Approved') {
-      return OperationsNotifications
-        .completeOperationsApprovedAction(routeRequest,
-          channel.id, timeStamp,
-          routeRequest.dataValues.opsReviewer.dataValues.slackId,
-          botToken, {}, true);
-    }
-    
-    if (routeRequest.dataValues.status === 'Declined') {
-      return OperationsNotifications
-        .completeOperationsDeclineAction(routeRequest,
-          channel.id, team.id, actions[0].value,
-          timeStamp, botToken, payload, true);
-    }
-  }
-
-  static handleAction(payload, respond) {
     try {
       const action = getAction(payload, 'actions');
       const actionHandler = OperationsController.operationsRouteController(action);

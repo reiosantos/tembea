@@ -36,6 +36,22 @@ describe('Manager Route Request Notification Tests', () => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
   });
+  describe('handleStatusValidationError', () => {
+    it('handleStatusValidationError should complete manager action', async () => {
+      const payload = {
+        channel: { id: 1 },
+        team: { id: 1 },
+        original_message: { ts: 'timestamp' }
+      };
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken')
+        .mockReturnValue('token');
+      const completeManagerAction = jest.spyOn(ManagerNotifications, 'completeManagerAction')
+        .mockReturnValue('token');
+      await ManagerNotifications.handleStatusValidationError(payload, 'routeRequest');
+      expect(completeManagerAction).toHaveBeenCalledTimes(1);
+      expect(completeManagerAction).toHaveBeenCalledWith('routeRequest', 1, 'timestamp', 'token');
+    });
+  });
   describe('send manager notification', () => {
     it('should send manager notification attachment', async () => {
       await ManagerNotifications.sendManagerNotification(respond, data);

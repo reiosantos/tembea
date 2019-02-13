@@ -2,7 +2,9 @@ import models from '../database/models';
 import { bugsnagHelper } from '../modules/slack/RouteManagement/rootFile';
 import { getRequest, updateRequest } from './SerivceUtils';
 
-const { JoinRequest, Engagement, RouteBatch } = models;
+const {
+  JoinRequest, Engagement, RouteBatch, Route
+} = models;
 
 class JoinRouteRequestService {
   /**
@@ -83,7 +85,7 @@ JoinRouteRequestService.defaultInclude = ['manager',
   {
     model: RouteBatch,
     as: 'routeBatch',
-    include: ['route']
+    include: ['riders', { model: Route, as: 'route', include: ['destination'] }]
   }
 ];
 export default JoinRouteRequestService;

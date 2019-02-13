@@ -1,11 +1,12 @@
 import Utils from '../../../../utils/index';
-import RouteService from '../../../../services/RouteService';
 import JoinRouteRequestService from '../../../../services/JoinRouteRequestService';
 import Cache from '../../../../cache';
 import PartnerService from '../../../../services/PartnerService';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import { SlackAttachmentField, SlackAttachment } from '../../SlackModels/SlackMessageModels';
-
+import AttachmentHelper from '../../SlackPrompts/notifications/AttachmentHelper';
+import { convertIsoString } from '../ManagerController';
+import RouteService from '../../../../services/RouteService';
 
 class JoinRouteHelpers {
   static getName(username) {
@@ -14,32 +15,27 @@ class JoinRouteHelpers {
     return names.join(' ');
   }
 
-  static async getRouteBatch(payload) {
-    const { callback_id: callbackId } = payload;
-    const [,,, routeBatchId] = callbackId.split('_');
-    return RouteService.getRouteBatchByPk(routeBatchId);
-  }
-
-  static async saveJoinRouteRequest(payload) {
+  static async saveJoinRouteRequest(payload, routeBatchId) {
     const { user: { id: slackId }, team: { id: teamId } } = payload;
     const {
-      manager, partnerName, workHours, startDate, endDate
+      manager: managerSlackId, partnerName, workHours, ...engagementDate
     } = await Cache.fetch(`joinRouteRequestSubmission_${slackId}`);
-    const [partner, fellow, managerInfo, routeBatch] = await Promise.all(
-      [
-        PartnerService.findOrCreatePartner(partnerName),
-        SlackHelpers.findOrCreateUserBySlackId(slackId, teamId),
-        SlackHelpers.findOrCreateUserBySlackId(manager, teamId),
-        this.getRouteBatch(payload)
-      ]
-    );
+
+    const { startDate, endDate } = convertIsoString(engagementDate);
+    const [partner, fellow, manager, routeBatch] = await Promise.all([
+      PartnerService.findOrCreatePartner(partnerName),
+      SlackHelpers.findOrCreateUserBySlackId(slackId, teamId),
+      SlackHelpers.findOrCreateUserBySlackId(managerSlackId),
+      RouteService.getRoute(routeBatchId)
+    ]);
+
     const engagement = await PartnerService.findOrCreateEngagement(
       workHours, fellow, partner, startDate, endDate
     );
-    const joinRouteRequest = await JoinRouteRequestService.createJoinRouteRequest(
-      engagement.id, managerInfo.id, routeBatch.id
+
+    return JoinRouteRequestService.createJoinRouteRequest(
+      engagement.id, manager.id, routeBatch.id
     );
-    return joinRouteRequest;
   }
 
   static async getJoinRouteRequest({ id, submission, slackId }) {
@@ -66,27 +62,16 @@ class JoinRouteHelpers {
     };
   }
 
-  static async engagementFields(payload, joinRequestId) {
-    const { submission, user: { id: slackId, name } } = payload;
-    const {
-      manager, partnerName, workHours, startDate, endDate
-    } = await this.getJoinRouteRequest({ id: joinRequestId, submission, slackId });
-    const { from, to } = Utils.formatWorkHours(workHours);
-    const fellowName = this.getName(name) || `<@${slackId}>`;
-    return [
-      new SlackAttachmentField('Fellow Name', fellowName, true),
-      new SlackAttachmentField('Partner', partnerName, true),
-      new SlackAttachmentField('Line Manager', `<@${manager}>`),
-      new SlackAttachmentField('Work Hours', null, false),
-      new SlackAttachmentField('_From_', from, true),
-      new SlackAttachmentField('To', to, true),
-      new SlackAttachmentField('Engagement dates', null, false),
-      new SlackAttachmentField('_Start_', startDate, true),
-      new SlackAttachmentField('_End_', endDate, true)
-    ];
+  static engagementFields(joinRequest) {
+    const { manager: { slackId, email, name } } = joinRequest;
+    const managerName = Utils.getNameFromEmail(email) || name;
+    const managerField = new SlackAttachmentField('Line Manager', `${managerName} (<@${slackId}>)`);
+    const fields = AttachmentHelper.engagementAttachmentFields(joinRequest);
+    fields.splice(2, 0, managerField);
+    return fields;
   }
 
-  static async routeFields(route) {
+  static routeFields(route) {
     const {
       capacity, riders, takeOff,
       route: { name: routeName, destination: { address } }
@@ -100,13 +85,12 @@ class JoinRouteHelpers {
     ];
   }
 
-  static async joinRouteAttachments(payload, joinRequestId = null) {
-    const routeBatch = await this.getRouteBatch(payload);
-    const { route: { imageUrl: routeImageUrl } } = routeBatch;
+  static joinRouteAttachments(joinRoute) {
+    const { routeBatch, routeBatch: { route: { imageUrl } } } = joinRoute;
     const attachment = new SlackAttachment(undefined, undefined,
-      undefined, undefined, routeImageUrl);
-    const fellowFields = await JoinRouteHelpers.engagementFields(payload, joinRequestId);
-    const routeBatchFields = await JoinRouteHelpers.routeFields(routeBatch);
+      undefined, undefined, imageUrl);
+    const fellowFields = JoinRouteHelpers.engagementFields(joinRoute);
+    const routeBatchFields = JoinRouteHelpers.routeFields(routeBatch);
     const separator = '---------------------';
     const attachments = [
       new SlackAttachmentField(`${separator}${separator}${separator}`, null, false),

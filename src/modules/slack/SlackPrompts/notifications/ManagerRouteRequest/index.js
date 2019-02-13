@@ -4,6 +4,7 @@ import SlackNotifications from '../../Notifications';
 import { slackEventNames, SlackEvents } from '../../../events/slackEvents';
 import InteractivePrompts from '../../InteractivePrompts';
 import ManagerAttachmentHelper from './helper';
+import TeamDetailsService from '../../../../../services/TeamDetailsService';
 
 export default class ManagerNotifications {
   /**
@@ -122,5 +123,14 @@ export default class ManagerNotifications {
     } catch (error) {
       bugsnagHelper.log(error);
     }
+  }
+
+  static async handleStatusValidationError(payload, routeRequest) {
+    const { channel: { id: channelId }, original_message: { ts } } = payload;
+    const { team: { id: { teamId } } } = payload;
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+    await ManagerNotifications.completeManagerAction(
+      routeRequest, channelId, ts, slackBotOauthToken
+    );
   }
 }

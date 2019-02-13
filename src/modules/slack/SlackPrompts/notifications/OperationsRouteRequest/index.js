@@ -13,6 +13,7 @@ export default class OperationsNotifications {
    * @return {Promise<*>}
    * @param routeRequestId
    * @param teamId
+   * @param teamUrl
    */
   static async sendOpsDeclineMessageToFellow(routeRequestId, teamId, teamUrl) {
     try {
@@ -52,6 +53,7 @@ export default class OperationsNotifications {
    * @param opsId
    * @param {string} botToken - Slack authentication token for tembea bot
    * @param submission
+   * @param {boolean} update
    * @return {Promise<void>}
    */
   static async completeOperationsApprovedAction(
@@ -110,6 +112,7 @@ export default class OperationsNotifications {
    * @param routeRequest
    * @param slackBotOauthToken
    * @param submission
+   * @param teamUrl
    */
   static async sendOpsApproveMessageToFellow(
     routeRequest, slackBotOauthToken, submission, teamUrl
@@ -156,6 +159,27 @@ export default class OperationsNotifications {
       }
     } catch (error) {
       bugsnagHelper.log(error);
+    }
+  }
+
+  static async updateOpsStatusNotificationMessage(payload, routeRequest, botToken) {
+    const {
+      channel, message_ts: timeStamp, team, actions
+    } = payload;
+
+    if (routeRequest.status === 'Approved') {
+      return OperationsNotifications
+        .completeOperationsApprovedAction(routeRequest,
+          channel.id, timeStamp,
+          routeRequest.opsReviewer.slackId,
+          botToken, {}, true);
+    }
+
+    if (routeRequest.status === 'Declined') {
+      return OperationsNotifications
+        .completeOperationsDeclineAction(routeRequest,
+          channel.id, team.id, actions[0].value,
+          timeStamp, botToken, payload, true);
     }
   }
 }

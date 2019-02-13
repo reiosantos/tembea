@@ -46,4 +46,7 @@ slackEvents.handle(slackEventNames.APPROVE_ROUTE_REQUEST,
 SlackEvents.handle(slackEventNames.MANAGER_RECEIVE_JOIN_ROUTE,
   JoinRouteNotifications.sendManagerJoinRequest);
 
+SlackEvents.handle(slackEventNames.OPS_FILLED_CAPACITY_ROUTE_REQUEST,
+  JoinRouteNotifications.sendFilledCapacityJoinRequest);
+
 export default slackEvents;

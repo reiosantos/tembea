@@ -19,7 +19,6 @@ describe('Operations Route Controller', () => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
   });
-
   describe('operations actions', () => {
     let payload;
     let getRouteRequestAndToken;
@@ -52,12 +51,59 @@ describe('Operations Route Controller', () => {
     describe('approve', () => {
       beforeEach(() => {
         payload = { ...payload, callback_id: 'operations_route_approve' };
-        jest.spyOn(DialogPrompts, 'sendOperationsNewRouteApprovalDialog').mockImplementation(fn);
+        jest.spyOn(DialogPrompts, 'sendOperationsNewRouteApprovalDialog')
+          .mockImplementation(fn);
+        jest.spyOn(OperationsNotifications, 'updateOpsStatusNotificationMessage')
+          .mockImplementation();
       });
       it('should launch approve dialog prompt', async (done) => {
+        const routeRequest = { ...mockRouteRequestData, status: 'Confirmed' };
+        getRouteRequestAndToken.mockReturnValue(
+          { botToken: 'botToken', routeRequest }
+        );
         await OperationsController.handleOperationsActions(payload, respond);
         expect(DialogPrompts.sendOperationsNewRouteApprovalDialog).toHaveBeenCalledTimes(1);
         done();
+      });
+      it('should not launch approve dialog when request has been declined', async () => {
+        const routeRequest = {
+          ...mockRouteRequestData,
+          status: 'Declined'
+        };
+        getRouteRequestAndToken.mockReturnValue(
+          {
+            botToken: 'botToken',
+            routeRequest
+          }
+        );
+
+        await OperationsController.handleOperationsActions(payload, respond);
+
+        expect(DialogPrompts.sendOperationsNewRouteApprovalDialog)
+          .not
+          .toHaveBeenCalled();
+        expect(OperationsNotifications.updateOpsStatusNotificationMessage)
+          .toHaveBeenCalledWith(payload, routeRequest, 'botToken');
+      });
+      it('should not launch approve dialog when request has been approved', async () => {
+        const routeRequest = {
+          ...mockRouteRequestData,
+          status: 'Approved'
+        };
+        getRouteRequestAndToken.mockReturnValue(
+          {
+            botToken: 'botToken',
+            routeRequest
+          }
+        );
+
+        await OperationsController.handleOperationsActions(payload, respond);
+
+        expect(DialogPrompts.sendOperationsNewRouteApprovalDialog)
+          .not
+          .toHaveBeenCalled();
+        expect(OperationsNotifications.updateOpsStatusNotificationMessage)
+          .toHaveBeenCalledWith(payload, routeRequest, 'botToken');
       });
     });
 
@@ -152,7 +198,11 @@ describe('Operations Route Controller', () => {
       let mockHandler;
       let payload2;
       beforeEach(() => {
-        payload2 = { actions: [{ name: 'action', value: 1 }], callback_id: 'dummy_callback_actions', team: { id: 'TEAMID1' } };
+        payload2 = {
+          actions: [{ name: 'action', value: 1 }],
+          callback_id: 'dummy_callback_actions',
+          team: { id: 'TEAMID1' }
+        };
         mockHandler = jest.fn().mockReturnValue({ test: 'dummy test' });
         jest.spyOn(OperationsController, 'operationsRouteController')
           .mockImplementation(() => mockHandler);
@@ -190,7 +240,6 @@ describe('Operations Route Controller', () => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
   });
-
   describe('operations actions', () => {
     let payload;
     let getRouteRequestAndToken;
@@ -222,12 +271,51 @@ describe('Operations Route Controller', () => {
       beforeEach(() => {
         payload = { ...payload, callback_id: 'operations_route_decline' };
         jest.spyOn(DialogPrompts, 'sendReasonDialog').mockImplementation(fn);
+        jest.spyOn(OperationsNotifications, 'updateOpsStatusNotificationMessage')
+          .mockImplementation();
       });
       it('should launch decline dialog prompt', async (done) => {
         getRouteRequestAndToken.mockResolvedValue(mockRouteRequestData);
         await OperationsController.handleOperationsActions(payload, respond);
         expect(DialogPrompts.sendReasonDialog).toHaveBeenCalledTimes(1);
         done();
+      });
+      it('should not launch decline dialog when request has been declined', async () => {
+        const routeRequest = {
+          ...mockRouteRequestData,
+          status: 'Declined'
+        };
+        getRouteRequestAndToken.mockReturnValue(
+          {
+            botToken: 'botToken',
+            routeRequest
+          }
+        );
+        await OperationsController.handleOperationsActions(payload, respond);
+
+        expect(DialogPrompts.sendReasonDialog)
+          .not
+          .toHaveBeenCalled();
+        expect(OperationsNotifications.updateOpsStatusNotificationMessage)
+          .toHaveBeenCalledWith(payload, routeRequest, 'botToken');
+      });
+      it('should not launch decline dialog when request has been approved', async () => {
+        const routeRequest = {
+          ...mockRouteRequestData,
+          status: 'Approved'
+        };
+        getRouteRequestAndToken.mockReturnValue(
+          {
+            botToken: 'botToken',
+            routeRequest
+          }
+        );
+        await OperationsController.handleOperationsActions(payload, respond);
+        expect(DialogPrompts.sendReasonDialog)
+          .not
+          .toHaveBeenCalled();
+        expect(OperationsNotifications.updateOpsStatusNotificationMessage)
+          .toHaveBeenCalledWith(payload, routeRequest, 'botToken');
       });
     });
 
@@ -290,11 +378,16 @@ describe('Operations Route Controller', () => {
         }
       });
     });
+
     describe('handle operations actions', () => {
       let mockHandler;
       let payload2;
       beforeEach(() => {
-        payload2 = { actions: [{ name: 'action', value: 1 }], callback_id: 'dummy_callback_actions', team: { id: 'TEAMID1' } };
+        payload2 = {
+          actions: [{ name: 'action', value: 1 }],
+          callback_id: 'dummy_callback_actions',
+          team: { id: 'TEAMID1' }
+        };
         mockHandler = jest.fn().mockReturnValue({ test: 'dummy test' });
         jest.spyOn(OperationsController, 'operationsRouteController')
           .mockImplementation(() => mockHandler);

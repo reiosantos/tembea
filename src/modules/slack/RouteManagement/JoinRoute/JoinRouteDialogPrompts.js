@@ -8,7 +8,7 @@ class JoinRouteDialogPrompts {
     const selectManager = new SlackDialogElementWithDataSource('Select Manager', 'manager');
 
     const dialog = new SlackDialog(
-      `join_route_fellowDetails_${value}`, 'Enter Engagement Details', 'submit', true
+      'join_route_fellowDetails', 'Enter your details', 'submit', true, value
     );
     const partnerNameText = new SlackDialogText(
       'Partner name', 'partnerName', 'Enter your Partner\'s name', false, 'E.g. Partner Co. LTD'

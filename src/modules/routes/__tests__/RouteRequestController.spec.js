@@ -40,7 +40,9 @@ describe('RoutesController', () => {
 
       expect(RouteRequestService.getRouteRequest).toHaveBeenCalledTimes(1);
       expect(RouteRequestService.updateRouteRequest).toHaveBeenCalledWith(1, {
-        status: 'Pending'
+        opsComment: 'stuff',
+        opsReviewerId: 8,
+        status: 'Declined',
       });
     });
 
@@ -48,10 +50,10 @@ describe('RoutesController', () => {
       jest.spyOn(res, 'status');
 
       await RoutesController.changeRouteRequestStatus(req, res);
-      
+
       expect(res.status).toHaveBeenCalledWith(201);
     });
-    
+
     it('should throw an error if no route request us found', async () => {
       jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => null);
       jest.spyOn(HttpError, 'sendErrorResponse').mockImplementation(() => {});

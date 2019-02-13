@@ -6,6 +6,7 @@ import JoinRouteRequestService from '../../../../../services/JoinRouteRequestSer
 import RouteService from '../../../../../services/RouteService';
 import Utils from '../../../../../utils/index';
 import { SlackAttachment } from '../../../SlackModels/SlackMessageModels';
+import AttachmentHelper from '../../../SlackPrompts/notifications/AttachmentHelper';
 
 describe('JoinRouteHelpers', () => {
   const submission = {
@@ -32,40 +33,44 @@ describe('JoinRouteHelpers', () => {
       destination: { address: 'address' }
     },
   };
+  const { partnerName: name, ...engagementDetails } = submission;
+  const joinRequestMock = {
+    manager: { email: 'AAA.BBB@CCC.DDD', name: 'ZZZZZZ', slackId: 'managerId' },
+    routeBatch: routeData,
+    engagement: {
+      ...engagementDetails,
+      partner: { name },
+      fellow: { email: 'AAA.BBB@CCC.DDD', name: 'ZZZZZZ', slackId: 'PPPPPP' }
+    }
+  };
   let routeBatch;
   let fetch;
-  let save;
+  let saveObject;
   let partner;
   let engagement;
-  let user;
+  let fellow;
+  let manager;
   let joinRequest;
   let fetchJoinRequest;
   beforeEach(() => {
     routeBatch = jest.spyOn(RouteService, 'getRouteBatchByPk')
       .mockReturnValue(routeData);
     fetch = jest.spyOn(Cache, 'fetch').mockResolvedValue({
-      manager: 'managerId',
+      manager: 'manager',
       partnerName: 'partner',
       workHours: 'workHours',
       startDate: 'startDate',
       endDate: 'endDate'
     });
-    save = jest.spyOn(Cache, 'saveObject').mockImplementation(jest.fn());
+    saveObject = jest.spyOn(Cache, 'saveObject').mockImplementation(jest.fn());
     partner = jest.spyOn(PartnerService, 'findOrCreatePartner').mockResolvedValue(data);
     engagement = jest.spyOn(PartnerService, 'findOrCreateEngagement').mockResolvedValue(data);
-    user = jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId').mockResolvedValue(data);
+    fellow = jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId').mockResolvedValue(data);
+    manager = jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId').mockResolvedValue(data);
     joinRequest = jest.spyOn(JoinRouteRequestService, 'createJoinRouteRequest')
       .mockResolvedValue({ id: 1 });
     fetchJoinRequest = jest.spyOn(JoinRouteRequestService, 'getJoinRouteRequest')
-      .mockResolvedValue({
-        manager: { slackId: 'managerId' },
-        engagement: {
-          workHours: '18:00-00:00',
-          startDate: '12/12/2019',
-          endDate: '12/12/2020',
-          partner: { name: 'partner' }
-        }
-      });
+      .mockResolvedValue(joinRequestMock);
   });
   afterEach(() => {
     jest.resetAllMocks();
@@ -77,20 +82,14 @@ describe('JoinRouteHelpers', () => {
       expect(result).toEqual('Test User');
     });
   });
-  describe('getRouteBatch', () => {
-    it('should return routeBatch', async () => {
-      const result = await JoinRouteHelpers.getRouteBatch(payload);
-      expect(result).toEqual(routeData);
-    });
-  });
   describe('saveJoinRouteRequest', () => {
     it('should save join route request', async () => {
-      const result = await JoinRouteHelpers.saveJoinRouteRequest(payload);
+      const result = await JoinRouteHelpers.saveJoinRouteRequest(payload, '1');
       expect(fetch).toBeCalledWith('joinRouteRequestSubmission_slackId');
       expect(partner).toBeCalledWith('partner');
-      expect(user).toBeCalledWith('slackId', 'teamId');
-      expect(user).toBeCalledWith('managerId', 'teamId');
+      expect(fellow).toBeCalledWith('slackId', 'teamId');
       expect(engagement).toBeCalled();
+      expect(manager).toBeCalledWith('manager');
       expect(routeBatch).toBeCalledWith('1');
       expect(joinRequest).toBeCalledWith(2, 2, 2);
       expect(result).toEqual({ id: 1 });
@@ -104,7 +103,7 @@ describe('JoinRouteHelpers', () => {
     };
     it('should get engagement details from payload submission', async () => {
       const result = await JoinRouteHelpers.getJoinRouteRequest(engagementData);
-      expect(save).toBeCalledWith(
+      expect(saveObject).toBeCalledWith(
         'joinRouteRequestSubmission_slackId', engagementData.submission
       );
       expect(result).toEqual(engagementData.submission);
@@ -118,14 +117,10 @@ describe('JoinRouteHelpers', () => {
   });
   describe('engagementFields', () => {
     it('should return a list of slack attachment fields', async () => {
-      const payloadData = { ...payload, submission };
-      const workHoursSpy = jest.spyOn(Utils, 'formatWorkHours');
-      const nameSpy = jest.spyOn(JoinRouteHelpers, 'getName');
-      const result = await JoinRouteHelpers.engagementFields(payloadData, null);
-      expect(fetchJoinRequest).not.toBeCalled();
-      expect(workHoursSpy).toBeCalledWith('18:00-00:00');
-      expect(nameSpy).toBeCalledWith('test.user');
-      expect(result.length).toEqual(9);
+      const nameSpy = jest.spyOn(AttachmentHelper, 'engagementAttachmentFields');
+      const result = await JoinRouteHelpers.engagementFields(joinRequestMock, null);
+      expect(result).toBeInstanceOf(Array);
+      expect(nameSpy).toHaveBeenCalledWith(joinRequestMock);
     });
   });
   describe('routeFields', () => {
@@ -137,17 +132,16 @@ describe('JoinRouteHelpers', () => {
         route: { name: 'routeName', destination: { address: 'address' } }
       };
       const formatTimeSpy = jest.spyOn(Utils, 'formatTime');
-      const result = await JoinRouteHelpers.routeFields(route);
+      const result = JoinRouteHelpers.routeFields(route);
       expect(formatTimeSpy).toBeCalledWith('00:00');
       expect(result.length).toEqual(4);
     });
   });
   describe('joinRouteAttachments', () => {
     it('should return an attachment with JoinRoute details', async () => {
-      const payloadData = { ...payload, submission };
       const fieldsOrActionsSpy = jest.spyOn(SlackAttachment.prototype, 'addFieldsOrActions');
       const formatTimeSpy = jest.spyOn(Utils, 'formatTime');
-      const result = await JoinRouteHelpers.joinRouteAttachments(payloadData);
+      const result = await JoinRouteHelpers.joinRouteAttachments(joinRequestMock);
       expect(fieldsOrActionsSpy).toBeCalledTimes(1);
       expect(formatTimeSpy).toBeCalledWith('00:00');
       expect(result.image_url).toEqual('routeImageUrl');

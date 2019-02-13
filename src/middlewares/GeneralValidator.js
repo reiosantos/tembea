@@ -83,7 +83,7 @@ class GeneralValidator {
   }
 
   static validateTeamUrl(teamUrl) {
-    const teamUrlRegex = /^[\w-_]+\.slack\.com$/;
+    const teamUrlRegex = /^(https?:\/\/)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*(slack\.com)$/;
     return teamUrlRegex.test(teamUrl);
   }
 

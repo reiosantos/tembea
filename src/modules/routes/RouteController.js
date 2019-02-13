@@ -161,7 +161,6 @@ class RoutesController {
       } = req;
       const result = await RouteService.updateRouteBatch(+id, { status });
       const slackTeamUrl = teamUrl.trim();
-
       if (status && status === 'Inactive') {
         SlackEvents.raise(slackEventNames.RIDERS_ROUTE_DEACTIVATED, slackTeamUrl, result);
       }
@@ -208,13 +207,13 @@ class RoutesController {
     if (!routeRequest) {
       HttpError.throwErrorIfNull(null, 'Route request not found');
     }
-    routeRequest.status = body.newOpsStatus.trim().toLowerCase() === 'approve'
+    const updateData = {};
+    updateData.status = body.newOpsStatus.trim().toLowerCase() === 'approve'
       ? 'Approved' : 'Declined';
-    routeRequest.opsComment = body.comment.trim();
+    updateData.opsComment = body.comment.trim();
     const reviewer = await UserService.getUserByEmail(body.reviewerEmail);
-    routeRequest.opsReviewerId = reviewer.dataValues.id;
-    const updatedRouteRequest = await RouteRequestService.updateRouteRequest(requestId,
-      routeRequest.dataValues);
+    updateData.opsReviewerId = reviewer.dataValues.id;
+    const updatedRouteRequest = await RouteRequestService.updateRouteRequest(requestId, updateData);
     return { routeRequest, updatedRouteRequest };
   }
 

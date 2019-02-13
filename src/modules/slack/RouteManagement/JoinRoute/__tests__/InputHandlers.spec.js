@@ -1,14 +1,16 @@
 import JoinRouteInputHandlers from '../JoinRouteInputHandler';
-import JoinRouteInteractions from '../JoinRouteInteractions';
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
 import JoinRouteHelpers from '../JoinRouteHelpers';
 import { SlackAttachment, SlackInteractiveMessage } from '../../../SlackModels/SlackMessageModels';
-import { SlackEvents } from '../../../events/slackEvents';
+import { slackEventNames, SlackEvents } from '../../../events/slackEvents';
 import FormValidators from '../JoinRouteFormValidators';
 import JoinRouteNotifications from '../JoinRouteNotifications';
 import { Bugsnag } from '../../../../../helpers/bugsnagHelper';
 import JoinRouteDialogPrompts from '../JoinRouteDialogPrompts';
-import WebClientSingleton from '../../../../../utils/WebClientSingleton';
+import RouteService from '../../../../../services/RouteService';
+import { mockRouteBatchData } from '../../../../../services/__mocks__';
+import JoinRouteRequestService from '../../../../../services/JoinRouteRequestService';
+import JoinRouteInteractions from '../JoinRouteInteractions';
 
 const error = new SlackInteractiveMessage('Unsuccessful request. Kindly Try again');
 describe('JoinInputHandlers', () => {
@@ -29,35 +31,59 @@ describe('JoinInputHandlers', () => {
     jest.restoreAllMocks();
   });
 
-  describe('routeSelected', () => {
+  describe('joinRoute', () => {
     let detailsFormSpy;
     const payload = { actions: [{ value: 1 }], trigger_id: 'triggerId', team: { id: 'teamId' } };
 
     beforeEach(() => {
-      detailsFormSpy = jest.spyOn(JoinRouteDialogPrompts, 'sendFellowDetailsForm');
+      detailsFormSpy = jest.spyOn(JoinRouteDialogPrompts, 'sendFellowDetailsForm')
+        .mockResolvedValue();
+      jest.spyOn(JoinRouteInteractions, 'fullRouteCapacityNotice')
+        .mockResolvedValue();
+      jest.spyOn(RouteService, 'getRoute');
     });
     afterEach(() => {
       jest.resetAllMocks();
     });
     it('should call sendFellowDetailsForm', async () => {
-      const webSpy = jest.spyOn(WebClientSingleton.prototype, 'getWebClient')
-        .mockImplementation(() => ({
-          dialog: {
-            open: jest.fn()
-          }
-        }));
-      await JoinRouteInputHandlers.routeSelected(payload, respond);
-      expect(detailsFormSpy).toBeCalledWith(payload, 1);
-      expect(webSpy).toBeCalled();
-      expect(respond).toBeCalledWith(new SlackInteractiveMessage('Noted...'));
+      RouteService.getRoute.mockResolvedValue({ ...mockRouteBatchData, riders: [] });
+      await JoinRouteInputHandlers.joinRoute(payload, respond);
+      expect(detailsFormSpy)
+        .toBeCalledWith(payload, JSON.stringify({ routeId: 1, capacityFilled: false }));
+      expect(RouteService.getRoute).toHaveBeenCalledWith(1);
     });
-
+    it('should send full capacity notice to user', async () => {
+      const copy = {};
+      Object.assign(copy, mockRouteBatchData);
+      copy.riders.push(...[{}, {}]);
+      RouteService.getRoute.mockResolvedValue(mockRouteBatchData);
+      await JoinRouteInputHandlers.joinRoute(payload, respond);
+      expect(detailsFormSpy).not.toBeCalled();
+      expect(JoinRouteInteractions.fullRouteCapacityNotice)
+        .toBeCalledWith(copy.id);
+      expect(RouteService.getRoute)
+        .toHaveBeenCalledWith(1);
+    });
     it('should log caught error on bugsnag', async () => {
-      detailsFormSpy.mockImplementation(() => { throw new Error('very error'); });
+      RouteService.getRoute.mockRejectedValue(new Error('very error'));
       const spy = jest.spyOn(Bugsnag.prototype, 'log');
-      await JoinRouteInputHandlers.routeSelected(payload, respond);
+      await JoinRouteInputHandlers.joinRoute(payload, respond);
       expect(respond).toBeCalledWith(error);
       expect(spy).toBeCalledWith(new Error('very error'));
+    });
+  });
+
+  describe('continueJoinRoute', () => {
+    const payload = { actions: [{ value: 1 }], trigger_id: 'triggerId', team: { id: 'teamId' } };
+    beforeEach(() => {
+      jest.spyOn(JoinRouteDialogPrompts, 'sendFellowDetailsForm')
+        .mockResolvedValue();
+    });
+    it('should continue with join route request', async () => {
+      await JoinRouteInputHandlers.continueJoinRoute(payload, respond);
+      expect(JoinRouteDialogPrompts.sendFellowDetailsForm)
+        .toBeCalledWith(payload, JSON.stringify({ routeId: 1, capacityFilled: true }));
+      expect(respond).toBeCalledWith(new SlackInteractiveMessage('Noted'));
     });
   });
 
@@ -66,22 +92,22 @@ describe('JoinInputHandlers', () => {
       callback_id: 'join_route_fellowDetails_1',
       submission: { ...submission },
       user: { id: 'testId', name: 'test.user' },
+      team: { id: 'testId', name: 'test.user' },
+      state: JSON.stringify({ routeId: 1 })
     };
     beforeEach(() => {
-      jest.spyOn(JoinRouteHelpers, 'joinRouteAttachments')
-        .mockResolvedValue(new SlackAttachment());
+      jest.spyOn(JoinRouteNotifications, 'sendFellowDetailsPreview');
     });
     afterEach(() => {
       jest.resetAllMocks();
       jest.restoreAllMocks();
     });
     it('should call respond()', async () => {
-      const fieldOrActionSpy = jest.spyOn(SlackAttachment.prototype, 'addFieldsOrActions');
-      const addPropsSpy = jest.spyOn(SlackAttachment.prototype, 'addOptionalProps');
+      JoinRouteNotifications.sendFellowDetailsPreview
+        .mockResolvedValue('preview attachment');
+
       await JoinRouteInputHandlers.fellowDetails(data, respond);
-      expect(respond).toBeCalledTimes(1);
-      expect(fieldOrActionSpy).toBeCalledTimes(2);
-      expect(addPropsSpy).toBeCalledTimes(2);
+      expect(respond).toBeCalledWith('preview attachment');
     });
     it('should not call respond() if submission data from payload has errors', async () => {
       const invalidData = { ...data, submission: { ...data.submission, partnerName: '   ' } };
@@ -89,47 +115,75 @@ describe('JoinInputHandlers', () => {
       expect(respond).not.toBeCalled();
       expect(result).toHaveProperty('errors');
     });
-    it('should log a caught error on bugsnag', async () => {
+    it('should handle validation error', async () => {
       jest.spyOn(FormValidators, 'validateFellowDetailsForm')
-        .mockImplementationOnce(() => { throw new Error('very error'); });
+        .mockReturnValue([{}]);
+      await JoinRouteInputHandlers.fellowDetails(data, respond);
+    });
+    it('should log a caught error on bugsnag', async () => {
+      const errors = new Error('very error');
+      JoinRouteNotifications.sendFellowDetailsPreview
+        .mockRejectedValue(errors);
       const spy = jest.spyOn(Bugsnag.prototype, 'log');
       await JoinRouteInputHandlers.fellowDetails(data, respond);
-      expect(spy).toBeCalledWith(new Error('very error'));
+      expect(spy).toBeCalledWith(errors);
       expect(respond).toBeCalledWith(error);
     });
   });
 
+  describe('showAvailableRoutes', () => {
+    it('should send available routes prompt', async () => {
+      jest.spyOn(JoinRouteInteractions, 'sendAvailableRoutesMessage')
+        .mockReturnValue();
+      await JoinRouteInputHandlers.showAvailableRoutes({}, respond);
+      expect(JoinRouteInteractions.sendAvailableRoutesMessage).toHaveBeenCalled();
+    });
+  });
+
   describe('submitJoinRoute', () => {
-    let spy;
-    let saveRequest;
-    const payload = {
-      actions: [{ value: 'confirmButton' }],
-      user: { id: 'slackId' }
-    };
+    let payload;
     beforeEach(() => {
-      spy = jest.spyOn(SlackEvents, 'raise');
-      saveRequest = jest.spyOn(JoinRouteHelpers, 'saveJoinRouteRequest');
+      const value = JSON.stringify({ routeId: 1, capacityFilled: false });
+      payload = {
+        actions: [{ value }],
+        user: { id: 'slackId' },
+        team: { id: 'teamId' },
+      };
+      jest.spyOn(JoinRouteRequestService, 'createJoinRouteRequest');
+      jest.spyOn(JoinRouteHelpers, 'saveJoinRouteRequest')
+        .mockResolvedValue({ id: 2 });
+      jest.spyOn(SlackEvents, 'raise').mockReturnValue();
     });
     afterEach(() => {
-      jest.resetAllMocks();
+      jest.restoreAllMocks();
     });
+    it('should save join request and send notification to managers', async (done) => {
+      const routeId = 1;
+      const value = JSON.stringify({ routeId, capacityFilled: false });
+      payload.actions = [{ value }];
 
-    it('confirmButton: it should save join route request and raise manager event', async () => {
-      saveRequest.mockResolvedValue({ id: 2 });
       await JoinRouteInputHandlers.submitJoinRoute(payload, respond);
-      expect(respond).toBeCalledWith(new SlackInteractiveMessage(
-        'Hey <@slackId> :smiley:, your request has been received and will be responded to shortly.'
-      ));
-      expect(spy).toBeCalledWith('manager_receive_join_route', payload, 2);
+
+      expect(respond).toBeCalledTimes(1);
+      expect(JoinRouteHelpers.saveJoinRouteRequest).toBeCalledWith(payload, 1);
+      expect(SlackEvents.raise)
+        .toBeCalledWith(slackEventNames.MANAGER_RECEIVE_JOIN_ROUTE, payload, 2);
+      done();
     });
+    it('should send request to ops when user trying to join a full route', async () => {
+      const routeId = 1;
+      const value = JSON.stringify({ routeId, capacityFilled: true });
+      payload.actions = [{ value }];
 
-    it('should respond with an error message if request isn\'t saved successfully', async () => {
-      saveRequest.mockResolvedValue(null);
       await JoinRouteInputHandlers.submitJoinRoute(payload, respond);
-      expect(respond).toBeCalledWith(new SlackInteractiveMessage(
-        'Hey <@slackId> :pensive:, your request was unsuccessful. Kindly Try again.'
-      ));
-      expect(spy).not.toBeCalled();
+
+      expect(respond).toBeCalledTimes(1);
+      expect(SlackEvents.raise)
+        .toBeCalledWith(slackEventNames.OPS_FILLED_CAPACITY_ROUTE_REQUEST, {
+          routeId,
+          teamId: payload.team.id,
+          requesterSlackId: payload.user.id,
+        });
     });
   });
 
@@ -146,23 +200,13 @@ describe('JoinInputHandlers', () => {
       const spy = jest.spyOn(JoinRouteInteractions, 'sendAvailableRoutesMessage')
         .mockImplementation(jest.fn());
       await JoinRouteInputHandlers.backButton(payload, respond);
-      expect(spy).toBeCalledTimes(1);
-    });
-
-    it('should send goodBye message when cancel button is clicked', async () => {
-      const payload = {
-        actions: [{ value: 'cancel' }],
-        user: { id: 'slackId' }
-      };
-      await JoinRouteInputHandlers.backButton(payload, respond);
-      expect(respond).toBeCalledWith(
-        new SlackInteractiveMessage('Thank you for using Tembea. See you again.')
-      );
+      expect(spy)
+        .toBeCalledTimes(1);
     });
   });
 });
 
-describe('JoinRouteInteractions', () => {
+describe.skip('JoinRouteInteractions', () => {
   const respond = jest.fn();
   const payload = {
     callback_id: 'join_route_fellowDetails_1',
@@ -188,21 +232,23 @@ describe('JoinRouteInteractions', () => {
     expect(detailsPreviewSpy).toBeCalled();
     expect(result).toBe(undefined);
   });
-
-  it('should return goodbye message if input handler  from callback_id is not found', async () => {
-    const data = { ...payload, callback_id: 'join_route_iDontExist' };
-    await JoinRouteInteractions.handleJoinRouteActions(data, respond);
-    expect(respond).toBeCalledWith(new SlackInteractiveMessage(
-      'Thank you for using Tembea. See you again.'
-    ));
-  });
-
-  it('should log caught error on bugsnag', async () => {
-    jest.spyOn(String.prototype, 'split')
-      .mockImplementationOnce(() => { throw new Error('very error'); });
-    const spy = jest.spyOn(Bugsnag.prototype, 'log');
-    await JoinRouteInteractions.handleJoinRouteActions(payload, respond);
-    expect(spy).toBeCalledWith(new Error('very error'));
-    expect(respond).toBeCalledWith(error);
+  describe('JoinRouteInteractivePrompts', () => {
+    afterEach(() => {
+      jest.resetAllMocks();
+      jest.restoreAllMocks();
+    });
+    describe('fullRouteCapacityNotice', () => {
+      it('should send an interactive message of available routes', () => {
+        const fieldsOrActionSpy = jest.spyOn(SlackAttachment.prototype, 'addFieldsOrActions');
+        const addPropsSpy = jest.spyOn(SlackAttachment.prototype, 'addOptionalProps');
+        const attachment = JoinRouteInteractions.fullRouteCapacityNotice('state');
+        expect(fieldsOrActionSpy).toBeCalledTimes(1);
+        expect(fieldsOrActionSpy.mock.calls[0][0]).toEqual('actions');
+        expect(fieldsOrActionSpy.mock.calls[0][1]).toBeInstanceOf(Array);
+        expect(fieldsOrActionSpy.mock.calls[0][1].length).toEqual(2);
+        expect(addPropsSpy).toBeCalledWith('join_route_actions');
+        expect(attachment).toBeInstanceOf(SlackInteractiveMessage);
+      });
+    });
   });
 });

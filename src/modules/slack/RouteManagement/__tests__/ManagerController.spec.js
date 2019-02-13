@@ -1,4 +1,4 @@
-import ManagerController, { handleStatusValidationError } from '../ManagerController';
+import ManagerController from '../ManagerController';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import ManagerNotifications from '../../SlackPrompts/notifications/ManagerRouteRequest';
@@ -11,21 +11,6 @@ import { SlackEvents } from '../../events/slackEvents';
 import { SlackDialogError } from '../../SlackModels/SlackDialogModels';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import PartnerService from '../../../../services/PartnerService';
-
-it('handleStatusValidationError should complete manager action', async () => {
-  const payload = {
-    channel: { id: 1 },
-    team: { id: 1 },
-    original_message: { ts: 'timestamp' }
-  };
-  jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken')
-    .mockReturnValue('token');
-  const completeManagerAction = jest.spyOn(ManagerNotifications, 'completeManagerAction')
-    .mockReturnValue('token');
-  await handleStatusValidationError(payload, 'routeRequest');
-  expect(completeManagerAction).toHaveBeenCalledTimes(1);
-  expect(completeManagerAction).toHaveBeenCalledWith('routeRequest', 1, 'timestamp', 'token');
-});
 
 describe('Manager Route controller', () => {
   const dummyFunction = () => ({});

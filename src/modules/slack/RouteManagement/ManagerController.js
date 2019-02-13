@@ -4,7 +4,6 @@ import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import RouteRequestService from '../../../services/RouteRequestService';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
-import TeamDetailsService from '../../../services/TeamDetailsService';
 import { slackEventNames, SlackEvents } from '../events/slackEvents';
 import ManagerNotifications from '../SlackPrompts/notifications/ManagerRouteRequest/index';
 import PartnerService from '../../../services/PartnerService';
@@ -12,13 +11,6 @@ import DateDialogHelper from '../../../helpers/dateHelper';
 import AttachmentHelper from '../SlackPrompts/notifications/ManagerRouteRequest/helper';
 import ManagerFormValidator from '../../../helpers/slack/UserInputValidator/managerFormValidator';
 import { getAction } from './rootFile';
-
-export const handleStatusValidationError = async (payload, routeRequest) => {
-  const { channel: { id: channelId }, original_message: { ts } } = payload;
-  const { team: { id: { teamId } } } = payload;
-  const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-  await ManagerNotifications.completeManagerAction(routeRequest, channelId, ts, slackBotOauthToken);
-};
 
 export const convertIsoString = (engagementDate) => {
   let { startDate, endDate } = engagementDate;
@@ -60,7 +52,7 @@ const handlers = {
     const [{ value: routeRequestId }] = actions;
     const routeRequest = await RouteRequestService.getRouteRequest(routeRequestId);
     if (!ManagerFormValidator.validateStatus(routeRequest, 'pending')) {
-      await handleStatusValidationError(payload, routeRequest);
+      await ManagerNotifications.handleStatusValidationError(payload, routeRequest);
       return;
     }
     const state = {
@@ -79,7 +71,7 @@ const handlers = {
     const [{ value: routeRequestId }] = actions;
     const routeRequest = await RouteRequestService.getRouteRequest(routeRequestId);
     if (!ManagerFormValidator.validateStatus(routeRequest, 'pending')) {
-      await handleStatusValidationError(payload, routeRequest);
+      await ManagerNotifications.handleStatusValidationError(payload, routeRequest);
       return;
     }
     const state = {

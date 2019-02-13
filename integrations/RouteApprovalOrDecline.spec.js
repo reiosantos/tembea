@@ -33,10 +33,9 @@ describe('Decline route request', () => {
           homeId: 1
         }
       ]);
-
       validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
     });
-  
+
     afterAll(async () => {
       await RouteRequest.destroy({
         where: {
@@ -101,7 +100,7 @@ describe('Decline route request', () => {
           reviewerEmail: 'test.buddy2@andela.com',
           teamUrl: 'tembea.slack.com'
         });
-      
+
       expect(response.status).toEqual(403);
       expect(response.body.message).toEqual(
         'This request needs to be confirmed by the manager first'
@@ -119,7 +118,7 @@ describe('Decline route request', () => {
           reviewerEmail: 'test.buddy2@andela.com',
           teamUrl: 'tembea.slack.com'
         });
-      
+
       expect(response.body.message).toEqual(
         'Failed to authenticate token! Valid token required'
       );
@@ -136,7 +135,7 @@ describe('Decline route request', () => {
           reviewerEmail: 'test.buddy2@andela.com',
           teamUrl: 'tembea.slack.com'
         });
-      
+
       expect(response.body.message).toEqual(
         'This route request has been updated'
       );
@@ -174,7 +173,7 @@ describe('Approve a route request', () => {
 
       validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
     });
-  
+
     afterAll(async () => {
       await RouteRequest.destroy({
         where: {

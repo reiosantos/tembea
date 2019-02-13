@@ -109,6 +109,7 @@ const cabDetails = {
   driverName: 'AAAAAA', driverPhoneNo: '+123456789', regNumber: 'CCCCCC'
 };
 const batchDetails = {
+  inUse: 1,
   batch: 'A',
   capacity: 1,
   takeOff: 'DD:DD',

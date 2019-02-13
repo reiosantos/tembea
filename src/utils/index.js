@@ -93,10 +93,8 @@ class Utils {
    */
   static formatWorkHours(workHours) {
     let [from, to] = workHours.split('-');
-    from = moment(from.trim(), 'HH:mm')
-      .format('LT');
-    to = moment(to.trim(), 'HH:mm')
-      .format('LT');
+    from = Utils.formatTime(from);
+    to = Utils.formatTime(to);
     return {
       from,
       to
