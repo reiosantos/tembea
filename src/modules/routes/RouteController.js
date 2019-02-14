@@ -55,26 +55,26 @@ class RoutesController {
   static async createRoute(req, res) {
     try {
       const {
-        routeName,
-        destinationCoordinates,
-        vehicleRegNumber,
-        takeOffTime,
-        capacity
+        routeName, destination, vehicle: vehicleRegNumber, takeOffTime, capacity
       } = req.body;
+      const {
+        address, coordinates: { lat: latitude, lng: longitude }
+      } = destination;
 
-      const destination = await RoutesController.saveDestination(
-        destinationCoordinates
+      const destinationAddress = await AddressService.createNewAddress(
+        longitude, latitude, address
       );
 
       const data = {
         name: routeName,
         vehicleRegNumber,
-        destinationName: destination.address,
+        destinationName: destinationAddress.address,
         capacity,
         takeOff: takeOffTime
       };
       const routeInfo = await RouteService.createRouteBatch(data);
-      res.status(200).json(routeInfo);
+      const message = 'Route created successfully';
+      return Response.sendResponse(res, 200, true, message, routeInfo);
     } catch (error) {
       BugSnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);

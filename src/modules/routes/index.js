@@ -14,6 +14,10 @@ routesRouter.get(
 
 routesRouter.post(
   '/routes',
+  RouteValidator.verifyAllPropsExist,
+  RouteValidator.verifyPropsValuesAreSetAndValid,
+  RouteValidator.validateDestinationAddress,
+  RouteValidator.validateDestinationCoordinates,
   RoutesController.createRoute
 );
 

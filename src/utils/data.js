@@ -15,3 +15,7 @@ export const destinations = [
   'VFS Centre',
   'Others'
 ];
+
+export const expectedCreateRouteObject = [
+  'capacity', 'destination', 'routeName', 'takeOffTime', 'vehicle'
+];

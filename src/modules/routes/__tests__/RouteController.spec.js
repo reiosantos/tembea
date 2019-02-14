@@ -4,6 +4,7 @@ import app from '../../../app';
 import Utils from '../../../utils';
 import RoutesController from '../RouteController';
 import AddressService from '../../../services/AddressService';
+import LocationService from '../../../services/LocationService';
 import { RoutesHelper } from '../../../helpers/googleMaps/googleMapsHelpers';
 import { GoogleMapsPlaceDetails } from '../../slack/RouteManagement/rootFile';
 import HttpError from '../../../helpers/errorHandler';
@@ -122,14 +123,58 @@ describe('RoutesController', () => {
   });
   describe('createRoute', () => {
     const data = {
-      vehicleRegNumber: 'APP 519 DT',
+      vehicle: 'APP 519 DT',
       routeName: 'Yaba',
-      destinationCoordinates: `${faker.address.latitude()},${faker.address.longitude()}`,
+      destination: {
+        address: 'Some address in Yaba',
+        coordinates: {
+          lat: faker.address.latitude(),
+          lng: faker.address.longitude()
+        }
+      },
       takeOffTime: '12:12',
-      capacity: 4
+      capacity: 4,
     };
-    it('should successfully fetch routes', (done) => {
-      jest.spyOn(RoutesController, 'saveDestination')
+    it('should fail if props are missing', (done) => {
+      const message = 'The following fields are missing: vehicle';
+      const newData = { ...data };
+      delete newData.vehicle;
+      request(app)
+        .post('/api/v1/routes')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', validToken)
+        .send(newData)
+        .expect(200, (err, res) => {
+          const { body } = res;
+          expect(body).toHaveProperty('message');
+          expect(body).toHaveProperty('success');
+          expect(body).toEqual({ message, success: false });
+          done();
+        });
+    });
+
+    it('should fail if prop values are invalid', (done) => {
+      const message = 'Your request contain errors';
+      const errorMessage = ['Enter a value for vehicle'];
+      const newData = { ...data, vehicle: '' };
+
+      request(app)
+        .post('/api/v1/routes')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', validToken)
+        .send(newData)
+        .expect(200, (err, res) => {
+          const { body } = res;
+          expect(body).toHaveProperty('message');
+          expect(body).toHaveProperty('success');
+          expect(body).toHaveProperty('data');
+          expect(body).toEqual({ message, success: false, data: errorMessage });
+          done();
+        });
+    });
+
+    it('should successfully create a route', (done) => {
+      jest.spyOn(AddressService, 'createNewAddress')
         .mockResolvedValue({ address: 'Epic Tower' });
       request(app)
         .post('/api/v1/routes')
@@ -137,18 +182,61 @@ describe('RoutesController', () => {
         .set('Authorization', validToken)
         .send(data)
         .expect(200, (err, res) => {
-          const { body } = res;
-          assertRouteInfo(body);
-          expect(body.name).toEqual('Yaba');
-          expect(body.status).toEqual('Inactive');
-          expect(body.takeOff).toEqual('12:12');
-          expect(body.capacity).toEqual(4);
-          expect(body.regNumber).toEqual('APP 519 DT');
+          const { body: { data: route } } = res;
+          assertRouteInfo(route);
+          expect(route.name).toEqual('Yaba');
+          expect(route.status).toEqual('Inactive');
+          expect(route.takeOff).toEqual('12:12');
+          expect(route.capacity).toEqual(4);
+          expect(route.regNumber).toEqual('APP 519 DT');
           done();
         });
     });
+
+    it('should successfully create a route', (done) => {
+      jest.spyOn(AddressService, 'findAddress')
+        .mockResolvedValue({ address: 'Epic Tower' });
+
+      const message = 'Address already exists';
+
+      request(app)
+        .post('/api/v1/routes')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', validToken)
+        .send(data)
+        .expect(200, (err, res) => {
+          const { body } = res;
+          expect(body).toHaveProperty('message');
+          expect(body).toHaveProperty('success');
+          expect(body).toEqual({ message, success: false });
+          done();
+        });
+    });
+
+    it('should successfully create a route', (done) => {
+      jest.spyOn(AddressService, 'findAddress')
+        .mockResolvedValue(null);
+      jest.spyOn(LocationService, 'findLocation')
+        .mockResolvedValue({ longitude: 'someValue', latitude: 'someValue' });
+
+      const message = 'Provided coordinates belong to an existing address';
+
+      request(app)
+        .post('/api/v1/routes')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', validToken)
+        .send(data)
+        .expect(500, (err, res) => {
+          const { body } = res;
+          expect(body).toHaveProperty('message');
+          expect(body).toHaveProperty('success');
+          expect(body).toEqual({ message, success: false });
+          done();
+        });
+    });
+
     it('should handle internal server error', (done) => {
-      jest.spyOn(RoutesController, 'saveDestination')
+      jest.spyOn(AddressService, 'createNewAddress')
         .mockRejectedValue(new Error('dummy error'));
       request(app)
         .post('/api/v1/routes')
