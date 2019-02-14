@@ -9,6 +9,7 @@ import addressRouter from './addresses';
 import slackClientAuth from '../middlewares/slackClientAuth';
 import roleManagementRouter from './roleManagement';
 import authenticationRouter from './authentication';
+import aisRouter from './ais';
 
 const apiPrefix = '/api/v1';
 
@@ -29,6 +30,7 @@ const routes = (app, hbs) => {
   app.use(apiPrefix, authenticationRouter);
   app.use(apiPrefix, roleManagementRouter);
   app.use(apiPrefix, routesRouter);
+  app.use(apiPrefix, aisRouter);
   return app;
 };
 
