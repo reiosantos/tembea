@@ -67,13 +67,14 @@ class GeneralValidator {
   }
 
   static validateObjectKeyValues(body) {
-    return Object.entries(body).reduce((errors, data) => {
-      const [key, value] = data;
-      if (!value || value.trim().length < 1) {
-        errors.push(`${key} cannot be empty`);
-      }
-      return errors;
-    }, []);
+    return Object.entries(body)
+      .reduce((errors, data) => {
+        const [key, value] = data;
+        if (!value || `${value}`.trim().length < 1) {
+          errors.push(`${key} cannot be empty`);
+        }
+        return errors;
+      }, []);
   }
 
   static validateAllProvidedReqBody(req, res, next) {

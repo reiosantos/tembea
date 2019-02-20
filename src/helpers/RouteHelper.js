@@ -1,5 +1,7 @@
 import AddressService from '../services/AddressService';
 import LocationService from '../services/LocationService';
+import CabService from '../services/CabService';
+import RouteService from '../services/RouteService';
 import AddressValidator from '../middlewares/AddressValidator';
 import { expectedCreateRouteObject } from '../utils/data';
 
@@ -70,6 +72,16 @@ class RouteHelper {
     const { lat: latitude, lng: longitude } = coordinates;
     const location = await LocationService.findLocation(longitude, latitude);
     return !!location;
+  }
+
+  static async checkThatVehicleRegNumberExists(vehicleRegNumber) {
+    const cab = await CabService.findByRegNumber(vehicleRegNumber);
+    return [!!cab, cab];
+  }
+
+  static async checkThatRouteNameExists(name) {
+    const route = await RouteService.getRouteByName(name);
+    return [!!route, route];
   }
 }
 

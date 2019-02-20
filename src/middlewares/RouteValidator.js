@@ -1,4 +1,5 @@
 import Response from '../helpers/responseHelper';
+import { validateTime } from '../helpers/dateHelper';
 import GeneralValidator from './GeneralValidator';
 import RouteHelper from '../helpers/RouteHelper';
 
@@ -72,6 +73,36 @@ class RouteValidator {
       return Response.sendResponse(res, 400, false, message);
     }
     return next();
+  }
+
+  static async validateRouteBatchUpdateFields(req, res, next) {
+    const { validateNumber } = GeneralValidator;
+    const {
+      body: {
+        takeOff, batch: _batch, name: _name, capacity, inUse, regNumber: _regNumber
+      }
+    } = req;
+
+    const [
+      batch, name, regNumber
+    ] = [_batch, _name, _regNumber].map(e => e && e.trim());
+
+    let errors = [];
+    const [cabExists, cabDetails] = await RouteHelper.checkThatVehicleRegNumberExists(regNumber);
+    const [routeExists, route] = await RouteHelper.checkThatRouteNameExists(name);
+
+    errors = [...errors, (capacity && !validateNumber(capacity) && ('capacity should be a positive integer'))];
+    errors = [...errors, (inUse && !validateNumber(inUse)) && 'inUse should be a positive integer'];
+    errors = [...errors, (takeOff && !validateTime(takeOff)) && 'takeOff should be a valid time format (hh:mm)'];
+    errors = [...errors, (regNumber && !cabExists) && `No cab with reg number '${regNumber}' exists in the db`];
+    errors = [...errors, (name && !routeExists) && `The route '${name}' does not exist in the db`];
+    errors = errors.filter(e => !!e);
+
+    if (errors.length) return Response.sendResponse(res, 400, false, errors);
+    req.body.cabId = regNumber && cabDetails.id;
+    req.body.routeId = name && route.id;
+    req.body.batch = batch;
+    next();
   }
 }
 

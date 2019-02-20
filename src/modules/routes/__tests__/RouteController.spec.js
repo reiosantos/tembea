@@ -368,17 +368,31 @@ describe('RouteController unit test', () => {
   };
 
   describe('Update RouteBatch Details', () => {
-    it('should call the response method with a success message', async () => {
+    it('should call the response method with success message for route status update', async () => {
       jest.spyOn(Response, 'sendResponse').mockImplementation();
       jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue('good');
       const eventsMock = jest.spyOn(SlackEvents, 'raise').mockImplementation();
-      const errMessage = 'Route batch successfully updated';
+      const message = 'Route batch successfully updated';
 
-      await RoutesController.updateRouteBatchStatus(reqMock, 'res');
+      await RoutesController.updateRouteBatch(reqMock, 'res');
       expect(eventsMock).toHaveBeenCalledTimes(1);
-      expect(eventsMock).toHaveBeenCalledWith('notify_route_riders', 'team@slack.com', 'good');
+      expect(eventsMock).toHaveBeenCalledWith('notify_route_riders', 'team@slack.com', 'good', 'route_deactivated');
       expect(Response.sendResponse).toHaveBeenCalledTimes(1);
-      expect(Response.sendResponse).toHaveBeenCalledWith('res', 200, true, errMessage, 'good');
+      expect(Response.sendResponse).toHaveBeenCalledWith('res', 200, true, message, 'good');
+    });
+
+    it('should call response method with success message for general route update', async () => {
+      jest.spyOn(Response, 'sendResponse').mockImplementation();
+      jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue('good');
+      const eventsMock = jest.spyOn(SlackEvents, 'raise').mockImplementation();
+      const message = 'Route batch successfully updated';
+
+      await RoutesController.updateRouteBatch(
+        { ...reqMock, body: { ...reqMock.body, status: 'Active' } },
+        'res'
+      );
+      expect(eventsMock).toHaveBeenCalledWith('notify_route_riders', 'team@slack.com', 'good');
+      expect(Response.sendResponse).toHaveBeenCalledWith('res', 200, true, message, 'good');
     });
 
     it('should call HTTPError response method when an error is caught', async () => {
@@ -388,7 +402,7 @@ describe('RouteController unit test', () => {
       const httpErrorResponseMock = jest.spyOn(HttpError, 'sendErrorResponse').mockImplementation();
       const eventsMock = jest.spyOn(SlackEvents, 'raise').mockImplementation();
 
-      await RoutesController.updateRouteBatchStatus(reqMock, 'res');
+      await RoutesController.updateRouteBatch(reqMock, 'res');
 
       expect(eventsMock).not.toHaveBeenCalled();
       expect(responseMock).not.toHaveBeenCalled();

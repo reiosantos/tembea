@@ -2,10 +2,12 @@ import SlackNotifications from '../../Notifications';
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
 
 class RouteNotifications {
-  static async sendRouteNotificationToRouteRiders(teamUrl, routeInfo) {
+  static async sendRouteNotificationToRouteRiders(teamUrl, routeInfo, notifType) {
     const { riders, route: { destination: { address } } } = routeInfo;
     const { botToken: teamBotOauthToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
-    const text = `Sorry, Your route to *${address}* is no longer available :disappointed:`;
+    const text = notifType === 'route_deactivated'
+      ? `Sorry, Your route to *${address}* is no longer available :disappointed:`
+      : `Your route to *${address}* has been updated.`;
     const message = await SlackNotifications.createDirectMessage('', text);
     await riders.forEach(
       rider => RouteNotifications.sendNotificationToRider(message, rider.slackId, teamBotOauthToken)

@@ -110,6 +110,11 @@ class RouteService {
     return route;
   }
 
+  static async getRouteByName(name) {
+    const route = await Route.findOne({ where: { name } });
+    return route;
+  }
+
   /**
    * Updates the a given route batch information by id and update cache
    * @param id

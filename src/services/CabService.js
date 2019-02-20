@@ -25,4 +25,9 @@ export default class CabService {
     });
     return cab.dataValues;
   }
+
+  static async findByRegNumber(regNumber) {
+    const cabDetails = await Cab.findOne({ where: { regNumber } });
+    return cabDetails;
+  }
 }

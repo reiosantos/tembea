@@ -29,7 +29,8 @@ routesRouter.put(
   GeneralValidator.validateTeamUrlInRequestBody,
   GeneralValidator.validateAllProvidedReqBody,
   RouteValidator.validateRouteBatchStatus,
-  RoutesController.updateRouteBatchStatus
+  RouteValidator.validateRouteBatchUpdateFields,
+  RoutesController.updateRouteBatch
 );
 
 routesRouter.get('/routes/requests',

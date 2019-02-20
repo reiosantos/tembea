@@ -27,4 +27,13 @@ describe('CabService', () => {
       done();
     });
   });
+
+  describe('findByRegNumber', () => {
+    it('should return cab details from the db', async () => {
+      const mockCabDetails = { driverName: 'Omari', regNumber: 'AR R3G NMB' };
+      jest.spyOn(Cab, 'findOne').mockResolvedValue(mockCabDetails);
+      const cabDetails = await CabService.findByRegNumber('AR R3G NMB');
+      expect(cabDetails).toEqual(mockCabDetails);
+    });
+  });
 });

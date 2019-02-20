@@ -234,6 +234,15 @@ describe('RouteService', () => {
     });
   });
 
+  describe('RouteService_getRouteByName', () => {
+    it('should return route details from the db', async () => {
+      const mockRouteDetails = { id: 1, name: 'Yaba', imgUrl: 'images://an-img.png' };
+      jest.spyOn(Route, 'findOne').mockResolvedValue(mockRouteDetails);
+      const routeDetails = await RouteService.getRouteByName('Yaba');
+      expect(routeDetails).toEqual(mockRouteDetails);
+    });
+  });
+
   describe('RouteService_updateRouteBatch', () => {
     beforeEach(() => {
       jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue(data);

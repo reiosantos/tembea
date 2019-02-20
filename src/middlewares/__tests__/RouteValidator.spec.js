@@ -1,6 +1,7 @@
 import RouteValidator from '../RouteValidator';
 import Response from '../../helpers/responseHelper';
 import GeneralValidator from '../GeneralValidator';
+import RouteHelper from '../../helpers/RouteHelper';
 
 describe('Route Validator', () => {
   beforeEach(() => {
@@ -82,6 +83,47 @@ describe('Route Validator', () => {
       expect(nextMock).not.toHaveBeenCalled();
       expect(Response.sendResponse).toHaveBeenCalledTimes(1);
       expect(Response.sendResponse).toHaveBeenCalledWith('res', 400, false, errorMessage);
+    });
+  });
+
+  describe('validate RouteBatch Update Fields', () => {
+    const reqMock = {
+      body: {
+        takeOff: '11:00',
+        batch: 'B',
+        name: 'Yaba',
+        capacity: 12,
+        inUse: 10,
+        regNumber: 'XAH A7G FA'
+      }
+    };
+
+    const reqMockInvalid = {
+      body: {
+        takeOff: '1100aa',
+        batch: 'B',
+        name: 'Yaba',
+        capacity: 'not correct',
+        inUse: '10 times wrong',
+        regNumber: 'XAH A7G FA'
+      }
+    };
+
+    const nextMock = jest.fn();
+    it('should validate all request body data', async () => {
+      jest.spyOn(RouteHelper, 'checkThatRouteNameExists').mockReturnValue([true, { id: 1 }]);
+      jest.spyOn(RouteHelper, 'checkThatVehicleRegNumberExists').mockReturnValue([true, { id: 1 }]);
+      await RouteValidator.validateRouteBatchUpdateFields(reqMock, 'res', nextMock);
+      expect(nextMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return error response when invalid data is provided', async () => {
+      jest.spyOn(RouteHelper, 'checkThatRouteNameExists').mockReturnValue([false]);
+      jest.spyOn(RouteHelper, 'checkThatVehicleRegNumberExists').mockReturnValue([false]);
+      const spy = jest.spyOn(Response, 'sendResponse').mockImplementation();
+      await RouteValidator.validateRouteBatchUpdateFields(reqMockInvalid, 'res', nextMock);
+      expect(nextMock).not.toHaveBeenCalled();
+      expect(spy.mock.calls[0][3].length).toEqual(5);
     });
   });
 });
