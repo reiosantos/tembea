@@ -83,7 +83,7 @@ export default class ManagerNotifications {
       );
       SlackEvents.raise(
         slackEventNames.RECEIVE_NEW_ROUTE_REQUEST,
-        payload,
+        payload.team.id,
         routeRequestId
       );
       const message = ManagerAttachmentHelper.getManagerApproveOrDeclineAttachment(

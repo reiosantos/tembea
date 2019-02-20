@@ -5,6 +5,7 @@ import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import UserInputValidator from '../../../../helpers/slack/UserInputValidator';
 import models from '../../../../database/models';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
+import CabService from '../../../../services/CabService';
 
 const { TripRequest } = models;
 
@@ -53,14 +54,11 @@ jest.mock('../../events/slackEvents', () => ({
 }));
 
 describe('TripActionController operations decline tests', () => {
-  let respond;
-
   const state = JSON.stringify({ trip: 1000000, actionTs: 212132 });
   const opsUserId = 1;
   let payload;
 
   beforeEach(() => {
-    respond = jest.fn(value => value);
     payload = {
       user: {
         id: 'TEST123'
@@ -76,11 +74,15 @@ describe('TripActionController operations decline tests', () => {
       },
       state
     };
+    jest.spyOn(CabService, 'findOrCreateCab')
+      .mockImplementation((driverName, driverPhoneNo, regNumber) => Promise.resolve({
+        driverName, driverPhoneNo, regNumber
+      }));
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
     jest.resetAllMocks();
+    jest.restoreAllMocks();
   });
 
   it('should run changeTripToDeclined()', async (done) => {
@@ -94,10 +96,10 @@ describe('TripActionController operations decline tests', () => {
     );
     changeTripStatusToDeclined.mockImplementation(() => {});
 
-    await TripActionsController.changeTripStatus(payload, respond);
+    await TripActionsController.changeTripStatus(payload);
 
     expect(findOrCreateUserBySlackId).toHaveBeenCalledTimes(1);
-    expect(changeTripStatusToDeclined).toHaveBeenCalledWith(1, payload, respond, 'token');
+    expect(changeTripStatusToDeclined).toHaveBeenCalledWith(1, payload, 'token');
     done();
   });
 
@@ -109,11 +111,11 @@ describe('TripActionController operations decline tests', () => {
     );
     changeTripStatusToConfirmed.mockImplementation(() => {});
 
-    await TripActionsController.changeTripStatus(payload, respond);
+    const response = await TripActionsController.changeTripStatus(payload);
 
     expect(findOrCreateUserBySlackId).toHaveBeenCalledTimes(1);
     expect(changeTripStatusToConfirmed).not.toHaveBeenCalled();
-    expect(respond).toHaveBeenCalledTimes(1);
+    expect(response).toBeDefined();
     done();
   });
 
@@ -139,7 +141,7 @@ describe('TripActionController operations decline tests', () => {
     InteractivePrompts.sendOpsDeclineOrApprovalCompletion = jest.fn();
 
     const result = await TripActionsController.changeTripStatusToDeclined(
-      opsUserId, payload, respond
+      opsUserId, payload, '1234'
     );
 
     expect(result).toEqual('success');
@@ -152,22 +154,17 @@ describe('TripActionController operations decline tests', () => {
   });
 
   it('should run the catchBlock on changeTripStatusToDeclined error ', async (done) => {
-    SlackHelpers.getTripRequest = jest.fn(() => Promise.reject(new Error('Dummy error')));
-    try {
-      await TripActionsController.changeTripStatusToDeclined(opsUserId, payload, respond);
-    } catch (error) {
-      expect(respond).toHaveBeenCalled();
-    }
+    jest.spyOn(SlackHelpers, 'getTripRequest').mockRejectedValue(new Error('Dummy error'));
+    expect(TripActionsController.changeTripStatusToDeclined(opsUserId, payload))
+      .rejects.toThrow(Error);
     done();
   });
 });
 
 describe('TripActionController operations approve tests', () => {
-  let respond;
   let payload;
 
   beforeEach(() => {
-    respond = jest.fn(value => value);
     payload = {
       user: {
         id: 'TEST123'
@@ -184,13 +181,13 @@ describe('TripActionController operations approve tests', () => {
         driverPhoneNo: '0700000000',
         regNumber: 'KAA666Q'
       },
-      state: '{ "tripId": "13" }'
+      state: '{ "tripId": "3" }'
     };
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
     jest.resetAllMocks();
+    jest.restoreAllMocks();
   });
 
   const opsUserId = 3;
@@ -206,17 +203,17 @@ describe('TripActionController operations approve tests', () => {
     );
     changeTripStatusToConfirmed.mockImplementation(() => {});
 
-    await TripActionsController.changeTripStatus(payload, respond);
+    await TripActionsController.changeTripStatus(payload);
 
     expect(findOrCreateUserBySlackId).toHaveBeenCalledTimes(1);
-    expect(changeTripStatusToConfirmed).toHaveBeenCalledWith(1, payload, respond, 'token');
+    expect(changeTripStatusToConfirmed).toHaveBeenCalledWith(1, payload, 'token');
     done();
   });
 
   it('should run changeTripStatusToConfirmed() to approvedByOps', async (done) => {
     SendNotifications.sendUserConfirmOrDeclineNotification = jest.fn();
     SendNotifications.sendManagerConfirmOrDeclineNotification = jest.fn();
-    await TripActionsController.changeTripStatusToConfirmed(opsUserId, payload, respond);
+    await TripActionsController.changeTripStatusToConfirmed(opsUserId, payload, 'token');
     expect(SendNotifications.sendUserConfirmOrDeclineNotification).toHaveBeenCalled();
     expect(SendNotifications.sendManagerConfirmOrDeclineNotification).toHaveBeenCalled();
 
@@ -224,11 +221,11 @@ describe('TripActionController operations approve tests', () => {
   });
 
   it('should run the catchBlock on changeTripStatusToConfirmed error ', async (done) => {
-    SlackHelpers.getTripRequest = jest.fn(() => Promise.reject(new Error('Dummy error')));
+    jest.spyOn(SlackHelpers, 'getTripRequest').mockRejectedValue(new Error('Dummy error'));
     try {
-      await TripActionsController.changeTripStatusToConfirmed(opsUserId, payload, respond);
-    } catch (error) {
-      expect(respond).toHaveBeenCalled();
+      await TripActionsController.changeTripStatusToConfirmed(opsUserId, payload, 'token');
+    } catch (err) {
+      expect(err).toBeDefined();
     }
     done();
   });
@@ -246,15 +243,5 @@ describe('TripActionController operations approve tests', () => {
     const result = TripActionsController.runCabValidation(payload);
     expect(validateCabDetailsSpy).toHaveBeenCalledWith(payload);
     expect(result.length).toBe(1);
-  });
-
-  it('should run the catchBlock on error', async (done) => {
-    const { Cab } = models;
-    Cab.findOrCreate = jest.fn(() => {
-      throw new Error('Dummy error');
-    });
-    await TripActionsController.addCabDetails(payload, respond);
-    expect(respond).toHaveBeenCalled();
-    done();
   });
 });

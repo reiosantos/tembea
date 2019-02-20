@@ -256,15 +256,12 @@ describe('SlackNotifications', () => {
           }
         }
       };
-      const payload = {
-        user: { id: 3 },
-        team: { id: 'HAHJDILYR' }
-      };
-      const delineStatus = false;
+      const [userId, teamId] = [3, 'HAHJDILYR'];
+      const declineStatus = false;
       jest.spyOn(SlackNotifications, 'sendNotifications').mockResolvedValue();
 
       await SlackNotifications.sendManagerConfirmOrDeclineNotification(
-        payload, tripInfo, delineStatus
+        teamId, userId, tripInfo, declineStatus
       );
 
       expect(SlackNotifications.sendNotifications).toBeCalledTimes(1);
@@ -308,9 +305,10 @@ describe('SlackNotifications', () => {
           driverName: 'driverName', driverPhoneNo: 'driverPhoneNo', regNumber: 'regNumber'
         }
       };
-      const delineStatus = true;
+      const { user: { id: userId }, team: { id: teamId } } = payload;
+      const declineStatus = true;
       const res = await SlackNotifications.sendManagerConfirmOrDeclineNotification(
-        payload, tripInfo, delineStatus
+        teamId, userId, tripInfo, declineStatus
       );
       expect(res).toEqual(undefined);
     });
@@ -404,16 +402,18 @@ describe('SlackNotifications', () => {
         driverName: 'driverName', driverPhoneNo: 'driverPhoneNo', regNumber: 'regNumber'
       }
     };
+
+    const { user: { id: userId }, team: { id: teamId } } = payload;
     it('should send user notification when requester is equal to rider', async () => {
       tripInfo.rider.dataValues.slackId = 3;
-      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(payload, tripInfo, declineStatusFalse);
+      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, tripInfo, declineStatusFalse);
       expect(res).toEqual(undefined);
     });
 
     it('should send user notification when requester is not equal to rider', async () => {
       tripInfo.rider.dataValues.slackId = 4;
       const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(
-        payload, tripInfo, declineStatusFalse
+        teamId, userId, tripInfo, declineStatusFalse
       );
       expect(res).toEqual(undefined);
     });
@@ -421,14 +421,14 @@ describe('SlackNotifications', () => {
     it('should send user confirmation notification when requester is equal to rider', async () => {
       tripInfo.rider.dataValues.slackId = 3;
       const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(
-        payload, tripInfo, declineStatusTrue
+        teamId, userId, tripInfo, declineStatusTrue
       );
       expect(res).toEqual(undefined);
     });
 
     it('should send user confirmation notification when requester is not equal to rider', async () => {
       tripInfo.rider.dataValues.slackId = 4;
-      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(payload, tripInfo, declineStatusTrue);
+      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, tripInfo, declineStatusTrue);
       expect(res).toEqual(undefined);
     });
   });
@@ -636,7 +636,7 @@ describe('SlackNotifications', () => {
     });
 
     it('should send route request to ops channel', async () => {
-      const payload = { team: { id: 'AHDJDLKUER' } };
+      const teamId = 'AHDJDLKUER';
       jest.spyOn(RouteRequestService, 'getRouteRequest')
         .mockResolvedValue(mockRouteRequestData);
       jest.spyOn(TeamDetailsService, 'getTeamDetails')
@@ -644,7 +644,7 @@ describe('SlackNotifications', () => {
       jest.spyOn(SlackNotifications, 'sendOperationsNotificationFields');
       jest.spyOn(SlackNotifications, 'sendNotifications')
         .mockResolvedValue();
-      await SlackNotifications.sendOperationsNewRouteRequest(payload, '1');
+      await SlackNotifications.sendOperationsNewRouteRequest(teamId, '1');
       expect(SlackNotifications.sendOperationsNotificationFields)
         .toHaveBeenCalledWith(mockRouteRequestData);
       expect(SlackNotifications.sendNotifications).toHaveBeenCalledTimes(1);

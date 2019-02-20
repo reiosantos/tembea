@@ -243,7 +243,8 @@ class SlackInteractions {
       if (errors && errors.length > 0) {
         return { errors };
       }
-      await TripActionsController.changeTripStatus(payload, respond);
+      const response = await TripActionsController.changeTripStatus(payload);
+      respond(response);
     } catch (error) {
       bugsnagHelper.log(error);
       respond(

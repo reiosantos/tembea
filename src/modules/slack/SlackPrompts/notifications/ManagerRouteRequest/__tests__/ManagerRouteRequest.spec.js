@@ -77,7 +77,7 @@ describe('Manager Route Request Notification Tests', () => {
     ));
   });
   describe('send manager approval notification', () => {
-    const payload = {};
+    const payload = { team: { id: 1 } };
     it('should send notification attachment to ops and fellow ', async () => {
       jest.spyOn(SlackEvents, 'raise')
         .mockResolvedValue();
