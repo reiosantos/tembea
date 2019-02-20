@@ -33,8 +33,7 @@ describe('AISService', () => {
     jest.spyOn(cache, 'saveObject').mockResolvedValue({});
 
     await aisService.getUserDetails('test.user@test.com');
-    // Will be called 2 times because of the ternary statement
-    expect(cache.fetch).toBeCalledTimes(2);
+    expect(cache.fetch).toBeCalledTimes(1);
     expect(request.get).toBeCalledTimes(0);
   });
 

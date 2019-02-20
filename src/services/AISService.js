@@ -28,11 +28,13 @@ export class AISService {
     };
     try {
       const key = `AIS_DATA_${email.split('@')[0]}`;
-      const result = await cache.fetch(key)
-        ? await cache.fetch(key) : await request.get(uri, options);
+      let result = await cache.fetch(key);
+      if (result) return result;
+      const aisData = await request.get(uri, options);
+      const { values } = JSON.parse(aisData);
+      ([result] = values);
       cache.saveObject(key, result);
-      const { values } = JSON.parse(result);
-      return values[0];
+      return result;
     } catch (error) {
       throw new Error(`failed to fetch user details from AIS, reason: ${error.message}`);
     }
