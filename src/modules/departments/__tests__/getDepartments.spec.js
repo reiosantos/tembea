@@ -1,12 +1,20 @@
 import request from 'supertest';
 import app from '../../../app';
+import Utils from '../../../utils';
+
+let validToken;
+
+beforeAll(() => {
+  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+});
 
 describe('Get department records', () => {
   it('should fail when page does not exist', (done) => {
     request(app)
       .get('/api/v1/departments?page=1000000000000')
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(404, {
         success: false,
@@ -19,7 +27,8 @@ describe('Get department records', () => {
     request(app)
       .get('/api/v1/departments?page=3&size=2')
       .set({
-        Accept: 'application.json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         200,
@@ -31,7 +40,8 @@ describe('Get department records', () => {
     request(app)
       .get('/api/v1/departments')
       .set({
-        Accept: 'application.json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         200,
@@ -43,7 +53,8 @@ describe('Get department records', () => {
     request(app)
       .get('/api/v1/departments?page=gh&size=ds')
       .set({
-        Accept: 'application.json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         400,

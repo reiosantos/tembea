@@ -1,7 +1,13 @@
 import request from 'supertest';
 import '@slack/client';
 import app from '../../../app';
+import Utils from '../../../utils';
 
+let validToken;
+
+beforeAll(() => {
+  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+});
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
     users: {
@@ -26,7 +32,8 @@ describe('/User update', () => {
         newEmail: 'me.you@test.com',
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(404, {
         success: false,
@@ -43,7 +50,8 @@ describe('/User update', () => {
         newEmail: 'me.you@test.com',
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(400, {
         success: false,
@@ -61,7 +69,8 @@ describe('/User update', () => {
         newEmail: 'me.you@test.com',
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(400, {
         success: false,
@@ -76,7 +85,8 @@ describe('/User update', () => {
         email: 'unKnownEmail@test.com',
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(400, {
         success: false,
@@ -97,7 +107,8 @@ describe('/User update', () => {
         newEmail: 'me.youtest.com',
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(400, {
         success: false,
@@ -121,7 +132,8 @@ describe('/User update', () => {
         newEmail: 'me.you@test.com',
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(200, done);
   });
@@ -136,7 +148,8 @@ describe('/User update', () => {
         newPhoneNo: '2349782037189'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(200, done);
   });
@@ -150,7 +163,8 @@ describe('/User update', () => {
         newEmail: 'me.you@test.com',
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(200, done);
   });
@@ -166,7 +180,8 @@ describe('/User update', () => {
         newEmail: 'me.you@test.com',
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(404, {
         success: false,

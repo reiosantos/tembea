@@ -1,5 +1,12 @@
 import request from 'supertest';
 import app from '../../../app';
+import Utils from '../../../utils';
+
+let validToken;
+
+beforeAll(() => {
+  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+});
 
 describe('/Departments update', () => {
   afterEach(() => {
@@ -14,7 +21,8 @@ describe('/Departments update', () => {
         newName: 'newDepartmentName'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(404, {
         success: false,
@@ -30,7 +38,8 @@ describe('/Departments update', () => {
         newHeadEmail: 'unknownuser254@gmail.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(404, {
         success: false,
@@ -45,7 +54,8 @@ describe('/Departments update', () => {
         name: 'TDD',
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(400, done);
   });
@@ -58,7 +68,8 @@ describe('/Departments update', () => {
         newHeadEmail: 'invalidEmail'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(400, {
         success: false,
@@ -74,7 +85,8 @@ describe('/Departments update', () => {
         newHeadEmail: ''
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(400, {
         success: false,
@@ -91,7 +103,8 @@ describe('/Departments update', () => {
         newHeadEmail: 'test.buddy1@andela.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(200, done);
   });

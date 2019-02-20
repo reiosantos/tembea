@@ -2,8 +2,14 @@ import express from 'express';
 import AddressController from './AddressController';
 import middlewares from '../../middlewares';
 
-const { GeneralValidator, AddressValidator } = middlewares;
+const { GeneralValidator, AddressValidator, TokenValidator } = middlewares;
 const addressRouter = express.Router();
+
+addressRouter.use(
+  '/addresses',
+  TokenValidator.attachJwtSecretKey,
+  TokenValidator.authenticateToken
+);
 
 addressRouter.post(
   '/addresses',

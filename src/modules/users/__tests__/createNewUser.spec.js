@@ -3,9 +3,13 @@ import '@slack/client';
 import app from '../../../app';
 import UserValidator from '../../../middlewares/UserValidator';
 import HttpError from '../../../helpers/errorHandler';
+import Utils from '../../../utils';
+
+let validToken;
 
 describe('/User create', () => {
   beforeAll(() => {
+    validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
     jest.mock('@slack/client', () => ({
       WebClient: jest.fn(() => ({
         users: {
@@ -30,7 +34,8 @@ describe('/User create', () => {
         slackUrl: 'ACME.slack.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         400,
@@ -49,7 +54,8 @@ describe('/User create', () => {
         email: 'sjnvdsd.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         400,
@@ -68,7 +74,8 @@ describe('/User create', () => {
         email: 'unKnownEmail@test.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         400,
@@ -88,7 +95,8 @@ describe('/User create', () => {
         slackUrl: 'ACME.sack.co'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         400,
@@ -108,7 +116,8 @@ describe('/User create', () => {
         slackUrl: 'ACM.slack.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         404,
@@ -128,7 +137,8 @@ describe('/User create', () => {
         slackUrl: 'ACME.slack.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(200, done);
   });
@@ -159,7 +169,8 @@ describe('/User create user who does not exist', () => {
         slackUrl: 'ACME.slack.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(200, done);
   });

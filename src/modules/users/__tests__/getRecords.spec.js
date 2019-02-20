@@ -1,12 +1,20 @@
 import request from 'supertest';
 import app from '../../../app';
+import Utils from '../../../utils';
+
+let validToken; // Token for secure requests
+
+beforeAll(() => {
+  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+});
 
 describe('Get users records', () => {
   it('should fail when page does not exist', (done) => {
     request(app)
       .get('/api/v1/users?page=99999999999')
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         404,
@@ -22,7 +30,8 @@ describe('Get users records', () => {
     request(app)
       .get('/api/v1/users?page=3&size=2')
       .set({
-        Accept: 'application.json'
+        Accept: 'application.json',
+        authorization: validToken
       })
       .expect(
         200,
@@ -34,7 +43,8 @@ describe('Get users records', () => {
     request(app)
       .get('/api/v1/users')
       .set({
-        Accept: 'application.json'
+        Accept: 'application.json',
+        authorization: validToken
       })
       .expect(
         200,
@@ -46,7 +56,8 @@ describe('Get users records', () => {
     request(app)
       .get('/api/v1/users?page=gh&size=ds')
       .set({
-        Accept: 'application.json'
+        Accept: 'application.json',
+        authorization: validToken
       })
       .expect(
         400,

@@ -1,6 +1,12 @@
 import request from 'supertest';
 import app from '../../../app';
+import Utils from '../../../utils';
 
+let validToken;
+
+beforeAll(() => {
+  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+});
 describe('/Departments create', () => {
   it('should return a no user found error with wrong email', (done) => {
     request(app)
@@ -11,7 +17,8 @@ describe('/Departments create', () => {
         slackUrl: 'ACME.slack.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(404, {
         success: false,
@@ -28,7 +35,8 @@ describe('/Departments create', () => {
         slackUrl: 'ACME.slack.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(400, {
         success: false,
@@ -43,6 +51,10 @@ describe('/Departments create', () => {
         email: 'alll.com',
         name: 'test',
         slackUrl: 'ACME.slack.com'
+      })
+      .set({
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(400)
       .end((err, res) => {
@@ -60,7 +72,8 @@ describe('/Departments create', () => {
         slackUrl: 'ACME.slack.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(400, {
         success: false,
@@ -77,7 +90,8 @@ describe('/Departments create', () => {
         slackUrl: 'ACME.slack.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(400, {
         success: false,
@@ -93,7 +107,8 @@ describe('/Departments create', () => {
         slackUrl: 'ACME.slack.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(400, {
         success: false,
@@ -110,7 +125,8 @@ describe('/Departments create', () => {
         slackUrl: 'ACME.slack.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(201, done);
   });
@@ -124,7 +140,8 @@ describe('/Departments create', () => {
         slackUrl: 'ACME.slack.com'
       })
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(409, {
         success: false,

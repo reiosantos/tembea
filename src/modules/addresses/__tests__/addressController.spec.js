@@ -2,6 +2,13 @@ import request from 'supertest';
 import '@slack/client';
 import app from '../../../app';
 import AddressController from '../AddressController';
+import Utils from '../../../utils';
+
+let validToken;
+
+beforeAll(() => {
+  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+});
 
 describe('/Addresses post request for adding new address', () => {
   describe('user input validations', () => {
@@ -13,7 +20,8 @@ describe('/Addresses post request for adding new address', () => {
           address: 'dojo'
         })
         .set({
-          Accept: 'application/json'
+          Accept: 'application/json',
+          authorization: validToken
         })
         .expect(
           400,
@@ -35,7 +43,8 @@ describe('/Addresses post request for adding new address', () => {
           address: 'dojo'
         })
         .set({
-          Accept: 'application/json'
+          Accept: 'application/json',
+          authorization: validToken
         })
         .expect(
           400,
@@ -58,7 +67,8 @@ describe('/Addresses post request for adding new address', () => {
           address: 'dojo'
         })
         .set({
-          Accept: 'application/json'
+          Accept: 'application/json',
+          authorization: validToken
         })
         .expect(201, done);
     });
@@ -74,7 +84,8 @@ describe('/Addresses post request for adding new address', () => {
           address: 'dojo'
         })
         .set({
-          Accept: 'application/json'
+          Accept: 'application/json',
+          authorization: validToken
         })
         .expect(
           400,
@@ -95,7 +106,8 @@ describe('/Addresses post request for adding new address', () => {
           address: 'existing location'
         })
         .set({
-          Accept: 'application/json'
+          Accept: 'application/json',
+          authorization: validToken
         })
         .expect(
           400,
@@ -116,7 +128,8 @@ describe('/Addresses update addresses', () => {
         .put('/api/v1/addresses')
         .send({ address: 'dojo' })
         .set({
-          Accept: 'application/json'
+          Accept: 'application/json',
+          authorization: validToken
         })
         .expect(
           400,
@@ -139,7 +152,8 @@ describe('/Addresses update addresses', () => {
           address: 'dojo'
         })
         .set({
-          Accept: 'application/json'
+          Accept: 'application/json',
+          authorization: validToken
         })
         .expect(
           400,
@@ -160,7 +174,8 @@ describe('/Addresses update addresses', () => {
           address: 'dojo'
         })
         .set({
-          Accept: 'application/json'
+          Accept: 'application/json',
+          authorization: validToken
         })
         .expect(
           400,
@@ -183,7 +198,8 @@ describe('/Addresses update addresses', () => {
           address: 'dojo'
         })
         .set({
-          Accept: 'application/json'
+          Accept: 'application/json',
+          authorization: validToken
         })
         .expect(
           400,
@@ -204,7 +220,8 @@ describe('/Addresses update addresses', () => {
           address: 'does not exist'
         })
         .set({
-          Accept: 'application/json'
+          Accept: 'application/json',
+          authorization: validToken
         })
         .expect(
           404,
@@ -225,7 +242,8 @@ describe('/Addresses update addresses', () => {
           address: 'dojo'
         })
         .set({
-          Accept: 'application/json'
+          Accept: 'application/json',
+          authorization: validToken
         })
         .expect(200, done);
     });
@@ -238,7 +256,8 @@ describe('/Addresses update addresses', () => {
           address: 'dojo'
         })
         .set({
-          Accept: 'application/json'
+          Accept: 'application/json',
+          authorization: validToken
         })
         .expect(200, done);
     });
@@ -250,7 +269,8 @@ describe('/Addresses get addresses', () => {
     request(app)
       .get('/api/v1/addresses')
       .set({
-        Accept: 'application.json'
+        Accept: 'application.json',
+        authorization: validToken
       })
       .expect(200, done);
   });
@@ -259,7 +279,8 @@ describe('/Addresses get addresses', () => {
     request(app)
       .get('/api/v1/addresses?page=99999999999')
       .set({
-        Accept: 'application/json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         404,
@@ -275,7 +296,8 @@ describe('/Addresses get addresses', () => {
     request(app)
       .get('/api/v1/addresses?page=1&size=2')
       .set({
-        Accept: 'application.json'
+        Accept: 'application.json',
+        authorization: validToken
       })
       .expect(200, done);
   });
@@ -284,7 +306,8 @@ describe('/Addresses get addresses', () => {
     request(app)
       .get('/api/v1/addresses?page=gh&size=ds')
       .set({
-        Accept: 'application.json'
+        Accept: 'application.json',
+        authorization: validToken
       })
       .expect(
         400,

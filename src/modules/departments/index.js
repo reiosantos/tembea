@@ -4,7 +4,15 @@ import middlewares from '../../middlewares';
 
 const departmentRouter = express.Router();
 
-const { DepartmentValidator, UserValidator, GeneralValidator } = middlewares;
+const {
+  DepartmentValidator, UserValidator, GeneralValidator, TokenValidator
+} = middlewares;
+
+departmentRouter.use(
+  '/departments',
+  TokenValidator.attachJwtSecretKey,
+  TokenValidator.authenticateToken
+);
 
 departmentRouter.put(
   '/departments',

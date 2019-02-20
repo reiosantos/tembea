@@ -3,8 +3,15 @@ import app from '../../../app';
 import models from '../../../database/models';
 import DepartmentController from '../DepartmentsController';
 import HttpError from '../../../helpers/errorHandler';
+import Utils from '../../../utils';
+
+let validToken;
 
 const { Department } = models;
+
+beforeAll(() => {
+  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+});
 
 describe('Delete department record', () => {
   beforeAll(async () => {
@@ -22,7 +29,8 @@ describe('Delete department record', () => {
         name: 'No Department',
       })
       .set({
-        Accept: 'application.json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         404,
@@ -39,7 +47,8 @@ describe('Delete department record', () => {
       .delete('/api/v1/departments')
       .send({})
       .set({
-        Accept: 'application.json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         400,
@@ -59,7 +68,8 @@ describe('Delete department record', () => {
         name: 'Some name'
       })
       .set({
-        Accept: 'application.json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         400,
@@ -78,7 +88,8 @@ describe('Delete department record', () => {
         id: -2
       })
       .set({
-        Accept: 'application.json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         400,
@@ -97,7 +108,8 @@ describe('Delete department record', () => {
         name: '=some@funny%name'
       })
       .set({
-        Accept: 'application.json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         400,
@@ -116,7 +128,8 @@ describe('Delete department record', () => {
         name: 'Test Department 1'
       })
       .set({
-        Accept: 'application.json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         200,
@@ -135,7 +148,8 @@ describe('Delete department record', () => {
         name: 'Test Department 1'
       })
       .set({
-        Accept: 'application.json'
+        Accept: 'application/json',
+        authorization: validToken
       })
       .expect(
         404,
