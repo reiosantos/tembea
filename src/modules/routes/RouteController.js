@@ -164,7 +164,7 @@ class RoutesController {
       const result = await RouteService.updateRouteBatch(+id, { status });
       const slackTeamUrl = teamUrl.trim();
       if (status && status === 'Inactive') {
-        SlackEvents.raise(slackEventNames.RIDERS_ROUTE_DEACTIVATED, slackTeamUrl, result);
+        SlackEvents.raise(slackEventNames.NOTIFY_ROUTE_RIDERS, slackTeamUrl, result);
       }
       const message = 'Route batch successfully updated';
       return Response.sendResponse(res, 200, true, message, result);
@@ -245,6 +245,37 @@ class RoutesController {
   static async sendApprovalNotificationToFellow(requestId, teamUrl, submission) {
     const route = await RouteRequestService.getRouteRequest(requestId);
     SlackEvents.raise(slackEventNames.APPROVE_ROUTE_REQUEST, route, '', submission, teamUrl);
+  }
+
+  /**
+   * @description This method deletes a routeBatch
+   * @param  {Object} req The HTTP request object
+   * @param  {Object} res The HTTP response object
+   * @returns {object} The http response object
+   */
+  static async deleteRouteBatch(req, res) {
+    let message;
+    try {
+      const {
+        params: { routeBatchId },
+        body: { teamUrl }
+      } = req;
+      const slackTeamUrl = teamUrl.trim();
+      const routeBatch = await RouteService.getRouteBatchByPk(routeBatchId);
+      if (!routeBatch) {
+        message = 'route batch not found';
+        HttpError.throwErrorIfNull(routeBatch, message);
+      }
+      const result = await RouteService.deleteRouteBatch(routeBatchId);
+      if (result > 0) {
+        await SlackEvents.raise(slackEventNames.NOTIFY_ROUTE_RIDERS, slackTeamUrl, routeBatch);
+        message = 'route batch deleted successfully';
+        return Response.sendResponse(res, 200, true, message);
+      }
+    } catch (error) {
+      BugSnagHelper.log(error);
+      return HttpError.sendErrorResponse(error, res);
+    }
   }
 }
 

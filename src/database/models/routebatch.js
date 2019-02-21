@@ -13,7 +13,10 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 'Inactive'
     },
     comments: DataTypes.TEXT,
-  }, {});
+  }, {
+    paranoid: true,
+    timestamps: true
+  });
   RouteBatch.associate = (model) => {
     // associations can be defined here
     RouteBatch.hasMany(model.User, {

@@ -47,4 +47,11 @@ routesRouter.put(
   RoutesController.changeRouteRequestStatus
 );
 
+routesRouter.delete(
+  '/routes/:routeBatchId',
+  GeneralValidator.validateTeamUrlInRequestBody,
+  RouteValidator.validateRouteIdParam,
+  RoutesController.deleteRouteBatch
+);
+
 export default routesRouter;

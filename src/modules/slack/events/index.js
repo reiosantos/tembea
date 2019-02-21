@@ -37,8 +37,8 @@ slackEvents.handle(slackEventNames.MANAGER_APPROVED_ROUTE_REQUEST,
 slackEvents.handle(slackEventNames.OPERATIONS_DECLINE_ROUTE_REQUEST,
   OperationsNotifications.sendOpsDeclineMessageToFellow);
 
-slackEvents.handle(slackEventNames.RIDERS_ROUTE_DEACTIVATED,
-  RouteNotifications.sendInactiveRouteNotificationToRouteRiders);
+slackEvents.handle(slackEventNames.NOTIFY_ROUTE_RIDERS,
+  RouteNotifications.sendRouteNotificationToRouteRiders);
 
 slackEvents.handle(slackEventNames.APPROVE_ROUTE_REQUEST,
   OperationsNotifications.sendOpsApproveMessageToFellow);

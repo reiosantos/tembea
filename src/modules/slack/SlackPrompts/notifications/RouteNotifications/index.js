@@ -2,7 +2,7 @@ import SlackNotifications from '../../Notifications';
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
 
 class RouteNotifications {
-  static async sendInactiveRouteNotificationToRouteRiders(teamUrl, routeInfo) {
+  static async sendRouteNotificationToRouteRiders(teamUrl, routeInfo) {
     const { riders, route: { destination: { address } } } = routeInfo;
     const { botToken: teamBotOauthToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
     const text = `Sorry, Your route to *${address}* is no longer available :disappointed:`;

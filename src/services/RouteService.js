@@ -271,6 +271,20 @@ class RouteService {
       ...RouteService.serializeRiders(routeData.riders),
     };
   }
+
+  /**
+   * deletes a route batch by its id
+   * @param id
+   * @return {integer}
+   * @private
+   */
+  static async deleteRouteBatch(routeBatchId) {
+    return RouteBatch.destroy({
+      where: {
+        id: routeBatchId
+      }
+    });
+  }
 }
 
 export default RouteService;

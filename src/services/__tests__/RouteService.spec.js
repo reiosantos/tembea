@@ -348,4 +348,23 @@ describe('RouteService', () => {
       expect(result[4][2]).toEqual(sort[4].direction);
     });
   });
+
+  describe('RouteService_deleteRouteBatch', () => {
+    it('should should perform soft delete', async () => {
+      const routeBatchId = 1;
+      const spy = jest.spyOn(RouteBatch, 'destroy');
+      const result = await RouteService.deleteRouteBatch(routeBatchId);
+      
+      expect(result).toEqual(1);
+      expect(spy).toHaveBeenCalled();
+      expect(spy).toBeCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(
+        {
+          where: {
+            id: routeBatchId
+          }
+        }
+      );
+    });
+  });
 });

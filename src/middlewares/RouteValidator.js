@@ -10,16 +10,29 @@ class RouteValidator {
       const message = 'status can either \'Active\' or \'Inactive\'.';
       return Response.sendResponse(res, 400, false, message);
     }
-    next();
+    return next();
   }
 
   static validateRouteIdParam(req, res, next) {
-    const { params: { routeId } } = req;
-    if (!routeId || !GeneralValidator.validateNumber(routeId)) {
-      const message = 'Please provide a positive integer value for routeId';
+    const {
+      params: {
+        routeBatchId,
+        routeId
+      },
+      route: {
+        path
+      }
+    } = req;
+    if (path === '/routes/:routeBatchId') RouteValidator.validateIdParam(res, routeBatchId, 'routeBatchId', next);
+    if (path === '/routes/:routeId') RouteValidator.validateIdParam(res, routeId, 'routeId', next);
+  }
+
+  static validateIdParam(res, id, name, next) {
+    if (!id || !GeneralValidator.validateNumber(id)) {
+      const message = `Please provide a positive integer value for ${name}`;
       return Response.sendResponse(res, 400, false, message);
     }
-    next();
+    return next();
   }
 
   static verifyAllPropsExist(req, res, next) {

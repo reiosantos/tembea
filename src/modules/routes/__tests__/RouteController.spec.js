@@ -10,7 +10,7 @@ import { GoogleMapsPlaceDetails } from '../../slack/RouteManagement/rootFile';
 import HttpError from '../../../helpers/errorHandler';
 import RouteService from '../../../services/RouteService';
 import RouteRequestService from '../../../services/RouteRequestService';
-import { mockRouteRequestData } from '../../../services/__mocks__';
+import { mockRouteRequestData, mockRouteBatchData } from '../../../services/__mocks__';
 import Response from '../../../helpers/responseHelper';
 import { SlackEvents } from '../../slack/events/slackEvents';
 
@@ -49,6 +49,54 @@ describe('RoutesController', () => {
   afterEach(() => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
+  });
+
+  describe('deleteRouteBatch()', () => {
+    let req;
+    let res;
+    beforeEach(() => {
+      req = {
+        params: {
+          routeBatchId: 2
+        },
+        body: {
+          teamUrl: 'url.slack.com'
+        }
+      };
+      res = {
+        status: jest.fn(() => ({
+          json: jest.fn(() => {})
+        })).mockReturnValue({ json: jest.fn() })
+      };
+    });
+    it('should delete a routeBatch', async (done) => {
+      RouteService.getRouteBatchByPk = jest.fn(() => mockRouteBatchData);
+      RouteService.deleteRouteBatch = jest.fn(() => 1);
+      SlackEvents.raise = jest.fn(() => {});
+
+      await RoutesController.deleteRouteBatch(req, res);
+      expect(res.status).toHaveBeenCalledTimes(1);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.status().json).toHaveBeenCalledWith({
+        message: 'route batch deleted successfully', success: true
+      });
+      done();
+    });
+    it('should return a not found error', async (done) => {
+      const spy = jest.spyOn(HttpError, 'throwErrorIfNull');
+      RouteService.getRouteBatchByPk = jest.fn(() => false);
+      RouteService.deleteRouteBatch = jest.fn(() => 0);
+
+      await RoutesController.deleteRouteBatch(req, res);
+      expect(HttpError.throwErrorIfNull).toHaveBeenCalledTimes(1);
+      expect(HttpError.throwErrorIfNull).toHaveBeenCalledWith(
+        false, 'route batch not found'
+      );
+      expect(res.status).toHaveBeenCalledTimes(1);
+      expect(res.status).toHaveBeenCalledWith(404);
+      spy.mockRestore();
+      done();
+    });
   });
   describe('getAll()', () => {
     let req;
@@ -328,7 +376,7 @@ describe('RouteController unit test', () => {
 
       await RoutesController.updateRouteBatchStatus(reqMock, 'res');
       expect(eventsMock).toHaveBeenCalledTimes(1);
-      expect(eventsMock).toHaveBeenCalledWith('riders_route_deactivated', 'team@slack.com', 'good');
+      expect(eventsMock).toHaveBeenCalledWith('notify_route_riders', 'team@slack.com', 'good');
       expect(Response.sendResponse).toHaveBeenCalledTimes(1);
       expect(Response.sendResponse).toHaveBeenCalledWith('res', 200, true, errMessage, 'good');
     });

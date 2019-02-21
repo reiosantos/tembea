@@ -27,7 +27,7 @@ describe('Route Notifications', () => {
         .mockImplementation();
       const text = 'Sorry, Your route to *Epic Tower* is no longer available :disappointed:';
 
-      await RouteNotifications.sendInactiveRouteNotificationToRouteRiders(teamUrl, routeInfo);
+      await RouteNotifications.sendRouteNotificationToRouteRiders(teamUrl, routeInfo);
       expect(teamDetailsMock).toHaveBeenCalledTimes(1);
       expect(teamDetailsMock).toHaveBeenCalledWith(teamUrl);
       expect(createMessageMock).toHaveBeenCalledTimes(1);
