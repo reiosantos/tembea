@@ -3,10 +3,7 @@ import WebClientSingleton from '../../utils/WebClientSingleton';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import UserService from '../../services/UserService';
 
-
-const {
-  Department, User, TripRequest
-} = models;
+const { Department, User, TripRequest } = models;
 
 class SlackHelpers {
   static async getDepartments(teamId) {
@@ -58,7 +55,8 @@ class SlackHelpers {
 
   static async getUserInfoFromSlack(slackId, teamId) {
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-    const userInfo = await SlackHelpers.fetchUserInformationFromSlack(slackId, slackBotOauthToken);
+    const userInfo = await SlackHelpers.fetchUserInformationFromSlack(slackId,
+      slackBotOauthToken);
     return userInfo;
   }
 
@@ -99,10 +97,7 @@ class SlackHelpers {
     }
 
     const {
-      dataValues: {
-        tripStatus,
-        approvedById
-      }
+      dataValues: { tripStatus, approvedById }
     } = trip;
 
     if (approvedById && tripStatus && tripStatus.toLowerCase() !== 'pending') {
@@ -127,7 +122,7 @@ class SlackHelpers {
     const update = await response.update({
       approvedById: user.id,
       managerComment: description,
-      tripStatus: 'Approved',
+      tripStatus: 'Approved'
     });
 
     if (update) { approved = true; }

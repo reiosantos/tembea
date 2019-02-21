@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import TripController from './TripController';
+// import TripController from './TripController';
 import middlewares from '../../middlewares';
-import TokenValidator from '../../middlewares/TokenValidator';
+import TripsController from './TripsController';
 
-const { GeneralValidator } = middlewares;
+const { GeneralValidator, TripValidator, TokenValidator } = middlewares;
+
 const tripsRouter = Router();
 
 tripsRouter.use('/trips',
@@ -13,7 +14,14 @@ tripsRouter.use('/trips',
 tripsRouter.get(
   '/trips',
   GeneralValidator.validateQueryParams,
-  TripController.getTrips
+  TripsController.getTrips
+);
+
+const tripValidator = [TripValidator.validateAll, TripValidator.validateEachInput];
+tripsRouter.put(
+  '/trips/:tripId',
+  ...tripValidator,
+  TripsController.updateTrip
 );
 
 export default tripsRouter;

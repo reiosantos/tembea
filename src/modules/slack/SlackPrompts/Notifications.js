@@ -31,18 +31,18 @@ class SlackNotifications {
     return web.getWebClient(teamBotOauthToken).chat.postMessage({
       channel: channelId,
       text,
-      attachments: [
-        attachments
-      ]
+      attachments: [attachments]
     });
   }
 
   static async sendManagerTripRequestNotification(payload, tripInfo, respond, type = 'newTrip') {
     try {
       const {
-        id, departmentId, requestedById, riderId,
+        id, departmentId, requestedById, riderId
       } = tripInfo;
-      const [head, requester, rider, newTripRequest, slackBotOauthToken] = await Promise.all([
+      const [
+        head, requester, rider, newTripRequest, slackBotOauthToken
+      ] = await Promise.all([
         SlackHelpers.getHeadByDepartmentId(departmentId),
         SlackHelpers.findUserByIdOrSlackId(requestedById),
         SlackHelpers.findUserByIdOrSlackId(riderId),
@@ -57,7 +57,8 @@ class SlackNotifications {
     } catch (error) {
       bugsnagHelper.log(error);
       respond({
-        text: 'Error:warning:: Request saved, but I could not send a notification to your manager.'
+        text:
+          'Error:warning:: Request saved, but I could not send a notification to your manager.'
       });
     }
   }
@@ -65,9 +66,9 @@ class SlackNotifications {
   static getManagerMessageAttachment(newTripRequest, imResponse, requester, requestType, rider) {
     const { tripStatus } = newTripRequest;
     const text = requestType === 'newTrip' ? 'booked a' : 'rescheduled this';
-
     const attachments = new SlackAttachment('Trip Request');
     attachments.addOptionalProps('manager_actions', '/fallback', '#3359DF');
+
     const fields = SlackNotifications.notificationFields(newTripRequest);
     attachments.addFieldsOrActions('fields', fields);
 
@@ -77,26 +78,23 @@ class SlackNotifications {
     }
     let msg = `Hey, <@${requester.slackId}> has just ${text} trip. :smiley:`;
     if (requester.slackId !== rider.slackId) {
-      msg = `Hey, <@${requester.slackId}> has just ${text} trip for <@${rider.slackId}>. :smiley:`;
+      msg = `Hey, <@${requester.slackId}> has just ${text} trip for <@${
+        rider.slackId}>. :smiley:`;
     }
-    return SlackNotifications.createDirectMessage(
-      imResponse, msg, attachments
-    );
+    return SlackNotifications.createDirectMessage(imResponse, msg, attachments);
   }
 
   static async sendOperationsTripRequestNotification(tripId, payload, respond, type = 'regular') {
     try {
-      const [tripInformation, teamDetails] = await Promise.all([SlackHelpers.getTripRequest(tripId),
-        TeamDetailsService.getTeamDetails(payload.team.id)]);
+      const [tripInformation, teamDetails] = await Promise.all([
+        SlackHelpers.getTripRequest(tripId), TeamDetailsService.getTeamDetails(payload.team.id)]);
       const { botToken: slackBotOauthToken, opsChannelId } = teamDetails;
       const checkTripType = type === 'regular';
       SlackNotifications.restructureTripData(tripInformation, checkTripType);
-      const department = await DepartmentService.getDepartment(tripInformation.departmentId);
-      const { name } = department.dataValues;
+      const { dataValues: { name } } = await DepartmentService.getDepartment(tripInformation.departmentId);
       tripInformation.department = name;
       if (checkTripType) {
-        SlackEvents.raise(slackEventNames.TRIP_WAITING_CONFIRMATION, tripInformation,
-          respond, slackBotOauthToken);
+        SlackEvents.raise(slackEventNames.TRIP_WAITING_CONFIRMATION, tripInformation, respond, slackBotOauthToken);
       }
       const opsRequestMessage = NotificationsResponse.getRequestMessageForOperationsChannel(
         tripInformation, payload, opsChannelId, type
@@ -126,9 +124,15 @@ class SlackNotifications {
     });
   }
 
-  static async sendRequesterApprovedNotification(responseData, respond, slackBotOauthToken) {
+  static async sendRequesterApprovedNotification(
+    responseData,
+    respond,
+    slackBotOauthToken
+  ) {
     try {
-      const dept = await SlackHelpers.getHeadByDepartmentId(responseData.departmentId);
+      const dept = await SlackHelpers.getHeadByDepartmentId(
+        responseData.departmentId
+      );
 
       if (!dept || !dept.dataValues) return;
 
@@ -141,12 +145,15 @@ class SlackNotifications {
         user: responseData.requester.slackId
       });
       const response = await NotificationsResponse.responseForRequester(
-        responseData, imResponse.channel.id
+        responseData,
+        imResponse.channel.id
       );
       SlackNotifications.sendNotification(response, slackBotOauthToken);
     } catch (error) {
       bugsnagHelper.log(error);
-      respond(new SlackInteractiveMessage('Oopps! We could not process this request.'));
+      respond(
+        new SlackInteractiveMessage('Oopps! We could not process this request.')
+      );
     }
   }
 
@@ -159,24 +166,22 @@ class SlackNotifications {
     return webhook.send(message);
   }
 
-  static async sendRequesterDeclinedNotification(tripInformation, respond, slackBotOauthToken) {
+  static async sendRequesterDeclinedNotification(tripInformation, respond,
+    slackBotOauthToken) {
     try {
       const [requester, decliner] = await Promise.all([
         SlackHelpers.findUserByIdOrSlackId(tripInformation.requestedById),
         SlackHelpers.findUserByIdOrSlackId(tripInformation.declinedById)
       ]);
-
       const attachments = new SlackAttachment('Declined Trip Request');
       attachments.addOptionalProps('', '/fallback', '#3359DF');
       const fields = SlackNotifications.notificationFields(tripInformation);
       fields.push(new SlackAttachmentField('Reason', tripInformation.managerComment, false));
       attachments.addFieldsOrActions('fields', fields);
-
       const { slackId } = requester;
       const imResponse = await SlackNotifications.getDMChannelId(slackId, slackBotOauthToken);
       const message = SlackNotifications.createDirectMessage(
-        imResponse,
-        `Sorry, <@${decliner.slackId}> has just declined your trip. :disappointed:`,
+        imResponse, `Sorry, <@${decliner.slackId}> has just declined your trip. :disappointed:`,
         attachments
       );
       await SlackNotifications.sendNotification(message, slackBotOauthToken);
@@ -201,7 +206,9 @@ class SlackNotifications {
     };
   }
 
-  static async sendManagerConfirmOrDeclineNotification(teamId, userId, tripInformation, decline) {
+  static async sendManagerConfirmOrDeclineNotification(
+    teamId, userId, tripInformation, decline
+  ) {
     const { headId } = tripInformation.department.dataValues;
     const headOfDepartment = await SlackHelpers.findUserByIdOrSlackId(headId);
     const rider = tripInformation.rider.dataValues.slackId;
@@ -212,10 +219,18 @@ class SlackNotifications {
     const channelId = await SlackNotifications.getDMChannelId(slackId, slackBotOauthToken);
     const label = !decline ? 'Confirmed Trip Request' : 'Declined Trip Request';
     const attachments = new SlackAttachment(label);
-    attachments.addOptionalProps('', '/fallback', !decline ? '#007F00' : '#FF0000');
-    const fields = SlackNotifications.getFieldsToDisplay(tripInformation, userId, decline);
+    attachments.addOptionalProps(
+      '',
+      '/fallback',
+      !decline ? '#007F00' : '#FF0000'
+    );
+    const fields = SlackNotifications.getFieldsToDisplay(
+      tripInformation, userId, decline
+    );
     attachments.addFieldsOrActions('fields', fields);
-    await SlackNotifications.sendNotifications(channelId, attachments, message, slackBotOauthToken);
+    await SlackNotifications.sendNotifications(
+      channelId, attachments, message, slackBotOauthToken
+    );
   }
 
   static getFieldsToDisplay(tripInformation, userId, decline) {
@@ -243,7 +258,9 @@ class SlackNotifications {
     return 'declined :disappointed:';
   }
 
-  static async sendUserConfirmOrDeclineNotification(teamId, userId, tripInformation, decline) {
+  static async sendUserConfirmOrDeclineNotification(
+    teamId, userId, tripInformation, decline
+  ) {
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     const requester = tripInformation.requester.dataValues.slackId;
     const rider = tripInformation.rider.dataValues.slackId;
@@ -252,7 +269,9 @@ class SlackNotifications {
     const label = !decline ? 'Confirmed Trip Request' : 'Declined Trip Request';
     const attachments = new SlackAttachment(label);
     attachments.addOptionalProps('', '/fallback', !decline ? '#007F00' : '#FF0000');
-    const fields = SlackNotifications.getFieldsToDisplay(tripInformation, userId, decline);
+    const fields = SlackNotifications.getFieldsToDisplay(
+      tripInformation, userId, decline
+    );
     attachments.addFieldsOrActions('fields', fields);
     if (requester !== rider) {
       channelId = await SlackNotifications.getDMChannelId(requester, slackBotOauthToken);
@@ -269,7 +288,12 @@ class SlackNotifications {
   static notificationActions(tripInformation) {
     return [
       new SlackButtonAction('managerApprove', 'Approve', tripInformation.id),
-      new SlackButtonAction('managerDecline', 'Decline', tripInformation.id, 'danger')
+      new SlackButtonAction(
+        'managerDecline',
+        'Decline',
+        tripInformation.id,
+        'danger'
+      )
     ];
   }
 
@@ -279,18 +303,30 @@ class SlackNotifications {
     return [
       new SlackAttachmentField('Pickup Location', pickup, true),
       new SlackAttachmentField('Destination', destination, true),
-      new SlackAttachmentField('Request Date',
-        Utils.formatDate(tripInformation.createdAt), true),
-      new SlackAttachmentField('Trip Date',
-        Utils.formatDate(tripInformation.departureTime), true),
+      new SlackAttachmentField(
+        'Request Date',
+        Utils.formatDate(tripInformation.createdAt),
+        true
+      ),
+      new SlackAttachmentField(
+        'Trip Date',
+        Utils.formatDate(tripInformation.departureTime),
+        true
+      ),
       new SlackAttachmentField('Reason', tripInformation.reason, true)
     ];
   }
 
   static declineNotificationFields(tripInformation, userId) {
     const reason = tripInformation.operationsComment;
-    const notifications = SlackNotifications.notificationFields(tripInformation);
-    const decliner = new SlackAttachmentField('', `Declined by <@${userId}>`, false);
+    const notifications = SlackNotifications.notificationFields(
+      tripInformation
+    );
+    const decliner = new SlackAttachmentField(
+      '',
+      `Declined by <@${userId}>`,
+      false
+    );
     const commentField = new SlackAttachmentField('Reason', reason, false);
     notifications.unshift(decliner);
     notifications.push(commentField);
@@ -300,8 +336,14 @@ class SlackNotifications {
   static approveNotificationFields(tripInformation, userId) {
     const reason = tripInformation.operationsComment;
     const { driverName, driverPhoneNo, regNumber } = tripInformation.cab.dataValues;
-    const notifications = SlackNotifications.notificationFields(tripInformation);
-    const decliner = new SlackAttachmentField('', `Confirmed by <@${userId}>`, false);
+    const notifications = SlackNotifications.notificationFields(
+      tripInformation
+    );
+    const decliner = new SlackAttachmentField(
+      '',
+      `Confirmed by <@${userId}>`,
+      false
+    );
     const commentField = new SlackAttachmentField('Reason', reason, false);
     notifications.unshift(decliner);
     notifications.push(commentField);
@@ -310,7 +352,7 @@ class SlackNotifications {
       new SlackAttachmentField('Cab Details', null, false),
       new SlackAttachmentField('Driver Name', driverName, true),
       new SlackAttachmentField('Driver Contacts', driverPhoneNo, true),
-      new SlackAttachmentField('Registration Number', regNumber, true),
+      new SlackAttachmentField('Registration Number', regNumber, true)
     ];
     notifications.push(...cabAttachmentFields);
     return notifications;
@@ -319,13 +361,16 @@ class SlackNotifications {
   static sendOperationsNotificationFields(routeRequest) {
     const { routeImageUrl, id: routeRequestId, manager } = routeRequest;
     const acceptButton = new SlackButtonAction('approve', 'Approve', routeRequestId);
-    const declineButton = new SlackButtonAction('decline', 'Decline',
-      routeRequestId, 'danger');
-    const messageAttachment = new SlackAttachment(undefined, undefined,
-      undefined, undefined, routeImageUrl);
-    const routeAttachmentFields = AttachmentHelper.routeAttachmentFields(routeRequest);
-    const engagementAttachmentFields = AttachmentHelper.engagementAttachmentFields(routeRequest);
-
+    const declineButton = new SlackButtonAction('decline', 'Decline', routeRequestId,
+      'danger');
+    const messageAttachment = new SlackAttachment(undefined, undefined, undefined,
+      undefined, routeImageUrl);
+    const routeAttachmentFields = AttachmentHelper.routeAttachmentFields(
+      routeRequest
+    );
+    const engagementAttachmentFields = AttachmentHelper.engagementAttachmentFields(
+      routeRequest
+    );
     const attachments = [
       new SlackAttachmentField('`Engagement Information`', null, false),
       ...engagementAttachmentFields,
@@ -335,18 +380,22 @@ class SlackNotifications {
     ];
     messageAttachment.addFieldsOrActions('actions', [acceptButton, declineButton]);
     messageAttachment.addFieldsOrActions('fields', attachments);
-
-    messageAttachment.addOptionalProps(
-      'operations_route_actions'
-    );
+    messageAttachment.addOptionalProps('operations_route_actions');
     return messageAttachment;
   }
 
   static async sendOperationsNewRouteRequest(teamId, routeRequestId) {
-    const routeRequestDetails = await RouteRequestService.getRouteRequest(routeRequestId);
-    const { engagement: { fellow: { slackId: fellow } } } = routeRequestDetails;
-    const messageAttachment = SlackNotifications
-      .sendOperationsNotificationFields(routeRequestDetails);
+    const routeRequestDetails = await RouteRequestService.getRouteRequest(
+      routeRequestId
+    );
+    const {
+      engagement: {
+        fellow: { slackId: fellow }
+      }
+    } = routeRequestDetails;
+    const messageAttachment = SlackNotifications.sendOperationsNotificationFields(
+      routeRequestDetails
+    );
     const teamDetails = await TeamDetailsService.getTeamDetails(teamId);
     const { botToken, opsChannelId } = teamDetails;
 

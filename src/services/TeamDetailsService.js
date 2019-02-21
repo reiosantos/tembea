@@ -44,7 +44,9 @@ class TeamDetailsService {
   }
 
   static async getTeamDetailsBotOauthToken(teamId) {
-    const { botToken: slackBotOauthToken } = await TeamDetailsService.getTeamDetails(teamId);
+    const {
+      botToken: slackBotOauthToken
+    } = await TeamDetailsService.getTeamDetails(teamId);
     return slackBotOauthToken;
   }
 
@@ -65,7 +67,9 @@ class TeamDetailsService {
       return teamObject;
     } catch (error) {
       bugsnagHelper.log(error);
-      throw new Error('Could not update teamDetails or write new teamDetails to DB');
+      throw new Error(
+        'Could not update teamDetails or write new teamDetails to DB'
+      );
     }
   }
 }
