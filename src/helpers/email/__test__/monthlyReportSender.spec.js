@@ -1,19 +1,10 @@
-import EmailService from '../../../services/EmailService';
+import schedule from 'node-schedule';
 import SlackHelpers from '../../slack/slackHelpers';
 import MonthlyReportSender from '../monthlyReportSender';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import ReportGeneratorService from '../../../services/report/ReportGeneratorService';
 import Utils from '../../../utils/index';
-
-jest.mock('nodemailer', () => ({
-  createTransport: jest.fn(() => ({
-    sendMail: jest.fn()
-  }))
-}));
-
-jest.mock('request-promise-native');
-jest.mock('node-schedule');
-jest.mock('../../../services/EmailService');
+import BugsnagHelper from '../../bugsnagHelper';
 
 const summary = {
   percentageChange: '20.50',
@@ -40,88 +31,90 @@ const departmentsMock = [
   { label: 'finance', head: { email: '2324@email.com', name: 'san' } },
   { label: 'tdd', head: { email: '2324@email.com', name: 'san' } }];
 
+const hbsMock = {
+  render: (_, data) => Promise.resolve(`<h1>Hello World ${data.name}</h1>`),
+  baseTemplates: 'hello'
+};
+
+const teamsMock = [
+  {
+    teamId: 'S123',
+  },
+  {
+    teamId: 'S192'
+  }
+];
+
 describe('MonthlyReportSender', () => {
+  const testReporter = new MonthlyReportSender(hbsMock);
+  beforeEach(() => {
+    jest.spyOn(TeamDetailsService, 'getAllTeams').mockResolvedValue(teamsMock);
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
   });
-  describe('MonthlyReportSender_send', () => {
-    it('should send an email to the concerned personnel', async (done) => {
-      // arrange dependencies
-      jest.spyOn(TeamDetailsService, 'getAllTeams').mockResolvedValue([
-        {
-          teamId: 'S123',
-        },
-        {
-          teamId: 'S192'
-        }
-      ]);
-      jest.spyOn(MonthlyReportSender, 'sendMail').mockResolvedValue(true);
 
-      await MonthlyReportSender.send();
+  describe('scheduleReporting', () => {
+    it('should invoke the schedule.scheduleJob function', () => {
+      jest.spyOn(schedule, 'scheduleJob').mockResolvedValue();
+
+      MonthlyReportSender.scheduleReporting(hbsMock);
+      expect(schedule.scheduleJob).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('send', () => {
+    afterEach(() => {
+      jest.resetAllMocks();
+      jest.restoreAllMocks();
+    });
+
+    it('should send mail to expected recipients', async (done) => {
+      jest.spyOn(testReporter, 'sendMail').mockResolvedValue(true);
+      await testReporter.send();
 
       expect(TeamDetailsService.getAllTeams).toHaveBeenCalledTimes(1);
-      expect(MonthlyReportSender.sendMail).toHaveBeenCalledTimes(2);
-
+      expect(testReporter.sendMail).toHaveBeenCalledTimes(2);
       done();
     });
 
-    it('should log error when getAllTeams fails', async (done) => {
-      const error = 'yes, it failed';
-      jest.spyOn(TeamDetailsService, 'getAllTeams').mockRejectedValue(new Error(error));
+    it('should log to bugsnag if something goes wrong', async (done) => {
+      const mockError = new Error('failed to send mail');
+      jest.spyOn(testReporter, 'sendMail').mockRejectedValue(mockError);
+      jest.spyOn(BugsnagHelper, 'log').mockReturnValue();
 
-      try {
-        MonthlyReportSender.send();
-      } catch (err) {
-        expect(err.message).toEqual(error);
-      }
+      await testReporter.send();
+
+      expect(BugsnagHelper.log).toHaveBeenCalledWith(mockError);
       done();
     });
   });
 
-  describe('MonthlyReportSender_sendMail', () => {
-    it('should generate email template and send mail', async (done) => {
-      jest.spyOn(MonthlyReportSender, 'getAddresses')
-        .mockResolvedValue(
-          [
-            {
-              name: 'Victor Onwuzor',
-              email: 'victor.onwuzor@andela.com'
-            }
-          ]
-        );
+  describe('sendMail', () => {
+    beforeEach(() => {
+      jest.spyOn(MonthlyReportSender, 'getAddresses').mockResolvedValue(
+        departmentsMock.map(department => ({
+          name: department.head.name,
+          email: department.head.email,
+        }))
+      );
+
       jest.spyOn(ReportGeneratorService, 'getOverallTripsSummary').mockResolvedValue(summary);
-      jest.spyOn(MonthlyReportSender, 'getTemplate').mockResolvedValue();
-      jest.spyOn(MonthlyReportSender, 'getEmailReportAttachment').mockResolvedValue();
-      jest.spyOn(Utils, 'writableToReadableStream').mockReturnValue({});
-      jest.spyOn(EmailService.prototype, 'sendMail').mockReturnValue(true);
 
-      await MonthlyReportSender.sendMail({ team: { teamId: 'TEAMID2' } });
-
-      expect(MonthlyReportSender.getAddresses).toHaveBeenCalled();
-      expect(ReportGeneratorService.getOverallTripsSummary).toHaveBeenCalledTimes(1);
-      expect(MonthlyReportSender.getTemplate).toHaveBeenCalledTimes(1);
-      expect(MonthlyReportSender.getEmailReportAttachment).toHaveBeenCalledTimes(1);
-      done();
+      jest.spyOn(MonthlyReportSender, 'getEmailReportAttachment').mockResolvedValue('hello');
+      jest.spyOn(Utils, 'writableToReadableStream').mockResolvedValue('true');
     });
-  });
 
-  describe('getEmailReportAttachment', () => {
-    it('should return a WriteStream object', async (done) => {
-      const testReport = 'hello';
-      const testAttach = { name: 'Sample Report' };
-      jest.spyOn(ReportGeneratorService.prototype, 'generateMonthlyReport').mockResolvedValue(testReport);
-      jest.spyOn(ReportGeneratorService.prototype, 'getEmailAttachmentFile').mockReturnValue(testAttach);
-      jest.spyOn(ReportGeneratorService, 'writeAttachmentToStream').mockResolvedValue(true);
+    it('should send mail to expected people', async (done) => {
+      const testTeamId = 2;
+      const mailSpy = jest.spyOn(testReporter.emailService, 'sendMail').mockResolvedValue();
 
-      // test
-      const result = await MonthlyReportSender.getEmailReportAttachment();
+      await testReporter.sendMail(testTeamId);
 
-      // assert
-      expect(ReportGeneratorService.prototype.generateMonthlyReport).toHaveBeenCalled();
-      expect(ReportGeneratorService.prototype.getEmailAttachmentFile).toHaveBeenCalledWith(testReport);
-      expect(ReportGeneratorService.writeAttachmentToStream).toHaveBeenCalledWith(testAttach);
-      expect(result).toBeTruthy();
+      expect(ReportGeneratorService.getOverallTripsSummary).toHaveBeenCalled();
+      expect(mailSpy).toHaveBeenCalled();
       done();
     });
   });
@@ -140,30 +133,14 @@ describe('MonthlyReportSender', () => {
       done();
     });
   });
+
   describe('getTemplate', () => {
     it('should ', async () => {
-      const mockTemplate = '<div>This is a template</div>';
-      const mockHbs = {
-        baseTemplates: 'baseTemplate',
-        render: jest.fn()
-          .mockResolvedValue(mockTemplate),
-      };
-      MonthlyReportSender.scheduleReporting(mockHbs);
-      const data = { test: 'dummy data' };
-      const template = await MonthlyReportSender.getTemplate(data);
-      expect(template)
-        .toBe(mockTemplate);
-      expect(mockHbs.render.mock.calls[0][0])
-        .toBe(`${mockHbs.baseTemplates}/email/email.html`);
-      expect(mockHbs.render.mock.calls[0][1])
-        .toBe(data);
-    });
-  });
-  describe('recurringFunction', () => {
-    it('should ', async () => {
-      jest.spyOn(MonthlyReportSender, 'send').mockResolvedValue();
-      await MonthlyReportSender.recurringFunction();
-      expect(MonthlyReportSender.send).toHaveBeenCalledTimes(1);
+      const testToken = 'testing';
+      const template = await testReporter.getTemplate({ name: testToken });
+
+      const include = template.includes(testToken);
+      expect(include).toBeTruthy();
     });
   });
 });

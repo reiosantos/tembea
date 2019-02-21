@@ -42,7 +42,7 @@ app.engine('html', hbs.engine);
 app.set('view engine', 'html');
 
 // set base url for api
-modules(app, hbs);
+modules(app);
 
 // catch all routers
 app.use('*', (req, res) => res.status(404).json({
@@ -52,7 +52,7 @@ app.use('*', (req, res) => res.status(404).json({
 // create super admin method
 StartUpHelper.ensureSuperAdminExists();
 
-MonthlyReportSender.scheduleReporting(app);
+MonthlyReportSender.scheduleReporting(hbs);
 
 /* This handles any errors that Express catches,
    it should come last in the pipeline */

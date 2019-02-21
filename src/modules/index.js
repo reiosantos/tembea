@@ -1,4 +1,3 @@
-import EmailController from './report/EmailController';
 import routesRouter from './routes';
 import slackRouter from './slack';
 import slackInteractionsRouter from './slack/SlackInteractions/SlackInteractionsRouter';
@@ -13,7 +12,7 @@ import aisRouter from './ais';
 
 const apiPrefix = '/api/v1';
 
-const routes = (app, hbs) => {
+const routes = (app) => {
   app.use(homeRouter);
   app.use(apiPrefix, userRouter);
   app.use(apiPrefix, departmentRouter);
@@ -23,9 +22,6 @@ const routes = (app, hbs) => {
   app.use(apiPrefix, routesRouter);
   app.use(`${apiPrefix}/slack/actions`, slackClientAuth,
     slackInteractionsRouter.expressMiddleware());
-
-  app.use(`${apiPrefix}/template/email/report`,
-    (req, res) => EmailController.generateTemplate(req, res, hbs));
 
   app.use(apiPrefix, authenticationRouter);
   app.use(apiPrefix, roleManagementRouter);
