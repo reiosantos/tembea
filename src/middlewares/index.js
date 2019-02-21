@@ -5,6 +5,7 @@ import GeneralValidator from './GeneralValidator';
 import TokenValidator from './TokenValidator';
 import RouteValidator from './RouteValidator';
 import RouteRequestValidator from './RouteRequestValidator';
+import TripValidator from './TripValidator';
 
 const middleware = {
   UserValidator,
@@ -13,7 +14,8 @@ const middleware = {
   GeneralValidator,
   TokenValidator,
   RouteValidator,
-  RouteRequestValidator
+  RouteRequestValidator,
+  TripValidator
 };
 
 export default middleware;

@@ -64,7 +64,7 @@ class TripActionsController {
       tripStatus: 'Confirmed',
       operationsComment: confirmationComment,
       confirmedById: opsUserId,
-      cabId: cab.id,
+      cabId: cab.id
     }, { where: { id: tripId } });
     const trip = await SlackHelpers.getTripRequest(tripId);
     await TripActionsController.sendAllNotifications(teamId, userId, trip,
@@ -75,11 +75,12 @@ class TripActionsController {
   static async sendAllNotifications(teamId, userId, trip, timeStamp, channel,
     slackBotOauthToken, isDecline = false) {
     await Promise.all([
-      SendNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, trip, isDecline),
-      SendNotifications.sendManagerConfirmOrDeclineNotification(teamId, userId, trip, isDecline),
-      InteractivePrompts.sendOpsDeclineOrApprovalCompletion(
-        isDecline, trip, timeStamp, channel, slackBotOauthToken
-      )
+      SendNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, trip,
+        isDecline),
+      SendNotifications.sendManagerConfirmOrDeclineNotification(teamId, userId, trip,
+        isDecline),
+      InteractivePrompts.sendOpsDeclineOrApprovalCompletion(false, trip, timeStamp, channel,
+        slackBotOauthToken)
     ]);
   }
 
