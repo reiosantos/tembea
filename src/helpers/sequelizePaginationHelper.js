@@ -53,7 +53,8 @@ export default class SequelizePaginationHelper {
   async getPageInfo(page = 1) {
     const totalPages = await this.getTotalPages();
     const pageNo = await this.getPageNo(page);
-    return { totalPages, pageNo };
+    const { totalItems } = this;
+    return { totalPages, pageNo, totalItems };
   }
 
   async getPageNo(pageNo = 1) {

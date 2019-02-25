@@ -262,7 +262,8 @@ describe('RouteService', () => {
           takeOff: undefined,
           riders: [{}]
         }],
-        totalPages: 1
+        totalPages: 1,
+        totalItems: 10,
       };
 
       expect(result)

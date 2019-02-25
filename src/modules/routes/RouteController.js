@@ -30,7 +30,9 @@ class RoutesController {
         sort || 'name,asc,id,asc'
       );
       const pageable = { page, size, sort };
-      const { totalPages, routes, pageNo } = await RouteService.getRoutes(
+      const {
+        totalPages, routes, pageNo, totalItems
+      } = await RouteService.getRoutes(
         pageable
       );
 
@@ -40,7 +42,7 @@ class RoutesController {
         pageMeta: {
           totalPages,
           page: pageNo,
-          totalResults: routes.length,
+          totalResults: totalItems,
           pageSize: parseInt(size, 10)
         },
         routes
