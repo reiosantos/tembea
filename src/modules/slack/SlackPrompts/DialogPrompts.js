@@ -152,7 +152,6 @@ class DialogPrompts {
 
   static async sendNewRouteForm(payload) {
     const selectManager = new SlackDialogElementWithDataSource('Select Manager', 'manager');
-
     const partnerName = new SlackDialogText(
       'Partner Name', 'nameOfPartner',
       'Enter Partner Name', false, 'e.g John Mike LTD'
