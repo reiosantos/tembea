@@ -32,11 +32,11 @@ class TripActionsController {
       ]);
       const { id: opsUserId } = ops;
       if (payload.submission.confirmationComment) {
-        await TripActionsController.changeTripStatusToConfirmed(
+        return TripActionsController.changeTripStatusToConfirmed(
           opsUserId, payload, slackBotOauthToken
         );
-      } else if (payload.submission.opsDeclineComment) {
-        await TripActionsController.changeTripStatusToDeclined(
+      } if (payload.submission.opsDeclineComment) {
+        return TripActionsController.changeTripStatusToDeclined(
           opsUserId, payload, slackBotOauthToken
         );
       }
@@ -78,7 +78,7 @@ class TripActionsController {
       SendNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, trip, isDecline),
       SendNotifications.sendManagerConfirmOrDeclineNotification(teamId, userId, trip, isDecline),
       InteractivePrompts.sendOpsDeclineOrApprovalCompletion(
-        false, trip, timeStamp, channel, slackBotOauthToken
+        isDecline, trip, timeStamp, channel, slackBotOauthToken
       )
     ]);
   }

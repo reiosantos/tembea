@@ -27,6 +27,13 @@ module.exports = {
       email: 'opeoluwa.iyi-kuyoro@andela.com',
       createdAt: '2018-11-29',
       updatedAt: '2018-11-29'
+    },
+    {
+      name: 'Vic',
+      slackId: 'UCQ4TN2PP',
+      email: 'onwuzorvictor@outlook.com',
+      createdAt: '2018-11-29',
+      updatedAt: '2018-11-29'
     }
   ]),
 

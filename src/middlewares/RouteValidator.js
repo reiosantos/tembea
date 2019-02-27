@@ -59,7 +59,7 @@ class RouteValidator {
     const { address } = req.body.destination;
     const message = 'Address already exists';
     const addressExists = await RouteHelper.checkThatAddressAlreadyExists(address);
-    if (addressExists) {
+    if (addressExists && !req.query.action) {
       return Response.sendResponse(res, 400, false, message);
     }
     return next();
@@ -69,7 +69,7 @@ class RouteValidator {
     const { destination: { coordinates } } = req.body;
     const message = 'Provided coordinates belong to an existing address';
     const locationExists = await RouteHelper.checkThatLocationAlreadyExists(coordinates);
-    if (locationExists) {
+    if (locationExists && !req.query.action) {
       return Response.sendResponse(res, 400, false, message);
     }
     return next();

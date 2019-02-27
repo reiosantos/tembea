@@ -41,7 +41,7 @@ describe('RoutesController', () => {
       expect(RouteRequestService.getRouteRequest).toHaveBeenCalledTimes(1);
       expect(RouteRequestService.updateRouteRequest).toHaveBeenCalledWith(1, {
         opsComment: 'stuff',
-        opsReviewerId: 8,
+        opsReviewerId: 9,
         status: 'Declined',
       });
     });

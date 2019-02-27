@@ -55,25 +55,29 @@ class RoutesController {
   }
 
   static async createRoute(req, res) {
-    try {
-      const {
-        routeName, destination, vehicle: vehicleRegNumber, takeOffTime, capacity
-      } = req.body;
-      const {
+    const {
+      routeName,
+      destination: {
         address, coordinates: { lat: latitude, lng: longitude }
-      } = destination;
-
-      const destinationAddress = await AddressService.createNewAddress(
-        longitude, latitude, address
-      );
-
-      const data = {
-        name: routeName,
-        vehicleRegNumber,
-        destinationName: destinationAddress.address,
-        capacity,
-        takeOff: takeOffTime
-      };
+      },
+      vehicle: vehicleRegNumber, takeOffTime, capacity
+    } = req.body;
+    const data = {
+      name: routeName,
+      vehicleRegNumber,
+      capacity,
+      takeOff: takeOffTime
+    };
+    try {
+      if (req.query.action === 'duplicate') {
+        data.destinationName = address;
+      } else {
+        const destinationAddress = await AddressService.createNewAddress(
+          longitude, latitude, address
+        );
+        data.destinationName = destinationAddress.address;
+      }
+ 
       const routeInfo = await RouteService.createRouteBatch(data);
       const message = 'Route created successfully';
       return Response.sendResponse(res, 200, true, message, routeInfo);

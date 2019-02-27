@@ -2,7 +2,7 @@ import request from 'supertest';
 import app from '../src/app';
 import Utils from '../src/utils';
 
-describe('Authentication Controller Integration Test', () => {
+describe.skip('Authentication Controller Integration Test', () => {
   describe('Verify User from frontend endpoint', () => {
     it('should return authentication successful', async () => {
       jest.spyOn(Utils, 'verifyToken').mockResolvedValue({

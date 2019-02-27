@@ -33,6 +33,120 @@ describe('Route Validator', () => {
     });
   });
 
+  describe('validate all props', () => {
+    it('should call next method if all property exist', () => {
+      const reqMock = {
+        body: {
+          routeName: 'Yaba',
+          capacity: 3,
+          vehicle: 'HSJ 3893',
+          takeOffTime: '12:00',
+          destination: {
+            address: 'Yaba Left, EPIC Tower',
+            coordinates: {
+              lat: '3.40949',
+              lng: '-0.99393'
+            }
+          }
+        }
+      };
+      const nextMock = jest.fn();
+      jest.spyOn(RouteHelper, 'checkRequestProps').mockReturnValue([]);
+      jest.spyOn(Response, 'sendResponse').mockImplementation();
+
+      RouteValidator.verifyAllPropsExist(reqMock, 'res', nextMock);
+
+      expect(nextMock).toHaveBeenCalled();
+      expect(Response.sendResponse).not.toHaveBeenCalled();
+    });
+
+    it('should call error response method if any property doesnt exist', () => {
+      const reqMock = {
+        body: {
+          routeName: '',
+          capacity: 3,
+          vehicle: '',
+          takeOffTime: '12:00',
+          destination: {
+            address: '',
+            coordinates: {
+              lat: '3.40949',
+              lng: '-0.99393'
+            }
+          }
+        }
+      };
+      const nextMock = jest.fn();
+      jest.spyOn(RouteHelper, 'checkRequestProps').mockReturnValue([1]);
+      jest.spyOn(Response, 'sendResponse').mockImplementation();
+
+      RouteValidator.verifyAllPropsExist(reqMock, 'res', nextMock);
+
+      expect(nextMock).not.toHaveBeenCalled();
+      expect(Response.sendResponse).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('validate value types', () => {
+    it('should call next if all value types are valid', () => {
+      const reqMock = {
+        body: {
+          routeName: 'Yaba',
+          capacity: 3,
+          vehicle: 'HSJ 3893',
+          takeOffTime: '12:00',
+          destination: {
+            address: 'Yaba Left, EPIC Tower',
+            coordinates: {
+              lat: '3.40949',
+              lng: '-0.99393'
+            }
+          }
+        }
+      };
+      const nextMock = jest.fn();
+      jest.spyOn(RouteHelper, 'checkRequestProps').mockReturnValue([]);
+      jest.spyOn(Response, 'sendResponse').mockImplementation();
+
+      RouteValidator.verifyPropsValuesAreSetAndValid(reqMock, 'res', nextMock);
+
+      expect(nextMock).toHaveBeenCalled();
+      expect(Response.sendResponse).not.toHaveBeenCalled();
+    });
+
+    it('should call error response if all value types are invalid', () => {
+      const reqMock = {
+        body: {
+          routeName: '',
+          capacity: 'jdjdk',
+          vehicle: 'HSJ 3893',
+          takeOffTime: '12:00',
+          destination: {
+            address: 'Yaba Left, EPIC Tower',
+            coordinates: {
+              lat: '3.40949',
+              lng: '-0.99393'
+            }
+          }
+        }
+      };
+      const nextMock = jest.fn();
+      const errorMessage = 'Your request contain errors';
+      const errors = [
+        'Enter a value for routeName',
+        'capacity must be a non-zero integer greater than zero'
+      ];
+      jest.spyOn(RouteHelper, 'checkRequestProps').mockReturnValue([2]);
+      jest.spyOn(Response, 'sendResponse').mockImplementation();
+
+      RouteValidator.verifyPropsValuesAreSetAndValid(reqMock, 'res', nextMock);
+
+      expect(nextMock).not.toHaveBeenCalled();
+      expect(Response.sendResponse).toHaveBeenCalledTimes(1);
+      expect(Response.sendResponse).toHaveBeenCalledWith('res', 400, false, errorMessage, errors);
+    });
+  });
+
   describe('validate RouteId Parameter', () => {
     it('should call RouteValidator.validateIdParam', () => {
       const reqMock = {
@@ -124,6 +238,104 @@ describe('Route Validator', () => {
       await RouteValidator.validateRouteBatchUpdateFields(reqMockInvalid, 'res', nextMock);
       expect(nextMock).not.toHaveBeenCalled();
       expect(spy.mock.calls[0][3].length).toEqual(5);
+    });
+  });
+
+  describe('validate destination address', () => {
+    it('should call next() when creating new route which address doesnt exist', async () => {
+      const reqMock = {
+        body: { destination: { address: 'EPIC Tower' } },
+      };
+      const nextMock = jest.fn();
+      jest.spyOn(RouteHelper, 'checkThatAddressAlreadyExists').mockReturnValue(false);
+      jest.spyOn(Response, 'sendResponse').mockImplementation();
+
+      await RouteValidator.validateDestinationAddress(reqMock, 'res', nextMock);
+
+      expect(nextMock).toHaveBeenCalled();
+      expect(Response.sendResponse).not.toHaveBeenCalled();
+    });
+
+    it('should call response method when creating new route which address does exist', async () => {
+      const reqMock = {
+        body: { destination: { address: 'EPIC Tower' } },
+        query: { action: '' }
+      };
+      const nextMock = jest.fn();
+      const errorMessage = 'Address already exists';
+      jest.spyOn(RouteHelper, 'checkThatAddressAlreadyExists').mockReturnValue(true);
+      jest.spyOn(Response, 'sendResponse').mockImplementation();
+
+      await RouteValidator.validateDestinationAddress(reqMock, 'res', nextMock);
+
+      expect(nextMock).not.toHaveBeenCalled();
+      expect(Response.sendResponse).toHaveBeenCalledTimes(1);
+      expect(Response.sendResponse).toHaveBeenCalledWith('res', 400, false, errorMessage);
+    });
+
+    it('should call next() when duplicating a route which address does exist', async () => {
+      const reqMock = {
+        body: { destination: { address: 'EPIC Tower' } },
+        query: { action: 'duplicate' }
+      };
+      const nextMock = jest.fn();
+      jest.spyOn(RouteHelper, 'checkThatAddressAlreadyExists').mockReturnValue(true);
+      jest.spyOn(Response, 'sendResponse').mockImplementation();
+
+      await RouteValidator.validateDestinationAddress(reqMock, 'res', nextMock);
+
+      expect(nextMock).toHaveBeenCalled();
+      expect(Response.sendResponse).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('validate destination Coordinates', () => {
+    it('should call next() when creating new route which coordinate doesnt exist', async () => {
+      const reqMock = {
+        body: { destination: { coordinates: '3.9904, -0.59939' } },
+        query: { action: '' }
+      };
+      const nextMock = jest.fn();
+      jest.spyOn(RouteHelper, 'checkThatLocationAlreadyExists').mockReturnValue(false);
+      jest.spyOn(Response, 'sendResponse').mockImplementation();
+
+      await RouteValidator.validateDestinationCoordinates(reqMock, 'res', nextMock);
+
+      expect(nextMock).toHaveBeenCalled();
+      expect(Response.sendResponse).not.toHaveBeenCalled();
+    });
+
+    it('should call response method when creating new route which coordinate does exist',
+      async () => {
+        const reqMock = {
+          body: { destination: { coordinates: '3.9904, -0.59939' } },
+          query: { action: '' }
+        };
+        const nextMock = jest.fn();
+        const errorMessage = 'Provided coordinates belong to an existing address';
+        jest.spyOn(RouteHelper, 'checkThatLocationAlreadyExists').mockReturnValue(true);
+        jest.spyOn(Response, 'sendResponse').mockImplementation();
+
+        await RouteValidator.validateDestinationCoordinates(reqMock, 'res', nextMock);
+
+        expect(nextMock).not.toHaveBeenCalled();
+        expect(Response.sendResponse).toHaveBeenCalledTimes(1);
+        expect(Response.sendResponse).toHaveBeenCalledWith('res', 400, false, errorMessage);
+      });
+
+    it('should call next() when duplicating a route which coordinate does exist', async () => {
+      const reqMock = {
+        body: { destination: { coordinates: '3.9904, -0.59939' } },
+        query: { action: 'duplicate' }
+      };
+      const nextMock = jest.fn();
+      jest.spyOn(RouteHelper, 'checkThatLocationAlreadyExists').mockReturnValue(true);
+      jest.spyOn(Response, 'sendResponse').mockImplementation();
+
+      await RouteValidator.validateDestinationCoordinates(reqMock, 'res', nextMock);
+
+      expect(nextMock).toHaveBeenCalled();
+      expect(Response.sendResponse).not.toHaveBeenCalled();
     });
   });
 });

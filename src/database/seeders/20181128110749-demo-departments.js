@@ -136,6 +136,13 @@ module.exports = {
     teamId: 'TE2K8PGF8',
     createdAt: '2018-11-28',
     updatedAt: '2018-11-28'
+  },
+  {
+    name: 'Technical',
+    headId: 7,
+    teamId: 'TCPCFU4RF',
+    createdAt: '2018-11-28',
+    updatedAt: '2018-11-28'
   }], {}),
   down: queryInterface => queryInterface.bulkDelete('Departments', null, {})
 };
