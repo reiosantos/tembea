@@ -91,8 +91,8 @@ class SlackNotifications {
       const { botToken: slackBotOauthToken, opsChannelId } = teamDetails;
       const checkTripType = type === 'regular';
       SlackNotifications.restructureTripData(tripInformation, checkTripType);
-      const { department } = await DepartmentService.getDepartment(tripInformation.departmentId);
-      const { name } = department;
+      const department = await DepartmentService.getDepartment(tripInformation.departmentId);
+      const { name } = department.dataValues;
       tripInformation.department = name;
       if (checkTripType) {
         SlackEvents.raise(slackEventNames.TRIP_WAITING_CONFIRMATION, tripInformation,

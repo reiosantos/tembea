@@ -33,7 +33,15 @@ export class SlackInteractiveMessage {
 }
 
 export class SlackAttachment {
-  constructor(title, text, authorName, authorIcon, imageUrl, attachmentType, color) {
+  constructor(
+    title,
+    text,
+    authorName,
+    authorIcon,
+    imageUrl,
+    attachmentType,
+    color
+  ) {
     this.title = title;
     this.text = text;
     this.color = color;
@@ -56,10 +64,12 @@ export class SlackAttachment {
     }
   }
 
-  addOptionalProps(callbackId,
+  addOptionalProps(
+    callbackId,
     fallback = 'fallback',
     color = '#3AAF85',
-    attachmentType = 'default') {
+    attachmentType = 'default'
+  ) {
     if (callbackId) this.callback_id = callbackId;
     if (fallback) this.fallback = fallback;
     if (color) this.color = color;
@@ -93,22 +103,20 @@ export class SlackAction {
 }
 
 export class SlackButtonAction extends SlackAction {
-  constructor(
-    name, text, value, style = SlackActionButtonStyles.primary
-  ) {
-    super(
-      name, text, SlackActionTypes.button
-    );
+  constructor(name, text, value, style = SlackActionButtonStyles.primary) {
+    super(name, text, SlackActionTypes.button);
     this.style = style;
     this.value = value;
   }
 }
 
 export class SlackCancelButtonAction extends SlackButtonAction {
-  constructor(text = 'Cancel',
+  constructor(
+    text = 'Cancel',
     value = 'cancel',
     cancellationText = 'Do you really want to cancel?',
-    name = 'cancel') {
+    name = 'cancel'
+  ) {
     super(name, text, value, SlackActionButtonStyles.danger);
     {
       const confirmDialogue = {
@@ -138,12 +146,14 @@ export class SlackSelectActionWithSlackContent extends SlackAction {
 
 export class SlackButtonsAttachmentFromAList {
   static createButtons(list) {
-    const createdButtons = list.map(department => new SlackButtonAction(
-      department.label.toLocaleLowerCase().replace(' ', '_'),
-      department.label,
-      department.value,
-      '#FFCCAA'
-    ));
+    const createdButtons = list.map(
+      department => new SlackButtonAction(
+        department.label.toLocaleLowerCase().replace(' ', '_'),
+        department.label,
+        department.value,
+        '#FFCCAA'
+      )
+    );
     return createdButtons;
   }
 

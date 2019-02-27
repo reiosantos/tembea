@@ -1,5 +1,8 @@
 import handleActions from '../../SlackInteractions/SlackInteractionsHelper';
-import { getPageNumber, triggerSkipPage } from '../../TripManagement/TripItineraryController';
+import {
+  getPageNumber,
+  triggerSkipPage
+} from '../../TripManagement/TripItineraryController';
 import SequelizePaginationHelper from '../../../../helpers/sequelizePaginationHelper';
 import RoutesHelpers from '../../helpers/routesHelper';
 import { SLACK_DEFAULT_SIZE } from '../../../../helpers/constants';
@@ -17,7 +20,9 @@ class JoinRouteInteractions {
     const { actions } = payload;
     const page = getPageNumber(payload);
 
-    const sort = SequelizePaginationHelper.deserializeSort('name,asc,batch,asc');
+    const sort = SequelizePaginationHelper.deserializeSort(
+      'name,asc,batch,asc'
+    );
     const pageable = { page, sort, size: SLACK_DEFAULT_SIZE };
     const where = { status: 'Active' };
 
@@ -27,10 +32,14 @@ class JoinRouteInteractions {
     }
 
     const {
-      routes: availableRoutes, totalPages, pageNo: currentPage
+      routes: availableRoutes,
+      totalPages,
+      pageNo: currentPage
     } = await RouteService.getRoutes(pageable, where);
     const availableRoutesMessage = RoutesHelpers.toAvailableRoutesAttachment(
-      availableRoutes, currentPage, totalPages
+      availableRoutes,
+      currentPage,
+      totalPages
     );
     respond(availableRoutesMessage);
   }
@@ -56,7 +65,9 @@ class JoinRouteInteractions {
       new SlackButtonAction('continueJoinRoute', 'Continue', state)
     ]);
     attachment.addOptionalProps('join_route_actions');
-    return new SlackInteractiveMessage('Selected Full Capacity Route', [attachment]);
+    return new SlackInteractiveMessage('Selected Full Capacity Route', [
+      attachment
+    ]);
   }
 }
 

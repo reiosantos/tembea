@@ -39,8 +39,10 @@ class GeneralValidator {
   static validateQueryParams(req, res, next) {
     const { page, size } = req.query;
 
-    if ((page && !GeneralValidator.validateNumber(page))
-      || (size && !GeneralValidator.validateNumber(size))) {
+    if (
+      (page && !GeneralValidator.validateNumber(page))
+      || (size && !GeneralValidator.validateNumber(size))
+    ) {
       return res.status(400).json({
         success: false,
         message: 'Please provide a positive integer value'
@@ -65,14 +67,13 @@ class GeneralValidator {
   }
 
   static validateObjectKeyValues(body) {
-    return Object.entries(body)
-      .reduce((errors, data) => {
-        const [key, value] = data;
-        if (!value || value.trim().length < 1) {
-          errors.push(`${key} cannot be empty`);
-        }
-        return errors;
-      }, []);
+    return Object.entries(body).reduce((errors, data) => {
+      const [key, value] = data;
+      if (!value || value.trim().length < 1) {
+        errors.push(`${key} cannot be empty`);
+      }
+      return errors;
+    }, []);
   }
 
   static validateAllProvidedReqBody(req, res, next) {
@@ -94,6 +95,29 @@ class GeneralValidator {
     }
     const message = 'Please pass the teamUrl in the request body, e.g: "teamUrl: dvs.slack.com"';
     return Response.sendResponse(res, 400, false, message);
+  }
+
+  static isTripStatus(status) {
+    return ['Confirmed', 'Pending'].includes(status);
+  }
+
+  static isEmpty(value) {
+    return (
+      typeof value === 'undefined' || value.trim === '' || value.length === 0
+    );
+  }
+
+  static validateTripFilterParameters(req, res, next) {
+    const { status } = req.query;
+    const message = 'Status of trips are either Confirmed or Pending';
+
+    if (
+      !GeneralValidator.isEmpty(status)
+      && !GeneralValidator.isTripStatus(status)
+    ) {
+      return Response.sendResponse(res, 400, false, message);
+    }
+    return next();
   }
 }
 

@@ -8,11 +8,12 @@ import JoinRouteInteractions from './JoinRouteInteractions';
 import SlackInteractions from '../../SlackInteractions';
 import RouteService from '../../../../services/RouteService';
 
-
 class JoinRouteInputHandlers {
   static async joinRoute(payload, respond) {
     try {
-      const { actions: [{ value: routeId }] } = payload;
+      const {
+        actions: [{ value: routeId }]
+      } = payload;
       const route = await RouteService.getRoute(routeId);
       if (RouteService.canJoinRoute(route)) {
         const state = JSON.stringify({ routeId, capacityFilled: false });
@@ -24,12 +25,16 @@ class JoinRouteInputHandlers {
       }
     } catch (error) {
       bugsnagHelper.log(error);
-      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+      respond(
+        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
+      );
     }
   }
 
   static async continueJoinRoute(payload, respond) {
-    const { actions: [{ value: routeId }] } = payload;
+    const {
+      actions: [{ value: routeId }]
+    } = payload;
     const state = JSON.stringify({ routeId, capacityFilled: true });
     JoinRouteDialogPrompts.sendFellowDetailsForm(payload, state);
     respond(new SlackInteractiveMessage('Noted'));
@@ -41,17 +46,25 @@ class JoinRouteInputHandlers {
       if (errors.length > 0) {
         return { errors };
       }
-      const preview = await JoinRouteNotifications.sendFellowDetailsPreview(payload);
+      const preview = await JoinRouteNotifications.sendFellowDetailsPreview(
+        payload
+      );
       respond(preview);
     } catch (error) {
       bugsnagHelper.log(error);
-      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+      respond(
+        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
+      );
     }
   }
 
   static async submitJoinRoute(payload, respond) {
     try {
-      const { actions: [{ value }], user: { id }, team: { id: teamId } } = payload;
+      const {
+        actions: [{ value }],
+        user: { id },
+        team: { id: teamId }
+      } = payload;
       const { routeId, capacityFilled } = JSON.parse(value);
       let more = '';
       let eventArgs;
@@ -62,15 +75,24 @@ class JoinRouteInputHandlers {
           { routeId, teamId, requesterSlackId: id }
         ];
       } else {
-        const joinRouteRequest = await JoinRouteHelpers.saveJoinRouteRequest(payload, routeId);
-        eventArgs = [slackEventNames.MANAGER_RECEIVE_JOIN_ROUTE, payload, joinRouteRequest.id];
+        const joinRouteRequest = await JoinRouteHelpers.saveJoinRouteRequest(
+          payload,
+          routeId
+        );
+        eventArgs = [
+          slackEventNames.MANAGER_RECEIVE_JOIN_ROUTE,
+          payload,
+          joinRouteRequest.id
+        ];
       }
-      respond(new SlackInteractiveMessage(
-        `Hey <@${id}> :smiley:, request has been received.${more}`
-      ));
+      respond(
+        new SlackInteractiveMessage(
+          `Hey <@${id}> :smiley:, request has been received.${more}`
+        )
+      );
       SlackEvents.raise(...eventArgs);
     } catch (e) {
-      console.log(e);
+      // TODO: refactor code to ensure awareness about the error
     }
   }
 
@@ -79,7 +101,9 @@ class JoinRouteInputHandlers {
   }
 
   static async backButton(payload, respond) {
-    const { actions: [{ value }] } = payload;
+    const {
+      actions: [{ value }]
+    } = payload;
     if (value === 'back') {
       return JoinRouteInteractions.sendAvailableRoutesMessage(payload, respond);
     }

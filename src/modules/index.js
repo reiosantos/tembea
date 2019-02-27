@@ -1,4 +1,5 @@
 import routesRouter from './routes';
+import tripsRouter from './trips';
 import slackRouter from './slack';
 import slackInteractionsRouter from './slack/SlackInteractions/SlackInteractionsRouter';
 import homeRouter from './home';
@@ -20,8 +21,12 @@ const routes = (app) => {
   app.use(apiPrefix, slackClientAuth, slackRouter);
   app.use(apiPrefix, departmentRouter);
   app.use(apiPrefix, routesRouter);
-  app.use(`${apiPrefix}/slack/actions`, slackClientAuth,
-    slackInteractionsRouter.expressMiddleware());
+  app.use(apiPrefix, tripsRouter);
+  app.use(
+    `${apiPrefix}/slack/actions`,
+    slackClientAuth,
+    slackInteractionsRouter.expressMiddleware()
+  );
 
   app.use(apiPrefix, authenticationRouter);
   app.use(apiPrefix, roleManagementRouter);

@@ -69,12 +69,10 @@ class ScheduleTripController {
         othersPickup, othersDestination, passengers, tripType
       } = tripRequestDetails;
       const { originId, destinationId } = await this.getLocationIds(tripRequestDetails);
-      const name = `From ${pickup === 'Others' ? othersPickup : pickup}
-      to ${destination === 'Others' ? othersDestination : destination}
-      on ${dateTime}`;
-
+      const pickupName = `${pickup === 'Others' ? othersPickup : pickup}`;
+      const destinationName = `${destination === 'Others' ? othersDestination : destination}`;
+      const name = `From ${pickupName} to ${destinationName} on ${dateTime}`;
       const departureTime = Utils.formatDateForDatabase(dateTime);
-
       return {
         riderId: requester.id,
         name,

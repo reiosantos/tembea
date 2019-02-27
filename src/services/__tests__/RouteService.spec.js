@@ -22,8 +22,7 @@ describe('RouteService', () => {
       routeBatch: [{ batch: 'C' }],
       riders: [{}, {}, {}, {}],
       capacity: 4
-    },
-
+    }
   };
   const data = {
     id: 1,
@@ -43,13 +42,17 @@ describe('RouteService', () => {
       ...cabDetails,
       ...batchDetails,
       name: route.name,
-      destination: route.destination.address,
+      destination: route.destination.address
     };
     beforeEach(() => {
-      jest.spyOn(AddressService, 'findAddress').mockResolvedValue(route.destination);
+      jest
+        .spyOn(AddressService, 'findAddress')
+        .mockResolvedValue(route.destination);
       jest.spyOn(RouteService, 'createRoute');
       jest.spyOn(RouteService, 'updateBatchLabel');
-      jest.spyOn(RouteBatch, 'create').mockResolvedValue({ ...routeBatch, riders: undefined });
+      jest
+        .spyOn(RouteBatch, 'create')
+        .mockResolvedValue({ ...routeBatch, riders: undefined });
       jest.spyOn(Cab, 'findOne').mockResolvedValue(cabDetails);
     });
 
@@ -59,7 +62,7 @@ describe('RouteService', () => {
         ...batchDetails,
         name: 'AAAAAA',
         destinationName: 'BBBBBB',
-        vehicleRegNumber: 'CCCCCC',
+        vehicleRegNumber: 'CCCCCC'
       };
       const result = await RouteService.createRouteBatch(createData);
       expect(AddressService.findAddress).toBeCalled();
@@ -72,8 +75,7 @@ describe('RouteService', () => {
       expect(result).toHaveProperty('comments');
       expect(result).toHaveProperty('name');
       expect(result).toHaveProperty('destination');
-      expect(result)
-        .toHaveProperty('regNumber');
+      expect(result).toHaveProperty('regNumber');
       expect(result).toHaveProperty('driverName');
       expect(result).toHaveProperty('driverPhoneNo');
       expect(result).toEqual(expectedResult);
@@ -85,7 +87,7 @@ describe('RouteService', () => {
         ...batchDetails,
         name: 'AAAAAA',
         destinationName: 'BBBBBB',
-        vehicleRegNumber: 'CCCCCC',
+        vehicleRegNumber: 'CCCCCC'
       };
       const result = await RouteService.createRouteBatch(createData);
       expect(result).toEqual(expectedResult);
@@ -101,7 +103,11 @@ describe('RouteService', () => {
     it('should return created route details', async () => {
       const name = 'yaba';
       const imageUrl = 'imageUrl';
-      const res = await RouteService.createRoute(name, imageUrl, routeBatch.route.destination);
+      const res = await RouteService.createRoute(
+        name,
+        imageUrl,
+        routeBatch.route.destination
+      );
       expect(res).toHaveProperty('route');
       expect(res).toHaveProperty('created');
       expect(res).toEqual({ route, created: true });
@@ -118,15 +124,16 @@ describe('RouteService', () => {
       jest.spyOn(UserService, 'getUserById');
       jest.spyOn(RouteBatch, 'findByPk');
       jest.spyOn(RouteService, 'canJoinRoute');
-      jest.spyOn(sequelize, 'transaction')
-        .mockImplementation((fn) => { fn(); });
+      jest.spyOn(sequelize, 'transaction').mockImplementation((fn) => {
+        fn();
+      });
     });
 
     afterEach(() => {
       jest.restoreAllMocks();
     });
 
-    it('should throw an error if route doesn\'t exists', async () => {
+    it("should throw an error if route doesn't exists", async () => {
       RouteBatch.findByPk.mockResolvedValue(null);
       const userId = 2;
       const routeBatchId = 2;
@@ -135,7 +142,9 @@ describe('RouteService', () => {
       } catch (e) {
         expect(e.statusCode).toEqual(404);
         expect(RouteService.canJoinRoute).not.toHaveBeenCalled();
-        expect(HttpError.throwErrorIfNull.mock.calls[0][1]).toEqual('Route route not found');
+        expect(HttpError.throwErrorIfNull.mock.calls[0][1]).toEqual(
+          'Route route not found'
+        );
       }
     });
 
@@ -143,11 +152,14 @@ describe('RouteService', () => {
       const userId = 3;
       const routeBatchId = 3;
       const mockRoute = {
-        ...routeBatch, id: routeBatchId, capacity: 2, update: jest.fn()
+        ...routeBatch,
+        id: routeBatchId,
+        capacity: 2,
+        update: jest.fn()
       };
       RouteBatch.findByPk.mockResolvedValue(mockRoute);
       const user = {
-        update: jest.fn(),
+        update: jest.fn()
       };
       UserService.getUserById.mockResolvedValue(user);
 
@@ -156,7 +168,9 @@ describe('RouteService', () => {
       expect(UserService.getUserById).toBeCalled();
       expect(sequelize.transaction).toHaveBeenCalled();
       expect(user.update).toHaveBeenCalledWith({ routeBatchId });
-      expect(mockRoute.update).toHaveBeenCalledWith({ inUse: mockRoute.riders.length + 1 });
+      expect(mockRoute.update).toHaveBeenCalledWith({
+        inUse: mockRoute.riders.length + 1
+      });
     });
 
     it('should throw an error if route is filled to capacity', async () => {
@@ -168,10 +182,10 @@ describe('RouteService', () => {
       } catch (e) {
         expect(e.statusCode).toEqual(403);
         expect(RouteService.canJoinRoute).toHaveBeenCalled();
-        expect(HttpError.throwErrorIfNull.mock.calls[1][2])
-          .toEqual(403);
-        expect(HttpError.throwErrorIfNull.mock.calls[1][1])
-          .toEqual('Route capacity has been exhausted');
+        expect(HttpError.throwErrorIfNull.mock.calls[1][2]).toEqual(403);
+        expect(HttpError.throwErrorIfNull.mock.calls[1][1]).toEqual(
+          'Route capacity has been exhausted'
+        );
       }
     });
   });
@@ -204,10 +218,8 @@ describe('RouteService', () => {
 
       expect(result).toEqual(mock);
 
-      expect(saveObject.mock.calls[0][0])
-        .toEqual(`Route_${id}`);
-      expect(saveObject.mock.calls[0][1])
-        .toEqual({ route: mock });
+      expect(saveObject.mock.calls[0][0]).toEqual(`Route_${id}`);
+      expect(saveObject.mock.calls[0][1]).toEqual({ route: mock });
     });
     it('should fetch route request from cache', async () => {
       const id = 123;
@@ -235,7 +247,8 @@ describe('RouteService', () => {
 
   describe('RouteService_getRoutes', () => {
     beforeEach(() => {
-      jest.spyOn(RouteBatch, 'findAll')
+      jest
+        .spyOn(RouteBatch, 'findAll')
         .mockResolvedValue([routeBatch, { riders: [null] }]);
       jest.spyOn(RouteBatch, 'count').mockResolvedValue(10);
     });
@@ -244,30 +257,32 @@ describe('RouteService', () => {
 
       const expectedResult = {
         pageNo: 1,
-        routes: [{
-          ...batchDetails,
-          ...cabDetails,
-          riders,
-          destination: route.destination.address,
-          name: route.name,
-          inUse: riders.length,
-        }, {
-          batch: undefined,
-          capacity: undefined,
-          comments: undefined,
-          id: undefined,
-          inUse: 1,
-          imageUrl: undefined,
-          status: undefined,
-          takeOff: undefined,
-          riders: [{}]
-        }],
-        totalPages: 1,
+        routes: [
+          {
+            ...batchDetails,
+            ...cabDetails,
+            riders,
+            destination: route.destination.address,
+            name: route.name,
+            inUse: riders.length
+          },
+          {
+            batch: undefined,
+            capacity: undefined,
+            comments: undefined,
+            id: undefined,
+            inUse: 1,
+            imageUrl: undefined,
+            status: undefined,
+            takeOff: undefined,
+            riders: [{}]
+          }
+        ],
         totalItems: 10,
+        totalPages: 1
       };
 
-      expect(result)
-        .toEqual(expectedResult);
+      expect(result).toEqual(expectedResult);
     });
   });
 
@@ -303,7 +318,7 @@ describe('RouteService', () => {
         { predicate: 'destination', direction: 'asc' },
         { predicate: 'driverName', direction: 'asc' },
         { predicate: 'driverPhoneNo', direction: 'asc' },
-        { predicate: 'regNumber', direction: 'asc' },
+        { predicate: 'regNumber', direction: 'asc' }
       ];
       const result = RouteService.convertToSequelizeOrderByClause(sort);
       expect(result[0].length).toEqual(3);

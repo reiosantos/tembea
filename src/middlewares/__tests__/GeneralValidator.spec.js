@@ -37,7 +37,9 @@ describe('General Validator', () => {
     it('should call the next method when they are no errors', () => {
       const reqMock = { body: { name: 'Go' } };
       const nextMock = jest.fn();
-      jest.spyOn(GeneralValidator, 'validateObjectKeyValues').mockReturnValue([]);
+      jest
+        .spyOn(GeneralValidator, 'validateObjectKeyValues')
+        .mockReturnValue([]);
       jest.spyOn(Response, 'sendResponse').mockImplementation();
 
       GeneralValidator.validateAllProvidedReqBody(reqMock, 'res', nextMock);
@@ -48,13 +50,17 @@ describe('General Validator', () => {
     it('should call the response method when they are errors', () => {
       const reqMock = { body: { name: 'Go' } };
       const nextMock = jest.fn();
-      jest.spyOn(GeneralValidator, 'validateObjectKeyValues').mockReturnValue(['boo']);
+      jest
+        .spyOn(GeneralValidator, 'validateObjectKeyValues')
+        .mockReturnValue(['boo']);
       jest.spyOn(Response, 'sendResponse').mockImplementation(() => {});
 
       GeneralValidator.validateAllProvidedReqBody(reqMock, 'res', nextMock);
       expect(nextMock).not.toHaveBeenCalled();
       expect(Response.sendResponse).toHaveBeenCalledTimes(1);
-      expect(Response.sendResponse).toHaveBeenCalledWith('res', 400, false, ['boo']);
+      expect(Response.sendResponse).toHaveBeenCalledWith('res', 400, false, [
+        'boo'
+      ]);
     });
   });
 
@@ -66,7 +72,7 @@ describe('General Validator', () => {
   });
 
   describe('Validate TeamUrl in the request body', () => {
-    it('should call next method when teamUrl exists in body and when it\'s valid', () => {
+    it("should call next method when teamUrl exists in body and when it's valid", () => {
       const reqMock = { body: { teamUrl: 'lala@slack.com' } };
       const nextMock = jest.fn();
       jest.spyOn(Response, 'sendResponse').mockImplementation();
@@ -77,7 +83,7 @@ describe('General Validator', () => {
       expect(Response.sendResponse).not.toHaveBeenCalled();
     });
 
-    it('should call response method when teamUrl doesn\'t exist with error message', () => {
+    it("should call response method when teamUrl doesn't exist with error message", () => {
       const reqMock = { body: { teamUrl: false } };
       const nextMock = jest.fn();
       const err = 'Please pass the teamUrl in the request body, e.g: "teamUrl: dvs.slack.com"';
@@ -87,7 +93,57 @@ describe('General Validator', () => {
       GeneralValidator.validateTeamUrlInRequestBody(reqMock, 'res', nextMock);
       expect(nextMock).not.toHaveBeenCalled();
       expect(Response.sendResponse).toHaveBeenCalledTimes(1);
-      expect(Response.sendResponse).toHaveBeenCalledWith('res', 400, false, err);
+      expect(Response.sendResponse).toHaveBeenCalledWith(
+        'res',
+        400,
+        false,
+        err
+      );
+    });
+  });
+  describe('Validate for empty tripStatus parameter', () => {
+    it('should return true for an empty status parameter', () => {
+      const result = GeneralValidator.isEmpty();
+      expect(result).toEqual(true);
+    });
+  });
+  describe('Validate tripStatus query parameter', () => {
+    it('should return true if tripStatus is Confirmed or Pending.', () => {
+      const result = GeneralValidator.isTripStatus('Confirmed');
+      expect(result).toEqual(true);
+    });
+    it('should return false if tripStatus is neither Confirmed nor Pending', () => {
+      const result = GeneralValidator.isTripStatus('Confirm');
+      expect(result).toEqual(false);
+    });
+  });
+  describe('Validate get all trips filter parameters.', () => {
+    it('should call next method when trip status is correct', () => {
+      const reqMock = { query: { status: 'Pending' } };
+      const nextMock = jest.fn();
+
+      jest.spyOn(GeneralValidator, 'isEmpty').mockReturnValue(true);
+      jest.spyOn(GeneralValidator, 'isTripStatus').mockReturnValue(true);
+
+      GeneralValidator.validateTripFilterParameters(reqMock, 'res', nextMock);
+      expect(nextMock).toHaveBeenCalled();
+    });
+    it('should return error when trip stauts is not correct', () => {
+      const reqMock = { query: { status: 'Pend' } };
+      const nextMock = jest.fn();
+      const err = 'Status of trips are either Confirmed or Pending';
+      jest.spyOn(GeneralValidator, 'isEmpty').mockReturnValue(false);
+      jest.spyOn(GeneralValidator, 'isTripStatus').mockReturnValue(false);
+      jest.spyOn(Response, 'sendResponse').mockImplementation();
+
+      GeneralValidator.validateTripFilterParameters(reqMock, 'res', nextMock);
+      expect(nextMock).not.toHaveBeenCalled();
+      expect(Response.sendResponse).toHaveBeenCalledWith(
+        'res',
+        400,
+        false,
+        err
+      );
     });
   });
 });
