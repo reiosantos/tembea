@@ -67,7 +67,7 @@ describe('Utils Method', () => {
     expect(result).toHaveProperty('roles', ['role']);
   });
 
-  describe('convertToImageAndSaveToLocal', () => {
+  describe.skip('convertToImageAndSaveToLocal', () => {
     const urls = 'http://maps.googleapis.com/maps/api/staticmap?size=700x700';
     const destination = './files';
     it('should convert googleMap url into jpeg and save it to local', async (done) => {

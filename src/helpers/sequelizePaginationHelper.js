@@ -15,9 +15,10 @@ export default class SequelizePaginationHelper {
     if (!(items.includes('desc') || items.includes('asc'))) {
       HttpError.throwErrorIfNull(null, SequelizePaginationHelper.sortErrorMessage, 400);
     }
+    const isDirectionValid = SequelizePaginationHelper.isDirectionValid(items[0]);
     return {
-      direction: (this.isDirectionValid(items[0])) ? items[0] : items[1],
-      predicate: (!this.isDirectionValid(items[0])) ? items[0] : items[1],
+      direction: (isDirectionValid) ? items[0] : items[1],
+      predicate: (!isDirectionValid) ? items[0] : items[1],
     };
   }
 
@@ -54,7 +55,10 @@ export default class SequelizePaginationHelper {
     const totalPages = await this.getTotalPages();
     const pageNo = await this.getPageNo(page);
     const { totalItems } = this;
-    return { totalPages, pageNo, totalItems };
+    const { itemsPerPage } = this;
+    return {
+      totalPages, pageNo, totalItems, itemsPerPage
+    };
   }
 
   async getPageNo(pageNo = 1) {
@@ -63,13 +67,27 @@ export default class SequelizePaginationHelper {
     return Math.min(pageNumber, totalPages);
   }
 
-  async getPageItems(pageNo = 1) {
+  /**
+   * @param {number} [pageNo=1]
+   * @returns {{data: Array<Object>, pageMeta: { totalPages: Number, pageNo: Number, totalItems: Number, itemsPerPage: Number } }} tne result page items
+   * @memberof SequelizePaginationHelper
+   */
+  async getPageItems(pageNo = 1, moreParams = {}) {
+    const $pageNo = await this.getPageNo(pageNo);
     const paginationConstraint = {
-      offset: (pageNo - 1) * this.itemsPerPage,
+      offset: ($pageNo - 1) * this.itemsPerPage,
       limit: this.itemsPerPage
     };
-    const filter = this.filter || {};
-    return this.items.findAll({ ...filter, ...paginationConstraint });
+    const filter = { ...this.filter, ...moreParams };
+    const data = await this.items.findAll({ ...filter, ...paginationConstraint });
+    const $pageMeta = await this.getPageInfo($pageNo);
+    return {
+      data,
+      pageMeta: {
+        itemsPerPage: this.itemsPerPage,
+        ...$pageMeta
+      }
+    };
   }
 }
 

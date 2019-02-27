@@ -12,19 +12,18 @@ class TripController {
       size = size || defaultSize;
       const where = TripService.sequelizeWhereClauseOption(query);
       const pageable = { page, size };
-      const { totalPages, routes, pageNo } = await tripService.getTrips(
-        pageable,
-        where
-      );
+      const {
+        totalPages, trips, pageNo, totalItems, itemsPerPage
+      } = await tripService.getTrips(pageable, where);
       const message = `${pageNo} of ${totalPages} page(s).`;
       const pageData = {
         pageMeta: {
           totalPages,
           page: pageNo,
-          totalResults: routes.length,
-          pageSize: parseInt(size, 10)
+          totalResults: totalItems,
+          pageSize: itemsPerPage
         },
-        routes
+        trips
       };
       return Response.sendResponse(res, 200, true, message, pageData);
     } catch (error) {

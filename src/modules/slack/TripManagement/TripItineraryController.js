@@ -4,6 +4,7 @@ import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import SlackPagination from '../../../helpers/slack/SlackPaginationHelper';
 import DialogPrompts from '../SlackPrompts/DialogPrompts';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
+import { TRIP_LIST_TYPE } from '../../../helpers/constants';
 
 export const responseMessage = (
   text = 'You have no trip history'
@@ -39,25 +40,27 @@ class TripItineraryController {
       const { user: { id: slackId }, team: { id: teamId } } = payload;
       await SlackHelpers.findOrCreateUserBySlackId(slackId, teamId);
       const pageNumber = getPageNumber(payload);
-      const requestType = 'history';
       const tripsPayload = await TripItineraryHelper.getPaginatedTripRequestsBySlackUserId(
-        slackId, requestType,
+        slackId, TRIP_LIST_TYPE.PAST,
       );
 
       if (!tripsPayload) {
         return respond(responseMessage('Could not get trip history'));
       }
-      const [page, totalPages] = await Promise.all([
-        tripsPayload.getPageNo(pageNumber), tripsPayload.getTotalPages()]);
-      const trips = await tripsPayload.getPageItems(page);
+      const {
+        data: trips,
+        pageMeta: {
+          totalPages,
+          pageNo
+        }
+      } = await tripsPayload.getPageItems(pageNumber);
 
       if (!trips.length) {
         return respond(responseMessage());
       }
 
       triggerSkipPage(payload, respond);
-
-      return InteractivePrompts.sendTripHistory(trips, totalPages, page, payload, respond);
+      return InteractivePrompts.sendTripHistory(trips, totalPages, pageNo, payload, respond);
     } catch (error) {
       respond(responseMessage(`Could not be processed! ${error.message}`));
     }
@@ -66,21 +69,22 @@ class TripItineraryController {
   static async handleUpcomingTrips(payload, respond) {
     try {
       const { user: { id: slackId }, team: { id: teamId } } = payload;
-
       await SlackHelpers.findOrCreateUserBySlackId(slackId, teamId);
       const pageNumber = getPageNumber(payload);
-      const requestType = 'upcoming';
       const tripsPayload = await TripItineraryHelper.getPaginatedTripRequestsBySlackUserId(
-        slackId, requestType,
+        slackId, TRIP_LIST_TYPE.UPCOMING,
       );
       if (!tripsPayload) {
         return respond(responseMessage('Something went wrong getting trips'));
       }
 
-
-      const [page, totalPages] = await Promise.all([
-        tripsPayload.getPageNo(pageNumber), tripsPayload.getTotalPages()]);
-      const trips = await tripsPayload.getPageItems(page);
+      const {
+        data: trips,
+        pageMeta: {
+          totalPages,
+          pageNo: page
+        }
+      } = await tripsPayload.getPageItems(pageNumber);
 
       if (!trips.length) {
         return respond(responseMessage('You have no upcoming trips'));

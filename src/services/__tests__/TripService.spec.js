@@ -44,20 +44,20 @@ describe('TripService', () => {
       const pageable = { page: 1, size: 100 };
       const where = {};
       const response = await tripService.getTrips(pageable, where);
-      expect(response).toHaveProperty('routes');
+      expect(response).toHaveProperty('trips');
       expect(response).toHaveProperty('totalPages');
       expect(response).toHaveProperty('pageNo');
-      expect(response.routes).toEqual([{}]);
+      expect(response.trips).toEqual([{}]);
     });
 
     it('should return trips according to search parameter', async () => {
       const pageable = { page: 1, size: 100 };
       const where = { departmentName: 'TDD' };
       const response = await tripService.getTrips(pageable, where);
-      expect(response).toHaveProperty('routes');
+      expect(response).toHaveProperty('trips');
       expect(response).toHaveProperty('totalPages');
       expect(response).toHaveProperty('pageNo');
-      expect(response.routes).toEqual([{}]);
+      expect(response.trips).toEqual([{}]);
     });
   });
 

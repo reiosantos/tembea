@@ -24,7 +24,7 @@ describe('SequelizePaginationHelper', () => {
   describe('SequelizePaginationHelper_getPageItems', () => {
     it('should have a specific behaviour', async () => {
       const sequelizeResult = new SequelizePaginationHelper(tripRequestMock, {});
-      const pageItems = await sequelizeResult.getPageItems();
+      const { data: pageItems } = await sequelizeResult.getPageItems();
       expect(pageItems).not.toBeFalsy();
     });
   });

@@ -45,10 +45,9 @@ export class TripService {
       filter,
       size
     );
-    const { totalPages, pageNo } = await paginatedRoutes.getPageInfo(page);
-    const data = await paginatedRoutes.getPageItems(pageNo);
-    const routes = data.map(trip => TripService.serializeTripRequest(trip));
-    return { routes, totalPages, pageNo };
+    const { data, pageMeta } = await paginatedRoutes.getPageItems(page);
+    const trips = data.map(trip => TripService.serializeTripRequest(trip));
+    return { trips, ...pageMeta };
   }
 
   static serializeUser(requester) {

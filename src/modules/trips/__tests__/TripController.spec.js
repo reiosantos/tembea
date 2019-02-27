@@ -3,11 +3,13 @@ import TripController from '../TripController';
 import tripService from '../../../services/TripService';
 
 describe('TripController', () => {
-  const { mockedValue, ...rest } = mocked;
+  const { mockedValue: { routes: trips }, ...rest } = mocked;
   let req;
   beforeEach(() => {
     req = { query: { page: 1 } };
-    const mockedData = { ...mockedValue, totalPages: 2, pageNo: 1 };
+    const mockedData = {
+      trips, totalPages: 2, pageNo: 1, totalItems: 1, itemsPerPage: 100
+    };
     jest.spyOn(tripService, 'getTrips').mockResolvedValue(mockedData);
   });
   afterEach(() => {
@@ -19,7 +21,7 @@ describe('TripController', () => {
         resultValue: { message, success, data: mockedData },
         response: res
       } = rest;
-      const data = { ...mockedData, ...mockedValue };
+      const data = { ...mockedData, trips };
       await TripController.getTrips(req, res);
       expect(res.status).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);

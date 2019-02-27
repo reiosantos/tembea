@@ -20,7 +20,7 @@ describe('TripItineraryController', () => {
   beforeEach(() => {
     respond = jest.fn(value => value);
 
-    jest.spyOn(trip, 'getPageItems').mockResolvedValue(([{}, {}]));
+    jest.spyOn(trip, 'getPageItems').mockResolvedValue({ data: [{}, {}], pageMeta: {} });
     jest.spyOn(trip, 'getPageNo').mockResolvedValue(1);
     jest.spyOn(trip, 'getTotalPages').mockResolvedValue(1);
 
@@ -56,7 +56,7 @@ describe('TripItineraryController', () => {
     it('should respond with a message when user does not have any trip', async () => {
       jest.spyOn(TripItineraryHelper, 'getPaginatedTripRequestsBySlackUserId')
         .mockResolvedValueOnce(trip);
-      trip.getPageItems.mockResolvedValue([]);
+      trip.getPageItems.mockResolvedValue({ data: [], pageMeta: {} });
       const payload = { user: { id: 'TEST1' }, team: { id: 'testId' }, actions: [{ name: 'history' }] };
       await TripItineraryController.handleTripHistory(payload, respond);
       expect(respond).toHaveBeenCalledWith(responseMessage('You have no trip history'));
@@ -89,7 +89,7 @@ describe('TripItineraryController', () => {
     it('should respond with a message when user does not have any trip', async () => {
       jest.spyOn(TripItineraryHelper, 'getPaginatedTripRequestsBySlackUserId')
         .mockResolvedValueOnce(trip);
-      trip.getPageItems.mockResolvedValue([]);
+      trip.getPageItems.mockResolvedValue({ data: [], pageMeta: { } });
       const payload = { user: { id: 'TEST1' }, team: { id: 'testId' }, actions: [{ name: 'upcoming' }] };
       await TripItineraryController.handleUpcomingTrips(payload, respond);
       expect(respond).toHaveBeenCalledWith(responseMessage('You have no upcoming trips'));

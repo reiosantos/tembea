@@ -173,14 +173,13 @@ class RouteService {
     }
     const filter = { where };
     const paginatedRoutes = new SequelizePaginationHelper(RouteBatch, filter, size);
-    const { totalPages, pageNo, totalItems } = await paginatedRoutes.getPageInfo(page);
     paginatedRoutes.filter = {
       ...filter, subQuery: false, order, include: RouteService.defaultInclude
     };
-    const data = await paginatedRoutes.getPageItems(pageNo);
+    const { data, pageMeta } = await paginatedRoutes.getPageItems(page);
     const routes = data.map(RouteService.serializeRouteBatch);
     return {
-      routes, totalPages, pageNo, totalItems
+      routes, ...pageMeta
     };
   }
 

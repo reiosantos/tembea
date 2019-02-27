@@ -5,6 +5,7 @@ import AddressService from '../AddressService';
 import HttpError from '../../helpers/errorHandler';
 import UserService from '../UserService';
 import { mockRouteBatchData as routeBatch } from '../__mocks__';
+import { MAX_INT } from '../../helpers/constants';
 
 const {
   Route, RouteBatch, Cab, Address, sequelize
@@ -266,6 +267,7 @@ describe('RouteService', () => {
 
       const expectedResult = {
         pageNo: 1,
+        itemsPerPage: MAX_INT,
         routes: [
           {
             ...batchDetails,
@@ -273,7 +275,8 @@ describe('RouteService', () => {
             riders,
             destination: route.destination.address,
             name: route.name,
-            inUse: riders.length
+            inUse: riders.length,
+            id: undefined
           },
           {
             batch: undefined,
@@ -363,7 +366,7 @@ describe('RouteService', () => {
       const routeBatchId = 1;
       const spy = jest.spyOn(RouteBatch, 'destroy');
       const result = await RouteService.deleteRouteBatch(routeBatchId);
-      
+
       expect(result).toEqual(1);
       expect(spy).toHaveBeenCalled();
       expect(spy).toBeCalledTimes(1);

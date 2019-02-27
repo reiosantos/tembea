@@ -15,7 +15,7 @@ describe('Route Request Service', () => {
     findByPk = jest.spyOn(RouteRequest, 'findByPk');
     save = jest.spyOn(Cache, 'save');
   });
-  
+
   afterEach(() => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
