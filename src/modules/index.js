@@ -32,7 +32,6 @@ const routes = (app) => {
   app.use(apiPrefix, roleManagementRouter);
   app.use(apiPrefix, routesRouter);
   app.use(apiPrefix, aisRouter);
-  app.use(apiPrefix, tripsRouter);
   return app;
 };
 

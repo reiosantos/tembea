@@ -20,10 +20,8 @@ describe('CabService', () => {
   });
 
   describe('findOrCreateCab', () => {
-    it("return newly created cab if it doesn't exist", async (done) => {
-      jest.spyOn(Cab, 'findOrCreate').mockImplementation(obj => Promise.resolve([{
-        dataValues: obj.defaults
-      }]));
+    it('return newly created cab if it doesn\'t exist', async (done) => {
+      jest.spyOn(Cab, 'findOrCreate').mockImplementation(obj => Promise.resolve([{ dataValues: obj.defaults }]));
       const cab = await CabService.findOrCreateCab('Hello', 'World', 'Test');
       expect(cab.driverName).toEqual('Hello');
       done();
