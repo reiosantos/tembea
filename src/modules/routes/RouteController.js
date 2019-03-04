@@ -13,6 +13,7 @@ import {
 import AddressService from '../../services/AddressService';
 import RouteRequestService from '../../services/RouteRequestService';
 import UserService from '../../services/UserService';
+import RouteHelper from '../../helpers/RouteHelper';
 
 class RoutesController {
   /**
@@ -55,31 +56,17 @@ class RoutesController {
   }
 
   static async createRoute(req, res) {
-    const {
-      routeName,
-      destination: {
-        address, coordinates: { lat: latitude, lng: longitude }
-      },
-      vehicle: vehicleRegNumber, takeOffTime, capacity
-    } = req.body;
-    const data = {
-      name: routeName,
-      vehicleRegNumber,
-      capacity,
-      takeOff: takeOffTime
-    };
+    let message;
+    let routeInfo;
     try {
-      if (req.query.action === 'duplicate') {
-        data.destinationName = address;
-      } else {
-        const destinationAddress = await AddressService.createNewAddress(
-          longitude, latitude, address
-        );
-        data.destinationName = destinationAddress.address;
+      const { action, batchId } = req.query;
+      if (action === 'duplicate' && batchId) {
+        routeInfo = await RouteHelper.duplicateRouteBatch(batchId);
+        message = `Successfully duplicated ${routeInfo.name} route`;
+      } else if (!batchId) {
+        routeInfo = await RouteHelper.createNewRouteBatch(req.body);
+        message = 'Route created successfully';
       }
- 
-      const routeInfo = await RouteService.createRouteBatch(data);
-      const message = 'Route created successfully';
       return Response.sendResponse(res, 200, true, message, routeInfo);
     } catch (error) {
       BugSnagHelper.log(error);

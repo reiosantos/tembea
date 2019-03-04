@@ -56,15 +56,20 @@ class RouteService {
 
     batchDetails.batch = RouteService.updateBatchLabel(routeDetails);
     const routeId = route.id;
-    const batch = await RouteBatch.create({
-      ...batchDetails,
-      routeId,
-      cabId: cabDetails.id
-    });
+    const batch = await RouteService.createBatch(batchDetails, routeId, cabDetails.id);
     batch.cabDetails = cabDetails;
     route.destination = destination;
     batch.route = route;
     return RouteService.serializeRouteBatch(batch);
+  }
+
+  static async createBatch(batchDetails, routeId, cabId) {
+    const batch = await RouteBatch.create({
+      ...batchDetails,
+      routeId,
+      cabId
+    });
+    return batch;
   }
 
   static async createRoute(name, imageUrl, destination) {

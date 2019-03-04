@@ -14,6 +14,8 @@ routesRouter.get(
 
 routesRouter.post(
   '/routes',
+  TokenValidator.attachJwtSecretKey,
+  TokenValidator.authenticateToken,
   RouteValidator.verifyAllPropsExist,
   RouteValidator.verifyPropsValuesAreSetAndValid,
   RouteValidator.validateDestinationAddress,

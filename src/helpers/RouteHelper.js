@@ -69,8 +69,11 @@ class RouteHelper {
   }
 
   static async checkThatLocationAlreadyExists(coordinates) {
-    const { lat: latitude, lng: longitude } = coordinates;
-    const location = await LocationService.findLocation(longitude, latitude);
+    let location;
+    if (coordinates) {
+      const { lat: latitude, lng: longitude } = coordinates;
+      location = await LocationService.findLocation(longitude, latitude);
+    }
     return !!location;
   }
 
@@ -82,6 +85,67 @@ class RouteHelper {
   static async checkThatRouteNameExists(name) {
     const route = await RouteService.getRouteByName(name);
     return [!!route, route];
+  }
+
+  static async createNewRouteBatch(body) {
+    const {
+      routeName,
+      destination: {
+        address, coordinates: { lat: latitude, lng: longitude }
+      },
+      vehicle: vehicleRegNumber, takeOffTime, capacity
+    } = body;
+
+    const destinationAddress = await AddressService.createNewAddress(
+      longitude, latitude, address
+    );
+
+    const data = {
+      name: routeName,
+      vehicleRegNumber,
+      capacity,
+      takeOff: takeOffTime,
+      destinationName: destinationAddress.address
+    };
+
+    const routeInfo = await RouteService.createRouteBatch(data);
+    return routeInfo;
+  }
+
+  static async duplicateRouteBatch(id) {
+    const routeBatch = await RouteService.getRouteBatchByPk(id);
+    if (!routeBatch) {
+      return 'Route does not exist';
+    }
+    const batch = await RouteHelper.getNewBatchDetails(routeBatch);
+    return batch;
+  }
+
+  static async getNewBatchDetails(routeBatch) {
+    const {
+      route, route: { name, imageUrl, destination }, cabDetails, routeId, cabId
+    } = routeBatch;
+    const routeDetails = await RouteService.createRoute(name, imageUrl, destination);
+    const updatedBatch = RouteService.updateBatchLabel(routeDetails);
+    const newBatchObject = RouteHelper.batchObject(routeBatch, updatedBatch);
+    const batch = await RouteService.createBatch(
+      newBatchObject, routeId, cabId
+    );
+    batch.cabDetails = cabDetails;
+    batch.route = route;
+    
+    return RouteService.serializeRouteBatch(batch);
+  }
+
+  static batchObject(routeBatch, batch) {
+    const { takeOff, capacity, status } = routeBatch;
+    const data = {
+      takeOff,
+      capacity,
+      status,
+      batch
+    };
+    return data;
   }
 }
 

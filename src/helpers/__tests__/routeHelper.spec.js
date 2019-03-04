@@ -1,6 +1,7 @@
 import RouteHelper from '../RouteHelper';
 import RouteService from '../../services/RouteService';
 import CabService from '../../services/CabService';
+import { routeBatch, batch, routeDetails } from '../__mocks__/routeMock';
 
 describe('Route Helpers', () => {
   describe('checkTimeFormat', () => {
@@ -60,6 +61,41 @@ describe('Route Helpers', () => {
       const result = await RouteHelper.checkThatRouteNameExists('Yaba');
       expect(Array.isArray(result)).toBeTruthy();
       expect(result[0]).toEqual(false);
+    });
+  });
+
+
+  describe('duplicateRouteBatch', () => {
+    it('should return the newly created batch object', async () => {
+      jest.spyOn(RouteService, 'getRouteBatchByPk').mockReturnValue(routeBatch);
+      jest.spyOn(RouteHelper, 'getNewBatchDetails').mockReturnValue(batch);
+
+      const result = await RouteHelper.duplicateRouteBatch(1);
+      expect(result.batch).toBe('B');
+      expect(result.inUse).toBe(0);
+      expect(result).toBe(batch);
+    });
+
+    it('should not create batch if route batch does not exist', async () => {
+      jest.spyOn(RouteService, 'getRouteBatchByPk').mockReturnValue(null);
+
+      const result = await RouteHelper.duplicateRouteBatch(10);
+
+      expect(result).toBe('Route does not exist');
+    });
+  });
+
+  describe('getNewBatchDetails', () => {
+    it('should get the batch object', async () => {
+      jest.spyOn(RouteService, 'createRoute').mockReturnValue(routeDetails);
+      jest.spyOn(RouteService, 'updateBatchLabel').mockReturnValue('B');
+      jest.spyOn(RouteService, 'createBatch').mockReturnValue(batch);
+      
+
+      const result = await RouteHelper.getNewBatchDetails(routeBatch);
+      expect(result.batch).toBe('B');
+      expect(result.inUse).toBe(0);
+      expect(result).toBe(batch);
     });
   });
 });
