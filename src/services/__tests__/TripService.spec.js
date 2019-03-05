@@ -125,4 +125,20 @@ describe('TripService', () => {
       expect(response).toHaveProperty('confirmedBy');
     });
   });
+
+  describe('checkExistence', () => {
+    it('should return true if trip exists', async () => {
+      jest.spyOn(TripRequest, 'count').mockResolvedValue(true);
+      const result = await TripService.checkExistence(1);
+      expect(TripRequest.count).toBeCalledTimes(1);
+      expect(result).toBe(true);
+    });
+
+    it('should return false if trip does not exist', async () => {
+      jest.spyOn(TripRequest, 'count').mockResolvedValue(false);
+      const result = await TripService.checkExistence(3);
+      expect(TripRequest.count).toBeCalledTimes(1);
+      expect(result).toBe(false);
+    });
+  });
 });

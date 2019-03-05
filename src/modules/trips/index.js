@@ -1,5 +1,4 @@
 import { Router } from 'express';
-// import TripController from './TripController';
 import middlewares from '../../middlewares';
 import TripsController from './TripsController';
 

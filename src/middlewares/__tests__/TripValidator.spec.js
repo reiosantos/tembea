@@ -2,7 +2,7 @@
 import TripValidator from '../TripValidator';
 import HttpError from '../../helpers/errorHandler';
 import GeneralValidator from '../GeneralValidator';
-import TripServices from '../../services/TripServices';
+import { TripService } from '../../services/TripService';
 
 describe('Trip Validator', () => {
     let req;
@@ -64,7 +64,7 @@ describe('Trip Validator', () => {
             HttpError.sendErrorResponse = jest.fn(() => { });
             jest.spyOn(HttpError, 'sendErrorResponse')
                 .mockResolvedValue(resolved);
-            jest.spyOn(TripServices, 'findTrip')
+            jest.spyOn(TripService, 'checkExistence')
                 .mockResolvedValue(false);
 
             await TripValidator.validateAll(req, res, next);
@@ -76,7 +76,7 @@ describe('Trip Validator', () => {
             HttpError.sendErrorResponse = jest.fn(() => { });
             jest.spyOn(HttpError, 'sendErrorResponse')
                 .mockResolvedValue(resolved);
-            jest.spyOn(TripServices, 'findTrip')
+            jest.spyOn(TripService, 'checkExistence')
                 .mockResolvedValue(true);
 
             await TripValidator.validateAll(req, res, next);
@@ -88,7 +88,7 @@ describe('Trip Validator', () => {
             HttpError.sendErrorResponse = jest.fn(() => { });
             jest.spyOn(HttpError, 'sendErrorResponse')
                 .mockResolvedValue(resolved);
-            jest.spyOn(TripServices, 'findTrip')
+            jest.spyOn(TripService, 'checkExistence')
                 .mockResolvedValue(true);
 
             await TripValidator.validateAll(reqDecline, res, next);
@@ -104,7 +104,7 @@ describe('Trip Validator', () => {
                 .mockResolvedValue(resolved);
             jest.spyOn(HttpError, 'sendErrorResponse')
                 .mockResolvedValue(resolved);
-            jest.spyOn(TripServices, 'findTrip')
+            jest.spyOn(TripService, 'checkExistence')
                 .mockResolvedValue(true);
 
             await TripValidator.validateAll(req, res, next);
@@ -119,7 +119,7 @@ describe('Trip Validator', () => {
             resolved.errors[0] = 'Add tripId to the url';
             jest.spyOn(HttpError, 'sendErrorResponse')
                 .mockResolvedValue(resolved);
-            jest.spyOn(TripServices, 'findTrip')
+            jest.spyOn(TripService, 'checkExistence')
                 .mockResolvedValue(true);
 
             await TripValidator.validateAll(req, res, next).then(() => {

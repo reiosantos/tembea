@@ -1,6 +1,8 @@
-
-    
-import { TripConfirmSuccessMock, TripConfirmFailMock, TripDeclineSuccessMock } from '../__mocks__/TripsControllerMock';
+import {
+  TripConfirmSuccessMock,
+  TripConfirmFailMock,
+  TripDeclineSuccessMock
+} from './__mocks__/TripsControllerMock';
 import TripsController from '../TripsController';
 import TripActionsController from '../../slack/TripManagement/TripActionsController';
 import TeamDetailsService from '../../../services/TeamDetailsService';

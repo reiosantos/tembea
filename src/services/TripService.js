@@ -102,6 +102,14 @@ export class TripService {
       confirmedBy: TripService.serializeUser(confirmer) || {}
     };
   }
+
+  static async checkExistence(id) {
+    const count = await TripRequest.count({ where: { id } });
+    if (count > 0) {
+      return true;
+    }
+    return false;
+  }
 }
 const tripService = new TripService();
 export default tripService;

@@ -1,7 +1,7 @@
 import GeneralValidator from './GeneralValidator';
 import UserInputValidator from '../helpers/slack/UserInputValidator';
 import HttpError from '../helpers/errorHandler';
-import TripServices from '../services/TripServices';
+import { TripService } from '../services/TripService';
 
 class TripValidator {
   static async validateAll(req, res, next) {
@@ -21,7 +21,7 @@ class TripValidator {
     const { params: { tripId } } = req;
     if (!tripId) { messages.push('Add tripId to the url'); }
 
-    const isTrip = await TripServices.findTrip(tripId);
+    const isTrip = await TripService.checkExistence(tripId);
     if (!isTrip) { messages.push('Trip Does not exist'); }
     if (messages.length) {
       return HttpError.sendErrorResponse({ message: messages }, res);

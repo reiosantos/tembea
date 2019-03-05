@@ -14,14 +14,14 @@ describe('ViewTripHelper', () => {
   let userName;
   beforeEach(() => {
     tripData = {
-      id: 2,
-      name: 'From Andela Nairobi\n     to Jomo Kenyatta Airport\n      on 22/12/2019 22:00',
       noOfPassengers: 1,
       reason: 'going to the airport.',
       tripStatus: 'Pending',
       departureTime: '2019',
       tripType: 'Regular Trip',
-      createdAt: 'Wed Feb'
+      createdAt: 'Wed Feb',
+      origin: { address: 'Villarosa Kempinski' },
+      destination: { address: 'Bao Box Westlands' }
     };
     requestId = 12;
     payload = {
@@ -42,9 +42,13 @@ describe('ViewTripHelper', () => {
     it('should display trip request', async (done) => {
       tripRequest.mockResolvedValueOnce({ ...tripData });
       userName.mockResolvedValue();
-      await ViewTripHelper.displayTripRequest(requestId, payload, respond);
+      const result = await ViewTripHelper.displayTripRequest(requestId, payload, respond);
       expect(tripRequest).toHaveBeenCalledTimes(1);
       expect(userName).toHaveBeenCalledTimes(1);
+      expect(result).toBeInstanceOf(Object);
+      expect(result).toHaveProperty('attachments');
+      expect(result).toHaveProperty('text');
+      expect(result.response_type).toBe('ephemeral');
       done();
     });
 
@@ -68,15 +72,13 @@ describe('ViewTripHelper', () => {
       expect(result).toHaveProperty('attachments');
       expect(result.text).toBe(greeting);
     });
-  });
 
-  describe('tripAttachment', () => {
     it('should create an attachment', () => {
       const result = ViewTripHelper.tripAttachmentFields(tripData);
       expect(result).toBeInstanceOf(Array);
       expect(result).toHaveLength(10);
-      expect(result[0].value).toBe('Andela Nairobi');
-      expect(result[1].value).toBe('Jomo Kenyatta Airport');
+      expect(result[0].value).toBe('Villarosa Kempinski');
+      expect(result[1].value).toBe('Bao Box Westlands');
     });
   });
 });
