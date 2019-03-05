@@ -256,6 +256,26 @@ describe('UserInputValidator tests', () => {
       expect(result.length).toEqual(1);
     });
   });
+  describe('validateSearchRoute', () => {
+    it('should check against empty search sting', () => {
+      const result = UserInputValidator.validateSearchRoute('    ');
+      expect(result).toHaveProperty('errors');
+    });
+  });
+  describe('validateStartRouteSubmission', () => {
+    it('should call the UserInputValidator.validateSkipToPage method once', () => {
+      const payload = createPayload();
+      const validateSkipToPageSpy = jest.spyOn(UserInputValidator, 'validateSkipToPage');
+      UserInputValidator.validateStartRouteSubmission(payload);
+      expect(validateSkipToPageSpy).toBeCalledTimes(1);
+    });
+    it('should call the UserInputValidator.validateSearchRoute method once', () => {
+      const payload = createPayload();
+      const validateSearchRouteSpy = jest.spyOn(UserInputValidator, 'validateSearchRoute');
+      UserInputValidator.validateStartRouteSubmission(payload);
+      expect(validateSearchRouteSpy).toBeCalledTimes(1);
+    });
+  });
 });
 
 describe('checkPhoneNumber', () => {

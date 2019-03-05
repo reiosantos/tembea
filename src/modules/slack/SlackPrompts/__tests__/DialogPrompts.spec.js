@@ -137,6 +137,13 @@ describe('Dialog prompts test', () => {
     expect(sendDialogTryCatch)
       .toBeCalledTimes(1);
   });
+
+  it('should test sendSearchPage function', async (done) => {
+    const payload = { actions: [{ name: 'search' }], team: { id: 'TEAMID1' } };
+    await DialogPrompts.sendSearchPage(payload, 'view_available_routes');
+    expect(sendDialogTryCatch).toBeCalledTimes(1);
+    done();
+  });
 });
 
 describe('sendBusStopForm dialog', () => {

@@ -1,4 +1,8 @@
-import { SlackInteractiveMessage, createNavButtons } from '../RouteManagement/rootFile';
+import {
+  SlackInteractiveMessage,
+  createNavButtons,
+  createSearchButton
+} from '../RouteManagement/rootFile';
 import SlackPagination from '../../../helpers/slack/SlackPaginationHelper';
 import {
   SlackAttachment,
@@ -25,6 +29,8 @@ class RoutesHelpers {
     }
 
     const navButtonsAttachment = createNavButtons('back_to_launch', 'back_to_routes_launch');
+    const searchButtonAttachment = createSearchButton('tembea_route', 'view_available_routes');
+    attachments.push(searchButtonAttachment);
     return new SlackInteractiveMessage(
       '*All Available Routes:slightly_smiling_face:*', [...attachments, navButtonsAttachment]
     );

@@ -1,4 +1,4 @@
-import TripItineraryController, { responseMessage, triggerSkipPage, getPageNumber } from '../TripItineraryController';
+import TripItineraryController, { responseMessage, triggerPage, getPageNumber } from '../TripItineraryController';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import TripItineraryHelper from '../../helpers/slackHelpers/TripItineraryHelper';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
@@ -104,10 +104,10 @@ describe('TripItineraryController', () => {
     });
   });
 
-  describe('TripItineraryController  triggerSkipPage', () => {
+  describe('TripItineraryController  triggerPage', () => {
     it('should sendSkipPage dialog', () => {
       const payload = { user: { id: 'TEST123' }, actions: [{ name: 'skipPage' }] };
-      triggerSkipPage(payload, respond);
+      triggerPage(payload, respond);
       expect(DialogPrompts.sendSkipPage).toHaveBeenCalled();
     });
   });

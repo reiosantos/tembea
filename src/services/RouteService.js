@@ -177,10 +177,12 @@ class RouteService {
       const convert = RouteService.convertToSequelizeOrderByClause(sort);
       order = [...convert];
     }
-    const filter = { where };
+    let filter;
+    if (where) filter = { status: where.status };
+    
     const paginatedRoutes = new SequelizePaginationHelper(RouteBatch, filter, size);
     paginatedRoutes.filter = {
-      ...filter, subQuery: false, order, include: RouteService.defaultInclude
+      ...filter, subQuery: false, order, include: RouteService.updateDefaultInclude(where)
     };
     const { data, pageMeta } = await paginatedRoutes.getPageItems(page);
     const routes = data.map(RouteService.serializeRouteBatch);
@@ -294,6 +296,27 @@ class RouteService {
         id: routeBatchId
       }
     });
+  }
+
+  /**
+   * redefines defaultInclude
+   * @param where
+   * @return {array} containing the updated default include
+   * @private
+   */
+  static updateDefaultInclude(where) {
+    if (!(where && where.name)) {
+      return RouteService.defaultInclude;
+    }
+    return [RouteService.defaultInclude[0],
+      {
+        model: Route,
+        as: 'route',
+        include: ['destination'],
+        where: {
+          name: { [Op.like]: `%${where.name}%` }
+        }
+      }];
   }
 }
 

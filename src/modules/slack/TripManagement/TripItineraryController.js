@@ -26,11 +26,14 @@ export const getPageNumber = (payload) => {
   return pageNumber;
 };
 
-export const triggerSkipPage = (payload, respond) => {
+export const triggerPage = (payload, respond) => {
+  const { actions: [{ value: requestType }], callback_id: callbackId } = payload;
   if (payload.actions && payload.actions[0].name === 'skipPage') {
-    const { actions: [{ value: requestType }], callback_id: callbackId } = payload;
     respond(new SlackInteractiveMessage('Noted...'));
     return DialogPrompts.sendSkipPage(payload, requestType, callbackId);
+  }
+  if (payload.actions && payload.actions[0].name === 'search') {
+    return DialogPrompts.sendSearchPage(payload, requestType, callbackId);
   }
 };
 
@@ -59,7 +62,7 @@ class TripItineraryController {
         return respond(responseMessage());
       }
 
-      triggerSkipPage(payload, respond);
+      triggerPage(payload, respond);
       return InteractivePrompts.sendTripHistory(trips, totalPages, pageNo, payload, respond);
     } catch (error) {
       respond(responseMessage(`Could not be processed! ${error.message}`));
@@ -90,7 +93,7 @@ class TripItineraryController {
         return respond(responseMessage('You have no upcoming trips'));
       }
 
-      triggerSkipPage(payload, respond);
+      triggerPage(payload, respond);
 
       return InteractivePrompts.sendUpcomingTrips(trips, totalPages, page, payload, respond);
     } catch (error) {

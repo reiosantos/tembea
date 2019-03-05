@@ -19,7 +19,9 @@ export const createPayload = (value = 'value', name = 'name') => ({
     others_destination: 'others_destination',
     date_time: '10/10/2018 22:00',
     flightDateTime: '10/10/2018 22:00',
-    reason: 'test reason'
+    reason: 'test reason',
+    pageNumber: 3,
+    search: 'search parameter'
   }
 });
 

@@ -150,6 +150,18 @@ class DialogPrompts {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
+  static async sendSearchPage(payload, value, callbackId) {
+    const dialog = new SlackDialog(callbackId,
+      'Search', 'Submit', false, value);
+    
+    const hint = 'e.g Emmerich Road';
+    const textarea = new SlackDialogText('Search', 'search',
+      'Enter the route name to search', false, hint);
+    
+    dialog.addElements([textarea]);
+    await DialogPrompts.sendDialog(dialog, payload);
+  }
+
   static async sendNewRouteForm(payload) {
     const selectManager = new SlackDialogElementWithDataSource('Select Manager', 'manager');
     const partnerName = new SlackDialogText(

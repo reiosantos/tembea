@@ -6,16 +6,7 @@ import Validators from '../Validators';
 
 describe('Validates Dialog Submission Inputs', () => {
   beforeEach(() => {
-    jest.spyOn(Validators, 'checkEmpty').mockImplementation((param, fieldName) => {
-      if (param.trim().length < 1) {
-        return [
-          {
-            name: fieldName,
-            error: 'This field cannot be empty'
-          }];
-      }
-      return [];
-    });
+    jest.spyOn(Validators, 'checkEmpty');
   });
   afterEach(() => {
     jest.clearAllMocks();

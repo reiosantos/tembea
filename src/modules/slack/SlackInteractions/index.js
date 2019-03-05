@@ -274,7 +274,7 @@ class SlackInteractions {
 
   static async startRouteActions(payload, respond) {
     const action = payload.state || payload.actions[0].value;
-    const errors = UserInputValidator.validateSkipToPage(payload);
+    const errors = UserInputValidator.validateStartRouteSubmission(payload);
     if (errors) return errors;
     switch (action) {
       case 'request_new_route':

@@ -23,6 +23,7 @@ import AddressService from '../../../services/AddressService';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import { slackEventNames, SlackEvents } from '../events/slackEvents';
 import createNavButtons from '../../../helpers/slack/navButtons';
+import createSearchButton from '../../../helpers/slack/searchButton';
 import GoogleMapsDistanceMatrix from '../../../services/googleMaps/GoogleMapsDistanceMatrix';
 
 const getAction = (payload, btnAction) => {
@@ -47,5 +48,6 @@ export {
   LocationPrompts, AddressService, SlackHelpers,
   slackEventNames, SlackEvents,
   createNavButtons,
+  createSearchButton,
   getAction,
 };

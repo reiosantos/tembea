@@ -177,6 +177,28 @@ class UserInputValidator {
       };
     }
   }
+
+  static validateSearchRoute(search) {
+    if (!search.trim()) {
+      return {
+        errors: [
+          new SlackDialogError('search', 'search cannot be empty')
+        ]
+      };
+    }
+  }
+
+  static validateStartRouteSubmission(payload) {
+    let errors;
+    const { submission } = payload;
+    if (submission && submission.pageNumber) {
+      errors = UserInputValidator.validateSkipToPage(payload);
+    }
+    if (submission && submission.search) {
+      errors = UserInputValidator.validateSearchRoute(submission.search);
+    }
+    return errors;
+  }
 }
 
 export default UserInputValidator;

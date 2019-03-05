@@ -1,7 +1,7 @@
 import handleActions from '../../SlackInteractions/SlackInteractionsHelper';
 import {
   getPageNumber,
-  triggerSkipPage
+  triggerPage
 } from '../../TripManagement/TripItineraryController';
 import SequelizePaginationHelper from '../../../../helpers/sequelizePaginationHelper';
 import RoutesHelpers from '../../helpers/routesHelper';
@@ -19,18 +19,16 @@ class JoinRouteInteractions {
   static async sendAvailableRoutesMessage(payload, respond) {
     const { actions } = payload;
     const page = getPageNumber(payload);
-
     const sort = SequelizePaginationHelper.deserializeSort(
       'name,asc,batch,asc'
     );
     const pageable = { page, sort, size: SLACK_DEFAULT_SIZE };
-    const where = { status: 'Active' };
+    const where = JoinRouteInteractions.createWhereClause(payload);
 
-    if (actions && actions[0].name === 'skipPage') {
-      triggerSkipPage(payload, respond);
+    if (actions && actions[0].name !== 'See Available Routes') {
+      JoinRouteInteractions.handleSendAvailableRoutesActions(payload, respond);
       return;
     }
-
     const {
       routes: availableRoutes,
       totalPages,
@@ -42,6 +40,24 @@ class JoinRouteInteractions {
       totalPages
     );
     respond(availableRoutesMessage);
+  }
+
+  static handleSendAvailableRoutesActions(payload, respond) {
+    const { actions } = payload;
+    if (actions && actions[0].name) {
+      triggerPage(payload, respond);
+    }
+  }
+
+  static createWhereClause(payload) {
+    const { submission } = payload;
+    const where = (submission && submission.search) ? {
+      status: 'Active',
+      name: submission.search
+    } : {
+      status: 'Active'
+    };
+    return where;
   }
 
   static handleJoinRouteActions(payload, respond) {
