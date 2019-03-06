@@ -2,6 +2,7 @@ import RescheduleTripController from '../RescheduleTripController';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import SlackEvents from '../../events';
 import tripService from '../../../../services/TripService';
+import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 
 
 jest.mock('../../../../utils/WebClientSingleton');
@@ -66,8 +67,11 @@ describe('RescheduleTripController', () => {
   });
 
   it('should send reschedule completion', async () => {
+    jest.spyOn(SlackHelpers, 'getUserInfoFromSlack')
+      .mockResolvedValue({ tz: 'Africa/Lagos' });
+
     InteractivePrompts.sendRescheduleCompletion = jest.fn(() => {});
-    const payload = { id: 1 };
+    const payload = { id: 1, user: { id: 'AAAAAA' }, team: { id: 'AAAAAA' } };
     const respond = jest.fn();
     SlackEvents.raise = jest.fn();
     tripService.getById = jest.fn(() => ({

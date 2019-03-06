@@ -7,6 +7,7 @@ import Utils from '../../../utils';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import SlackEvents from '../events';
 import { slackEventNames } from '../events/slackEvents';
+import SlackHelpers from '../../../helpers/slack/slackHelpers';
 
 
 const web = new WebClientSingleton();
@@ -44,7 +45,9 @@ class RescheduleTripController {
     try {
       const trip = await tripService.getById(tripId);
       if (trip) {
-        trip.departureTime = Utils.formatDateForDatabase(newDate);
+        const { user: { id: slackUserId }, team: { id: teamId } } = payload;
+        const slackInfo = await SlackHelpers.getUserInfoFromSlack(slackUserId, teamId);
+        trip.departureTime = Utils.formatDateForDatabase(newDate, slackInfo.tz);
         const newTrip = await trip.save();
         const requestType = 'reschedule';
         SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, newTrip, respond, requestType);

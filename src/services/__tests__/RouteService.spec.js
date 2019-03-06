@@ -36,6 +36,9 @@ describe('RouteService', () => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
   });
+
+  afterAll(() => sequelize.close());
+
   describe('RouteService_createRouteBatch', () => {
     const expectedResult = {
       id: undefined,

@@ -117,6 +117,9 @@ describe('ScheduleTripController Tests', () => {
     });
     it('should return an object with details of the trip to persist', async () => {
       SlackHelpers.findOrCreateUserBySlackId = jest.fn(() => 4);
+      SlackHelpers.getUserInfoFromSlack = jest.fn(() => 4);
+      jest.spyOn(SlackHelpers, 'getUserInfoFromSlack')
+        .mockResolvedValue({ tz: 'Africa/Lagos' });
       ScheduleTripController.createRequestObject = jest.fn(() => tripRequestDetails());
       const request = await ScheduleTripController
         .createRequest(payload, payload.submission);

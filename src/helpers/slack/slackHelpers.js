@@ -2,6 +2,7 @@ import tripService from '../../services/TripService';
 import WebClientSingleton from '../../utils/WebClientSingleton';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import UserService from '../../services/UserService';
+import Cache from '../../cache';
 
 
 class SlackHelpers {
@@ -28,9 +29,14 @@ class SlackHelpers {
   }
 
   static async getUserInfoFromSlack(slackId, teamId) {
+    const key = `${teamId}_${slackId}`;
+    const result = await Cache.fetch(key);
+    if (result && result.slackInfo) {
+      return result.slackInfo;
+    }
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-    const userInfo = await SlackHelpers.fetchUserInformationFromSlack(slackId,
-      slackBotOauthToken);
+    const userInfo = await SlackHelpers.fetchUserInformationFromSlack(slackId, slackBotOauthToken);
+    Cache.save(key, 'slackInfo', userInfo);
     return userInfo;
   }
 

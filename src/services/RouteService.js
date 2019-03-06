@@ -278,9 +278,8 @@ class RouteService {
 
   /**
    * deletes a route batch by its id
-   * @param id
-   * @return {integer}
-   * @private
+   * @return {Promise<number>}
+   * @param routeBatchId
    */
   static async deleteRouteBatch(routeBatchId) {
     return RouteBatch.destroy({

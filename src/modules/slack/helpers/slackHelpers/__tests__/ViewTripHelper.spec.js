@@ -16,7 +16,7 @@ describe('ViewTripHelper', () => {
       noOfPassengers: 1,
       reason: 'going to the airport.',
       tripStatus: 'Pending',
-      departureTime: '2019',
+      departureTime: '2019-01-01T12:45',
       tripType: 'Regular Trip',
       createdAt: 'Wed Feb',
       origin: { address: 'Villarosa Kempinski' },
@@ -56,7 +56,7 @@ describe('ViewTripHelper', () => {
       jest.spyOn(bugsnagHelper, 'log');
       const result = await ViewTripHelper.displayTripRequest(requestId, payload, respond);
       expect(bugsnagHelper.log).toHaveBeenCalled();
-      expect(result.text).toBe('Request unsuccessfull.:cry:');
+      expect(result.text).toBe('Request unsuccessfully.:cry:');
       done();
     });
   });
@@ -73,7 +73,7 @@ describe('ViewTripHelper', () => {
     });
 
     it('should create an attachment', () => {
-      const result = ViewTripHelper.tripAttachmentFields(tripData);
+      const result = ViewTripHelper.tripAttachmentFields(tripData, '', '', 'Africa/Lagos');
       expect(result).toBeInstanceOf(Array);
       expect(result).toHaveLength(10);
       expect(result[0].value).toBe('Villarosa Kempinski');

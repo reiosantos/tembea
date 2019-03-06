@@ -13,6 +13,7 @@ tripsRouter.use('/trips',
 tripsRouter.get(
   '/trips',
   GeneralValidator.validateQueryParams,
+  TripValidator.validateGetTripsParam,
   TripsController.getTrips
 );
 

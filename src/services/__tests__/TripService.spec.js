@@ -34,6 +34,15 @@ describe('TripService', () => {
       expect(response).toHaveProperty('departmentName');
       expect(response.departmentName).toEqual('People');
     });
+
+    it('should return trip department when it being passed', () => {
+      const department = 'People';
+      const filterParams = { department, dateFrom: '2018-01-11', dateTo: '2019-10-10' };
+      const response = TripService.sequelizeWhereClauseOption(filterParams);
+      expect(response).toBeDefined();
+      expect(response).toHaveProperty('departmentName');
+      expect(response.departmentName).toEqual('People');
+    });
   });
 
   describe('TripService_getTrips', () => {

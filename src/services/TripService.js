@@ -1,50 +1,51 @@
 import moment from 'moment';
+import { Op } from 'sequelize';
 import models from '../database/models';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import Utils from '../utils';
 import cache from '../cache';
 
-const { TripRequest, Department } = models;
+const { TripRequest, Department, Sequelize } = models;
 const getTripKey = pk => `tripDetail_${pk}`;
 
 export class TripService {
   constructor() {
     this.defaultInclude = [
-      'rider',
-      'requester',
-      'destination',
-      'origin',
-      'approver',
-      'confirmer',
-      'decliner',
-      'cab',
-      'tripDetail'
+      'requester', 'origin', 'destination', 'rider', 'approver', 'confirmer',
+      'department', 'decliner', 'cab', 'tripDetail'
     ];
   }
 
   static sequelizeWhereClauseOption(filterParams) {
-    const { status: tripStatus, department: departmentName } = filterParams;
-    if (!tripStatus && !departmentName) return {};
-    if (tripStatus) return { tripStatus };
-    if (departmentName) return { departmentName };
+    const {
+      status: tripStatus, department: departmentName, departureTime, requestedOn
+    } = filterParams;
+    let where = {};
+    if (tripStatus) {
+      where = { tripStatus };
+    }
+    if (departmentName) {
+      where = {
+        ...where,
+        departmentName
+      };
+    }
+    let dateFilters = TripService.getDateFilters('departureTime', departureTime || {});
+    where = {
+      ...where,
+      ...dateFilters
+    };
+    dateFilters = TripService.getDateFilters('TripRequest.createdAt', requestedOn || {});
+    where = {
+      ...where,
+      ...dateFilters
+    };
+    return where;
   }
 
   async getTrips(pageable, where) {
     const { page, size } = pageable;
-    const { departmentName: name } = where;
-    const department = name
-      ? {
-        model: Department,
-        as: 'department',
-        where: { name }
-      }
-      : 'department';
-    /* eslint no-param-reassign: ["error", { "props": false }] */
-    delete where.departmentName;
-    const filter = {
-      where,
-      include: [...this.defaultInclude, department]
-    };
+    const filter = this.createFilter(where);
     const paginatedRoutes = new SequelizePaginationHelper(
       TripRequest,
       filter,
@@ -53,6 +54,27 @@ export class TripService {
     const { data, pageMeta } = await paginatedRoutes.getPageItems(page);
     const trips = data.map(trip => TripService.serializeTripRequest(trip));
     return { trips, ...pageMeta };
+  }
+
+  createFilter(where, defaultInclude = this.defaultInclude) {
+    const { departmentName: name } = where;
+    let include = [...defaultInclude];
+
+    if (name && this.defaultInclude.indexOf('department') > -1) {
+      include.splice(include.indexOf('department'), 1);
+      const department = {
+        model: Department,
+        as: 'department',
+        where: { name }
+      };
+      include = [...include, department];
+    }
+    /* eslint no-param-reassign: ["error", { "props": false }] */
+    delete where.departmentName;
+    return {
+      where,
+      include
+    };
   }
 
   static serializeUser(requester) {
@@ -82,14 +104,14 @@ export class TripService {
 
   static serializeTripRequest(trip) {
     const {
-      requester, origin, destination, rider, department,
-      approver, confirmer, decliner, ...tripInfo
+      requester, origin, destination, rider, department, approver, confirmer, decliner, ...tripInfo
     } = trip;
     const {
-      name, tripStatus: status, departureTime, arrivalTime, createdAt, tripType, noOfPassenger
+      id, name, tripStatus: status, departureTime, arrivalTime, createdAt, tripType, noOfPassenger
     } = tripInfo.dataValues;
     const dtIsoTime = moment(departureTime, 'YYYY-MM-DD HH:mm:ss').toISOString();
     return {
+      id,
       name,
       status,
       arrivalTime,
@@ -108,6 +130,33 @@ export class TripService {
     };
   }
 
+  static getDateFilters(field, data) {
+    const { after, before } = data;
+    const both = after && before;
+    let from;
+    let to;
+    let condition;
+    if (after) {
+      from = { [Op.gte]: moment(after, 'YYYY-MM-DD').toDate() };
+      condition = from;
+    }
+
+    if (before) {
+      to = { [Op.lte]: moment(before, 'YYYY-MM-DD').toDate() };
+      condition = to;
+    }
+
+    if (both) {
+      condition = { [Op.and]: [from, to] };
+    }
+
+    if (!both) return {};
+
+    return {
+      [Op.eq]: Sequelize.where(Sequelize.fn('date', Sequelize.col(field)), condition),
+    };
+  }
+
   static async checkExistence(id) {
     const count = await TripRequest.count({ where: { id } });
     if (count > 0) {
@@ -115,7 +164,7 @@ export class TripService {
     }
     return false;
   }
-  
+
   async getById(pk) {
     const cachedTrip = await cache.fetch(getTripKey(pk));
     if (cachedTrip) {
@@ -132,5 +181,6 @@ export class TripService {
     }
   }
 }
+
 const tripService = new TripService();
 export default tripService;

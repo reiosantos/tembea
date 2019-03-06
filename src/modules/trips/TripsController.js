@@ -6,14 +6,15 @@ import UserService from '../../services/UserService';
 import TripActionsController from '../slack/TripManagement/TripActionsController';
 import GeneralValidator from '../../middlewares/GeneralValidator';
 import HttpError from '../../helpers/errorHandler';
+import TripHelper from '../../helpers/TripHelper';
 
 class TripsController {
   static async getTrips(req, res) {
     try {
-      const { query } = req;
-      let { page, size } = query;
+      let { page, size } = req.query;
       page = page || 1;
       size = size || defaultSize;
+      const query = TripsController.getRequestQuery(req);
       const where = TripService.sequelizeWhereClauseOption(query);
       const pageable = { page, size };
       const {
@@ -33,6 +34,16 @@ class TripsController {
     } catch (error) {
       HttpError.sendErrorResponse(error, res);
     }
+  }
+
+  static getRequestQuery(req) {
+    const departureTime = TripHelper.cleanDateQueryParam(req.query, 'departureTime');
+    const requestedOn = TripHelper.cleanDateQueryParam(req.query, 'requestedOn');
+    return {
+      ...req.query,
+      requestedOn,
+      departureTime
+    };
   }
 
   /**

@@ -55,15 +55,15 @@ class ScheduleTripController {
     } = tripRequestDetails;
 
     const pickupAddress = pickup === 'Others' ? othersPickup : pickup;
-    const destinationAdress = destination === 'Others' ? othersDestination : destination;
+    const destinationAddress = destination === 'Others' ? othersDestination : destination;
 
     const originId = await this.createLocation(pickupAddress, 23, 24);
-    const destinationId = await this.createLocation(destinationAdress, 15, 30);
+    const destinationId = await this.createLocation(destinationAddress, 15, 30);
 
     return { originId, destinationId };
   }
 
-  static async createRequestObject(tripRequestDetails, requester) {
+  static async createRequestObject(tripRequestDetails, requester, timezone) {
     try {
       const {
         reason, dateTime, departmentId, destination, pickup,
@@ -73,7 +73,7 @@ class ScheduleTripController {
       const pickupName = `${pickup === 'Others' ? othersPickup : pickup}`;
       const destinationName = `${destination === 'Others' ? othersDestination : destination}`;
       const name = `From ${pickupName} to ${destinationName} on ${dateTime}`;
-      const departureTime = Utils.formatDateForDatabase(dateTime);
+      const departureTime = Utils.formatDateForDatabase(dateTime, timezone);
       return {
         riderId: requester.id,
         name,
@@ -96,8 +96,12 @@ class ScheduleTripController {
   static async createRequest(payload, tripRequestDetails) {
     try {
       const { user: { id: slackUserId }, team: { id: teamId } } = payload;
-      const requester = await SlackHelpers.findOrCreateUserBySlackId(slackUserId, teamId);
-      const request = await this.createRequestObject(tripRequestDetails, requester);
+      const [requester, slackInfo] = await Promise.all([
+        SlackHelpers.findOrCreateUserBySlackId(slackUserId, teamId),
+        SlackHelpers.getUserInfoFromSlack(slackUserId, teamId)
+      ]);
+
+      const request = await this.createRequestObject(tripRequestDetails, requester, slackInfo.tz);
 
       if (tripRequestDetails.forSelf === 'false') {
         const { rider } = tripRequestDetails;

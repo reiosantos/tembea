@@ -1,13 +1,5 @@
-// import moment from 'moment';
-// import fs from 'fs';
-// import url from 'url';
-// import fileSystem from 'fs-extra';
-// import https from 'https';
-// import http from 'http';
-// import * as jwt from 'jsonwebtoken';
-// import uuid from 'uuid/v4';
-// import DateHelpers from '../helpers/dateHelper';
 const moment = require('moment');
+const momenttz = require('moment-timezone');
 const fs = require('fs');
 const fileSystem = require('fs-extra');
 const https = require('https');
@@ -37,11 +29,10 @@ class Utils {
       .format('MMM, YYYY');
   }
 
-  static formatDateForDatabase(dateStr) {
+  static formatDateForDatabase(dateStr, timezone = 'Africa/Nairobi') {
     if (!dateStr || typeof dateStr !== 'string') return dateStr;
     const formattedDate = DateHelpers.changeDateFormat(dateStr);
-    const date = new Date(formattedDate).getTime();
-    return moment(date).format('YYYY-MM-DD HH:mm:ss');
+    return momenttz.tz(formattedDate, 'MM/DD/YYYY HH:ss', timezone).toISOString();
   }
 
   static nextAlphabet(firstChar) {
@@ -158,7 +149,6 @@ class Utils {
     * @description This function convert the google map image url into a jpeg file
     * @param  {string} uri of the google map image url
     * @param  {string} destination - location to save the image
-    * @param  {string} filename - the name of the new jpeg image file
     * @returns {string} Save.
     */
   static convertToImageAndSaveToLocal(uri, destination) {
