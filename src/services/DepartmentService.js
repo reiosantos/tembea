@@ -9,15 +9,17 @@ import SlackHelpers from '../helpers/slack/slackHelpers';
 const { Department, User } = models;
 
 class DepartmentService {
-  static async createDepartment(user, name, teamId) {
+  static async createDepartment(user, name, teamId, location) {
     const department = await Department.scope('all').findOrCreate({
       where: { name: { [Op.iLike]: `${name}%` } },
       defaults: {
         name,
         headId: user.id,
-        teamId
+        teamId,
+        location
       }
     });
+    
 
     if (department[0] && department[0].dataValues.status === 'Inactive') {
       department[0].headId = user.id;
@@ -39,7 +41,7 @@ class DepartmentService {
     }
   }
 
-  static async updateDepartment(name, newName, newHeadEmail) {
+  static async updateDepartment(name, newName, newHeadEmail, location) {
     let headId;
     try {
       if (newHeadEmail) {
@@ -47,7 +49,7 @@ class DepartmentService {
       }
 
       const department = await Department.update(
-        { name: newName, headId },
+        { name: newName, headId, location },
         { returning: true, where: { name: { [Op.iLike]: `${name}%` } } }
       );
 
@@ -59,7 +61,8 @@ class DepartmentService {
 
       const newDepartmentRecords = {
         name: updatedDepartment.name,
-        head: { name: head.name, email: head.email }
+        head: { name: head.name, email: head.email },
+        location: updatedDepartment.location
       };
 
       return newDepartmentRecords;

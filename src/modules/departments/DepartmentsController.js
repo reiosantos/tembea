@@ -15,12 +15,15 @@ class DepartmentController {
    */
 
   static async updateDepartment(req, res) {
-    const { name, newName, newHeadEmail } = req.body;
+    const {
+      name, newName, newHeadEmail, location
+    } = req.body;
     try {
       const department = await DepartmentService.updateDepartment(
         name ? name.trim() : name,
         newName ? newName.trim() : newName,
-        newHeadEmail ? newHeadEmail.trim() : newHeadEmail
+        newHeadEmail ? newHeadEmail.trim() : newHeadEmail,
+        location ? location.trim() : location
       );
       return res
         .status(200)
@@ -36,23 +39,24 @@ class DepartmentController {
   }
 
   static async addDepartment(req, res) {
-    const { name, email, slackUrl } = req.body;
+    const {
+      body: {
+        name, email, slackUrl, location
+      }
+    } = req;
     try {
-      const user = await UserService.getUser(email);
-      const { teamId } = await TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl);
-      const [dept, created] = await DepartmentService.createDepartment(user, name, teamId);
-
+      const [user, { teamId }] = await Promise.all([UserService.getUser(email), TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl)]);
+      const [dept, created] = await DepartmentService.createDepartment(user, name, teamId, location);
+      
       if (created) {
-        return res
-          .status(201)
+        return res.status(201)
           .json({
             success: true,
             message: 'Department created successfully',
             department: dept.dataValues
           });
       }
-      return res
-        .status(409)
+      return res.status(409)
         .json({
           success: false,
           message: 'Department already exists.',
@@ -105,7 +109,7 @@ class DepartmentController {
    */
   static async deleteRecord(req, res) {
     try {
-      const { id, name } = req.body;
+      const { body: { id, name } } = req;
       const success = await DepartmentService.deleteDepartmentByNameOrId(id, name);
 
       if (success) {

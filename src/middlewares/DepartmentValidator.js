@@ -80,7 +80,8 @@ class DepartmentValidator {
     const messages = GeneralValidator.validateReqBody(
       req.body,
       'email',
-      'name'
+      'name',
+      'location'
     );
 
     DepartmentValidator.checkLengthOfMessageArray(messages, res, next);
@@ -88,8 +89,8 @@ class DepartmentValidator {
 
 
   static validateDepartmentBody(req, res, next) {
-    const { name } = req.body;
-    const messages = DepartmentValidator.validateProps(name);
+    const { body: { name, location } } = req;
+    const messages = DepartmentValidator.validateProps(name, location);
 
     DepartmentValidator.checkLengthOfMessageArray(messages, res, next);
   }
@@ -104,17 +105,25 @@ class DepartmentValidator {
       : next();
   }
 
-  static validateProps(name) {
+  static validateProps(name, location) {
     const messages = [];
     const expNameCha = /^[A-Za-z0-9_@./#&+-\s]{1,}$/;
     const nums = /^[0-9]+$/;
     const trimmedName = name.trim();
+    const trimmedLocation = location.trim();
     if (name && !expNameCha.test(trimmedName)) {
       messages.push('Please provide a valid department name.');
     }
     if (name && nums.test(trimmedName)) {
-      messages.push('Department cannot contain numeric values only.');
+      messages.push('Department name cannot contain numeric values only.');
     }
+    if (location && !expNameCha.test(trimmedLocation)) {
+      messages.push('Please provide a valid department location.');
+    }
+    if (location && nums.test(trimmedLocation)) {
+      messages.push('Department location cannot contain numeric values only.');
+    }
+    
     return messages;
   }
 
@@ -127,7 +136,7 @@ class DepartmentValidator {
    */
   static validateDeleteProps(req, res, next) {
     try {
-      const { id, name } = req.body;
+      const { body: { id, name } } = req;
   
       if ((id && name)
         || (!id && !name)) {

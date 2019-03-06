@@ -24,6 +24,9 @@ module.exports = (sequelize, DataTypes) => {
         'Active',
         'Inactive'
       )
+    },
+    location: {
+      type: DataTypes.STRING,
     }
   }, {
     defaultScope: {
