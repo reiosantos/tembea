@@ -10,6 +10,7 @@ import TeamDetailsService from '../../../../services/TeamDetailsService';
 import DepartmentService from '../../../../services/DepartmentService';
 import RouteRequestService from '../../../../services/RouteRequestService';
 import { mockRouteRequestData } from '../../../../services/__mocks__/index';
+import Services from '../../../../services/UserService';
 
 
 const tripInitial = {
@@ -54,6 +55,18 @@ const webClientMock = {
   }
 };
 
+const dbRider = {
+  id: 275,
+  slackId: '456FDRF',
+  name: 'rider Paul',
+  phoneNo: null,
+  email: 'rider@andela.com',
+  defaultDestinationId: null,
+  routeBatchId: null,
+  createdAt: '2019-03-05T19:32:17.426Z',
+  updatedAt: '2019-03-05T19:32:17.426Z'
+};
+
 jest.mock('../../../../services/TeamDetailsService', () => ({
   getTeamDetails: jest.fn(() => Promise.resolve({
     botToken: 'just a token',
@@ -70,6 +83,7 @@ describe('SlackNotifications', () => {
     jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockResolvedValue(mockUser);
     jest.spyOn(WebClientSingleton.prototype, 'getWebClient').mockReturnValue(webClientMock);
     jest.spyOn(IncomingWebhook.prototype, 'send').mockResolvedValue(true);
+    jest.spyOn(Services, 'findOrCreateNewUserWithSlackId').mockResolvedValue(dbRider);
   });
 
   afterEach(() => {
@@ -102,30 +116,47 @@ describe('SlackNotifications', () => {
     const newTripRequest = tripInitial;
     const imResponse = 'hello';
     const requester = { slackId: '112' };
-    const rider = { slackId: 767 };
+    const rider = {
+      slackId: '767',
+      name: 'rider Paul',
+      phoneNo: null,
+      email: 'rider@andela.com',
+      defaultDestinationId: null,
+      routeBatchId: null,
+      createdAt: '2019-03-05T19:32:17.426Z',
+      updatedAt: '2019-03-05T19:32:17.426Z'
+    };
     const requestType = 'newTrip';
-
+    
     beforeEach(() => {
       jest.spyOn(SlackNotifications, 'createDirectMessage');
     });
 
-    it('should create a message', () => {
-      const result = SlackNotifications.getManagerMessageAttachment(newTripRequest,
-        imResponse, requester, requestType, rider);
+    it('should create a message', async (done) => {
+      const result = await SlackNotifications.getManagerMessageAttachment(newTripRequest,
+        imResponse, requester, 'newTrip', rider);
 
       expect(result).toBeDefined();
+      expect(Services.findOrCreateNewUserWithSlackId).toBeCalledWith(rider);
       expect(SlackNotifications.createDirectMessage).toHaveBeenCalledWith(imResponse, expect.anything(), expect.anything());
+     
+      const result2 = await SlackNotifications.getManagerMessageAttachment(newTripRequest,
+        imResponse, requester, 'notNew', rider);
+      expect(result2).toBeDefined();
+
+      done();
     });
 
-    it('should add notification actions when tripStatus is pending', () => {
+    it('should add notification actions when tripStatus is pending', async (done) => {
       jest.spyOn(SlackNotifications, 'notificationActions');
       newTripRequest.tripStatus = 'Pending';
 
-      const result = SlackNotifications.getManagerMessageAttachment(newTripRequest,
+      const result = await SlackNotifications.getManagerMessageAttachment(newTripRequest,
         imResponse, requester, requestType, rider);
 
       expect(SlackNotifications.notificationActions).toHaveBeenCalledTimes(1);
       expect(result).toBeDefined();
+      done();
     });
   });
 
@@ -200,6 +231,12 @@ describe('SlackNotifications', () => {
         departmentId: 6,
         requestedById: 6,
         declinedById: 6,
+        rider: {
+          dataValues:
+           {
+             name: 'Derrick Kirwa'
+           }
+        },
         origin: {
           dataValues: {
             address: 'Someplace'

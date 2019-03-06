@@ -15,6 +15,7 @@ import DepartmentService from '../../../services/DepartmentService';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import RouteRequestService from '../../../services/RouteRequestService';
 import AttachmentHelper from './notifications/AttachmentHelper';
+import Services from '../../../services/UserService';
 
 const web = new WebClientSingleton();
 
@@ -50,7 +51,7 @@ class SlackNotifications {
         TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id)
       ]);
       const imResponse = await SlackNotifications.getDMChannelId(head.slackId, slackBotOauthToken);
-      const message = SlackNotifications.getManagerMessageAttachment(
+      const message = await SlackNotifications.getManagerMessageAttachment(
         newTripRequest, imResponse, requester, type, rider
       );
       return SlackNotifications.sendNotification(message, slackBotOauthToken);
@@ -63,13 +64,14 @@ class SlackNotifications {
     }
   }
 
-  static getManagerMessageAttachment(newTripRequest, imResponse, requester, requestType, rider) {
+  static async getManagerMessageAttachment(newTripRequest, imResponse, requester, requestType, rider) {
     const { tripStatus } = newTripRequest;
     const text = requestType === 'newTrip' ? 'booked a' : 'rescheduled this';
     const attachments = new SlackAttachment('Trip Request');
     attachments.addOptionalProps('manager_actions', '/fallback', '#3359DF');
-
-    const fields = SlackNotifications.notificationFields(newTripRequest);
+    await Services.findOrCreateNewUserWithSlackId(rider);
+    let fields = null;
+    fields = SlackNotifications.notificationFields(newTripRequest);
     attachments.addFieldsOrActions('fields', fields);
 
     if (tripStatus === 'Pending') {
@@ -300,20 +302,16 @@ class SlackNotifications {
   static notificationFields(tripInformation) {
     const pickup = tripInformation.origin.address;
     const destination = tripInformation.destination.address;
+    const passenger = tripInformation.rider.dataValues.name;
     return [
       new SlackAttachmentField('Pickup Location', pickup, true),
       new SlackAttachmentField('Destination', destination, true),
-      new SlackAttachmentField(
-        'Request Date',
-        Utils.formatDate(tripInformation.createdAt),
-        true
-      ),
-      new SlackAttachmentField(
-        'Trip Date',
-        Utils.formatDate(tripInformation.departureTime),
-        true
-      ),
-      new SlackAttachmentField('Reason', tripInformation.reason, true)
+      new SlackAttachmentField('Request Date',
+        Utils.formatDate(tripInformation.createdAt), true),
+      new SlackAttachmentField('Trip Date',
+        Utils.formatDate(tripInformation.departureTime), true),
+      new SlackAttachmentField('Reason', tripInformation.reason, true),
+      new SlackAttachmentField('Passenger', passenger, true),
     ];
   }
 

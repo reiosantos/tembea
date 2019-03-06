@@ -95,7 +95,7 @@ const createTripDetailsForm = {
     const destinationField = new SlackDialogText('Destination',
       'destination', 'Enter destination', false);
     const appointmentDateTime = new SlackDialogText(
-      'Visit Date and Time',
+      'Interview Date and Time',
       'embassyVisitDateTime',
       'dd/mm/yy hh:mm',
       false,
