@@ -1,9 +1,8 @@
-import models from '../../../../../database/models';
+import tripService from '../../../../../services/TripService';
 import ViewTripHelper from '../ViewTripHelper';
 import { bugsnagHelper } from '../../../RouteManagement/rootFile';
 import UserService from '../../../../../services/UserService';
 
-const { TripRequest } = models;
 
 describe('ViewTripHelper', () => {
   let tripData;
@@ -30,7 +29,7 @@ describe('ViewTripHelper', () => {
       }
     };
     respond = jest.fn();
-    tripRequest = jest.spyOn(TripRequest, 'findByPk').mockResolvedValue(tripData);
+    tripRequest = jest.spyOn(tripService, 'getById').mockResolvedValue(tripData);
     userName = jest.spyOn(UserService, 'getUserById');
   });
 

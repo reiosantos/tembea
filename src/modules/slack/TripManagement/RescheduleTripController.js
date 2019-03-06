@@ -1,4 +1,4 @@
-import models from '../../../database/models';
+import tripService from '../../../services/TripService';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import DateDialogHelper from '../../../helpers/dateHelper';
@@ -8,7 +8,7 @@ import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import SlackEvents from '../events';
 import { slackEventNames } from '../events/slackEvents';
 
-const { TripRequest } = models;
+
 const web = new WebClientSingleton();
 
 class RescheduleTripController {
@@ -42,7 +42,7 @@ class RescheduleTripController {
 
   static async rescheduleTrip(tripId, newDate, payload, respond) {
     try {
-      const trip = await TripRequest.findByPk(tripId);
+      const trip = await tripService.getById(tripId);
       if (trip) {
         trip.departureTime = Utils.formatDateForDatabase(newDate);
         const newTrip = await trip.save();

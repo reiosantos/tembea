@@ -44,7 +44,7 @@ class SlackNotifications {
       const [
         head, requester, rider, newTripRequest, slackBotOauthToken
       ] = await Promise.all([
-        SlackHelpers.getHeadByDepartmentId(departmentId),
+        DepartmentService.getHeadByDeptId(departmentId),
         SlackHelpers.findUserByIdOrSlackId(requestedById),
         SlackHelpers.findUserByIdOrSlackId(riderId),
         SlackHelpers.getTripRequest(id),
@@ -58,8 +58,7 @@ class SlackNotifications {
     } catch (error) {
       bugsnagHelper.log(error);
       respond({
-        text:
-          'Error:warning:: Request saved, but I could not send a notification to your manager.'
+        text: 'Error:warning:: Request saved, but I could not send a notification to your manager.'
       });
     }
   }
@@ -93,7 +92,7 @@ class SlackNotifications {
       const { botToken: slackBotOauthToken, opsChannelId } = teamDetails;
       const checkTripType = type === 'regular';
       SlackNotifications.restructureTripData(tripInformation, checkTripType);
-      const { dataValues: { name } } = await DepartmentService.getDepartment(tripInformation.departmentId);
+      const { dataValues: { name } } = await DepartmentService.getById(tripInformation.departmentId);
       tripInformation.department = name;
       if (checkTripType) {
         SlackEvents.raise(slackEventNames.TRIP_WAITING_CONFIRMATION, tripInformation, respond, slackBotOauthToken);
@@ -132,13 +131,13 @@ class SlackNotifications {
     slackBotOauthToken
   ) {
     try {
-      const dept = await SlackHelpers.getHeadByDepartmentId(
+      const dept = await DepartmentService.getById(
         responseData.departmentId
       );
 
       if (!dept || !dept.dataValues) return;
 
-      const department = dept.dataValues;
+      const { dataValues: { head: { dataValues: department } } } = dept;
       const { name } = department;
 
       Object.assign(responseData, { department: name });

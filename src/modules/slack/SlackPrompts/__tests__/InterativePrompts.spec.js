@@ -1,6 +1,6 @@
 import InteractivePrompts from '../InteractivePrompts';
 import InteractivePromptsHelpers from '../../helpers/slackHelpers/InteractivePromptsHelpers';
-import SlackHelpers from '../../../../helpers/slack/slackHelpers';
+import DepartmentService from '../../../../services/DepartmentService';
 import {
   SlackButtonsAttachmentFromAList, SlackAttachment, SlackSelectAction,
   SlackButtonAction, SlackCancelButtonAction
@@ -136,7 +136,7 @@ describe('Interactive Prompts test', () => {
 
   it('should send list of departments', async () => {
     const response = jest.fn();
-    SlackHelpers.getDepartments = jest.fn(() => 'attachment');
+    DepartmentService.getDepartmentsForSlack = jest.fn(() => 'attachment');
     SlackButtonsAttachmentFromAList.createAttachments = jest.fn(() => []);
     const props = {
       payload: { channel: { id: 1 }, user: { id: 2 }, team: { id: '45THKULE' } },
@@ -152,7 +152,7 @@ describe('Interactive Prompts test', () => {
 
   it('should send list of departments with forSelf as [false]', async () => {
     const response = jest.fn();
-    SlackHelpers.getDepartments = jest.fn(() => 'attachment');
+    DepartmentService.getDepartmentsForSlack = jest.fn(() => 'attachment');
     SlackButtonsAttachmentFromAList.createAttachments = jest.fn(() => []);
     const props = {
       payload: { channel: { id: 1 }, user: { id: 2 }, team: { id: '45THKULE' } },

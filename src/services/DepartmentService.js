@@ -3,10 +3,11 @@ import { Op } from 'sequelize';
 import models from '../database/models';
 import UserService from './UserService';
 import HttpError from '../helpers/errorHandler';
-import SlackHelpers from '../helpers/slack/slackHelpers';
+import cache from '../cache';
 
 
 const { Department, User } = models;
+const getDeptKey = id => `dept_${id}`;
 
 class DepartmentService {
   static async createDepartment(user, name, teamId, location) {
@@ -57,8 +58,7 @@ class DepartmentService {
         'Department not found. To add a new department use POST /api/v1/departments');
 
       const updatedDepartment = department[1][0].dataValues;
-      const head = await SlackHelpers.getHeadByDepartmentId(updatedDepartment.id);
-
+      const head = await DepartmentService.getHeadByDeptId(updatedDepartment.id);
       const newDepartmentRecords = {
         name: updatedDepartment.name,
         head: { name: head.name, email: head.email },
@@ -114,12 +114,37 @@ class DepartmentService {
     return true;
   }
 
-  static async getDepartment(departmentId) {
+  static async getById(departmentId, includeOptions = ['head']) {
     if (Number.isNaN(parseInt(departmentId, 10))) {
       throw Error('The parameter provided is not valid. It must be a valid number');
     }
+    const cachedDept = await cache.fetch(getDeptKey(departmentId));
+    if (cachedDept) {
+      return cachedDept;
+    }
+    const dept = Department.findByPk(departmentId, { include: [...includeOptions] });
+    await cache.saveObject(getDeptKey(departmentId), dept);
+    return dept;
+  }
 
-    return Department.findByPk(departmentId, { include: ['head'] });
+  static async getHeadByDeptId(departmentId) {
+    const department = await DepartmentService.getById(departmentId);
+    const head = department.dataValues.head.dataValues;
+    return head;
+  }
+
+  static async getDepartmentsForSlack(teamId) {
+    const departments = teamId ? await Department.findAll({
+      where: { teamId },
+      include: ['head']
+    }) : await Department.findAll({
+      include: ['head']
+    });
+    return departments.map(item => ({
+      label: item.dataValues.name,
+      value: item.dataValues.id,
+      head: item.dataValues.head ? item.dataValues.head.dataValues : item.dataValues.head
+    }));
   }
 }
 

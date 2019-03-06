@@ -1,7 +1,8 @@
-import models from '../../../../../database/models';
+import tripService from '../../../../../services/TripService';
 import TripRescheduleHelper from '../rescheduleHelper';
 import DialogPrompts from '../../../SlackPrompts/DialogPrompts';
 import InteractivePrompts from '../../../SlackPrompts/InteractivePrompts';
+
 
 jest.mock('../../../SlackPrompts/Notifications.js');
 jest.mock('../../../events/', () => ({
@@ -28,11 +29,10 @@ describe('Trip Reschedule Helper test', () => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
   });
-  const { TripRequest } = models;
 
   it('should send Reschedule Trip Form ', async (done) => {
     const twoHoursAfter = new Date(Date.now() + 2 * 60 * 60 * 1000);
-    jest.spyOn(TripRequest, 'findByPk').mockResolvedValue({
+    jest.spyOn(tripService, 'getById').mockResolvedValue({
       confirmedById: 0,
       departureTime: `${twoHoursAfter.toISOString()}`
     });
@@ -49,7 +49,7 @@ describe('Trip Reschedule Helper test', () => {
   it('should send reschedule confirm error when trip is < 1hr before the departure time',
     async () => {
       const oneHourAfter = new Date(Date.now() - 60 * 60 * 1000);
-      jest.spyOn(TripRequest, 'findByPk')
+      jest.spyOn(tripService, 'getById')
         .mockResolvedValue({
           departureTime: `${oneHourAfter.toISOString()}`
         });
@@ -63,7 +63,7 @@ describe('Trip Reschedule Helper test', () => {
 
   it('should send reschedule confirm or approve error when trip has been approved', async () => {
     const twoHourBefore = new Date(Date.now() + 2 * 60 * 60 * 1000);
-    jest.spyOn(TripRequest, 'findByPk')
+    jest.spyOn(tripService, 'getById')
       .mockResolvedValue({
         approvedById: 1,
         // Set departure time to two hour from the current time.
@@ -79,7 +79,7 @@ describe('Trip Reschedule Helper test', () => {
   });
 
   it('should handle unexpected errors', async () => {
-    jest.spyOn(TripRequest, 'findByPk').mockRejectedValue();
+    jest.spyOn(tripService, 'getById').mockRejectedValue();
     const spy = jest.spyOn(InteractivePrompts, 'sendTripError');
 
     const payload = {};

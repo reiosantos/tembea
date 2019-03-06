@@ -12,6 +12,7 @@ import InteractivePromptsHelpers from '../helpers/slackHelpers/InteractivePrompt
 import previewTripDetailsAttachment
   from '../helpers/slackHelpers/TravelTripHelper/previewTripDetailsAttachment';
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
+import DepartmentService from '../../../services/DepartmentService';
 
 const web = new WebClientSingleton();
 
@@ -259,7 +260,7 @@ class InteractivePrompts {
     const navButtonsAttachment = createNavButtons(
       'welcome_message', 'view_trips_itinerary'
     );
- 
+
     let pageButtonsAttachment;
     if (totalPages > 1) {
       pageButtonsAttachment = SlackPagination.createPaginationAttachment(
@@ -309,7 +310,7 @@ class InteractivePrompts {
   ) {
     const personify = forSelf === 'true' ? 'your' : "passenger's";
     const attachment = SlackButtonsAttachmentFromAList.createAttachments(
-      await SlackHelpers.getDepartments(payload.team.id),
+      await DepartmentService.getDepartmentsForSlack(payload.team.id),
       attachmentCallbackId
     );
     attachment.push(createNavButtons(navButtonCallbackId, navButtonValue));

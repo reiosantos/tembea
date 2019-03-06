@@ -1,38 +1,10 @@
-import models from '../../database/models';
+import tripService from '../../services/TripService';
 import WebClientSingleton from '../../utils/WebClientSingleton';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import UserService from '../../services/UserService';
 
-const { Department, User, TripRequest } = models;
 
 class SlackHelpers {
-  static async getDepartments(teamId) {
-    const departments = teamId ? await Department.findAll({
-      where: { teamId },
-      include: ['head']
-    }) : await Department.findAll({
-      include: ['head']
-    });
-    return departments.map(item => ({
-      label: item.dataValues.name,
-      value: item.dataValues.id,
-      head: item.dataValues.head ? item.dataValues.head.dataValues : item.dataValues.head
-    }));
-  }
-
-  static async getHeadByDepartmentId(departmentId) {
-    const department = await Department.findByPk(departmentId, {
-      include: [{
-        model: User,
-        as: 'head'
-      }]
-    });
-
-    const { dataValues: { head: { dataValues: theHead } } } = department;
-
-    return theHead;
-  }
-
   static async findUserByIdOrSlackId(userId) {
     let user;
     const normalizedId = Number.parseInt(userId, 10);
@@ -46,10 +18,12 @@ class SlackHelpers {
   }
 
   static async findOrCreateUserBySlackId(slackId, teamId) {
-    const user = await UserService.getUserBySlackId(slackId);
-    if (user) return user;
-    const userInfo = await SlackHelpers.getUserInfoFromSlack(slackId, teamId);
-    const newUser = await SlackHelpers.createUserFromSlackUserInfo(userInfo);
+    const OneUser = await UserService.getUserBySlackId(slackId);
+    if (OneUser) return OneUser;
+    let userInfo = await SlackHelpers.getUserInfoFromSlack(slackId, teamId);
+    const user = userInfo;
+    user.profile.real_name = userInfo.real_name;
+    const newUser = await UserService.createNewUser(userInfo = { user });
     return newUser;
   }
 
@@ -68,21 +42,8 @@ class SlackHelpers {
     return user;
   }
 
-  static async createUserFromSlackUserInfo(userInfo) {
-    const { real_name: name, profile: { email }, id } = userInfo;
-    const user = {
-      slackId: id,
-      name,
-      email
-    };
-    return UserService.findOrCreateNewUserWithSlackId(user);
-  }
-
   static async getTripRequest(tripId) {
-    const tripRequest = await TripRequest.findByPk(tripId, {
-      include: ['rider', 'requester', 'destination', 'origin', 'department',
-        'approver', 'confirmer', 'decliner', 'cab', 'tripDetail']
-    });
+    const tripRequest = await tripService.getById(tripId);
     return tripRequest.dataValues;
   }
 
@@ -90,7 +51,7 @@ class SlackHelpers {
     let isApproved = false;
     let approvedBy = null;
 
-    const trip = await TripRequest.findByPk(requestId);
+    const trip = await tripService.getById(requestId);
 
     if (!trip.dataValues) {
       return { isApproved: false, approvedBy };
@@ -112,7 +73,7 @@ class SlackHelpers {
   static async approveRequest(requestId, managerId, description) {
     let approved = false;
 
-    const response = await TripRequest.findByPk(requestId);
+    const response = await tripService.getById(requestId);
 
     if (!response) return approved;
     const user = await SlackHelpers.findUserByIdOrSlackId(managerId);

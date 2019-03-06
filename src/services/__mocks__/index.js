@@ -117,6 +117,18 @@ const batchDetails = {
   imageUrl: 'https://image-url',
   status: 'Active',
 };
+
+export const departmentMocks = [
+  {
+    dataValues: {
+      name: 'Mathematics',
+      id: 1,
+      head: {
+        dataValues: {}
+      }
+    }
+  }
+];
 export const mockRouteBatchData = {
   cabDetails, route, riders, ...batchDetails
 };

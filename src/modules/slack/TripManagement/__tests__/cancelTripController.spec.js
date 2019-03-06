@@ -1,5 +1,5 @@
 import CancelTripController from '../CancelTripController';
-import models from '../../../../database/models';
+import tripService from '../../../../services/TripService';
 
 describe('cancel trip test', () => {
   it('should return trip not found', async (done) => {
@@ -15,9 +15,8 @@ describe('cancel trip test', () => {
   });
 
   it('should handle error', async (done) => {
-    const { TripRequest } = models;
     const err = new Error('dummy message');
-    TripRequest.findById = jest.fn(() => Promise.reject(err));
+    tripService.getById = jest.fn(() => Promise.reject(err));
     const result = await CancelTripController.cancelTrip(1);
     expect(result.text).toBe(`Request could not be processed, ${err.message}`);
     done();

@@ -22,6 +22,7 @@ class TripValidator {
     if (!tripId) { messages.push('Add tripId to the url'); }
 
     const isTrip = await TripService.checkExistence(tripId);
+    
     if (!isTrip) { messages.push('Trip Does not exist'); }
     if (messages.length) {
       return HttpError.sendErrorResponse({ message: messages }, res);

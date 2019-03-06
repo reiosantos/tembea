@@ -1,7 +1,7 @@
 import schedule from 'node-schedule';
 import EmailService from '../../services/EmailService';
 import ReportGeneratorService from '../../services/report/ReportGeneratorService';
-import SlackHelpers from '../slack/slackHelpers';
+import DepartmentService from '../../services/DepartmentService';
 import Utils from '../../utils';
 import BugsnagHelper from '../bugsnagHelper';
 import TeamDetailsService from '../../services/TeamDetailsService';
@@ -70,7 +70,7 @@ class MonthlyReportSender {
   * @returns {*[]}
   */
   static async getAddresses(teamId) {
-    const departments = await SlackHelpers.getDepartments(teamId);
+    const departments = await DepartmentService.getDepartmentsForSlack(teamId);
 
     let filtered = departments.filter(department => !!(department.label && (
       department.label.toLowerCase() === 'operations'

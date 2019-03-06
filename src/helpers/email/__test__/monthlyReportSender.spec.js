@@ -1,5 +1,5 @@
 import schedule from 'node-schedule';
-import SlackHelpers from '../../slack/slackHelpers';
+import DepartmentService from '../../../services/DepartmentService';
 import MonthlyReportSender from '../monthlyReportSender';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import ReportGeneratorService from '../../../services/report/ReportGeneratorService';
@@ -121,7 +121,7 @@ describe('MonthlyReportSender', () => {
 
   describe('getAddresses', () => {
     beforeEach(() => {
-      jest.spyOn(SlackHelpers, 'getDepartments').mockResolvedValue(departmentsMock);
+      jest.spyOn(DepartmentService, 'getDepartmentsForSlack').mockResolvedValue(departmentsMock);
     });
 
     it('should return object of name and email', async (done) => {

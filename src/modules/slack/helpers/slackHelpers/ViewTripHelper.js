@@ -1,12 +1,11 @@
 import Utils from '../../../../utils';
-import models from '../../../../database/models';
+import tripService from '../../../../services/TripService';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import {
   SlackAttachmentField, SlackAttachment, SlackInteractiveMessage, SlackButtonAction
 } from '../../SlackModels/SlackMessageModels';
 import UserService from '../../../../services/UserService';
 
-const { TripRequest } = models;
 export default class ViewTripHelper {
   /**
    * Displays an interactive prompt for trip details when a user books a new trip
@@ -15,7 +14,7 @@ export default class ViewTripHelper {
    */
   static async displayTripRequest(requestId, userId) {
     try {
-      const tripRequest = await TripRequest.findByPk(requestId, { include: ['origin', 'destination'] });
+      const tripRequest = await tripService.getById(requestId);
       const { riderId } = tripRequest;
       const { slackId } = await UserService.getUserById(riderId);
       const message = ViewTripHelper.tripAttachment(tripRequest, userId, slackId);

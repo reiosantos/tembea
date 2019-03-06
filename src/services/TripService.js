@@ -2,18 +2,23 @@ import moment from 'moment';
 import models from '../database/models';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import Utils from '../utils';
+import cache from '../cache';
 
 const { TripRequest, Department } = models;
+const getTripKey = pk => `tripDetail_${pk}`;
 
 export class TripService {
   constructor() {
     this.defaultInclude = [
-      'requester',
-      'origin',
-      'destination',
       'rider',
+      'requester',
+      'destination',
+      'origin',
       'approver',
-      'confirmer'
+      'confirmer',
+      'decliner',
+      'cab',
+      'tripDetail'
     ];
   }
 
@@ -109,6 +114,22 @@ export class TripService {
       return true;
     }
     return false;
+  }
+  
+  async getById(pk) {
+    const cachedTrip = await cache.fetch(getTripKey(pk));
+    if (cachedTrip) {
+      return cachedTrip;
+    }
+    try {
+      const trip = await TripRequest.findByPk(pk, {
+        include: [...this.defaultInclude]
+      });
+      await cache.saveObject(getTripKey(pk), trip);
+      return trip;
+    } catch (error) {
+      throw new Error('Could not return the requested trip');
+    }
   }
 }
 const tripService = new TripService();

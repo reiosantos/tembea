@@ -1,9 +1,8 @@
 import RescheduleTripController from '../RescheduleTripController';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import SlackEvents from '../../events';
-import models from '../../../../database/models';
+import tripService from '../../../../services/TripService';
 
-const { TripRequest } = models;
 
 jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../SlackPrompts/Notifications.js');
@@ -71,7 +70,7 @@ describe('RescheduleTripController', () => {
     const payload = { id: 1 };
     const respond = jest.fn();
     SlackEvents.raise = jest.fn();
-    TripRequest.findByPk = jest.fn(() => ({
+    tripService.getById = jest.fn(() => ({
       save: jest.fn()
     }));
 
@@ -82,7 +81,7 @@ describe('RescheduleTripController', () => {
 
   it('should send trip error', async () => {
     InteractivePrompts.sendTripError = jest.fn(() => {});
-    TripRequest.findByPk = jest.fn(() => { });
+    tripService.getById = jest.fn(() => { });
 
     await RescheduleTripController.rescheduleTrip(3000, '12/12/2018 22:00');
 
@@ -92,7 +91,7 @@ describe('RescheduleTripController', () => {
   it('should send reschedule trip error', async () => {
     const err = new Error();
     InteractivePrompts.sendRescheduleError = jest.fn(() => {});
-    TripRequest.findByPk = jest.fn(() => Promise.reject(err));
+    tripService.getById = jest.fn(() => Promise.reject(err));
 
     await RescheduleTripController.rescheduleTrip(3, {});
 

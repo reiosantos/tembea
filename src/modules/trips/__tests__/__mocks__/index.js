@@ -53,6 +53,30 @@ const response = {
     }))
     .mockReturnValue({ json: jest.fn() })
 };
+const mockTrip = {
+  trip: [{
+    id: 3,
+    name: 'my trip to the dojo',
+    reason: null,
+    tripType: 'Regular Trip',
+    tripDetailId: null,
+    riderId: 6,
+    noOfPassengers: 1,
+    departmentId: 3,
+    tripStatus: 'DeclinedByManager',
+    originId: 1,
+    destinationId: 1,
+    cost: null,
+    departureTime: '2018-11-16 09:30:00.000 +00:00',
+    arrivalTime: null,
+    requestedById: 6,
+    approvedById: null,
+    confirmedById: 3,
+    declinedById: 6,
+    operationsComment: 'derick has it',
+    cabId: 5
+  }]
+};
 export {
-  mockedValue, resultValue, response, tripInfo
+  mockedValue, resultValue, response, tripInfo, mockTrip
 };

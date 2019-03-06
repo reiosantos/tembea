@@ -1,6 +1,6 @@
 import validator from 'validator';
-import models from '../../../database/models';
-import SlackHelpers from '../../../helpers/slack/slackHelpers';
+import tripService from '../../../services/TripService';
+import DepartmentService from '../../../services/DepartmentService';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import slackEvents from '../events';
@@ -8,7 +8,6 @@ import { slackEventNames } from '../events/slackEvents';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 
-const { TripRequest, Address, User } = models;
 
 class ManageTripController {
   static runValidation(declineReason) {
@@ -28,13 +27,8 @@ class ManageTripController {
     // eslint-disable-next-line no-useless-escape
     const reason = validator.blacklist(declineReason.trim(), '=\'\"\t\b\0\Z').trim();
 
-    return TripRequest.findByPk(state[2], {
-      where: {
-        tripStatus: 'Pending'
-      },
-      include: [{ model: Address, as: 'origin' }, { model: Address, as: 'destination' }, { model: User, as: 'requester' }]
-    }).then(async (trip) => {
-      const head = await SlackHelpers.getHeadByDepartmentId(trip.departmentId);
+    return tripService.getById(state[2]).then(async (trip) => {
+      const head = await DepartmentService.getHeadByDeptId(trip.departmentId);
       const ride = trip;
       ride.tripStatus = 'DeclinedByManager';
       ride.managerComment = reason;

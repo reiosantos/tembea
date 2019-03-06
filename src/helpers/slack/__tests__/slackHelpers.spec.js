@@ -3,11 +3,12 @@ import SlackHelpers from '../slackHelpers';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
 import {
-  departmentMocks, testUserFromDb, testTripFromDb, slackUserMock, testDepartmentFromDb
+  testUserFromDb, testTripFromDb, slackUserMock, createNewUserMock, newUser
 } from '../__mocks__';
 import UserService from '../../../services/UserService';
+import tripService from '../../../services/TripService';
 
-const { TripRequest, User, Department } = models;
+const { TripRequest, User } = models;
 
 // setup for all
 const webClientMock = {
@@ -44,32 +45,6 @@ describe('slackHelpers', () => {
     jest.restoreAllMocks();
   });
 
-  describe('getDepartments', () => {
-    beforeAll(() => {
-      jest.spyOn(Department, 'findAll').mockResolvedValue(departmentMocks);
-    });
-
-    it('should return an array with department entries', async (done) => {
-      const departments = await SlackHelpers.getDepartments();
-
-      expect(departments).toBeInstanceOf(Array);
-      expect(departments).toHaveLength(departmentMocks.length);
-      expect(departments[0].head).toBeDefined();
-      done();
-    });
-  });
-
-  describe('getHeadByDepartmentId', () => {
-    it('should return a user object', async (done) => {
-      jest.spyOn(Department, 'findByPk').mockResolvedValue(testDepartmentFromDb);
-
-      const head = await SlackHelpers.getHeadByDepartmentId(1);
-      expect(head).toBeInstanceOf(Object);
-      expect(head).toEqual(testUserFromDb.dataValues);
-      done();
-    });
-  });
-
   describe('fetchUserInformationFromSlack', () => {
     it('should call WebClientSingleton.getWebClient', async (done) => {
       // invoke
@@ -101,28 +76,14 @@ describe('slackHelpers', () => {
     });
   });
 
-  describe('createUserFromSlackUserInfo', () => {
-    it('should create a user object based on given slack user info', async (done) => {
-      jest.spyOn(User, 'findOrCreate').mockResolvedValue([{ dataValues: testUserFromDb.dataValues }]);
-      const user = await SlackHelpers.createUserFromSlackUserInfo(slackUserMock);
-      const expected = {
-        where: { slackId: slackUserMock.id },
-        defaults: { name: slackUserMock.real_name, email: slackUserMock.profile.email }
-      };
-      expect(User.findOrCreate).toBeCalledWith(expected);
-      expect(user).toEqual(testUserFromDb.dataValues);
-      done();
-    });
-  });
-
-  describe('findOrCreateUserFromSlackId', () => {
+  describe('findOrCreateUserBySlackId', () => {
     const userId = 1;
     const teamId = 'U1GHSGS';
     const validUser = { id: teamId, email: 'tembea@andela.com' };
     beforeEach(() => {
       // create expected results
       jest.spyOn(SlackHelpers, 'getUserInfoFromSlack').mockResolvedValue(slackUserMock);
-      jest.spyOn(SlackHelpers, 'createUserFromSlackUserInfo').mockResolvedValue(validUser);
+      jest.spyOn(UserService, 'createNewUser').mockResolvedValue(validUser);
     });
 
     afterEach(() => {
@@ -138,7 +99,7 @@ describe('slackHelpers', () => {
       const user = await SlackHelpers.findOrCreateUserBySlackId(userId, teamId);
       expect(UserService.getUserBySlackId).toBeCalledWith(userId);
       expect(SlackHelpers.getUserInfoFromSlack).toBeCalledWith(userId, teamId);
-      expect(SlackHelpers.createUserFromSlackUserInfo).toBeCalledWith(slackUserMock);
+      expect(UserService.createNewUser).toBeCalledWith(createNewUserMock);
       expect(user).toEqual(validUser);
       done();
     });
@@ -148,7 +109,7 @@ describe('slackHelpers', () => {
       const user = await SlackHelpers.findOrCreateUserBySlackId(userId, teamId);
       expect(UserService.getUserBySlackId).toBeCalledWith(userId);
       expect(SlackHelpers.getUserInfoFromSlack).toBeCalledTimes(0);
-      expect(SlackHelpers.createUserFromSlackUserInfo).toBeCalledTimes(0);
+      expect(UserService.createNewUser).toBeCalledTimes(0);
       expect(user).toEqual(validUser);
       done();
     });
@@ -176,14 +137,14 @@ describe('slackHelpers', () => {
 
   describe('isRequestApproved', () => {
     it('should return trip status object with approved false', async (done) => {
-      TripRequest.findByPk = jest.fn(() => Promise.resolve({}));
+      tripService.getById = jest.fn(() => Promise.resolve({}));
       const trip = await SlackHelpers.isRequestApproved(23, 'UE45');
       expect(trip).toEqual({ approvedBy: null, isApproved: false });
       done();
     });
 
     it('should return a valid approval status when request exists', async (done) => {
-      jest.spyOn(TripRequest, 'findByPk').mockResolvedValue(testTripFromDb);
+      jest.spyOn(tripService, 'getById').mockResolvedValue(testTripFromDb);
       jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockResolvedValue(testUserFromDb.dataValues);
       const trip = await SlackHelpers.isRequestApproved(23, 'UE45');
       expect(trip).toEqual({
@@ -195,25 +156,25 @@ describe('slackHelpers', () => {
 
   describe('approveRequest', () => {
     it('should approve request when parameters is valid', async (done) => {
-      const thisTripRequest = testTripFromDb;
-      jest.spyOn(thisTripRequest, 'update').mockResolvedValue({});
+      jest.spyOn(tripService, 'getById').mockResolvedValue(testTripFromDb);
+      jest.spyOn(testTripFromDb, 'update').mockResolvedValue({});
       jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockResolvedValue({ id: 5 });
 
       const tripStatus = await SlackHelpers.approveRequest(23, 'UE45', 'some text');
-      expect(thisTripRequest.update).toBeCalledTimes(1);
+      expect(testTripFromDb.update).toBeCalledTimes(1);
       expect(tripStatus).toBeTruthy();
       done();
     });
 
     it('should return false when trip is not found', async (done) => {
-      jest.spyOn(TripRequest, 'findByPk').mockResolvedValue(undefined);
+      jest.spyOn(tripService, 'getById').mockResolvedValue(undefined);
       const trip = await SlackHelpers.approveRequest(23, 'UE45', 'some text');
       expect(trip).toBeFalsy();
       done();
     });
 
     it('should return false if manager is not found', async (done) => {
-      jest.spyOn(TripRequest, 'findByPk').mockResolvedValue(testTripFromDb);
+      jest.spyOn(tripService, 'getById').mockResolvedValue(testTripFromDb);
       SlackHelpers.findUserByIdOrSlackId = jest.fn(() => Promise.resolve({}));
       const trip = await SlackHelpers.approveRequest(23, 'UE45', 'some text');
       expect(trip).toBeFalsy();
@@ -238,8 +199,8 @@ describe('slackHelpers', () => {
   describe('findOrCreateUserBySlackId', () => {
     beforeEach(() => {
       jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue();
-      jest.spyOn(SlackHelpers, 'getUserInfoFromSlack').mockResolvedValue({});
-      jest.spyOn(SlackHelpers, 'createUserFromSlackUserInfo').mockReturnValue({
+      jest.spyOn(SlackHelpers, 'getUserInfoFromSlack').mockResolvedValue(newUser);
+      jest.spyOn(UserService, 'createNewUser').mockReturnValue({
         username: 'santos',
         email: 'tembea@tem.com'
       });
@@ -253,7 +214,7 @@ describe('slackHelpers', () => {
       const result = await SlackHelpers.findOrCreateUserBySlackId('1aaaBa', 'TI34DJ');
       expect(result).toEqual({ username: 'santos', email: 'tembea@tem.com' });
       expect(UserService.getUserBySlackId).toHaveBeenCalledTimes(1);
-      expect(SlackHelpers.createUserFromSlackUserInfo).toHaveBeenCalledTimes(1);
+      expect(UserService.createNewUser).toHaveBeenCalledTimes(1);
       done();
     });
 
@@ -261,7 +222,7 @@ describe('slackHelpers', () => {
       UserService.getUserBySlackId = jest.fn(() => ({}));
       const result = await SlackHelpers.findOrCreateUserBySlackId('1aaaBa', 'TI34DJ');
       expect(UserService.getUserBySlackId).toHaveBeenCalled();
-      expect(SlackHelpers.createUserFromSlackUserInfo).toHaveBeenCalledTimes(0);
+      expect(UserService.createNewUser).toHaveBeenCalledTimes(0);
       expect(result).toEqual({});
       done();
     });
@@ -269,6 +230,7 @@ describe('slackHelpers', () => {
 
   describe('getTriprequest', () => {
     it('should return valid trip request if id exists', async () => {
+      jest.spyOn(tripService, 'getById').mockResolvedValue(testTripFromDb);
       const result = await SlackHelpers.getTripRequest(1, {});
       expect(result).toEqual(testTripFromDb.dataValues);
     });

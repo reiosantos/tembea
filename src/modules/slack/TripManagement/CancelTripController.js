@@ -1,6 +1,7 @@
 import models from '../../../database/models';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import { SlackInteractiveMessage } from '../RouteManagement/rootFile';
+import tripService from '../../../services/TripService';
 
 const { TripRequest } = models;
 
@@ -8,7 +9,7 @@ class CancelTripController {
   static async cancelTrip(tripId) {
     let message;
     try {
-      const trip = await TripRequest.findById(Number(tripId));
+      const trip = await tripService.getById(Number(tripId));
       if (!trip) {
         message = 'Trip not found';
       } else {

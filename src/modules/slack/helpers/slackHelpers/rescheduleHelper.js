@@ -1,10 +1,9 @@
-import models from '../../../../database/models';
+import tripService from '../../../../services/TripService';
 import { isTripRescheduleTimedOut, isTripRequestApproved } from './slackValidations';
 import DialogPrompts from '../../SlackPrompts/DialogPrompts';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 
-const { TripRequest } = models;
 
 export default class TripRescheduleHelper {
   static respondRescheduleError(timedOut, approved) {
@@ -19,7 +18,7 @@ export default class TripRescheduleHelper {
 
   static async sendTripRescheduleDialog(payload, requestId) {
     try {
-      const tripRequest = await TripRequest.findByPk(requestId);
+      const tripRequest = await tripService.getById(requestId);
       const approved = isTripRequestApproved(tripRequest);
       const timedOut = isTripRescheduleTimedOut(tripRequest);
 

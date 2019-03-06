@@ -79,7 +79,8 @@ jest.mock('../../../../services/TeamDetailsService', () => ({
 describe('SlackNotifications', () => {
   beforeEach(() => {
     const mockUser = { slackId: 3 };
-    jest.spyOn(SlackHelpers, 'getHeadByDepartmentId').mockResolvedValue(mockUser);
+    jest.spyOn(DepartmentService, 'getById').mockResolvedValue(mockUser);
+    jest.spyOn(DepartmentService, 'getHeadByDeptId').mockResolvedValue(mockUser);
     jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockResolvedValue(mockUser);
     jest.spyOn(WebClientSingleton.prototype, 'getWebClient').mockReturnValue(webClientMock);
     jest.spyOn(IncomingWebhook.prototype, 'send').mockResolvedValue(true);
@@ -162,7 +163,7 @@ describe('SlackNotifications', () => {
 
   describe('sendManagerTripRequestNotification', () => {
     it('should fail when departmentId is wrong', async (done) => {
-      jest.spyOn(SlackHelpers, 'getHeadByDepartmentId').mockRejectedValue(true);
+      jest.spyOn(DepartmentService, 'getHeadByDeptId').mockRejectedValue(true);
       const tripInfo = {
         departmentId: 100,
         requestedById: 100,
@@ -365,6 +366,16 @@ describe('SlackNotifications', () => {
         email: 'AAAAAA',
         slackId: 'AAAAAA',
       };
+      const headData = {
+        dataValues: {
+          head: {
+            dataValues: {
+              email: 'AAAAAA',
+              slackId: 'AAAAAA',
+            }
+          }
+        }
+      };
       const rider = {
         ...head
       };
@@ -373,7 +384,7 @@ describe('SlackNotifications', () => {
       findUserByIdOrSlackId.mockReturnValueOnce(rider);
       findUserByIdOrSlackId.mockReturnValueOnce({ ...rider, slackId: 'BBBBBB' });
 
-      jest.spyOn(SlackHelpers, 'getHeadByDepartmentId').mockResolvedValue(head);
+      jest.spyOn(DepartmentService, 'getHeadByDeptId').mockResolvedValue(headData);
       jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue();
       jest.spyOn(SlackNotifications, 'getManagerMessageAttachment').mockResolvedValue();
       jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue(
@@ -480,7 +491,7 @@ describe('SlackNotifications', () => {
     let findSelectedDepartment;
     let responseForRequester;
     beforeEach(() => {
-      findSelectedDepartment = jest.spyOn(SlackHelpers, 'getHeadByDepartmentId');
+      findSelectedDepartment = jest.spyOn(DepartmentService, 'getById');
       responseForRequester = jest.spyOn(NotificationsResponse, 'responseForRequester');
       sendNotification = jest.spyOn(SlackNotifications, 'sendNotification');
     });
@@ -490,7 +501,9 @@ describe('SlackNotifications', () => {
     it('should successfully send approve notification to requester', async () => {
       const fn = () => ({});
       // mock dependencies
-      findSelectedDepartment.mockImplementationOnce(() => ({ dataValues: { name: 'Tembea' } }));
+      findSelectedDepartment.mockImplementationOnce(() => ({
+        dataValues: { head: { dataValues: { name: 'Tembea' } } }
+      }));
       responseForRequester.mockImplementationOnce(fn);
       sendNotification.mockImplementationOnce(fn);
 
@@ -555,7 +568,7 @@ describe('SlackNotifications', () => {
       respond = jest.fn(value => value);
       getTripRequest = jest.spyOn(SlackHelpers, 'getTripRequest');
       getTeamDetails = jest.spyOn(TeamDetailsService, 'getTeamDetails');
-      getDepartment = jest.spyOn(DepartmentService, 'getDepartment');
+      getDepartment = jest.spyOn(DepartmentService, 'getById');
       sendNotification = jest.spyOn(SlackNotifications, 'sendNotification');
       sendRequesterApprovedNotification = jest.spyOn(SlackNotifications,
         'sendRequesterApprovedNotification');

@@ -1,6 +1,7 @@
 import tripService, { TripService } from '../TripService';
 import models from '../../database/models';
-import { mockedValue, tripInfo } from '../../modules/trips/__tests__/__mocks__';
+import { mockedValue, tripInfo, mockTrip } from '../../modules/trips/__tests__/__mocks__';
+import cache from '../../cache';
 
 const { TripRequest } = models;
 
@@ -139,6 +140,34 @@ describe('TripService', () => {
       const result = await TripService.checkExistence(3);
       expect(TripRequest.count).toBeCalledTimes(1);
       expect(result).toBe(false);
+    });
+  });
+  
+  describe('TripService_getById', () => {
+    beforeAll(() => {
+      cache.saveObject = jest.fn(() => { });
+      cache.fetch = jest.fn((pk) => {
+        if (pk === 'tripDetail_2') {
+          return { trip: mockTrip };
+        }
+      });
+    });
+    it('should return a single trip from the database', async () => {
+      jest.spyOn(TripRequest, 'findByPk').mockResolvedValue(mockTrip);
+      const result = await tripService.getById(3);
+      expect(result).toBeDefined();
+      expect(result).toHaveProperty('trip');
+    });
+    it('should get trip details from cache', async () => {
+      const result = await tripService.getById(2);
+      expect(result).toEqual({ trip: mockTrip });
+    });
+    it('should throw an error', async () => {
+      try {
+        await tripService.getById({});
+      } catch (error) {
+        expect(error.message).toBe('Could not return the requested trip');
+      }
     });
   });
 });
