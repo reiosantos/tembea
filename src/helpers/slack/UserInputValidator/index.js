@@ -51,12 +51,13 @@ class UserInputValidator {
     errors.push(...Validators.validateRegex('checkNumber', riderPhoneNo.trim(), 'riderPhoneNo'));
     errors.push(...Validators.validateRegex('checkNumber', travelTeamPhoneNo.trim(), 'travelTeamPhoneNo'));
 
+    errors.push(...Validators.checkMinLengthNumber(6, riderPhoneNo, 'riderPhoneNo'));
+    errors.push(...Validators.checkMinLengthNumber(6, travelTeamPhoneNo, 'travelTeamPhoneNo'));
+    
     errors.push(...Validators.validateEmptyAndSpaces(noOfPassengers, 'noOfPassengers'));
     errors.push(...Validators.validateEmptyAndSpaces(riderPhoneNo, 'riderPhoneNo'));
     errors.push(...Validators.validateEmptyAndSpaces(travelTeamPhoneNo, 'travelTeamPhoneNo'));
 
-    errors.push(...Validators.checkMinLengthNumber(6, riderPhoneNo, 'riderPhoneNo'));
-    errors.push(...Validators.checkMinLengthNumber(6, travelTeamPhoneNo, 'travelTeamPhoneNo'));
 
     return errors;
   }

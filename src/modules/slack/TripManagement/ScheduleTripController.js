@@ -7,6 +7,8 @@ import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import Validators from '../../../helpers/slack/UserInputValidator/Validators';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
+import validateDialogSubmission
+  from '../../../helpers/slack/UserInputValidator/validateDialogSubmission';
 
 const {
   TripRequest, Location, Address, TripDetail
@@ -25,13 +27,12 @@ class ScheduleTripController {
     const dateFieldName = tripType === 'embassy' ? 'embassyVisitDateTime' : 'flightDateTime';
     const allowedHours = tripType === 'embassy' ? 3 : 4;
     const errors = [];
-
-    errors.push(...await UserInputValidator.validateTravelFormSubmission(submission));
+    errors.push(...UserInputValidator.validateTravelFormSubmission(submission));
     errors.push(...await UserInputValidator.validateDateAndTimeEntry(payload,
       dateFieldName));
-    errors.push(...await Validators.checkDateTimeIsHoursAfterNow(allowedHours,
+    errors.push(...Validators.checkDateTimeIsHoursAfterNow(allowedHours,
       travelDateTime, dateFieldName));
-
+    errors.push(...validateDialogSubmission(payload));
     return errors;
   }
 

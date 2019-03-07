@@ -21,8 +21,8 @@ const createDepartmentPayloadObject = (payload, respond, forSelf = 'true') => {
 
 const ScheduleTripInputHandlers = {
   reason: async (payload, respond, callbackId) => {
-    const validateReasonText = validateDialogSubmission(payload);
-    if (validateReasonText.length !== 0) return { errors: validateReasonText };
+    const checkIfEmpty = validateDialogSubmission(payload);
+    if (checkIfEmpty.length) return { errors: checkIfEmpty };
     if (payload.submission) {
       Cache.save(payload.user.id, callbackId, payload.submission.reason);
     }
