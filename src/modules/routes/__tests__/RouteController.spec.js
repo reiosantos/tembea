@@ -376,7 +376,7 @@ describe('RouteController unit test', () => {
 
       await RoutesController.updateRouteBatch(reqMock, 'res');
       expect(eventsMock).toHaveBeenCalledTimes(1);
-      expect(eventsMock).toHaveBeenCalledWith('notify_route_riders', 'team@slack.com', 'good', 'route_deactivated');
+      expect(eventsMock).toHaveBeenCalledWith('notify_route_riders', 'team@slack.com', 'good');
       expect(Response.sendResponse).toHaveBeenCalledTimes(1);
       expect(Response.sendResponse).toHaveBeenCalledWith('res', 200, true, message, 'good');
     });
