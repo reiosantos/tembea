@@ -164,12 +164,7 @@ class RoutesController {
       const { body, params: { routeId: id } } = req;
       const result = await RouteService.updateRouteBatch(+id, body);
       const slackTeamUrl = body.teamUrl.trim();
-      if (body.status && body.status === 'Inactive') {
-        SlackEvents.raise(slackEventNames.NOTIFY_ROUTE_RIDERS, slackTeamUrl, result, 'route_deactivated');
-      }
-      if (body.status && body.status === 'Active') {
-        SlackEvents.raise(slackEventNames.NOTIFY_ROUTE_RIDERS, slackTeamUrl, result);
-      }
+      SlackEvents.raise(slackEventNames.NOTIFY_ROUTE_RIDERS, slackTeamUrl, result);
       const message = 'Route batch successfully updated';
       return Response.sendResponse(res, 200, true, message, result);
     } catch (error) {
@@ -272,7 +267,8 @@ class RoutesController {
       }
       const result = await RouteService.deleteRouteBatch(routeBatchId);
       if (result > 0) {
-        await SlackEvents.raise(slackEventNames.NOTIFY_ROUTE_RIDERS, slackTeamUrl, routeBatch, 'route_deactivated');
+        routeBatch.deleted = true;
+        await SlackEvents.raise(slackEventNames.NOTIFY_ROUTE_RIDERS, slackTeamUrl, routeBatch);
         message = 'route batch deleted successfully';
         return Response.sendResponse(res, 200, true, message);
       }
