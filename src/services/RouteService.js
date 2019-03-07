@@ -93,7 +93,8 @@ class RouteService {
     }
     const updateUserTable = UserService.getUserById(userId)
       .then(user => user.update({ routeBatchId: route.id }));
-    const updateRoute = route.update({ inUse: route.riders.length + 1 });
+    const updateRoute = await route.update({ inUse: route.riders.length + 1 });
+    await Cache.saveObject(`Route_${updateRoute.id}`, { updateRoute });
 
     await sequelize.transaction(() => Promise.all([updateUserTable, updateRoute]));
   }
@@ -259,7 +260,7 @@ class RouteService {
    */
   static serializeRouteBatch(routeData) {
     const {
-      id, status, takeOff, capacity, batch, comments, inUse, imageUrl
+      id, status, takeOff, capacity, batch, comments, inUse, imageUrl, routeId,
     } = routeData;
     return {
       id,
@@ -269,6 +270,7 @@ class RouteService {
       capacity,
       batch,
       comments,
+      routeId,
       inUse: inUse || 0,
       ...RouteService.serializeRoute(routeData.route),
       ...RouteService.serializeCabDetails(routeData.cabDetails),

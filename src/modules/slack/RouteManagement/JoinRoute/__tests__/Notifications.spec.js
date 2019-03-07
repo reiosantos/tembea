@@ -10,13 +10,11 @@ import { mockRouteData } from '../../../../../services/__mocks__';
 import JoinRouteRequestService from '../../../../../services/JoinRouteRequestService';
 
 describe('JoinRouteNotifications', () => {
-  let fieldsOrActionsSpy;
   let addPropsSpy;
   beforeEach(() => {
     const slackAttachment = new SlackAttachment();
     jest.spyOn(JoinRouteHelpers, 'joinRouteAttachments')
       .mockReturnValue(slackAttachment);
-    fieldsOrActionsSpy = jest.spyOn(slackAttachment, 'addFieldsOrActions');
     addPropsSpy = jest.spyOn(slackAttachment, 'addOptionalProps');
   });
   afterEach(() => {
@@ -41,7 +39,6 @@ describe('JoinRouteNotifications', () => {
       expect(JoinRouteHelpers.joinRouteAttachments)
         .toHaveBeenCalledWith({ test: 'test' });
       expect(JoinRouteNotifications.generateJoinRouteFromSubmission).toBeCalledTimes(1);
-      expect(fieldsOrActionsSpy).toBeCalledTimes(1);
       expect(addPropsSpy).toBeCalledTimes(1);
     });
   });
@@ -60,7 +57,6 @@ describe('JoinRouteNotifications', () => {
       const spy = jest.spyOn(SlackNotifications, 'sendNotifications')
         .mockReturnValue();
       await JoinRouteNotifications.sendManagerJoinRequest(payload, 2);
-      expect(fieldsOrActionsSpy).toBeCalledTimes(1);
       expect(addPropsSpy).toBeCalledTimes(1);
       expect(spy).toBeCalledTimes(1);
     });

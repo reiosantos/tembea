@@ -59,16 +59,13 @@ class JoinRouteNotifications {
     } = payload;
     const joinRoute = await JoinRouteRequestService.getJoinRouteRequest(joinRequestId);
     const attachment = JoinRouteHelpers.joinRouteAttachments(joinRoute);
-    const approveButton = new SlackButtonAction('approve', 'Approve', joinRequestId);
-    const declineButton = new SlackButtonAction('decline', 'Decline', joinRequestId, 'danger');
-    attachment.addFieldsOrActions('actions', [approveButton, declineButton]);
     attachment.addOptionalProps('join_route_managerActions');
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     const successOpsChannel = process.env.SUCCESS_OPS_CHANNEL;
     SlackNotifications.sendNotifications(
       successOpsChannel,
       attachment,
-      `Hey :simple_smile: <@${slackId}> requested a new route`,
+      `Hey :simple_smile: <@${slackId}> has joined a route`,
       slackBotOauthToken
     );
   }

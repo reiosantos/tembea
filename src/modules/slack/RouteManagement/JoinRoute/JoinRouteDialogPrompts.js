@@ -2,11 +2,10 @@ import {
   SlackDialog, SlackDialogText, SlackDialogElementWithDataSource
 } from '../../SlackModels/SlackDialogModels';
 import DialogPrompts from '../../SlackPrompts/DialogPrompts';
-import { FormData } from '../../helpers/formHelper';
 
 class JoinRouteDialogPrompts {
-  static async sendFellowDetailsForm(payload, value) {
-    const { startDate, endDate, partnerStatus } = await FormData(payload.user.id, payload.team.id);
+  static async sendFellowDetailsForm(payload, value, engagement) {
+    const { startDate, endDate, partnerStatus } = engagement;
     const selectManager = new SlackDialogElementWithDataSource('Select Manager', 'manager');
     const dialog = new SlackDialog(
       'join_route_fellowDetails', 'Enter your details', 'submit', true, value

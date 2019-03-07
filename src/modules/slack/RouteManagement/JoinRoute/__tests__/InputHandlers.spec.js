@@ -11,6 +11,9 @@ import RouteService from '../../../../../services/RouteService';
 import { mockRouteBatchData } from '../../../../../services/__mocks__';
 import JoinRouteRequestService from '../../../../../services/JoinRouteRequestService';
 import JoinRouteInteractions from '../JoinRouteInteractions';
+import * as formHelper from '../../../helpers/formHelper';
+import UserService from '../../../../../services/UserService';
+import PartnerService from '../../../../../services/PartnerService';
 
 const error = new SlackInteractiveMessage('Unsuccessful request. Kindly Try again');
 describe('JoinInputHandlers', () => {
@@ -21,6 +24,16 @@ describe('JoinInputHandlers', () => {
     startDate: '12/12/2019',
     endDate: '12/12/2020'
   };
+
+  const engagement = {
+    id: 1,
+    partnerName: 'partner',
+    workHours: '18:00-00:00',
+    startDate: '12/12/2019',
+    endDate: '12/12/2020',
+    partnerStatus: 'ss'
+  };
+
 
   beforeEach(() => {
     jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('token');
@@ -33,7 +46,9 @@ describe('JoinInputHandlers', () => {
 
   describe('joinRoute', () => {
     let detailsFormSpy;
-    const payload = { actions: [{ value: 1 }], trigger_id: 'triggerId', team: { id: 'teamId' } };
+    const payload = {
+      actions: [{ value: 1 }], trigger_id: 'triggerId', team: { id: 'teamId' }, user: { id: 1 }
+    };
 
     beforeEach(() => {
       detailsFormSpy = jest.spyOn(JoinRouteDialogPrompts, 'sendFellowDetailsForm')
@@ -47,15 +62,53 @@ describe('JoinInputHandlers', () => {
     });
     it('should call sendFellowDetailsForm', async () => {
       RouteService.getRoute.mockResolvedValue({ ...mockRouteBatchData, riders: [] });
+      jest.spyOn(formHelper, 'getFellowEngagementDetails')
+        .mockResolvedValue(engagement);
+      jest.spyOn(UserService, 'getUserBySlackId')
+        .mockResolvedValue({ slackId: 'ss' });
       await JoinRouteInputHandlers.joinRoute(payload, respond);
       expect(detailsFormSpy)
-        .toBeCalledWith(payload, JSON.stringify({ routeId: 1, capacityFilled: false }));
+        .toBeCalledWith(payload, JSON.stringify({ routeId: 1, capacityFilled: false }), engagement);
       expect(RouteService.getRoute).toHaveBeenCalledWith(1);
     });
+    it('should stop fellow with a route', async () => {
+      RouteService.getRoute.mockResolvedValue({ ...mockRouteBatchData, riders: [{ slackId: 'ss' }] });
+      jest.spyOn(formHelper, 'getFellowEngagementDetails')
+        .mockResolvedValue(engagement);
+      jest.spyOn(UserService, 'getUserBySlackId')
+        .mockResolvedValue({ slackId: 'ABCDEF', routeBatchId: 'aaa' });
+      const restrictions = jest.spyOn(JoinRouteInputHandlers, 'joinRouteHandleRestrictions');
+      await JoinRouteInputHandlers.joinRoute(payload, respond);
+      expect(respond).toBeCalledTimes(1);
+      expect(restrictions).toBeCalledTimes(1);
+    });
+    it('should stop fellow who is not on engagement', async () => {
+      RouteService.getRoute.mockResolvedValue({ ...mockRouteBatchData, riders: [] });
+      const notOnEngagement = null;
+      jest.spyOn(UserService, 'getUserBySlackId')
+        .mockResolvedValue({ slackId: 'ss' });
+      jest.spyOn(formHelper, 'getFellowEngagementDetails')
+        .mockResolvedValue(notOnEngagement);
+      await JoinRouteInputHandlers.joinRoute(payload, respond);
+      expect(respond).toBeCalledTimes(1);
+      expect(respond).toHaveBeenCalledWith({
+        as_user: false,
+        attachments: undefined,
+        channel: undefined,
+        response_type: 'ephemeral',
+        text: `Sorry it appear you are not on any engagement at the moment.
+        If you believe this is incorrect, contact Tembea Support.`,
+        user: undefined
+      });
+    });
     it('should send full capacity notice to user', async () => {
+      jest.spyOn(formHelper, 'getFellowEngagementDetails')
+        .mockResolvedValue(engagement);
       const copy = {};
       Object.assign(copy, mockRouteBatchData);
       copy.riders.push(...[{}, {}]);
+      jest.spyOn(UserService, 'getUserBySlackId')
+        .mockResolvedValue({ slackId: 'ss' });
       RouteService.getRoute.mockResolvedValue(mockRouteBatchData);
       await JoinRouteInputHandlers.joinRoute(payload, respond);
       expect(detailsFormSpy).not.toBeCalled();
@@ -74,16 +127,36 @@ describe('JoinInputHandlers', () => {
   });
 
   describe('continueJoinRoute', () => {
-    const payload = { actions: [{ value: 1 }], trigger_id: 'triggerId', team: { id: 'teamId' } };
+    const payload = {
+      actions: [{ value: 1 }], trigger_id: 'triggerId', team: { id: 'teamId' }, user: { id: 1 }
+    };
     beforeEach(() => {
       jest.spyOn(JoinRouteDialogPrompts, 'sendFellowDetailsForm')
         .mockResolvedValue();
+      jest.spyOn(formHelper, 'getFellowEngagementDetails')
+        .mockResolvedValue(engagement);
     });
     it('should continue with join route request', async () => {
       await JoinRouteInputHandlers.continueJoinRoute(payload, respond);
       expect(JoinRouteDialogPrompts.sendFellowDetailsForm)
-        .toBeCalledWith(payload, JSON.stringify({ routeId: 1, capacityFilled: true }));
+        .toBeCalledWith(payload, JSON.stringify({ routeId: 1, capacityFilled: true }), engagement);
       expect(respond).toBeCalledWith(new SlackInteractiveMessage('Noted'));
+    });
+    it('should stop fellow who is not on engagement', async () => {
+      const notengagement = null;
+      jest.spyOn(formHelper, 'getFellowEngagementDetails')
+        .mockResolvedValue(notengagement);
+      await JoinRouteInputHandlers.continueJoinRoute(payload, respond);
+      expect(respond).toBeCalledTimes(1);
+      expect(respond).toHaveBeenCalledWith({
+        as_user: false,
+        attachments: undefined,
+        channel: undefined,
+        response_type: 'ephemeral',
+        text: `Sorry it appear you are not on any engagement at the moment.
+        If you believe this is incorrect, contact Tembea Support.`,
+        user: undefined
+      });
     });
   });
 
@@ -149,9 +222,10 @@ describe('JoinInputHandlers', () => {
         user: { id: 'slackId' },
         team: { id: 'teamId' },
       };
-      jest.spyOn(JoinRouteRequestService, 'createJoinRouteRequest');
       jest.spyOn(JoinRouteHelpers, 'saveJoinRouteRequest')
-        .mockResolvedValue({ id: 2 });
+        .mockResolvedValue({ id: 2, dataValues: { engagementId: 2 } });
+      jest.spyOn(JoinRouteRequestService, 'updateJoinRouteRequest')
+        .mockResolvedValue();
       jest.spyOn(SlackEvents, 'raise').mockReturnValue();
     });
     afterEach(() => {
@@ -160,10 +234,15 @@ describe('JoinInputHandlers', () => {
     it('should save join request and send notification to managers', async (done) => {
       const routeId = 1;
       const value = JSON.stringify({ routeId, capacityFilled: false });
-      payload.actions = [{ value }];
+      payload = { ...payload, actions: [{ value }] };
+      jest.spyOn(UserService, 'getUserBySlackId')
+        .mockResolvedValue({ id: 1 });
+      jest.spyOn(PartnerService, 'updateEngagement').mockResolvedValue({ id: 1 });
+      jest.spyOn(RouteService, 'addUserToRoute').mockResolvedValue({ id: 1 });
+      jest.spyOn(formHelper, 'getFellowEngagementDetails')
+        .mockResolvedValue(engagement);
 
       await JoinRouteInputHandlers.submitJoinRoute(payload, respond);
-
       expect(respond).toBeCalledTimes(1);
       expect(JoinRouteHelpers.saveJoinRouteRequest).toBeCalledWith(payload, 1);
       expect(SlackEvents.raise)
@@ -173,7 +252,7 @@ describe('JoinInputHandlers', () => {
     it('should send request to ops when user trying to join a full route', async () => {
       const routeId = 1;
       const value = JSON.stringify({ routeId, capacityFilled: true });
-      payload.actions = [{ value }];
+      payload = { ...payload, actions: [{ value }] };
 
       await JoinRouteInputHandlers.submitJoinRoute(payload, respond);
 
@@ -202,6 +281,24 @@ describe('JoinInputHandlers', () => {
       await JoinRouteInputHandlers.backButton(payload, respond);
       expect(spy)
         .toBeCalledTimes(1);
+    });
+    it('should send goodbye message ', async () => {
+      const payload = {
+        actions: [{ value: 'not back' }],
+        user: { id: 'slackId' }
+      };
+      await JoinRouteInputHandlers.backButton(payload, respond);
+      expect(respond)
+        .toBeCalledTimes(1);
+      expect(respond)
+        .toBeCalledWith({
+          as_user: false,
+          attachments: undefined,
+          channel: undefined,
+          response_type: 'ephemeral',
+          text: 'Thank you for using Tembea. See you again.',
+          user: undefined
+        });
     });
   });
 });

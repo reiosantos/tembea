@@ -159,7 +159,7 @@ describe('RouteService', () => {
         ...routeBatch,
         id: routeBatchId,
         capacity: 2,
-        update: jest.fn()
+        update: jest.fn().mockReturnValue({ id: 1 })
       };
       RouteBatch.findByPk.mockResolvedValue(mockRoute);
       const user = {

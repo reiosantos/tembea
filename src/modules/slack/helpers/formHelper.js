@@ -43,8 +43,8 @@ export class FormHandler {
       return dateFaker('start', null);
     }
   }
-    
-    
+
+
   async getEndDate() {
     let processedDate;
     try {
@@ -58,7 +58,7 @@ export class FormHandler {
     }
     return processedDate;
   }
-    
+
   async getPartnerStatus() {
     try {
       return this.userData.placement.client;
@@ -66,14 +66,22 @@ export class FormHandler {
       return '--';
     }
   }
+
+  isFellowOnEngagement() {
+    const { placement } = this.userData;
+    return placement && placement.status.includes('External Engagements');
+  }
 }
 
-export async function FormData(userId, teamId) {
+export async function getFellowEngagementDetails(userId, teamId) {
   const userReturnData = await slackService.getUserInfoFromSlack(userId,
     teamId);
   const { profile: { email } } = userReturnData;
   const form = new FormHandler(email);
   await form.getUserDetails();
+  if (!form.isFellowOnEngagement()) {
+    return;
+  }
   const [startDate, endDate, partnerStatus] = await Promise.all([
     form.getStartDate(),
     form.getEndDate(),
@@ -81,3 +89,7 @@ export async function FormData(userId, teamId) {
   ]);
   return { startDate, endDate, partnerStatus };
 }
+
+export default {
+  getFellowEngagementDetails, FormHandler, dateProcessor, dateFaker
+};

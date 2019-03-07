@@ -160,7 +160,7 @@ describe('Trip Validator', () => {
 
       TripValidator.validateEachInput(req, res, next).then(() => {
         expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-        expect(HttpError.sendErrorResponse).toHaveBeenCalledWith({}, resolved.message, resolved.errors);
+        expect(HttpError.sendErrorResponse).toHaveBeenCalledWith({ message: resolved.errors }, res);
         expect(next).toHaveBeenCalledTimes(0);
       });
       done();
@@ -174,7 +174,7 @@ describe('Trip Validator', () => {
 
       TripValidator.validateEachInput(req, res, next).then(() => {
         expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-        expect(HttpError.sendErrorResponse).toHaveBeenCalledWith({}, resolved.message, resolved.errors);
+        expect(HttpError.sendErrorResponse).toHaveBeenCalledWith({ message: resolved.errors }, res);
       });
       done();
     });
@@ -192,7 +192,7 @@ describe('Trip Validator', () => {
 
       TripValidator.validateEachInput(req, res, next).then(() => {
         expect(GeneralValidator.validateTeamUrl).toHaveBeenCalledTimes(1);
-        expect(HttpError.sendErrorResponse).toHaveBeenCalledWith({}, resolved.message, resolved.errors);
+        expect(HttpError.sendErrorResponse).toHaveBeenCalledWith({ message: resolved.errors }, res);
       });
       done();
     });
@@ -240,7 +240,7 @@ describe('validate query params', () => {
   });
 
   it('validate that query parameters are options', () => {
-    const req = { query: { } };
+    const req = { query: {} };
     TripValidator.validateGetTripsParam(req, res, next);
     expect(statusMock).not.toHaveBeenCalled();
     expect(next).toHaveBeenCalledTimes(1);
