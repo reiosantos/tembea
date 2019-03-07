@@ -22,6 +22,8 @@ import ViewTripHelper from '../helpers/slackHelpers/ViewTripHelper';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import handleActions from './SlackInteractionsHelper';
 import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInteractions';
+import validateDialogSubmission from
+  '../../../helpers/slack/UserInputValidator/validateDialogSubmission';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -269,6 +271,10 @@ class SlackInteractions {
   }
 
   static handleTravelTripActions(payload, respond) {
+    const validatedInputs = validateDialogSubmission(payload);
+    if (validatedInputs.length !== 0) {
+      return { errors: validatedInputs };
+    }
     handleActions(payload, respond, travelTripHelper);
   }
 

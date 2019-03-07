@@ -6,6 +6,7 @@ import {
 } from '../../../modules/slack/SlackModels/SlackMessageModels';
 import ScheduleTripController from '../../../modules/slack/TripManagement/ScheduleTripController';
 import bugsnagHelper from '../../bugsnagHelper';
+import validateDialogSubmission from '../UserInputValidator/validateDialogSubmission';
 
 const createDepartmentPayloadObject = (payload, respond, forSelf = 'true') => {
   const navButtonCallbackId = forSelf === 'true' ? 'schedule_trip_reason' : 'schedule_trip_rider';
@@ -20,6 +21,8 @@ const createDepartmentPayloadObject = (payload, respond, forSelf = 'true') => {
 
 const ScheduleTripInputHandlers = {
   reason: async (payload, respond, callbackId) => {
+    const validateReasonText = validateDialogSubmission(payload);
+    if (validateReasonText.length !== 0) return { errors: validateReasonText };
     if (payload.submission) {
       Cache.save(payload.user.id, callbackId, payload.submission.reason);
     }
