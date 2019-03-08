@@ -1,3 +1,5 @@
+import swaggerUi from 'swagger-ui-express';
+import apiSpec from './apiSpec';
 import routesRouter from './routes';
 import tripsRouter from './trips';
 import slackRouter from './slack';
@@ -12,6 +14,10 @@ import authenticationRouter from './authentication';
 import aisRouter from './ais';
 
 const apiPrefix = '/api/v1';
+const apiDocsOptions = {
+  customSiteTitle: 'Tembea API Documentation',
+  customCss: '.swagger-ui .topbar { display: none }'
+};
 
 const routes = (app) => {
   app.use(homeRouter);
@@ -32,6 +38,7 @@ const routes = (app) => {
   app.use(apiPrefix, roleManagementRouter);
   app.use(apiPrefix, routesRouter);
   app.use(apiPrefix, aisRouter);
+  app.use('/docs/v1', swaggerUi.serve, swaggerUi.setup(apiSpec, apiDocsOptions));
   return app;
 };
 

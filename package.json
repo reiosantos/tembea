@@ -91,6 +91,8 @@
     "sequelize-replace-enum-postgres": "^1.5.0",
     "short-id": "^0.1.0",
     "slack-mock": "^1.1.1",
+    "swagger-jsdoc": "^3.2.7",
+    "swagger-ui-express": "^4.0.2",
     "uuid": "^3.3.2",
     "validator": "^10.9.0"
   },
