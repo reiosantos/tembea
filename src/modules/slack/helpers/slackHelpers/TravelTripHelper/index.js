@@ -7,6 +7,7 @@ import createTravelTripDetails from './createTravelTripDetails';
 import bugsnagHelper from '../../../../../helpers/bugsnagHelper';
 import SlackEvents from '../../../events';
 import { slackEventNames } from '../../../events/slackEvents';
+import Services from '../../../../../services/UserService';
 
 const travelTripHelper = {
   contactDetails: async (payload, respond) => {
@@ -87,6 +88,9 @@ const travelTripHelper = {
       }
       const tripDetails = await createTravelTripDetails(payload);
       Cache.save(payload.user.id, 'tripDetails', tripDetails);
+      const { user: { id } } = payload;
+      const requesterData = await Services.getUserBySlackId(id);
+      tripDetails.requester = requesterData.dataValues.name;
       return InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
     } catch (error) {
       bugsnagHelper.log(error);
@@ -104,8 +108,8 @@ const travelTripHelper = {
       const tripRequest = await ScheduleTripController.createTravelTripRequest(
         payload, tripDetails
       );
-      const { newPayload, id } = tripRequest;
-      InteractivePrompts.sendCompletionResponse(newPayload, respond, id);
+      const { id } = tripRequest;
+      InteractivePrompts.sendCompletionResponse(respond, id);
       SlackEvents.raise(
         slackEventNames.NEW_TRAVEL_TRIP_REQUEST, id, payload, respond, 'travel'
       );

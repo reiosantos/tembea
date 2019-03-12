@@ -5,6 +5,7 @@ import InteractivePrompts from '../../../../SlackPrompts/InteractivePrompts';
 import DialogPrompts from '../../../../SlackPrompts/DialogPrompts';
 import SlackEvents from '../../../../events';
 import BugsnagHelper from '../../../../../../helpers/bugsnagHelper';
+import Services from '../../../../../../services/UserService';
 
 jest.mock('../../../../events', () => ({
   slackEvents: jest.fn(() => ({
@@ -235,19 +236,22 @@ describe('travelTripHelper', () => {
 
     it('should save tripDetails in cache and sendPreviewTripRespons', async () => {
       payload.user.id = 1;
+      const slackReturn = { dataValues: { name: 'I am' } };
       const validateTravelContactDetailsForm = jest.spyOn(ScheduleTripController,
         'validateTravelDetailsForm');
       validateTravelContactDetailsForm.mockImplementationOnce(() => []);
+      const getUserBySlackId = jest.spyOn(Services, 'getUserBySlackId').mockResolvedValue(slackReturn);
 
       const sendPreviewTripResponse = jest.spyOn(InteractivePrompts,
         'sendPreviewTripResponse');
       sendPreviewTripResponse.mockImplementationOnce(() => []);
-
+      
       await travelTripHelper.flightDetails(payload, respond);
 
       expect(cache.save).toHaveBeenCalledTimes(1);
 
       expect(validateTravelContactDetailsForm).toHaveBeenCalledTimes(1);
+      expect(getUserBySlackId).toHaveBeenCalledTimes(1);
       expect(sendPreviewTripResponse).toHaveBeenCalledTimes(1);
     });
 
