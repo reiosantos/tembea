@@ -13,6 +13,7 @@ class RedisCacheSingleton {
     this.client.setAsync = promisify(this.client.set);
     this.client.setexAsync = promisify(this.client.setex);
     this.client.delAsync = promisify(this.client.del);
+    this.client.flushallAsync = promisify(this.client.flushall);
 
     RedisCacheSingleton.instance = this;
     RedisCacheSingleton.exists = this;
@@ -39,6 +40,10 @@ class RedisCacheSingleton {
 
   async delete(key) {
     return this.client.delAsync(key);
+  }
+
+  async flush() {
+    return this.client.flushallAsync();
   }
 }
 

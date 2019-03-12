@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import bugsnagHelper from '../helpers/bugsnagHelper';
 import models from '../database/models';
 import RoleService from '../services/RoleService';
+import cache from '../cache';
 
 dotenv.config();
 
@@ -29,6 +30,10 @@ class StartUpHelper {
     } catch (error) {
       bugsnagHelper.log(error);
     }
+  }
+
+  static async flushStaleCache() {
+    cache.flush();
   }
 }
 

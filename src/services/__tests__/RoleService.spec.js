@@ -172,4 +172,16 @@ describe('Role Service', () => {
     expect(getRoleMock).toHaveBeenCalledTimes(1);
     expect(httpMock).toHaveBeenCalledTimes(0);
   });
+
+  describe('createOrFindRole', () => {
+    it('should create new role and return full role object', async () => {
+      jest.spyOn(Role, 'findOrCreate').mockResolvedValue({
+        id: 1, name: 'Super Admin', createdAt: '2019-01-14 03:00:00+03'
+      });
+      const role = await RoleService.createOrFindRole('Super Admin');
+      expect(role).toEqual({
+        id: 1, name: 'Super Admin', createdAt: '2019-01-14 03:00:00+03'
+      });
+    });
+  });
 });

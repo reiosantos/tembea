@@ -82,4 +82,22 @@ describe('RedisCacheSingleton', () => {
       done();
     });
   });
+
+  describe('Flush all cache', () => {
+    it('should clear all keys and objects in the cache', async () => {
+      const testKey = 'user';
+      await cache.save(testKey, 'tomi', 'age');
+      await cache.save(testKey, 'kica', 'scores');
+
+      const data = redisMockBackend.get(testKey);
+      const result = JSON.parse(data);
+      expect(result).toBeDefined();
+      expect(result).toHaveProperty('tomi');
+      expect(result).toHaveProperty('kica');
+
+      await cache.flush();
+      const cachedData = await redisMockBackend.get(testKey);
+      expect(cachedData).toBeUndefined();
+    });
+  });
 });

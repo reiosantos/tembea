@@ -112,4 +112,30 @@ describe('LRUCacheSingleton', () => {
       }
     });
   });
+
+  describe('Flush', () => {
+    it('should flush all cached data', async () => {
+      const testKey = 'user';
+      await cache.save(testKey, 'tomi', 'age');
+      await cache.save(testKey, 'kica', 'scores');
+
+      const result = cache.cache.get(testKey);
+      expect(result).toBeDefined();
+      expect(result).toHaveProperty('tomi');
+      expect(result).toHaveProperty('kica');
+
+      await cache.flush();
+      const data = cache.cache.get(testKey);
+      expect(data).toBeUndefined();
+    });
+
+    it('should throw an error when flushing fails', async () => {
+      jest.spyOn(LRUCache.prototype, 'reset').mockRejectedValue(new Error());
+      try {
+        await cache.flush();
+      } catch (err) {
+        expect(err).toBeDefined();
+      }
+    });
+  });
 });

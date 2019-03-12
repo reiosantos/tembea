@@ -106,8 +106,7 @@ class SlackNotifications {
         tripInformation, payload, opsChannelId, type
       );
       await SlackNotifications.sendNotification(opsRequestMessage, slackBotOauthToken);
-    } catch (error) {
-      bugsnagHelper.log(error);
+    } catch (error) { bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         'An error occurred while processing your request. '
         + 'Please contact the administrator.', [], undefined, '#b52833'

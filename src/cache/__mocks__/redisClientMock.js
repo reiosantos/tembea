@@ -16,6 +16,10 @@ const redisClientMock = {
     redisMockBackend.delete(key);
     return callbackFn(undefined, true);
   },
+  flushall: (callbackFn) => {
+    redisMockBackend.clear();
+    return callbackFn(undefined, true);
+  },
   clear: () => redisMockBackend.clear()
 };
 

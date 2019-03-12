@@ -51,6 +51,7 @@ app.use('*', (req, res) => res.status(404).json({
 
 // create super admin method
 StartUpHelper.ensureSuperAdminExists();
+StartUpHelper.flushStaleCache();
 
 MonthlyReportSender.scheduleReporting(hbs);
 

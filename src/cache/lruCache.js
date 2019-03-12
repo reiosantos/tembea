@@ -62,6 +62,17 @@ class LRUCacheSingleton {
       }
     });
   }
+
+  async flush() {
+    return new Promise((resolve, reject) => {
+      try {
+        this.cache.reset();
+        resolve();
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
 }
 
 export default LRUCacheSingleton;
