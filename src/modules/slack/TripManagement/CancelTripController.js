@@ -1,9 +1,7 @@
-import models from '../../../database/models';
+import tripService, { TripService } from '../../../services/TripService';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import { SlackInteractiveMessage } from '../RouteManagement/rootFile';
-import tripService from '../../../services/TripService';
 
-const { TripRequest } = models;
 
 class CancelTripController {
   static async cancelTrip(tripId) {
@@ -13,10 +11,8 @@ class CancelTripController {
       if (!trip) {
         message = 'Trip not found';
       } else {
-        await TripRequest.update(
-          { tripStatus: 'Cancelled' },
-          { where: { id: tripId }, returning: true }
-        );
+        await TripService.updateRequest(tripId,
+          { tripStatus: 'Cancelled' });
         message = 'Success! Your Trip request has been cancelled';
       }
     } catch (error) {

@@ -1,4 +1,4 @@
-import models from '../../../database/models';
+import tripService, { TripService } from '../../../services/TripService';
 import SendNotifications from '../SlackPrompts/Notifications';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
@@ -7,7 +7,6 @@ import TeamDetailsService from '../../../services/TeamDetailsService';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import CabService from '../../../services/CabService';
 
-const { TripRequest } = models;
 
 class TripActionsController {
   static getErrorMessage() {
@@ -60,13 +59,13 @@ class TripActionsController {
 
     const cab = await CabService.findOrCreateCab(driverName, driverPhoneNo, regNumber);
 
-    await TripRequest.update({
+    await TripService.updateRequest(tripId, {
       tripStatus: 'Confirmed',
       operationsComment: confirmationComment,
       confirmedById: opsUserId,
       cabId: cab.id
-    }, { where: { id: tripId } });
-    const trip = await SlackHelpers.getTripRequest(tripId);
+    });
+    const trip = await tripService.getById(tripId);
     await TripActionsController.sendAllNotifications(teamId, userId, trip,
       timeStamp, channel, slackBotOauthToken);
     return 'success';
@@ -96,15 +95,16 @@ class TripActionsController {
     const { trip: stateTrip, actionTs } = JSON.parse(payloadState);
     const tripId = Number(stateTrip);
 
-    await TripRequest.update({
+    await TripService.updateRequest(tripId, {
       tripStatus: 'DeclinedByOps',
       operationsComment: opsDeclineComment,
       declinedById: opsUserId
-    }, { where: { id: tripId } });
-    const trip = await SlackHelpers.getTripRequest(tripId);
+    });
+    const trip = await tripService.getById(tripId);
     await TripActionsController.sendAllNotifications(teamId, userId, trip,
       actionTs, channelId, slackBotOauthToken, true);
     return 'success';
   }
 }
+
 export default TripActionsController;

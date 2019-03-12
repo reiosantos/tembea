@@ -6,7 +6,7 @@ const { Role } = models;
 
 class RoleService {
   static async createNewRole(name) {
-    const [role, created] = await Role.findOrCreate({ where: { name } });
+    const [role, created] = await RoleService.createOrFindRole(name);
     if (created) {
       return role;
     }
@@ -47,6 +47,11 @@ class RoleService {
     HttpError.throwErrorIfNull(userRole[0], 'This Role is already assigned to this user', 409);
 
     return userRole;
+  }
+
+  static async createOrFindRole(name) {
+    const role = await Role.findOrCreate({ where: { name } });
+    return role;
   }
 }
 

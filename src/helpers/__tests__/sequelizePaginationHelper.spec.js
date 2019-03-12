@@ -110,4 +110,25 @@ describe('SequelizePaginationHelper', () => {
       });
     });
   });
+
+  describe('serializeObject', () => {
+    it('should remove nested dataValues', () => {
+      const testObject = {
+        dataValues: {
+          name: 'Mubarak',
+          school: {
+            dataValues: {
+              name: 'University of Ilorin'
+            }
+          }
+        }
+      };
+
+      const result = SequelizePaginationHelper.deserializeObject(testObject);
+
+      expect(result).toHaveProperty('name');
+      expect(result).toHaveProperty('school');
+      expect(result.school).toHaveProperty('name');
+    });
+  });
 });

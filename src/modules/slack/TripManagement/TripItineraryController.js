@@ -44,7 +44,7 @@ class TripItineraryController {
       await SlackHelpers.findOrCreateUserBySlackId(slackId, teamId);
       const pageNumber = getPageNumber(payload);
       const tripsPayload = await TripItineraryHelper.getPaginatedTripRequestsBySlackUserId(
-        slackId, TRIP_LIST_TYPE.PAST,
+        slackId, TRIP_LIST_TYPE.PAST, pageNumber
       );
 
       if (!tripsPayload) {
@@ -56,7 +56,7 @@ class TripItineraryController {
           totalPages,
           pageNo
         }
-      } = await tripsPayload.getPageItems(pageNumber);
+      } = tripsPayload;
 
       if (!trips.length) {
         return respond(responseMessage());
@@ -75,7 +75,7 @@ class TripItineraryController {
       await SlackHelpers.findOrCreateUserBySlackId(slackId, teamId);
       const pageNumber = getPageNumber(payload);
       const tripsPayload = await TripItineraryHelper.getPaginatedTripRequestsBySlackUserId(
-        slackId, TRIP_LIST_TYPE.UPCOMING,
+        slackId, TRIP_LIST_TYPE.UPCOMING, pageNumber
       );
       if (!tripsPayload) {
         return respond(responseMessage('Something went wrong getting trips'));
@@ -87,7 +87,7 @@ class TripItineraryController {
           totalPages,
           pageNo: page
         }
-      } = await tripsPayload.getPageItems(pageNumber);
+      } = tripsPayload;
 
       if (!trips.length) {
         return respond(responseMessage('You have no upcoming trips'));

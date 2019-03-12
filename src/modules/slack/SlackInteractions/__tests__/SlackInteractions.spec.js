@@ -21,6 +21,7 @@ import SlackController from '../../SlackController';
 import ManagerActionsHelper from '../../helpers/slackHelpers/ManagerActionsHelper';
 import ViewTripHelper from '../../helpers/slackHelpers/ViewTripHelper';
 import JoinRouteInteractions from '../../RouteManagement/JoinRoute/JoinRouteInteractions';
+import tripService from '../../../../services/TripService';
 
 describe('SlackInteractions', () => {
   let payload1;
@@ -45,7 +46,8 @@ describe('SlackInteractions', () => {
     it('should handle manager actions when isCancel is true', async (done) => {
       jest.spyOn(SlackHelpers, 'handleCancellation').mockImplementation().mockResolvedValue(true);
       await SlackInteractions.handleManagerActions(payload1, respond1);
-      expect(respond1.mock.calls[0][0].text).toEqual('The trip request has already been cancelled.');
+      expect(respond1.mock.calls[0][0].text)
+        .toEqual('The trip request has already been cancelled.');
       done();
     });
 
@@ -236,7 +238,7 @@ describe('SlackInteractions', () => {
     let handleRespond;
 
     beforeEach(() => {
-      ScheduleTripController.createRequest = jest.fn(() => 1);
+      jest.spyOn(ScheduleTripController, 'createRequest').mockResolvedValue(1);
       handleRespond = respondMock();
     });
 
@@ -553,17 +555,18 @@ describe('SlackInteractions', () => {
         state: 'cvbn jhgf ty'
       };
       const respond = jest.fn();
-      SlackHelpers.approveRequest = jest.fn(() => true);
-      SlackEvents.raise = jest.fn();
-      SlackHelpers.getTripRequest = jest.fn();
-      InteractivePrompts.sendManagerDeclineOrApprovalCompletion = jest.fn();
+      jest.spyOn(SlackHelpers, 'approveRequest').mockReturnValue(true);
+      jest.spyOn(SlackEvents, 'raise').mockReturnValue();
+      jest.spyOn(InteractivePrompts, 'sendManagerDeclineOrApprovalCompletion').mockReturnValue();
+      jest.spyOn(tripService, 'getById')
+        .mockImplementation(id => Promise.resolve({ id, name: 'Test Trip' }));
       const getTeamDetailsBotOauthToken = jest.spyOn(TeamDetailsService,
         'getTeamDetailsBotOauthToken')
         .mockImplementationOnce(() => Promise.resolve());
 
       await SlackInteractions.handleManagerApprovalDetails(payload, respond);
       expect(SlackEvents.raise).toHaveBeenCalled();
-      expect(SlackHelpers.getTripRequest).toHaveBeenCalled();
+      expect(tripService.getById).toHaveBeenCalled();
       expect(InteractivePrompts.sendManagerDeclineOrApprovalCompletion).toHaveBeenCalledTimes(1);
       expect(getTeamDetailsBotOauthToken).toHaveBeenCalledTimes(1);
       expect(getTeamDetailsBotOauthToken).toHaveBeenCalledWith(teamId);

@@ -1,7 +1,7 @@
 import TripItineraryHelper from '../TripItineraryHelper';
 import SlackHelpers from '../../../../../services/UserService';
 import models from '../../../../../database/models';
-import SequelizePaginationHelper from '../../../../../helpers/sequelizePaginationHelper';
+import tripService from '../../../../../services/TripService';
 
 const { TripRequest, User } = models;
 
@@ -10,6 +10,7 @@ describe('TripItineraryHelper ', () => {
     jest.spyOn(TripRequest, 'findAll').mockResolvedValue([{}, {}]);
     jest.spyOn(User, 'findOne').mockResolvedValue([{}, {}]);
     jest.spyOn(SlackHelpers, 'getUserBySlackId').mockResolvedValue([{}, {}]);
+    jest.spyOn(tripService, 'getAll').mockResolvedValue([{}, {}]);
   });
   afterEach(() => {
     jest.resetAllMocks();
@@ -19,12 +20,12 @@ describe('TripItineraryHelper ', () => {
     it('should return upcoming trip when request type is not passed', async () => {
       const userId = 'TEST001';
       await TripItineraryHelper.getTripRequests(userId);
-      expect(TripRequest.findAll).toBeCalled();
+      expect(tripService.getAll).toBeCalled();
     });
 
     it('should call the catch block when their is an error', async () => {
       try {
-        jest.spyOn(TripRequest, 'findAll')
+        jest.spyOn(tripService, 'getAll')
           .mockRejectedValue(new Error('error'));
         await TripItineraryHelper.getTripRequests();
       } catch (e) {
@@ -76,18 +77,19 @@ describe('TripItineraryHelper ', () => {
   describe('TripItineraryHelper_getPaginatedTripRequestsBySlackUserId', () => {
     it('should call getUserIdBySlackId method to get the user ', async () => {
       jest.spyOn(TripItineraryHelper, 'getUserIdBySlackId').mockResolvedValue([{}, {}]);
+      jest.spyOn(tripService, 'getPaginatedTrips').mockResolvedValue([{}, {}]);
       const slackUserId = 'test001';
       await TripItineraryHelper.getPaginatedTripRequestsBySlackUserId(slackUserId);
       expect(TripItineraryHelper.getUserIdBySlackId).toBeCalled();
     });
-    it('should  return instance of SequelizePaginationHelper ', async () => {
+    it('should  return paginated trips', async () => {
       jest.spyOn(TripItineraryHelper, 'getUserIdBySlackId').mockResolvedValue([{}]);
       jest.spyOn(TripItineraryHelper, 'getTripItineraryFilters').mockResolvedValue([{}, {}]);
+      jest.spyOn(tripService, 'getPaginatedTrips').mockResolvedValue([{}, {}]);
 
       const slackUserId = 'test001';
-      const res = await TripItineraryHelper.getPaginatedTripRequestsBySlackUserId(slackUserId);
-      expect(TripItineraryHelper.getTripItineraryFilters).toBeCalled();
-      expect(res).toBeInstanceOf(SequelizePaginationHelper);
+      await TripItineraryHelper.getPaginatedTripRequestsBySlackUserId(slackUserId);
+      expect(tripService.getPaginatedTrips).toBeCalled();
     });
   });
 });

@@ -1,4 +1,10 @@
 import ManageTripController from '../ManageTripController';
+import slackEvents from '../../events';
+import { slackEventNames } from '../../events/slackEvents';
+import tripService from '../../../../services/TripService';
+import DepartmentService from '../../../../services/DepartmentService';
+import TeamDetailsService from '../../../../services/TeamDetailsService';
+import { InteractivePrompts } from '../../RouteManagement/rootFile';
 
 jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../SlackPrompts/InteractivePrompts');
@@ -30,24 +36,45 @@ describe('Manage trip controller run validations', () => {
 });
 
 describe('Manage Trip Controller decline trip', () => {
+  beforeEach(() => {
+    jest.spyOn(slackEvents, 'raise').mockReturnValue();
+    jest.spyOn(tripService, 'getById')
+      .mockImplementation(id => Promise.resolve({ id, name: 'Test Trip' }));
+    jest.spyOn(DepartmentService, 'getHeadByDeptId')
+      .mockResolvedValue({ slackId: 'U123S0' });
+    jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('token');
+    jest.spyOn(InteractivePrompts, 'sendManagerDeclineOrApprovalCompletion').mockReturnValue();
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
   it('should return an error on decline trip request', async () => {
-    await ManageTripController.declineTrip(['timestamp', 'XXXXXXX', 1000],
-      'No reason at all',
-      (res) => {
-        expect(res).toEqual({
-          text: 'Dang, something went wrong there.'
-        });
+    jest.spyOn(tripService, 'getById').mockRejectedValue();
+    const res = jest.fn();
+
+    try {
+      await ManageTripController.declineTrip(['timestamp', 'XXXXXXX', 1000],
+        'No reason at all', res);
+    } catch (err) {
+      expect(res).toBeCalledWith({
+        text: 'Dang, something went wrong there.'
       });
+    }
   });
 
   it('should decline trip request', async (done) => {
     await ManageTripController.declineTrip(['timestamp', 'XXXXXXX', 3],
-      'No reason at all',
-      (response) => {
-        expect(response).toEqual({
-          data: 'Notification sent'
-        });
-        done();
-      });
+      'No reason at all', jest.fn());
+
+    expect(slackEvents.raise).toHaveBeenCalledWith(
+      slackEventNames.DECLINED_TRIP_REQUEST,
+      expect.any(Object), expect.any(Function),
+      expect.any(String)
+    );
+
+    done();
   });
 });

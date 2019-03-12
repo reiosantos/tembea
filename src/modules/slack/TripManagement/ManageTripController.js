@@ -1,5 +1,5 @@
 import validator from 'validator';
-import tripService from '../../../services/TripService';
+import tripService, { TripService } from '../../../services/TripService';
 import DepartmentService from '../../../services/DepartmentService';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
@@ -24,24 +24,28 @@ class ManageTripController {
   }
 
   static async declineTrip(state, declineReason, respond, teamId) {
-    // eslint-disable-next-line no-useless-escape
-    const reason = validator.blacklist(declineReason.trim(), '=\'\"\t\b\0\Z').trim();
+    const reason = validator.blacklist(declineReason.trim(), '=\'"\t\b(0)Z').trim();
 
-    return tripService.getById(state[2]).then(async (trip) => {
+    try {
+      const trip = await tripService.getById(state[2]);
       const head = await DepartmentService.getHeadByDeptId(trip.departmentId);
+
       const ride = trip;
       ride.tripStatus = 'DeclinedByManager';
       ride.managerComment = reason;
       ride.declinedById = head.id;
-      ride.save();
+
+      await TripService.updateRequest(trip.id, ride);
 
       const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-      InteractivePrompts.sendManagerDeclineOrApprovalCompletion(true, trip.dataValues, state[0], state[1], slackBotOauthToken);
-      slackEvents.raise(slackEventNames.DECLINED_TRIP_REQUEST, ride.dataValues, respond, slackBotOauthToken);
-    }).catch((error) => {
+      InteractivePrompts.sendManagerDeclineOrApprovalCompletion(true,
+        ride, state[0], state[1], slackBotOauthToken);
+      slackEvents.raise(slackEventNames.DECLINED_TRIP_REQUEST,
+        ride, respond, slackBotOauthToken);
+    } catch (error) {
       bugsnagHelper.log(error);
       respond({ text: 'Dang, something went wrong there.' });
-    });
+    }
   }
 }
 

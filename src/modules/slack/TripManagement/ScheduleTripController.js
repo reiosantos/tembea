@@ -1,7 +1,6 @@
 import SlackEvents from '../events';
 import Utils from '../../../utils';
 import { slackEventNames } from '../events/slackEvents';
-import models from '../../../database/models';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import Validators from '../../../helpers/slack/UserInputValidator/Validators';
@@ -9,10 +8,9 @@ import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import validateDialogSubmission
   from '../../../helpers/slack/UserInputValidator/validateDialogSubmission';
-
-const {
-  TripRequest, Location, Address, TripDetail
-} = models;
+import AddressService from '../../../services/AddressService';
+import TripDetailsService from '../../../services/TripDetailsService';
+import tripService from '../../../services/TripService';
 
 class ScheduleTripController {
   static validateTravelContactDetailsForm(payload) {
@@ -118,7 +116,7 @@ class ScheduleTripController {
   static async createTripRequest(payload, respond, tripRequestDetails) {
     try {
       const tripRequest = await this.createRequest(payload, tripRequestDetails);
-      const trip = await TripRequest.create(tripRequest);
+      const trip = await tripService.createRequest(tripRequest);
 
       InteractivePrompts.sendCompletionResponse(respond, trip.id);
       SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, trip.dataValues, respond);
@@ -136,7 +134,7 @@ class ScheduleTripController {
       const { id } = await this.createTripDetail(tripDetails);
 
       const tripData = { ...tripRequest, tripDetailId: id };
-      const trip = await TripRequest.create(tripData);
+      const trip = await tripService.createRequest(tripData);
       const newPayload = { ...payload, submission: { rider: false } };
       return { newPayload, id: trip.id };
     } catch (error) {
@@ -147,11 +145,10 @@ class ScheduleTripController {
 
   static async createLocation(address, longitude, latitude) {
     try {
-      const [location] = await Location.findOrCreate({
-        where: { longitude, latitude }
-      });
-      const addressData = await Address.create({ locationId: location.dataValues.id, address });
-      return addressData.dataValues.id;
+      const addressData = await AddressService.createNewAddress(
+        longitude, latitude, address
+      );
+      return addressData.id;
     } catch (error) {
       bugsnagHelper.log(error);
       throw error;
@@ -161,11 +158,11 @@ class ScheduleTripController {
   static async createTripDetail(tripInfo) {
     try {
       const { riderPhoneNo, travelTeamPhoneNo, flightNumber } = tripInfo;
-      const tripDetail = await TripDetail.create({
+      const tripDetail = await TripDetailsService.createDetails(
         riderPhoneNo,
         travelTeamPhoneNo,
         flightNumber
-      });
+      );
 
       return tripDetail.dataValues;
     } catch (error) {

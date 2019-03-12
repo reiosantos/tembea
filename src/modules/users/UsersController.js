@@ -1,9 +1,7 @@
-import models from '../../database/models';
 import HttpError from '../../helpers/errorHandler';
 import UserService from '../../services/UserService';
 import bugsnagHelper from '../../helpers/bugsnagHelper';
 
-const { User } = models;
 class UsersController {
   /**
    * @description Updates the user record
@@ -50,11 +48,7 @@ class UsersController {
     try {
       // Check if user already exists
       let message = 'User already exists';
-      let user = await User.findOne({
-        where: {
-          email
-        }
-      });
+      let user = await UserService.getUserByEmail(email);
       if (!user) {
         const slackUserInfo = await UserService.getUserInfo(slackUrl, email);
         // Save the new user

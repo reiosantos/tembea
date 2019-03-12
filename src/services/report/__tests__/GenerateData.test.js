@@ -1,18 +1,17 @@
 import { WriteStream } from 'fs';
 import moment from 'moment';
-import models from '../../../database/models';
+import tripService from '../../TripService';
 import tripMockResults from '../__mocks__/TripsDataMock';
 import ReportGeneratorService from '../ReportGeneratorService';
 import Utils from '../../../utils';
 
 describe('Report Generator Service', () => {
   let reportService;
-  const { TripRequest } = models;
   const response = tripMockResults;
 
   beforeAll(() => {
     reportService = new ReportGeneratorService(1);
-    TripRequest.findAll = jest.fn().mockResolvedValue(response);
+    tripService.getAll = jest.fn().mockResolvedValue(response);
   });
 
   it('should return data to generate report', async (done) => {

@@ -1,3 +1,4 @@
+/* eslint-disable guard-for-in */
 import HttpError from './errorHandler';
 
 export default class SequelizePaginationHelper {
@@ -54,8 +55,7 @@ export default class SequelizePaginationHelper {
   async getPageInfo(page = 1) {
     const totalPages = await this.getTotalPages();
     const pageNo = await this.getPageNo(page);
-    const { totalItems } = this;
-    const { itemsPerPage } = this;
+    const { totalItems, itemsPerPage } = this;
     return {
       totalPages, pageNo, totalItems, itemsPerPage
     };
@@ -79,15 +79,24 @@ export default class SequelizePaginationHelper {
       limit: this.itemsPerPage
     };
     const filter = { ...this.filter, ...moreParams };
-    const data = await this.items.findAll({ ...filter, ...paginationConstraint });
+    const rawData = await this.items.findAll({ ...filter, ...paginationConstraint });
     const $pageMeta = await this.getPageInfo($pageNo);
+    const data = rawData.map(SequelizePaginationHelper.deserializeObject);
     return {
       data,
-      pageMeta: {
-        itemsPerPage: this.itemsPerPage,
-        ...$pageMeta
-      }
+      pageMeta: $pageMeta
     };
+  }
+
+
+  static deserializeObject(data) {
+    const value = data ? (data.dataValues || data) : data;
+
+    Object.keys(value).forEach((key) => {
+      value[key] = value[key] ? (value[key].dataValues || value[key]) : value[key];
+    });
+
+    return value;
   }
 }
 

@@ -105,7 +105,7 @@ class SlackHelpers {
   }
 
   static async handleCancellation(tripRequestId) {
-    const { tripStatus } = await SlackHelpers.getTripRequest(tripRequestId);
+    const { tripStatus } = await tripService.getById(tripRequestId);
     return tripStatus === 'Cancelled';
   }
 }

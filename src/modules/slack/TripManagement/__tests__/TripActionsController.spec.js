@@ -6,6 +6,7 @@ import UserInputValidator from '../../../../helpers/slack/UserInputValidator';
 import models from '../../../../database/models';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import CabService from '../../../../services/CabService';
+import tripService from '../../../../services/TripService';
 
 const { TripRequest } = models;
 
@@ -156,9 +157,13 @@ describe('TripActionController operations decline tests', () => {
   });
 
   it('should run the catchBlock on changeTripStatusToDeclined error ', async (done) => {
-    jest.spyOn(SlackHelpers, 'getTripRequest').mockRejectedValue(new Error('Dummy error'));
-    expect(TripActionsController.changeTripStatusToDeclined(opsUserId, payload))
-      .rejects.toThrow(Error);
+    jest.spyOn(tripService, 'getById')
+      .mockRejectedValue(new Error('Dummy error'));
+    try {
+      await TripActionsController.changeTripStatusToDeclined(opsUserId, payload);
+    } catch (err) {
+      expect(err).toBeDefined();
+    }
     done();
   });
 });
@@ -217,8 +222,12 @@ describe('TripActionController operations approve tests', () => {
   });
 
   it('should run changeTripStatusToConfirmed() to approvedByOps', async (done) => {
-    SendNotifications.sendUserConfirmOrDeclineNotification = jest.fn();
-    SendNotifications.sendManagerConfirmOrDeclineNotification = jest.fn();
+    jest.spyOn(SendNotifications, 'sendUserConfirmOrDeclineNotification')
+      .mockReturnValue();
+    jest.spyOn(SendNotifications, 'sendManagerConfirmOrDeclineNotification')
+      .mockReturnValue();
+    jest.spyOn(tripService, 'getById').mockResolvedValue({ id: 1, name: 'Sample User' });
+
     await TripActionsController.changeTripStatusToConfirmed(opsUserId,
       payload, 'token');
     expect(SendNotifications.sendUserConfirmOrDeclineNotification).toHaveBeenCalled();
@@ -227,8 +236,7 @@ describe('TripActionController operations approve tests', () => {
   });
 
   it('should run the catchBlock on changeTripStatusToConfirmed error ', async (done) => {
-    jest
-      .spyOn(SlackHelpers, 'getTripRequest')
+    jest.spyOn(tripService, 'getById')
       .mockRejectedValue(new Error('Dummy error'));
     try {
       await TripActionsController.changeTripStatusToConfirmed(opsUserId, payload,

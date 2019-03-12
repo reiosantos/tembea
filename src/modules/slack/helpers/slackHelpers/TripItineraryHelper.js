@@ -1,10 +1,9 @@
 import Sequelize from 'sequelize';
 import models from '../../../../database/models';
-import SequelizePaginationHelper from '../../../../helpers/sequelizePaginationHelper';
-import SlackPagination from '../../../../helpers/slack/SlackPaginationHelper';
 import SlackHelpers from '../../../../services/UserService';
+import tripService from '../../../../services/TripService';
 
-const { TripRequest, User, Address } = models;
+const { User, Address } = models;
 const { Op } = Sequelize;
 const includeQuery = [
   {
@@ -43,16 +42,16 @@ class TripItineraryHelper {
       const upcomingTripStatus = ['Pending', 'Approved', 'Confirmed'];
 
       const tripStatus = requestType === 'upcoming' ? upcomingTripStatus : ['Confirmed'];
-      const trips = await TripRequest.findAll({
-        raw: true,
-        where: {
-          [Op.or]: [{ riderId: userId }, { requestedById: userId }],
-          tripStatus: {
-            [Op.or]: tripStatus
+      const trips = await tripService.getAll(
+        {
+          where: {
+            [Op.or]: [{ riderId: userId }, { requestedById: userId }],
+            tripStatus: {
+              [Op.or]: tripStatus
+            }
           }
-        },
-        include: includeQuery
-      });
+        }
+      );
       return trips;
     } catch (error) {
       throw error;
@@ -92,7 +91,7 @@ class TripItineraryHelper {
   }
 
   static async getPaginatedTripRequestsBySlackUserId(slackUserId,
-    requestType = 'upcoming') {
+    requestType = 'upcoming', pageNo) {
     const upcomingTripStatus = ['Pending', 'Approved', 'Confirmed'];
     const tripStatus = requestType === 'upcoming' ? upcomingTripStatus : ['Confirmed'];
     const userId = await TripItineraryHelper.getUserIdBySlackId(slackUserId);
@@ -104,9 +103,7 @@ class TripItineraryHelper {
       where: tripItineraryFilters,
       include: includeQuery
     };
-    const paginatedTrips = new SequelizePaginationHelper(
-      TripRequest, filters, SlackPagination.getSlackPageSize()
-    );
+    const paginatedTrips = await tripService.getPaginatedTrips(filters, pageNo);
     return paginatedTrips;
   }
 }

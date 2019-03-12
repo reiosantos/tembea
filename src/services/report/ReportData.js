@@ -1,8 +1,9 @@
 /* eslint-disable max-len */
 import models from '../../database/models';
 import Utils from '../../utils';
+import tripService from '../TripService';
 
-const { TripRequest, sequelize } = models;
+const { sequelize } = models;
 
 class GenerateReportData {
   static prepareWhereClause(numberOfMonthsBack) {
@@ -17,12 +18,10 @@ class GenerateReportData {
   static getReportData(numberOfMonthsBack) {
     const qString = GenerateReportData.prepareWhereClause(numberOfMonthsBack);
 
-    return TripRequest.findAll({
-      include: [{ all: true }],
-      order: [['createdAt', 'DESC'], ['updatedAt', 'DESC']],
-      raw: true,
-      where: sequelize.literal(qString)
-    });
+    return tripService.getAll(
+      { where: sequelize.literal(qString) },
+      { order: [['createdAt', 'DESC'], ['updatedAt', 'DESC']] }
+    );
   }
 
   static generateTotalsSummary(trips) {

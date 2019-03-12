@@ -16,6 +16,7 @@ import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import RouteRequestService from '../../../services/RouteRequestService';
 import AttachmentHelper from './notifications/AttachmentHelper';
 import Services from '../../../services/UserService';
+import tripService from '../../../services/TripService';
 
 const web = new WebClientSingleton();
 
@@ -47,7 +48,7 @@ class SlackNotifications {
         DepartmentService.getHeadByDeptId(departmentId),
         SlackHelpers.findUserByIdOrSlackId(requestedById),
         SlackHelpers.findUserByIdOrSlackId(riderId),
-        SlackHelpers.getTripRequest(id),
+        tripService.getById(id),
         TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id)
       ]);
       const imResponse = await SlackNotifications.getDMChannelId(head.slackId, slackBotOauthToken);
@@ -63,7 +64,8 @@ class SlackNotifications {
     }
   }
 
-  static async getManagerMessageAttachment(newTripRequest, imResponse, requester, requestType, rider) {
+  static async getManagerMessageAttachment(newTripRequest,
+    imResponse, requester, requestType, rider) {
     const { tripStatus } = newTripRequest;
     const text = requestType === 'newTrip' ? 'booked a' : 'rescheduled this';
     const attachments = new SlackAttachment('Trip Request');
@@ -88,14 +90,17 @@ class SlackNotifications {
   static async sendOperationsTripRequestNotification(tripId, payload, respond, type = 'regular') {
     try {
       const [tripInformation, teamDetails] = await Promise.all([
-        SlackHelpers.getTripRequest(tripId), TeamDetailsService.getTeamDetails(payload.team.id)]);
+        tripService.getById(tripId),
+        TeamDetailsService.getTeamDetails(payload.team.id)]);
       const { botToken: slackBotOauthToken, opsChannelId } = teamDetails;
       const checkTripType = type === 'regular';
       SlackNotifications.restructureTripData(tripInformation, checkTripType);
-      const { dataValues: { name } } = await DepartmentService.getById(tripInformation.departmentId);
+      const { dataValues: { name } } = await DepartmentService
+        .getById(tripInformation.departmentId);
       tripInformation.department = name;
       if (checkTripType) {
-        SlackEvents.raise(slackEventNames.TRIP_WAITING_CONFIRMATION, tripInformation, respond, slackBotOauthToken);
+        SlackEvents.raise(slackEventNames.TRIP_WAITING_CONFIRMATION,
+          tripInformation, respond, slackBotOauthToken);
       }
       const opsRequestMessage = NotificationsResponse.getRequestMessageForOperationsChannel(
         tripInformation, payload, opsChannelId, type

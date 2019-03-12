@@ -22,6 +22,7 @@ import ViewTripHelper from '../helpers/slackHelpers/ViewTripHelper';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import handleActions from './SlackInteractionsHelper';
 import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInteractions';
+import tripService from '../../../services/TripService';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -176,7 +177,7 @@ class SlackInteractions {
 
       if (hasApproved) {
         SlackEvents.raise(slackEventNames.TRIP_APPROVED, tripId, payload, respond);
-        const trip = await SlackHelpers.getTripRequest(tripId);
+        const trip = await tripService.getById(tripId);
         const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
         InteractivePrompts.sendManagerDeclineOrApprovalCompletion(
           false, trip, timeStamp, channelId, slackBotOauthToken

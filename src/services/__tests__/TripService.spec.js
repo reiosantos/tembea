@@ -151,7 +151,7 @@ describe('TripService', () => {
       expect(result).toBe(false);
     });
   });
-  
+
   describe('TripService_getById', () => {
     beforeAll(() => {
       cache.saveObject = jest.fn(() => { });
@@ -162,11 +162,12 @@ describe('TripService', () => {
       });
     });
     it('should return a single trip from the database', async () => {
-      jest.spyOn(TripRequest, 'findByPk').mockResolvedValue(mockTrip);
+      jest.spyOn(TripRequest, 'findByPk').mockResolvedValue({ dataValues: mockTrip });
       const result = await tripService.getById(3);
       expect(result).toBeDefined();
       expect(result).toHaveProperty('trip');
     });
+
     it('should get trip details from cache', async () => {
       const result = await tripService.getById(2);
       expect(result).toEqual({ trip: mockTrip });
@@ -176,6 +177,32 @@ describe('TripService', () => {
         await tripService.getById({});
       } catch (error) {
         expect(error.message).toBe('Could not return the requested trip');
+      }
+    });
+  });
+  describe('tripService_getAll', () => {
+    it('should return all trips', async () => {
+      jest.spyOn(TripRequest, 'findAll').mockResolvedValue(mockedValue);
+      await tripService.getAll({ where: { tripStatus: 'Pending' } });
+      expect(TripRequest.findAll).toBeCalled();
+    });
+  });
+  describe('tripService_updateRequest', () => {
+    const err = new Error('Error updating trip request');
+
+    it('should update a trip request', async () => {
+      jest.spyOn(TripRequest, 'update').mockResolvedValue(mockedValue);
+      await TripService.updateRequest(1,
+        { tripStatus: 'Confirmed' });
+      expect(TripRequest.update).toBeCalled();
+    });
+    it('should throw an error when trip request update fails', async () => {
+      jest.spyOn(TripRequest, 'update').mockRejectedValue(new Error());
+      try {
+        await TripService.updateRequest(1,
+          { tripStatus: 'Confirmed' });
+      } catch (error) {
+        expect(error).toEqual(err);
       }
     });
   });

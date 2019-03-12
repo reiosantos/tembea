@@ -4,6 +4,8 @@ import models from '../database/models';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import Utils from '../utils';
 import cache from '../cache';
+import HttpError from '../helpers/errorHandler';
+import SlackPagination from '../helpers/slack/SlackPaginationHelper';
 
 const { TripRequest, Department, Sequelize } = models;
 const getTripKey = pk => `tripDetail_${pk}`;
@@ -41,6 +43,18 @@ export class TripService {
       ...dateFilters
     };
     return where;
+  }
+
+  async getPaginatedTrips(filters, pageNo,
+    limit = SlackPagination.getSlackPageSize()) {
+    const filter = {
+      ...filters,
+      include: this.defaultInclude
+    };
+    const trips = new SequelizePaginationHelper(
+      TripRequest, filter, limit
+    );
+    return trips.getPageItems(pageNo);
   }
 
   async getTrips(pageable, where) {
@@ -171,7 +185,7 @@ export class TripService {
       return cachedTrip;
     }
     try {
-      const trip = await TripRequest.findByPk(pk, {
+      const { dataValues: trip } = await TripRequest.findByPk(pk, {
         include: [...this.defaultInclude]
       });
       await cache.saveObject(getTripKey(pk), trip);
@@ -179,6 +193,39 @@ export class TripService {
     } catch (error) {
       throw new Error('Could not return the requested trip');
     }
+  }
+
+  /**
+   *this method returns a non-paginated array of trips from the database.
+   */
+  async getAll(
+    params = { where: {} },
+    order = { order: [['createdAt', 'DESC'], ['updatedAt', 'DESC']] }
+  ) {
+    const trips = await TripRequest.findAll(
+      {
+        where: params.where,
+        include: [...this.defaultInclude, 'department'],
+        raw: true,
+        order: [...order.order]
+      }
+    );
+    return trips;
+  }
+
+  static async updateRequest(tripId, updateObject) {
+    try {
+      const { dataValues: updatedTrip } = await TripRequest.update(updateObject,
+        { where: { id: tripId } });
+      return updatedTrip;
+    } catch (error) {
+      HttpError.throwErrorIfNull(null, 'Error updating trip request', 500);
+    }
+  }
+
+  static async createRequest(requestObject) {
+    const trip = await TripRequest.create(requestObject);
+    return trip;
   }
 }
 

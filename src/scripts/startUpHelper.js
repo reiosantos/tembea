@@ -1,10 +1,11 @@
 import dotenv from 'dotenv';
-import models from '../database/models';
 import bugsnagHelper from '../helpers/bugsnagHelper';
+import models from '../database/models';
+import RoleService from '../services/RoleService';
 
 dotenv.config();
 
-const { User, Role } = models;
+const { User } = models;
 
 class StartUpHelper {
   static async ensureSuperAdminExists() {
@@ -21,7 +22,7 @@ class StartUpHelper {
           name: 'Tembea SuperAdmin'
         }
       });
-      const [role] = await Role.findOrCreate({ where: { name: 'Super Admin' } });
+      const [role] = await RoleService.createOrFindRole('Super Admin');
 
       await user.addRoles(role);
       return;

@@ -1,7 +1,8 @@
 import StartUpHelper from '../startUpHelper';
+import RoleService from '../../services/RoleService';
 import models from '../../database/models';
 
-const { User, Role } = models;
+const { User } = models;
 
 describe('Super Admin test', () => {
   afterEach(() => {
@@ -12,7 +13,7 @@ describe('Super Admin test', () => {
     const UserFindOrCreateMock = jest.spyOn(User, 'findOrCreate');
     UserFindOrCreateMock.mockResolvedValue([{ addRoles: () => {} }]);
 
-    const RoleFindOrCreateMock = jest.spyOn(Role, 'findOrCreate');
+    const RoleFindOrCreateMock = jest.spyOn(RoleService, 'createOrFindRole');
     RoleFindOrCreateMock.mockResolvedValue(['Basic']);
 
     await StartUpHelper.ensureSuperAdminExists();
@@ -24,7 +25,7 @@ describe('Super Admin test', () => {
     const mockErr = new Error('boo');
     const UserFindOrCreateMock = jest.spyOn(User, 'findOrCreate').mockRejectedValue(mockErr);
 
-    const RoleFindOrCreateMock = jest.spyOn(Role, 'findOrCreate');
+    const RoleFindOrCreateMock = jest.spyOn(RoleService, 'createOrFindRole');
     RoleFindOrCreateMock.mockResolvedValue(['Basic']);
 
     try {

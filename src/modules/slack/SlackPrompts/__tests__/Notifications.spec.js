@@ -11,6 +11,7 @@ import DepartmentService from '../../../../services/DepartmentService';
 import RouteRequestService from '../../../../services/RouteRequestService';
 import { mockRouteRequestData } from '../../../../services/__mocks__/index';
 import Services from '../../../../services/UserService';
+import tripService from '../../../../services/TripService';
 
 
 const tripInitial = {
@@ -128,7 +129,7 @@ describe('SlackNotifications', () => {
       updatedAt: '2019-03-05T19:32:17.426Z'
     };
     const requestType = 'newTrip';
-    
+
     beforeEach(() => {
       jest.spyOn(SlackNotifications, 'createDirectMessage');
     });
@@ -140,7 +141,7 @@ describe('SlackNotifications', () => {
       expect(result).toBeDefined();
       expect(Services.findOrCreateNewUserWithSlackId).toBeCalledWith(rider);
       expect(SlackNotifications.createDirectMessage).toHaveBeenCalledWith(imResponse, expect.anything(), expect.anything());
-     
+
       const result2 = await SlackNotifications.getManagerMessageAttachment(newTripRequest,
         imResponse, requester, 'notNew', rider);
       expect(result2).toBeDefined();
@@ -566,7 +567,7 @@ describe('SlackNotifications', () => {
     let sendNotification;
     beforeEach(() => {
       respond = jest.fn(value => value);
-      getTripRequest = jest.spyOn(SlackHelpers, 'getTripRequest');
+      getTripRequest = jest.spyOn(tripService, 'getById');
       getTeamDetails = jest.spyOn(TeamDetailsService, 'getTeamDetails');
       getDepartment = jest.spyOn(DepartmentService, 'getById');
       sendNotification = jest.spyOn(SlackNotifications, 'sendNotification');
