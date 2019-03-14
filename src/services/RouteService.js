@@ -178,8 +178,9 @@ class RouteService {
       order = [...convert];
     }
     let filter;
-    if (where) filter = { status: where.status };
-    
+    if (where) {
+      filter = { where: { status: where.status } };
+    }
     const paginatedRoutes = new SequelizePaginationHelper(RouteBatch, filter, size);
     paginatedRoutes.filter = {
       ...filter, subQuery: false, order, include: RouteService.updateDefaultInclude(where)

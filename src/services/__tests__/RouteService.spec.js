@@ -299,6 +299,20 @@ describe('RouteService', () => {
 
       expect(result).toEqual(expectedResult);
     });
+    it('should return only active routes', async () => {
+      const where = { status: 'Active' };
+      const defaultInclude = RouteService.updateDefaultInclude(where);
+      const expectedCallArgs = {
+        include: defaultInclude,
+        limit: 4294967295,
+        offset: 0,
+        order: [['id', 'asc']],
+        subQuery: false,
+        where
+      };
+      await RouteService.getRoutes(RouteService.defaultPageable, where);
+      expect(RouteBatch.findAll).toHaveBeenCalledWith(expectedCallArgs);
+    });
   });
 
   describe('RouteService_getRouteBatchByPk', () => {
