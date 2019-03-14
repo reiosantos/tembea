@@ -1,0 +1,153 @@
+export const tripsMock = () => [{
+  id: 4,
+  name: 'my trip home',
+  status: 'Confirmed',
+  arrivalTime: null,
+  type: 'Regular Trip',
+  passenger: undefined,
+  requestedOn: new Date('2015-02-02'),
+  departureTime: '2016-02-02T17:00:00.000Z',
+  department: 'TDD',
+  destination: 'Epic Tower',
+  pickup: 'the dojo',
+  decliner: undefined,
+  rider:
+   {
+     name: 'Oluwatominiyin Adebanjo',
+     email: 'oluwatominiyin.adebanjo@andela.com',
+     slackId: 'UE144LRAQ'
+   },
+  requester:
+   {
+     name: 'Vic',
+     email: 'onwuzorvictor@outlook.com',
+     slackId: 'UCQ4TN2PP'
+   },
+  approvedBy: {},
+  confirmedBy: {}
+}];
+
+export const tripsMock2 = [{
+  id: 4,
+  name: 'my trip home',
+  status: 'Confirmed',
+  arrivalTime: null,
+  type: 'Regular Trip',
+  passenger: undefined,
+  requestedOn: new Date(),
+  departureTime: '2016-02-02T17:00:00.000Z',
+  department: 'TDD',
+  destination: 'Epic Tower',
+  pickup: 'the dojo',
+  decliner: undefined,
+  rider:
+     {
+       name: 'Oluwatominiyin Adebanjo',
+       email: 'oluwatominiyin.adebanjo@andela.com',
+       slackId: 'UE144LRAQ'
+     },
+  requester:
+     {
+       name: 'Vic',
+       email: 'onwuzorvictor@outlook.com',
+       slackId: 'UCQ4TN2PP'
+     },
+  approvedBy: {},
+  confirmedBy: {}
+}];
+
+export const departmentsMock = [{
+  id: 23,
+  name: 'tembea',
+  headId: 6,
+  teamId: 'TEAMID2',
+  status: 'Active',
+  location: 'Nairobi',
+  'head.id': 6,
+  'head.name': 'Opeoluwa Iyi-Kuyoro',
+  'head.slackId': 'UE1920ZNW',
+  'head.phoneNo': null,
+  'head.email': 'opeoluwa.iyi-kuyoro@andela.com',
+  'head.defaultDestinationId': null,
+  'head.routeBatchId': null,
+}];
+
+export const routesMock = [{
+  id: 1001,
+  status: 'Active',
+  imageUrl: undefined,
+  takeOff: '03:00',
+  capacity: 5,
+  batch: 'A',
+  comments: 'Nemo aut vero et aliquam reprehenderit.',
+  routeId: 1007,
+  inUse: 5,
+  name: 'Franecki Park',
+  destination: '253 Graham Pike',
+  driverName: 'Dominic Toretto',
+  driverPhoneNo: '1-191-775-5335',
+  regNumber: 'SMK 319 JK'
+}];
+
+export const dataFromDBMock = {
+  data: [
+    {
+      id: 1001,
+      status: 'Active',
+      takeOff: '03:00',
+      capacity: 5,
+      batch: 'A',
+      comments: 'Nemo aut vero et aliquam reprehenderit.',
+      routeId: 1007,
+      inUse: 5,
+      name: 'Franecki Park',
+      destination: '253 Graham Pike',
+      driverName: 'Dominic Toretto',
+      driverPhoneNo: '1-191-775-5335',
+      regNumber: 'SMK 319 JK'
+    },
+    {
+      id: 1002,
+      status: 'Active',
+      takeOff: '03:00',
+      capacity: 6,
+      batch: 'A',
+      comments: 'Earum laudantium non autem.',
+      routeId: 1006,
+      inUse: 1,
+      name: 'Gottlieb Key',
+      destination: '86537 Green Rapid',
+      driverName: 'Tej Parker',
+      driverPhoneNo: '697-635-3947 x980',
+      regNumber: 'IKR 409 KI'
+    }
+  ],
+  columns: [
+    {
+      id: 'name', header: 'Name', width: 120, height: 40
+    },
+    {
+      id: 'batch', header: 'Batch', width: 65, height: 40
+    },
+    {
+      id: 'takeOff', header: 'TakeOff Time', width: 65, height: 40
+    },
+    {
+      id: 'capacity', header: 'Capacity', width: 65, height: 40
+    },
+    {
+      id: 'inUse', header: 'In Use', width: 65, height: 40
+    },
+    {
+      id: 'regNumber', header: 'Vehicle', width: 120, height: 40
+    },
+    {
+      id: 'status', header: 'Status', width: 65, height: 40
+    }
+  ],
+  margins: {
+    margins: {
+      top: 40, bottom: 40, left: 25, right: 30
+    }
+  }
+};

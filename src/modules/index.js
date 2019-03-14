@@ -12,6 +12,7 @@ import slackClientAuth from '../middlewares/slackClientAuth';
 import roleManagementRouter from './roleManagement';
 import authenticationRouter from './authentication';
 import aisRouter from './ais';
+import exportsRouter from './exports';
 
 const apiPrefix = '/api/v1';
 const apiDocsOptions = {
@@ -39,6 +40,7 @@ const routes = (app) => {
   app.use(apiPrefix, routesRouter);
   app.use(apiPrefix, aisRouter);
   app.use('/docs/v1', swaggerUi.serve, swaggerUi.setup(apiSpec, apiDocsOptions));
+  app.use(apiPrefix, exportsRouter);
   return app;
 };
 

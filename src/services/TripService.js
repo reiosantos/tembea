@@ -8,9 +8,7 @@ import HttpError from '../helpers/errorHandler';
 import SlackPagination from '../helpers/slack/SlackPaginationHelper';
 import RemoveDataValues from '../helpers/removeDataValues';
 
-const {
-  TripRequest, Department, Sequelize
-} = models;
+const { TripRequest, Department } = models;
 const getTripKey = pk => `tripDetail_${pk}`;
 
 export class TripService {
@@ -104,8 +102,7 @@ export class TripService {
 
   static serializeDepartment(department) {
     if (department) {
-      const { name } = department;
-      return name;
+      return department.name;
     }
   }
 
@@ -167,10 +164,9 @@ export class TripService {
       condition = { [Op.and]: [from, to] };
     }
 
-    if (!both) return {};
-
+    if (!after && !before) return {};
     return {
-      [Op.eq]: Sequelize.where(Sequelize.fn('date', Sequelize.col(field)), condition),
+      [field]: condition
     };
   }
 
