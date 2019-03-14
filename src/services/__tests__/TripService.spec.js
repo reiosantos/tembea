@@ -45,6 +45,14 @@ describe('TripService', () => {
     });
   });
 
+  it('should return trip type when it is passed', () => {
+    const type = 'Embassy Visit';
+    const filterParams = { type };
+    const response = TripService.sequelizeWhereClauseOption(filterParams);
+    expect(response).toHaveProperty('tripType');
+    expect(response.tripType).toEqual('Embassy Visit');
+  });
+
   describe('TripService_getTrips', () => {
     beforeEach(() => {
       jest.spyOn(TripRequest, 'findAll').mockResolvedValue([{}]);
@@ -89,7 +97,7 @@ describe('TripService', () => {
 
   describe('TripService__serializeAddress', () => {
     it('should return address', () => {
-      const address = { dataValues: { address: 'the dojo' } };
+      const address = { address: 'the dojo' };
       const response = TripService.serializeAddress(address);
       expect(response).toEqual('the dojo');
       expect(response).toBeDefined();
@@ -102,7 +110,7 @@ describe('TripService', () => {
   });
   describe('TripService__serializeDepartment', () => {
     it('should return department', () => {
-      const department = { dataValues: { name: 'TDD' } };
+      const department = { name: 'TDD' };
       const response = TripService.serializeDepartment(department);
       expect(response).toEqual('TDD');
       expect(response).toBeDefined();

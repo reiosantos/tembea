@@ -20,7 +20,7 @@ export class TripService {
 
   static sequelizeWhereClauseOption(filterParams) {
     const {
-      status: tripStatus, department: departmentName, departureTime, requestedOn
+      status: tripStatus, department: departmentName, departureTime, requestedOn, type: tripType
     } = filterParams;
     let where = {};
     if (tripStatus) {
@@ -32,15 +32,17 @@ export class TripService {
         departmentName
       };
     }
+    if (tripType) {
+      where = { tripType };
+    }
+
     let dateFilters = TripService.getDateFilters('departureTime', departureTime || {});
     where = {
-      ...where,
-      ...dateFilters
+      ...where, ...dateFilters
     };
     dateFilters = TripService.getDateFilters('TripRequest.createdAt', requestedOn || {});
     where = {
-      ...where,
-      ...dateFilters
+      ...where, ...dateFilters
     };
     return where;
   }
@@ -104,14 +106,14 @@ export class TripService {
   }
 
   static serializeAddress(address) {
-    if (address && address.dataValues) {
-      return address.dataValues.address;
+    if (address) {
+      return address.address;
     }
   }
 
   static serializeDepartment(department) {
-    if (department && department.dataValues) {
-      const { name } = department.dataValues;
+    if (department) {
+      const { name } = department;
       return name;
     }
   }
@@ -121,15 +123,15 @@ export class TripService {
       requester, origin, destination, rider, department, approver, confirmer, decliner, ...tripInfo
     } = trip;
     const {
-      id, name, tripStatus: status, departureTime, arrivalTime, createdAt, tripType, noOfPassenger
-    } = tripInfo.dataValues;
+      id, name, tripStatus: status, departureTime, arrivalTime, createdAt, tripType: type, noOfPassenger
+    } = tripInfo;
     const dtIsoTime = moment(departureTime, 'YYYY-MM-DD HH:mm:ss').toISOString();
     return {
       id,
       name,
       status,
       arrivalTime,
-      type: tripType,
+      type,
       passenger: noOfPassenger,
       departureTime: dtIsoTime,
       requestedOn: createdAt,
