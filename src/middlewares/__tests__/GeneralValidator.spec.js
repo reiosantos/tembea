@@ -1,6 +1,7 @@
 import GeneralValidator from '../GeneralValidator';
 import Response from '../../helpers/responseHelper';
 
+
 describe('General Validator', () => {
   afterEach(() => {
     jest.resetAllMocks();
@@ -144,6 +145,34 @@ describe('General Validator', () => {
         false,
         err
       );
+    });
+  });
+
+  describe('validatePhoneNumber regex', () => {
+    it('should return true if the value is correct', () => {
+      const phoneNumber = '+2547 868 9800';
+      const result = GeneralValidator.validatePhoneNo(phoneNumber);
+      expect(result).toEqual(true);
+    });
+
+    it('should return false if the value is not correct', () => {
+      const phoneNumber = '-------5';
+      const result = GeneralValidator.validatePhoneNo(phoneNumber);
+      expect(result).toEqual(false);
+    });
+  });
+
+  describe('disableNumericsAsValues', () => {
+    it('should return true if the value matches the regex', () => {
+      const value = '5th Avenue Street';
+      const result = GeneralValidator.disallowNumericsAsValuesOnly(value);
+      expect(result).toEqual(true);
+    });
+
+    it('should return false if the value does not match the regex', () => {
+      const value = '3094545';
+      const result = GeneralValidator.disallowNumericsAsValuesOnly(value);
+      expect(result).toEqual(false);
     });
   });
 });

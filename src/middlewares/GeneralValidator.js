@@ -36,6 +36,20 @@ class GeneralValidator {
     return numRegex.test(num);
   }
 
+  static disallowNumericsAsValuesOnly(value) {
+    const result = GeneralValidator.validateNumber(value);
+    if (result) {
+      return false;
+    }
+    return true;
+  }
+
+  static validatePhoneNo(num) {
+    // eslint-disable-next-line no-useless-escape
+    const regex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/g;
+    return regex.test(num);
+  }
+
   static validateQueryParams(req, res, next) {
     const { page, size } = req.query;
 

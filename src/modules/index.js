@@ -13,6 +13,7 @@ import roleManagementRouter from './roleManagement';
 import authenticationRouter from './authentication';
 import aisRouter from './ais';
 import exportsRouter from './exports';
+import cabsRouter from './cabs';
 
 const apiPrefix = '/api/v1';
 const apiDocsOptions = {
@@ -39,8 +40,10 @@ const routes = (app) => {
   app.use(apiPrefix, roleManagementRouter);
   app.use(apiPrefix, routesRouter);
   app.use(apiPrefix, aisRouter);
+  app.use(apiPrefix, cabsRouter);
   app.use('/docs/v1', swaggerUi.serve, swaggerUi.setup(apiSpec, apiDocsOptions));
   app.use(apiPrefix, exportsRouter);
+  
   return app;
 };
 

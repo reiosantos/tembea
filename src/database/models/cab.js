@@ -15,6 +15,15 @@ module.exports = (sequelize, DataTypes) => {
     regNumber: {
       type: DataTypes.STRING,
     },
+    capacity: {
+      type: DataTypes.INTEGER,
+    },
+    model: {
+      type: DataTypes.STRING,
+    },
+    location: {
+      type: DataTypes.STRING,
+    }
   }, {});
   Cab.associate = () => {
   };

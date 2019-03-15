@@ -6,6 +6,7 @@ import TokenValidator from './TokenValidator';
 import RouteValidator from './RouteValidator';
 import RouteRequestValidator from './RouteRequestValidator';
 import TripValidator from './TripValidator';
+import CabsValidator from './CabsValidator';
 
 const middleware = {
   UserValidator,
@@ -15,7 +16,8 @@ const middleware = {
   TokenValidator,
   RouteValidator,
   RouteRequestValidator,
-  TripValidator
+  TripValidator,
+  CabsValidator
 };
 
 export default middleware;
