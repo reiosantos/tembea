@@ -7,28 +7,40 @@ module.exports = {
       driverPhoneNo: faker.phone.phoneNumber(),
       regNumber: 'SMK 319 JK',
       createdAt: '2019-01-14',
-      updatedAt: '2019-01-14'
+      updatedAt: '2019-01-14',
+      capacity: 4,
+      model: 'subaru',
+      location: 'Lagos'
     },
     {
       driverName: 'Brian O\'Conner',
       driverPhoneNo: faker.phone.phoneNumber(),
       regNumber: 'LND 419 CN',
       createdAt: '2019-01-14',
-      updatedAt: '2019-01-14'
+      updatedAt: '2019-01-14',
+      capacity: 4,
+      model: 'toyota',
+      location: 'Wakanda'
     },
     {
       driverName: 'Tej Parker',
       driverPhoneNo: faker.phone.phoneNumber(),
       regNumber: 'IKR 409 KI',
       createdAt: '2019-01-14',
-      updatedAt: '2019-01-14'
+      updatedAt: '2019-01-14',
+      capacity: 8,
+      model: 'toyota',
+      location: 'Kampala'
     },
     {
       driverName: 'Luke Hobbs',
       driverPhoneNo: faker.phone.phoneNumber(),
       regNumber: 'APP 519 DT',
       createdAt: '2019-01-14',
-      updatedAt: '2019-01-14'
+      updatedAt: '2019-01-14',
+      capacity: 4,
+      model: 'prado',
+      location: 'Nairobi'
     }
   ]),
   down: queryInterface => queryInterface.bulkDelete('Cabs')

@@ -1,5 +1,7 @@
 import CabService from '../CabService';
 import models from '../../database/models';
+import { mockCabsData } from '../__mocks__';
+import { MAX_INT } from '../../helpers/constants';
 
 const { Cab } = models;
 
@@ -36,6 +38,27 @@ describe('CabService', () => {
       jest.spyOn(Cab, 'findOne').mockResolvedValue(mockCabDetails);
       const cabDetails = await CabService.findByRegNumber('AR R3G NMB');
       expect(cabDetails).toEqual(mockCabDetails);
+    });
+  });
+
+  describe('getCabs', () => {
+    const { cabs } = mockCabsData;
+    beforeEach(() => {
+      jest
+        .spyOn(Cab, 'findAll')
+        .mockResolvedValue(cabs);
+    });
+    it('should return array of cabs from the db', async () => {
+      const result = await CabService.getCabs();
+
+      const expectedResult = {
+        pageNo: 1,
+        itemsPerPage: MAX_INT,
+        cabs,
+        totalItems: 5,
+        totalPages: 1
+      };
+      expect(result).toEqual(expectedResult);
     });
   });
 });

@@ -189,3 +189,40 @@ export const mockDataCorrectRouteRequest = {
   takeOff: '9:30',
   cabRegNumber: 'KCX XXX0'
 };
+
+export const mockCabsData = {
+  cabs: [
+    {
+      driverName: 'Dominic Toretto',
+      driverPhoneNo: '1-219-560-3666',
+      regNumber: 'SMK 319 JK',
+      capacity: 4,
+      model: 'subaru',
+      location: 'Lagos'
+    },
+    {
+      driverName: "Brian O'Conner",
+      driverPhoneNo: '(137) 416-5270 x302',
+      regNumber: 'LND 419 CN',
+      capacity: 4,
+      model: 'toyota',
+      location: 'Wakanda'
+    },
+    {
+      driverName: 'Tej Parker',
+      driverPhoneNo: '1-176-388-3792 x715',
+      regNumber: 'IKR 409 KI',
+      capacity: 8,
+      model: 'toyota',
+      location: 'Kampala'
+    },
+    {
+      driverName: 'Luke Hobbs',
+      driverPhoneNo: '051-799-5051',
+      regNumber: 'APP 519 DT',
+      capacity: 4,
+      model: 'prado',
+      location: 'Nairobi'
+    }
+  ]
+};
