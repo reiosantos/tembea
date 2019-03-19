@@ -98,4 +98,14 @@ describe('Route Helpers', () => {
       expect(result).toBe(batch);
     });
   });
+
+  describe('batchObject', () => {
+    it('add batch to routeBatch object', () => {
+      const result = RouteHelper.batchObject(routeBatch, 'A');
+
+      expect(result).toEqual({
+        batch: 'A', capacity: 4, status: 'Active', takeOff: '03:00'
+      });
+    });
+  });
 });

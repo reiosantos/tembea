@@ -81,6 +81,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     managerComment: {
       type: DataTypes.TEXT
+    },
+    rating: {
+      type: DataTypes.INTEGER
     }
   }, {});
   TripRequest.associate = (models) => {

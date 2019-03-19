@@ -17,6 +17,7 @@ export const slackEventNames = Object.freeze({
   NOTIFY_ROUTE_RIDERS: 'notify_route_riders',
   MANAGER_RECEIVE_JOIN_ROUTE: 'manager_receive_join_route',
   OPS_FILLED_CAPACITY_ROUTE_REQUEST: 'ops_filled_capacity_route_request',
+  RATE_TRIP: 'rate_trip',
 });
 
 export class SlackEvents {

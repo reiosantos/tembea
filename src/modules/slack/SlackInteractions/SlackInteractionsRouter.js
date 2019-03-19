@@ -3,6 +3,7 @@ import SlackInteractions from './index';
 import ManagerController from '../RouteManagement/ManagerController';
 import OperationsController from '../RouteManagement/OperationsController';
 import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInteractions';
+import RateTripController from '../TripManagement/RateTripController';
 
 const slackInteractionsRouter = createMessageAdapter(process.env.SLACK_SIGNING_SECRET);
 
@@ -46,5 +47,7 @@ slackInteractionsRouter.action({ callbackId: 'view_new_trip' },
   SlackInteractions.completeTripResponse);
 slackInteractionsRouter.action({ callbackId: /^join_route/ },
   JoinRouteInteractions.handleJoinRouteActions);
+slackInteractionsRouter.action({ callbackId: 'rate_trip' },
+  RateTripController.rateTrip);
 
 export default slackInteractionsRouter;
