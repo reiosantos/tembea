@@ -35,7 +35,7 @@ describe('createTeamDetails create team details attachment', () => {
     it('should return an array ', () => {
       const tripDetails = createTripDetailsForm.travelTripFlightDetailsForm();
       expect(tripDetails instanceof Array).toBeTruthy();
-      expect(tripDetails.length).toEqual(4);
+      expect(tripDetails.length).toEqual(6);
     });
   });
   describe('travelEmbassyDetailsForm', () => {

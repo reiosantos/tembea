@@ -64,28 +64,31 @@ const createTripDetailsForm = {
   },
   travelTripFlightDetailsForm: () => {
     const flightNumber = new SlackDialogText(
-      'Flight Number', 'flightNumber',
-      'Enter flight number', false,
+      'Flight Number', 'flightNumber', 'Enter flight number', false,
     );
 
     const flightDateTime = new SlackDialogText(
-      'Flight Date and Time', 'flightDateTime',
-      'dd/mm/yy hh:mm', false, dateHint
+      'Flight Date and Time', 'flightDateTime', 'dd/mm/yy hh:mm', false, dateHint
     );
 
-    const pickupField = new SlackDialogText(
-      'Pickup location', 'pickup', 'Enter pickup location', false, addressHint
+    const pickupField = new SlackDialogSelectElementWithOptions('Pickup location',
+      'pickup', toLabelValuePairs(pickupLocations));
+
+    const pickupFieldOther = new SlackDialogText(
+      'Other Pickup location', 'otherpickup', 'Enter pickup location', false, addressHint
     );
 
-    const destinationField = new SlackDialogText(
-      'Destination', 'destination', 'Enter destination', false, addressHint
+    const destinationField = new SlackDialogSelectElementWithOptions('Destination',
+      'destination', toLabelValuePairs(destinations));
+      
+    const destinationFieldOther = new SlackDialogText(
+      'Other Destination', 'otherdestination', 'Enter destination', false, addressHint
     );
 
     return [
-      flightNumber,
-      flightDateTime,
-      pickupField,
-      destinationField
+      flightNumber, flightDateTime,
+      pickupField, pickupFieldOther,
+      destinationField, destinationFieldOther
     ];
   },
 
