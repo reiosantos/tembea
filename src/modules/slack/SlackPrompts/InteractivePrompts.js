@@ -344,6 +344,24 @@ class InteractivePrompts {
     respond(message);
   }
 
+  static sendSelectDestination(respond) {
+    const attachment = new SlackAttachment();
+    attachment.addFieldsOrActions('actions', [
+      new SlackButtonAction('selectDestination', 'Destination', 'true'),
+      new SlackCancelButtonAction(
+        'Cancel Trip',
+        'cancel',
+        'Are you sure you want to cancel this trip',
+        'cancel_trip'
+      )
+    ]);
+    attachment.addOptionalProps('schedule_trip_selectDestination');
+    const message = new SlackInteractiveMessage('*Select Destination*', [
+      attachment,
+    ]);
+    respond(message);
+  }
+
   static sendPreviewTripResponse(tripDetails, respond) {
     const hoursBefore = tripDetails.tripType === 'Airport Transfer' ? 3 : 2;
     const tripType = tripDetails.tripType === 'Airport Transfer' ? 'flight' : 'appointment';

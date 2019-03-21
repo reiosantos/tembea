@@ -76,6 +76,40 @@ class UserInputValidator {
     return errors;
   }
 
+  static validatePickupDestinationLocationEntries(payload, typeOfDialogBox) {
+    if (typeOfDialogBox === 'pickup') {
+      const {
+        pickup,
+        othersPickup,
+      } = payload.submission;
+      return UserInputValidator.validateDialogBoxLocation(pickup,
+        othersPickup, typeOfDialogBox);
+    }
+    const {
+      destination,
+      othersDestination,
+      pickup
+    } = payload.submission;
+    const errors = [];
+    errors.push(...Validators.checkOriginAnDestination(
+      pickup,
+      destination,
+      'pickup',
+      'destination'
+    ));
+    errors.push(...UserInputValidator.validateDialogBoxLocation(destination,
+      othersDestination, typeOfDialogBox));
+    return errors;
+  }
+
+  static validateDialogBoxLocation(firstLocation, secondLocation, typeOfDialogBox) {
+    const errors = [];
+    errors.push(...Validators.validateRegex('checkWord', firstLocation, typeOfDialogBox));
+    errors.push(...this.checkLocations(firstLocation, secondLocation,
+      typeOfDialogBox, `others${typeOfDialogBox}`));
+    return errors;
+  }
+
   static validateLocationEntries(payload) {
     const {
       pickup, othersPickup, destination, othersDestination //eslint-disable-line

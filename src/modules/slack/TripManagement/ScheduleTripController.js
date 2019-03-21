@@ -34,12 +34,17 @@ class ScheduleTripController {
     return errors;
   }
 
-  static async validateTripDetailsForm(payload) {
+  static async validateTripDetailsForm(payload, typeOfDialogBox) {
     const errors = [];
-
     try {
-      errors.push(...UserInputValidator.validateLocationEntries(payload));
-      errors.push(...await UserInputValidator.validateDateAndTimeEntry(payload));
+      if (typeOfDialogBox === 'pickup') {
+        errors.push(...UserInputValidator
+          .validatePickupDestinationLocationEntries(payload, typeOfDialogBox));
+        errors.push(...await UserInputValidator.validateDateAndTimeEntry(payload));
+      } else if (typeOfDialogBox === 'destination') {
+        errors.push(...UserInputValidator
+          .validatePickupDestinationLocationEntries(payload, typeOfDialogBox));
+      }
       return errors;
     } catch (error) {
       bugsnagHelper.log(error);

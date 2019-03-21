@@ -54,27 +54,65 @@ const ScheduleTripInputHandlers = {
     const props = createDepartmentPayloadObject(payload, respond, forSelf);
     return InteractivePrompts.sendListOfDepartments(props, forSelf);
   },
+
   department: (payload, respond) => {
     respond(new SlackInteractiveMessage('Noted...'));
     const departmentId = payload.actions[0].value;
     Cache.save(payload.user.id, 'departmentId', departmentId);
-    DialogPrompts.sendTripDetailsForm(payload, 'regularTripForm', 'schedule_trip_locationTime');
+    DialogPrompts.sendTripDetailsForm(payload, 'regularTripForm',
+      'schedule_trip_tripDestination', 'Pickup Details');
   },
-  locationTime: async (payload, respond) => {
+
+  tripDestination: async (payload, respond) => {
     const { submission, user: { id: userId } } = payload;
     try {
-      const errors = await ScheduleTripController.validateTripDetailsForm(payload);
+      const errors = await ScheduleTripController.validateTripDetailsForm(payload, 'pickup');
       if (errors.length > 0) {
         return { errors };
       }
-      const tripType = 'Regular Trip';
+      if (submission.pickup !== 'Others') {
+        Cache.save(`${userId}_pickup`, 'pickupLocation', submission);
+        InteractivePrompts.sendSelectDestination(respond);
+      }
+    } catch (error) {
+      bugsnagHelper.log(error);
+      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+    }
+  },
 
+  selectDestination: async (payload, respond) => {
+    try {
+      respond(new SlackInteractiveMessage('Noted...'));
+      DialogPrompts.sendTripDetailsForm(payload, 'tripDestinationLocationForm',
+        'schedule_trip_locationTime', 'Destination Details');
+    } catch (error) {
+      bugsnagHelper.log(error);
+      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+    }
+  },
+
+  locationTime: async (payload, respond) => {
+    try {
+      const { submission, user: { id: userId } } = payload;
+      const { pickupLocation } = await Cache.fetch(`${userId}_pickup`);
+      const payloadCopy = { ...payload };
+      const tripsObject = {
+        ...pickupLocation,
+        ...submission
+      };
+      payloadCopy.submission = tripsObject;
+      const errors = await ScheduleTripController
+        .validateTripDetailsForm(payloadCopy, 'destination');
+      if (errors.length > 0) {
+        return { errors };
+      }
       respond(new SlackInteractiveMessage('Noted...'));
 
+      const tripType = 'Regular Trip';
       const userObj = await Cache.fetch(userId);
-      const tripRequestDetails = { ...userObj, ...submission, tripType };
+      const tripRequestDetails = { ...userObj, ...tripsObject, tripType };
 
-      await ScheduleTripController.createTripRequest(payload, respond, tripRequestDetails);
+      await ScheduleTripController.createTripRequest(payloadCopy, respond, tripRequestDetails);
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));

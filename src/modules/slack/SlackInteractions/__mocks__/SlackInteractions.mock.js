@@ -25,6 +25,29 @@ export const createPayload = (value = 'value', name = 'name') => ({
   }
 });
 
+export const createPickupPayload = (value = 'value', name = 'name') => ({
+  actions: [{ value, name, selected_options: [{ value, name }] }],
+  user: { id: 'dummyId' },
+  team: { id: 'XXXXXXX' },
+  callback_id: `schedule_trip_${value}`,
+  submission: {
+    pickup: 'pickup',
+    others_pickup: 'others_pickup',
+    date_time: '10/10/2018 22:00',
+  }
+});
+
+export const createDestinationPayload = (value = 'value', name = 'name') => ({
+  actions: [{ value, name, selected_options: [{ value, name }] }],
+  user: { id: 'dummyId' },
+  team: { id: 'XXXXXXX' },
+  callback_id: `schedule_trip_${value}`,
+  submission: {
+    destination: 'destination',
+    others_destination: 'others_destination',
+  }
+});
+
 export const tripRequestDetails = () => ({
   riderId: 4,
   name: 'name',

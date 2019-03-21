@@ -6,24 +6,44 @@ import {
 
 describe('createTeamDetails create team details attachment', () => {
   describe('regularTripForm', () => {
-    it('should return an array of length 5', () => {
+    it('should return an array of length 3', () => {
       const tripDetails = createTripDetailsForm.regularTripForm();
       expect(tripDetails instanceof Array).toBeTruthy();
-      expect(tripDetails.length).toEqual(5);
+      expect(tripDetails.length).toEqual(3);
     });
 
     it('should contain an entry with type SlackDialogSelectElementWithOptions', () => {
       const tripDetails = createTripDetailsForm.regularTripForm();
-      expect(tripDetails[0] instanceof SlackDialogSelectElementWithOptions).toBeTruthy();
-      expect(tripDetails.length).toEqual(5);
+      expect(tripDetails[1] instanceof SlackDialogSelectElementWithOptions).toBeTruthy();
+      expect(tripDetails.length).toEqual(3);
     });
 
     it('should contain an entry with type SlackDialogText', () => {
       const tripDetails = createTripDetailsForm.regularTripForm();
-      expect(tripDetails[1] instanceof SlackDialogText).toBeTruthy();
-      expect(tripDetails.length).toEqual(5);
+      expect(tripDetails[0] instanceof SlackDialogText).toBeTruthy();
+      expect(tripDetails.length).toEqual(3);
     });
   });
+  describe('tripDestinationLocationForm', () => {
+    it('should return an array of length 2', () => {
+      const tripDetails = createTripDetailsForm.tripDestinationLocationForm();
+      expect(tripDetails instanceof Array).toBeTruthy();
+      expect(tripDetails.length).toEqual(2);
+    });
+
+    it('should contain an entry with type SlackDialogSelectElementWithOptions', () => {
+      const tripDetails = createTripDetailsForm.tripDestinationLocationForm();
+      expect(tripDetails[0] instanceof SlackDialogSelectElementWithOptions).toBeTruthy();
+      expect(tripDetails.length).toEqual(2);
+    });
+
+    it('should contain an entry with type SlackDialogText', () => {
+      const tripDetails = createTripDetailsForm.tripDestinationLocationForm();
+      expect(tripDetails[1] instanceof SlackDialogText).toBeTruthy();
+      expect(tripDetails.length).toEqual(2);
+    });
+  });
+
   describe('travelTripContactDetailsForm', () => {
     it('should return an array', () => {
       const tripDetails = createTripDetailsForm.travelTripContactDetailsForm();

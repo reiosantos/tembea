@@ -4,7 +4,8 @@ import DialogPrompts from '../../../../modules/slack/SlackPrompts/DialogPrompts'
 import ScheduleTripController
   from '../../../../modules/slack/TripManagement/ScheduleTripController';
 import {
-  responseMessage, createPayload, respondMock
+  responseMessage, createPayload, respondMock,
+  createDestinationPayload, createPickupPayload
 } from '../../../../modules/slack/SlackInteractions/__mocks__/SlackInteractions.mock';
 import Cache from '../../../../cache';
 
@@ -14,6 +15,7 @@ jest.mock('../../../../modules/slack/events/', () => ({
     handle: jest.fn()
   })),
 }));
+
 jest.mock('../../../../modules/slack/events/slackEvents', () => ({
   SlackEvents: jest.fn(() => ({
     raise: jest.fn(),
@@ -35,6 +37,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
     responder = respondMock();
     Cache.fetch = jest.fn(() => ({ forSelf: 'true' }));
     Cache.save = jest.fn();
+    InteractivePrompts.sendSelectDestination = jest.fn(() => {});
     InteractivePrompts.sendListOfDepartments = jest.fn(() => {});
     InteractivePrompts.sendRiderSelectList = jest.fn(() => {});
     InteractivePrompts.sendAddPassengersResponse = jest.fn(() => {});
@@ -56,7 +59,6 @@ describe('ScheduleTripInputHandlers Tests', () => {
 
     it('should respond with list of users', async () => {
       Cache.fetch = jest.fn(() => ({ forSelf: 'false' }));
-
       await ScheduleTripInputHandlers.reason(payload, responder, 'reason');
       expect(InteractivePrompts.sendRiderSelectList)
         .toHaveBeenCalledWith(payload, responder);
@@ -85,15 +87,70 @@ describe('ScheduleTripInputHandlers Tests', () => {
       ScheduleTripInputHandlers.department(payload, responder, 'department');
       expect(responder).toHaveBeenCalledWith(responseMessage('Noted...'));
       expect(DialogPrompts.sendTripDetailsForm)
-        .toHaveBeenCalledWith(payload, 'regularTripForm', 'schedule_trip_locationTime');
+        .toHaveBeenCalledWith(payload, 'regularTripForm',
+          'schedule_trip_tripDestination', 'Pickup Details');
+    });
+  });
+
+  describe('Response to "tripDestination" interaction', () => {
+    const pickupPayload = createPickupPayload('dummyData');
+    it('should respond with pickup details dialog form', async () => {
+      jest.spyOn(Cache, 'save');
+      jest.spyOn(ScheduleTripController, 'validateTripDetailsForm').mockResolvedValue([]);
+      const result = jest.spyOn(InteractivePrompts, 'sendSelectDestination');
+      await ScheduleTripInputHandlers.tripDestination(pickupPayload, responder);
+      expect(result)
+        .toHaveBeenCalled();
+    });
+  });
+
+  describe('Response to "tripDestination" dialog', () => {
+    const pickupPayload = createPickupPayload('dummyData');
+    it('should return errors if they exist', async () => {
+      ScheduleTripController.validateTripDetailsForm = jest
+        .fn(() => [{ label: 'label', name: 'name' }]);
+      const errors = await ScheduleTripInputHandlers.tripDestination(pickupPayload, responder);
+      expect(errors.errors).toEqual([{ label: 'label', name: 'name' }]);
+    });
+    it('should send a fail response when an error occurs', async () => {
+      jest.spyOn(InteractivePrompts, 'sendSelectDestination').mockRejectedValue(new Error('Error'));
+      await ScheduleTripInputHandlers.tripDestination(pickupPayload, responder);
+      expect(responder).toHaveBeenCalled();
+    });
+  });
+
+  describe('Response to "selectDestination" interaction', () => {
+    const pickupPayload = createPickupPayload('dummyData');
+    it('should respond with destination details dialog form', () => {
+      ScheduleTripInputHandlers.selectDestination(pickupPayload, responder);
+      expect(DialogPrompts.sendTripDetailsForm)
+        .toHaveBeenCalledWith(pickupPayload, 'tripDestinationLocationForm',
+          'schedule_trip_locationTime', 'Destination Details');
+    });
+    it('should send a fail response when an error occurs', async () => {
+      DialogPrompts.sendTripDetailsForm.mockImplementation(() => {
+        throw new Error();
+      });
+      await ScheduleTripInputHandlers.selectDestination(pickupPayload, responder);
+      expect(responder).toHaveBeenCalledTimes(2);
     });
   });
 
   describe('Response to "locationTime" dialog', () => {
+    const payloadDestination = createDestinationPayload('dummyValue');
+    const pickup = createPickupPayload('dummyData');
+    beforeEach(() => {
+      Cache.fetch = jest.fn(() => pickup.submission);
+    });
+  
+    afterEach(() => {
+      jest.resetAllMocks();
+    });
+  
     it('should return errors if they exist', async () => {
       ScheduleTripController.validateTripDetailsForm = jest
         .fn(() => [{ label: 'label', name: 'name' }]);
-      const errors = await ScheduleTripInputHandlers.locationTime(payload, responder);
+      const errors = await ScheduleTripInputHandlers.locationTime(payloadDestination, responder);
       expect(errors.errors).toEqual([{ label: 'label', name: 'name' }]);
     });
     it('should send a fail response when an error occurs', async () => {

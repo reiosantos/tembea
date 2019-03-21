@@ -20,21 +20,27 @@ const createTripDetailsForm = {
     const pickupField = new SlackDialogSelectElementWithOptions('Pickup location',
       'pickup', toLabelValuePairs(pickupLocations));
 
-    const destinationField = new SlackDialogSelectElementWithOptions('Destination',
-      'destination', toLabelValuePairs(destinations));
-
     const othersPickupField = new SlackDialogText('Others?',
       'othersPickup', 'Enter pickup location', true);
-
-    const othersDestinationField = new SlackDialogText('Others?',
-      'othersDestination', 'Enter destination', true);
 
     const dateField = new SlackDialogText('Date and Time',
       'dateTime', 'dd/mm/yy hh:mm', false, dateHint);
 
     return [
-      pickupField, othersPickupField, destinationField, othersDestinationField,
-      dateField
+      dateField,
+      pickupField,
+      othersPickupField,
+    ];
+  },
+
+  tripDestinationLocationForm: () => {
+    const destinationField = new SlackDialogSelectElementWithOptions('Destination',
+      'destination', toLabelValuePairs(destinations));
+    const othersDestinationField = new SlackDialogText('Others?',
+      'othersDestination', 'Enter destination', true);
+    return [
+      destinationField,
+      othersDestinationField,
     ];
   },
   travelTripContactDetailsForm: () => {
