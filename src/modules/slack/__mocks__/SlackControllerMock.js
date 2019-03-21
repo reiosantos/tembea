@@ -28,6 +28,7 @@ const SlackControllerMock = {
     attachment_type: 'default',
     author_icon: '',
     author_name: 'Tembea',
+    buttonValue: 'defaultButton',
     callback_id: 'welcome_message',
     color: '#3AA3E3',
     fallback: '/fallback',

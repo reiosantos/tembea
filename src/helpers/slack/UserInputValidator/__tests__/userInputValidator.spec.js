@@ -411,3 +411,47 @@ describe('validateCoordinates', () => {
     });
   });
 });
+
+describe('validatePickupDestinationEntry', () => {
+  it('should return location validation errors if they exist', async () => {
+    const payload = createPayload();
+    UserInputValidator.validateDateAndTimeEntry = jest.fn().mockReturnValue({ error: 'Yess !!!' });
+    const date = moment().add(4, 'hours');
+    const errors = await UserInputValidator.validatePickupDestinationEntry(payload,
+      'pickup', 'flightTime', date, 2);
+    expect(errors.length).toEqual(1);
+
+    const otherErrors = await UserInputValidator.validatePickupDestinationEntry(payload,
+      'otherErrors', 'flightTime', date, 2);
+    expect(otherErrors.length).toEqual(0);
+  });
+});
+
+describe('validateApproveRoutesDetails', () => {
+  const payData = {
+    submission: {
+      routeName: 'Kwetu', routeCapacity: '30', takeOffTime: '10:00', regNumber: '12345'
+    }
+  };
+
+  it('should return collected errors', () => {
+    Validators.validateRegex = jest.fn().mockReturnValue([{ error: 'Yes error' }]);
+    Validators.checkTimeFormat = jest.fn().mockReturnValue([{ error: 'Yes error' }]);
+   
+    const errors = UserInputValidator.validateApproveRoutesDetails(payData);
+    expect(errors.length).toEqual(4);
+  });
+});
+
+describe('validateEngagementForm', () => {
+  const engagementFormData = { nameOfPartner: 'Tembea', workingHours: '10:00 - 11:00' };
+
+  it('Should call Validators.isDateFormatValid', () => {
+    Validators.isDateFormatValid = jest.fn().mockReturnValue(true);
+    
+    UserInputValidator.validateEngagementForm(engagementFormData);
+
+    expect(Validators.isDateFormatValid).toHaveBeenCalledTimes(1);
+    expect(Validators.isDateFormatValid).toHaveBeenCalledWith(engagementFormData.workingHours);
+  });
+});

@@ -68,12 +68,14 @@ export class SlackAttachment {
     callbackId,
     fallback = 'fallback',
     color = '#3AAF85',
-    attachmentType = 'default'
+    attachmentType = 'default',
+    buttonValue = 'defaultButton'
   ) {
     if (callbackId) this.callback_id = callbackId;
     if (fallback) this.fallback = fallback;
     if (color) this.color = color;
     if (attachmentType) this.attachment_type = attachmentType;
+    if (buttonValue) this.buttonValue = buttonValue;
   }
 
   /**

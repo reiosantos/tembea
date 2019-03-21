@@ -12,8 +12,8 @@ import sendDialogTryCatch from '../../../helpers/sendDialogTryCatch';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 
 class DialogPrompts {
-  static async sendTripDetailsForm(payload, formElementsFunction, callbackId, dialogBoxText) {
-    const dialogForm = createDialogForm(payload, formElementsFunction, callbackId, dialogBoxText);
+  static async sendTripDetailsForm(payload, formElementsFunction, callbackId, dialogTitle) {
+    const dialogForm = createDialogForm(payload, formElementsFunction, callbackId, dialogTitle);
 
     const slackBotOauthToken = await
     TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);

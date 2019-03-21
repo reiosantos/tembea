@@ -6,6 +6,8 @@ import DialogPrompts from '../../../../SlackPrompts/DialogPrompts';
 import SlackEvents from '../../../../events';
 import BugsnagHelper from '../../../../../../helpers/bugsnagHelper';
 import Services from '../../../../../../services/UserService';
+import LocationHelpers from '../../../../../../helpers/googleMaps/locationsMapHelpers';
+import LocationPrompts from '../../../../SlackPrompts/LocationPrompts';
 
 jest.mock('../../../../events', () => ({
   slackEvents: jest.fn(() => ({
@@ -38,7 +40,11 @@ describe('travelTripHelper', () => {
           tripType: 'Airport Transfer',
           departmentId: '',
           departmentName: '',
-          contactDetails: ''
+          contactDetails: '',
+          tripDetails: {
+            destination: 'home',
+            pickup: 'dojo'
+          }
         };
       }
       return {};
@@ -234,25 +240,16 @@ describe('travelTripHelper', () => {
       jest.restoreAllMocks();
     });
 
-    it('should save tripDetails in cache and sendPreviewTripRespons', async () => {
+    it('should save tripDetails in cache', async () => {
       payload.user.id = 1;
-      const slackReturn = { dataValues: { name: 'I am' } };
       const validateTravelContactDetailsForm = jest.spyOn(ScheduleTripController,
         'validateTravelDetailsForm');
       validateTravelContactDetailsForm.mockImplementationOnce(() => []);
-      const getUserBySlackId = jest.spyOn(Services, 'getUserBySlackId').mockResolvedValue(slackReturn);
-
-      const sendPreviewTripResponse = jest.spyOn(InteractivePrompts,
-        'sendPreviewTripResponse');
-      sendPreviewTripResponse.mockImplementationOnce(() => []);
       
       await travelTripHelper.flightDetails(payload, respond);
 
       expect(cache.save).toHaveBeenCalledTimes(1);
-
       expect(validateTravelContactDetailsForm).toHaveBeenCalledTimes(1);
-      expect(getUserBySlackId).toHaveBeenCalledTimes(1);
-      expect(sendPreviewTripResponse).toHaveBeenCalledTimes(1);
     });
 
     it('should catch error ', async () => {
@@ -283,6 +280,162 @@ describe('travelTripHelper', () => {
       expect(respond).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('Location not found', () => {
+    let respond;
+
+    const passedData = {
+      actions: [{ name: 'no' }],
+    };
+
+    beforeEach(() => {
+      respond = jest.fn();
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should call the respond method', () => {
+      travelTripHelper.locationNotFound(passedData, respond);
+      expect(respond).toHaveBeenCalled();
+    });
+  });
+
+  describe('Locations suggestions', () => {
+    let respond;
+
+    const passedData = {
+      actions: [{ name: 'no' }],
+    };
+
+    const loadData = {
+      actions: [{ name: 'yes' }],
+    };
+
+    beforeEach(() => {
+      respond = jest.fn();
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+    
+    it('should call the location suggestion function', async () => {
+      const locationSuggestions = jest.spyOn(LocationHelpers, 'locationSuggestions');
+      const errorPromptMessage = jest.spyOn(LocationPrompts, 'errorPromptMessage');
+      
+      await travelTripHelper.suggestions(passedData, respond);
+      expect(errorPromptMessage).toHaveBeenCalled();
+      
+      await travelTripHelper.suggestions(loadData, respond);
+      expect(locationSuggestions).toHaveBeenCalled();
+    });
+  });
+
+  describe('destinationSelection', () => {
+    let respond;
+    let sendTripDetailsForm;
+
+    beforeEach(() => {
+      respond = jest.fn();
+      sendTripDetailsForm = jest.spyOn(DialogPrompts,
+        'sendTripDetailsForm').mockResolvedValue({});
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('Call respond on Airport Transfer', async () => {
+      await travelTripHelper.destinationSelection(payload, respond);
+      expect(cache.fetch).toHaveBeenCalledTimes(1);
+      expect(cache.fetch).toHaveBeenCalledWith(1);
+      expect(respond).toHaveBeenCalled();
+      expect(sendTripDetailsForm).toHaveBeenCalled();
+    });
+
+    it('Call respond on value = cancel', async () => {
+      const dataload = {
+        user: { id: 1 }, submission: {}, actions: [{ name: '', value: 'cancel' }]
+      };
+      await travelTripHelper.destinationSelection(dataload, respond);
+      expect(cache.fetch).toHaveBeenCalledTimes(0);
+      expect(respond).toHaveBeenCalled();
+      expect(sendTripDetailsForm).toHaveBeenCalledTimes(0);
+    });
+
+    it('Should call respond if tripType is not airport transfer', async () => {
+      cache.fetch = jest.fn().mockReturnValue({
+        tripType: 'Not Airport Transfer',
+        departmentId: '',
+        departmentName: '',
+        contactDetails: '',
+        tripDetails: {
+          destination: 'home',
+          pickup: 'dojo'
+        }
+      });
+      await travelTripHelper.destinationSelection(payload, respond);
+      expect(respond).toHaveBeenCalled();
+    });
+
+    it('Should capture errors', async () => {
+      cache.fetch = jest.fn().mockImplementation(() => {
+        throw new Error('Dummy error');
+      });
+      BugsnagHelper.log = jest.fn().mockReturnValue({});
+      await travelTripHelper.destinationSelection(payload, respond);
+      expect(BugsnagHelper.log).toHaveBeenCalled();
+    });
+  });
+
+  describe('destinationConfirmation', () => {
+    let respond;
+    const dataload = {
+      user: {
+        id: 1
+      },
+      submission: {
+        destination: 'Nairobi',
+        othersDestination: ''
+      }
+    };
+    beforeEach(() => {
+      respond = jest.fn();
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+    
+    it('Should call validate details form', async () => {
+      const validateTravelDetailsForm = jest.spyOn(ScheduleTripController,
+        'validateTravelDetailsForm');
+      await travelTripHelper.destinationConfirmation(dataload, respond);
+      expect(validateTravelDetailsForm).toHaveBeenCalled();
+      expect(cache.fetch).toHaveBeenCalled();
+    });
+
+    it('Should capture errors', async () => {
+      cache.fetch = jest.fn().mockImplementation(() => {
+        throw new Error('Dummy error');
+      });
+      BugsnagHelper.log = jest.fn().mockReturnValue({});
+      await travelTripHelper.destinationConfirmation(dataload, respond);
+      expect(BugsnagHelper.log).toHaveBeenCalled();
+    });
+
+    it('Should resolve with an error', async () => {
+      const error = ['error', 'error'];
+      const validateTravelDetailsForm = jest.spyOn(ScheduleTripController,
+        'validateTravelDetailsForm');
+      validateTravelDetailsForm.mockResolvedValue(error);
+      const valueIs = await travelTripHelper.destinationConfirmation(dataload, respond);
+      expect(valueIs).toEqual({ errors: error });
+    });
+  });
+
   describe('confirmation', () => {
     let respond;
     let createTravelTripRequest;
@@ -329,6 +482,42 @@ describe('travelTripHelper', () => {
 
       await travelTripHelper.confirmation(payload, respond);
       expect(log).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('detailsConfirmation', () => {
+    let respond;
+
+    beforeEach(() => {
+      respond = jest.fn();
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should sendPreviewTripResponse to the user', async () => {
+      const slackReturn = { dataValues: { name: 'I am' } };
+      const getUserBySlackId = jest.spyOn(Services,
+        'getUserBySlackId').mockResolvedValue(slackReturn);
+
+      const sendPreviewTripResponse = jest.spyOn(InteractivePrompts,
+        'sendPreviewTripResponse');
+
+      await travelTripHelper.detailsConfirmation(payload, respond);
+      expect(cache.fetch).toHaveBeenCalledTimes(1);
+      expect(getUserBySlackId).toHaveBeenCalledTimes(1);
+      expect(sendPreviewTripResponse).toHaveBeenCalledTimes(1);
+    });
+
+
+    it('Should capture errors', async () => {
+      cache.fetch = jest.fn().mockImplementation(() => {
+        throw new Error('Dummy error');
+      });
+      BugsnagHelper.log = jest.fn().mockReturnValue({});
+      await travelTripHelper.detailsConfirmation(payload, respond);
+      expect(BugsnagHelper.log).toHaveBeenCalled();
     });
   });
 });

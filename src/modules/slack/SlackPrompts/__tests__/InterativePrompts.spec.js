@@ -309,6 +309,45 @@ describe('LocationPrompts', () => {
     });
   });
 
+  describe('sendMapSuggestionsResponse', () => {
+    it('should sendMapSuggestionsResponse: atleast one prediction location', () => {
+      const predictedLocations = [{ text: 'Location1', value: 'place_id' }];
+
+      const selectedActions = new SlackSelectAction('pickupBtn',
+        'Pick Up location', predictedLocations);
+        
+      const buttonAction = new SlackButtonAction('no', 'Location not listed', 'no');
+      const staticMapUrl = 'https://staticMap';
+
+      const locationData = {
+        staticMapUrl,
+        predictedLocations,
+        pickupOrDestination: 'Pick Up',
+        buttonType: 'pickup',
+        tripType: 'travel_trip'
+      };
+      fieldsOrActionsSpy = jest.spyOn(SlackAttachment.prototype, 'addFieldsOrActions');
+      optionalPropsSpy = jest.spyOn(SlackAttachment.prototype, 'addOptionalProps');
+
+      LocationPrompts.sendMapSuggestionsResponse(locationData);
+      expect(fieldsOrActionsSpy).toBeCalledWith('actions', [selectedActions, buttonAction]);
+      expect(optionalPropsSpy).toBeCalledWith('travel_trip_suggestions',
+        '', '#3AAF85', 'default', 'pickup');
+
+      // No predicted location
+      const localData = {
+        staticMapUrl,
+        predictedLocations: [],
+        pickupOrDestination: 'Pick Up',
+        buttonType: 'pickup',
+        tripType: 'travel_trip'
+      };
+      LocationPrompts.sendMapSuggestionsResponse(localData);
+      expect(optionalPropsSpy).toBeCalledWith('travel_trip_locationNotFound',
+        '', '#3AAF85', 'default', 'pickup');
+    });
+  });
+
   it('should sendLocationConfirmationResponse', () => {
     const respond = jest.fn(value => value);
     LocationPrompts.sendLocationConfirmationResponse(
@@ -317,6 +356,39 @@ describe('LocationPrompts', () => {
       'test location',
       '1,1'
     );
+    expect(respond).toBeCalled();
+  });
+
+  it('Should call respond', () => {
+    const respond = jest.fn(value => value);
+    LocationPrompts.errorPromptMessage(respond);
+    expect(respond).toBeCalled();
+  });
+
+  describe('sendMapsConfirmationResponse', () => {
+    const respond = jest.fn(value => value);
+    const locationData = {
+      staticMapUrl: 'https://staticMap', address: 'test location', locationGeometry: '1,1', actionType: 'travel_trip'
+    };
+
+    LocationPrompts.sendMapsConfirmationResponse(
+      respond,
+      locationData,
+      'pickup'
+    );
+    expect(respond).toBeCalled();
+
+    LocationPrompts.sendMapsConfirmationResponse(
+      respond,
+      locationData,
+      'Pick up'
+    );
+    expect(respond).toBeCalled();
+  });
+
+  it('Should call respond', () => {
+    const respond = jest.fn(value => value);
+    LocationPrompts.errorPromptMessage(respond);
     expect(respond).toBeCalled();
   });
 

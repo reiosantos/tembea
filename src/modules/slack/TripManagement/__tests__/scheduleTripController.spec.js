@@ -275,11 +275,11 @@ describe('Create Travel Trip request test', () => {
     });
 
     it('should test validateTravelDetailsForm Method', async () => {
-      UserInputValidator.validateTravelDetailsForm = jest.fn(() => (errorMock));
+      UserInputValidator.validateTravelDetailsForm = jest.fn(() => errorMock);
       UserInputValidator.validateLocationEntries = jest.fn(() => errorMock);
       UserInputValidator.validateDateAndTimeEntry = jest.fn(() => errorMock);
       const payload = createPayload();
-      const result = await ScheduleTripController.validateTravelDetailsForm(payload, 'tripType');
+      const result = await UserInputValidator.validateTravelDetailsForm(payload, 'tripType');
       expect(result[0]).toEqual(errorMock[0]);
     });
 

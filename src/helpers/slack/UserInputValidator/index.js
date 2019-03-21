@@ -110,6 +110,35 @@ class UserInputValidator {
     return errors;
   }
 
+  static async validatePickupDestinationEntry(payload, type, dateFieldName,
+    travelDateTime, allowedHours) {
+    const errors = [];
+    if (type === 'pickup') {
+      const {
+        pickup, othersPickup, flightNumber
+      } = payload.submission;
+      errors.push(...Validators.validateRegex('checkWord', pickup, 'pickup'));
+      errors.push(...this.checkLocations(pickup, othersPickup, 'pickup', 'othersPickup'));
+      errors.push(...Validators.checkDateTimeIsHoursAfterNow(allowedHours,
+        travelDateTime, dateFieldName));
+      errors.push(...Validators.validateRegex('checkNumbersAndLetters',
+        flightNumber, 'flightNumber'));
+      try {
+        errors.push(...await UserInputValidator.validateDateAndTimeEntry(payload, dateFieldName));
+      } catch (error) {
+        // error caught
+      }
+    } else {
+      const {
+        destination, othersDestination
+      } = payload.submission;
+      errors.push(...Validators.validateRegex('checkWord', destination, 'destination'));
+      errors.push(...this.checkLocations(destination, othersDestination,
+        'destination', 'othersDestination'));
+    }
+    return errors;
+  }
+
   static validateLocationEntries(payload) {
     const {
       pickup, othersPickup, destination, othersDestination //eslint-disable-line

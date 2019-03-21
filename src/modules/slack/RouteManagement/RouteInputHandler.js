@@ -20,6 +20,7 @@ import {
   validateBusStop,
 } from './rootFile';
 import RouteInputHandlerHelper from './RouteInputHandlerHelper';
+import LocationMapHelper from '../../../helpers/googleMaps/locationsMapHelpers';
 
 const RouteInputHandlers = {
   home: async (payload, respond) => {
@@ -35,12 +36,7 @@ const RouteInputHandlers = {
         prediction => ({ text: prediction.description, value: prediction.place_id })
       );
 
-      let markerLabel = 0;
-      const locationMarkers = predictedPlacesResults.map((prediction) => {
-        const locationMarker = new Marker('blue', markerLabel += 1);
-        locationMarker.addLocation(prediction.description);
-        return locationMarker;
-      });
+      const locationMarkers = LocationMapHelper.locationMarker(predictedPlacesResults);
 
       const staticMapString = GoogleMapsStatic.getLocationScreenShotUrl(locationMarkers);
       // Convert the string to a URL by removing spaces and replacing with %20

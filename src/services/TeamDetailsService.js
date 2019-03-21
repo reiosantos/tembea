@@ -13,7 +13,7 @@ class TeamDetailsService {
     }
 
     try {
-      const { dataValues } = await TeamDetails.findByPk(teamId);
+      const dataValues = await TeamDetails.findByPk(teamId);
       await cache.saveObject(getTeamDetailsKey(teamId), dataValues);
       return dataValues;
     } catch (error) {

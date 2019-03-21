@@ -3,8 +3,8 @@ import {
   SlackDialog, SlackDialogModel
 } from '../../../modules/slack/SlackModels/SlackDialogModels';
 
-export default (payload, formElementsFunctionName, callbackId, dialogBoxTitle = 'Trip Details') => {
-  const dialog = new SlackDialog(callbackId, dialogBoxTitle, 'Submit');
+export default (payload, formElementsFunctionName, callbackId, dialogTitle = 'Trip Details') => {
+  const dialog = new SlackDialog(callbackId, dialogTitle, 'Submit');
   const formElements = createTripDetailsForm[formElementsFunctionName]();
 
   dialog.addElements(formElements);

@@ -392,6 +392,30 @@ class InteractivePrompts {
     respond(message);
   }
 
+  static openDestinationDialog(respond) {
+    const attachment = new SlackAttachment(
+      '',
+      '',
+      '', '', '', 'default', 'warning'
+    );
+    const actions = [
+      new SlackButtonAction('openDestination', 'Select Destination', 'destination'),
+      new SlackCancelButtonAction(
+        'Cancel Travel Request',
+        'cancel',
+        'Are you sure you want to cancel this travel request',
+        'cancel_request'
+      )
+    ];
+    attachment.addFieldsOrActions('actions', actions);
+    attachment.addOptionalProps('travel_trip_destinationSelection',
+      'fallback', undefined, 'default');
+    const message = new SlackInteractiveMessage('*Travel Trip Request *', [
+      attachment
+    ]);
+    respond(message);
+  }
+
   static sendCancelRequestResponse(respond) {
     const message = new SlackInteractiveMessage(
       'Thank you for using Tembea. Your request has been cancelled'

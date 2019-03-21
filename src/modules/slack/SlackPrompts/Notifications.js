@@ -95,6 +95,7 @@ class SlackNotifications {
       const checkTripType = type === 'regular';
       const { name } = await DepartmentService
         .getById(tripInformation.departmentId);
+      
       tripInformation.department = name;
       if (checkTripType) {
         SlackNotifications.sendRequesterApprovedNotification(

@@ -19,18 +19,30 @@ class ScheduleTripController {
     return errors;
   }
 
-  static async validateTravelDetailsForm(payload, tripType) {
+  static async validateTravelDetailsForm(payload, tripType, status = 'standard') {
     const { submission } = payload;
     const travelDateTime = submission.flightDateTime || submission.embassyVisitDateTime;
     const dateFieldName = tripType === 'embassy' ? 'embassyVisitDateTime' : 'flightDateTime';
     const allowedHours = tripType === 'embassy' ? 3 : 4;
+    return this.passedStatus(submission, payload, status,
+      travelDateTime, dateFieldName, allowedHours);
+  }
+
+  static async passedStatus(submission, payload, status,
+    travelDateTime, dateFieldName, allowedHours) {
     const errors = [];
-    errors.push(...UserInputValidator.validateTravelFormSubmission(submission));
-    errors.push(...await UserInputValidator.validateDateAndTimeEntry(payload,
-      dateFieldName));
-    errors.push(...Validators.checkDateTimeIsHoursAfterNow(allowedHours,
-      travelDateTime, dateFieldName));
-    errors.push(...validateDialogSubmission(payload));
+    if (status === 'pickup' || 'destination') {
+      errors.push(...await UserInputValidator.validatePickupDestinationEntry(payload, status,
+        dateFieldName, travelDateTime, allowedHours));
+    } else {
+      errors.push(...UserInputValidator.validateTravelFormSubmission(submission));
+      errors.push(...await UserInputValidator.validateDateAndTimeEntry(payload,
+        dateFieldName));
+      errors.push(...UserInputValidator.validateLocationEntries(payload));
+      errors.push(...Validators.checkDateTimeIsHoursAfterNow(allowedHours,
+        travelDateTime, dateFieldName));
+      errors.push(...validateDialogSubmission(payload));
+    }
     return errors;
   }
 

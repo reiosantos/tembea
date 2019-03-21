@@ -81,23 +81,27 @@ const createTripDetailsForm = {
       'pickup', toLabelValuePairs(pickupLocations));
 
     const pickupFieldOther = new SlackDialogText(
-      'Other Pickup location', 'otherpickup', 'Enter pickup location', false, addressHint
+      'Other Pickup location', 'othersPickup', 'Enter pickup location', true, addressHint
     );
-
-    const destinationField = new SlackDialogSelectElementWithOptions('Destination',
-      'destination', toLabelValuePairs(destinations));
-      
-    const destinationFieldOther = new SlackDialogText(
-      'Other Destination', 'otherdestination', 'Enter destination', false, addressHint
-    );
-
     return [
-      flightNumber, flightDateTime,
-      pickupField, pickupFieldOther,
-      destinationField, destinationFieldOther
+      flightNumber,
+      flightDateTime,
+      pickupField,
+      pickupFieldOther
     ];
   },
+  travelDestinationForm: () => {
+    const destinationField = new SlackDialogSelectElementWithOptions('Destination',
+      'destination', toLabelValuePairs(destinations));
 
+    const destinationFieldOther = new SlackDialogText(
+      'Other Destination', 'othersDestination', 'Enter destination', true, addressHint
+    );
+    return [
+      destinationField,
+      destinationFieldOther
+    ];
+  },
   travelEmbassyDetailsForm: () => {
     const pickupField = new SlackDialogText('Pick up Location',
       'pickup', 'Enter pickup location', false);

@@ -55,7 +55,7 @@ describe('createTeamDetails create team details attachment', () => {
     it('should return an array ', () => {
       const tripDetails = createTripDetailsForm.travelTripFlightDetailsForm();
       expect(tripDetails instanceof Array).toBeTruthy();
-      expect(tripDetails.length).toEqual(6);
+      expect(tripDetails.length).toEqual(4);
     });
   });
   describe('travelEmbassyDetailsForm', () => {
@@ -65,6 +65,13 @@ describe('createTeamDetails create team details attachment', () => {
         .toBeTruthy();
       expect(tripDetails.length)
         .toEqual(4);
+    });
+  });
+  describe('travelDestinationForm', () => {
+    it('Should call SlackDialogSelectElementWithOptions and SlackDialogText', () => {
+      const tripDetails = createTripDetailsForm.travelDestinationForm();
+      expect(tripDetails[0] instanceof SlackDialogSelectElementWithOptions).toBeTruthy();
+      expect(tripDetails[1] instanceof SlackDialogText).toBeTruthy();
     });
   });
 });
