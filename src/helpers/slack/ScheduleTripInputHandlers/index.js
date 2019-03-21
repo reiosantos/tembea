@@ -6,9 +6,13 @@ import {
 } from '../../../modules/slack/SlackModels/SlackMessageModels';
 import ScheduleTripController from '../../../modules/slack/TripManagement/ScheduleTripController';
 import bugsnagHelper from '../../bugsnagHelper';
-import validateDialogSubmission from '../UserInputValidator/validateDialogSubmission';
+import LocationHelpers from '../../googleMaps/locationsMapHelpers';
+import Validators from '../UserInputValidator/Validators';
+import UserInputValidator from '../UserInputValidator';
+import GoogleMapsError from '../../googleMaps/googleMapsError';
+import TripHelper from '../../TripHelper';
 
-const createDepartmentPayloadObject = (payload, respond, forSelf = 'true') => {
+export const createDepartmentPayloadObject = (payload, respond, forSelf = 'true') => {
   const navButtonCallbackId = forSelf === 'true' ? 'schedule_trip_reason' : 'schedule_trip_rider';
   return {
     payload,
@@ -21,8 +25,12 @@ const createDepartmentPayloadObject = (payload, respond, forSelf = 'true') => {
 
 const ScheduleTripInputHandlers = {
   reason: async (payload, respond, callbackId) => {
-    const checkIfEmpty = validateDialogSubmission(payload);
-    if (checkIfEmpty.length) return { errors: checkIfEmpty };
+    const checkIfEmpty = Validators.validateDialogSubmission(payload);
+    if (checkIfEmpty.length) {
+      return {
+        errors: checkIfEmpty
+      };
+    }
     if (payload.submission) {
       await Cache.save(payload.user.id, callbackId, payload.submission.reason);
     }
@@ -50,74 +58,129 @@ const ScheduleTripInputHandlers = {
       await Cache.save(payload.user.id, 'passengers', noOfPassengers);
     }
 
-    const { forSelf } = await Cache.fetch(payload.user.id);
+    const {
+      forSelf
+    } = await Cache.fetch(payload.user.id);
     const props = createDepartmentPayloadObject(payload, respond, forSelf);
     return InteractivePrompts.sendListOfDepartments(props, forSelf);
   },
 
   department: async (payload, respond) => {
     respond(new SlackInteractiveMessage('Noted...'));
-    const departmentId = payload.actions[0].value;
-    await Cache.save(payload.user.id, 'departmentId', departmentId);
+    const department = payload.actions[0];
+    await Cache.save(payload.user.id, 'department', department);
     DialogPrompts.sendTripDetailsForm(payload, 'regularTripForm',
-      'schedule_trip_tripDestination', 'Pickup Details');
+      'schedule_trip_tripPickup', 'Pickup Details');
   },
 
-  tripDestination: async (payload, respond) => {
-    const { submission, user: { id: userId } } = payload;
+  tripPickup: async (payload, respond) => {
+    const {
+      submission: { pickup, othersPickup, dateTime }, user: { id: userId, name }
+    } = payload;
     try {
       const errors = await ScheduleTripController.validateTripDetailsForm(payload, 'pickup');
-      if (errors.length > 0) {
-        return { errors };
+      if (errors.length) return { errors };
+      await TripHelper.updateTripData(userId, name, pickup, othersPickup, dateTime, 'Regular Trip');
+      if (pickup !== 'Others') {
+        return InteractivePrompts.sendSelectDestination(respond);
       }
-      if (submission.pickup !== 'Others') {
-        await Cache.save(`${userId}_pickup`, 'pickupLocation', submission);
-        InteractivePrompts.sendSelectDestination(respond);
-      }
+      const verifiable = await LocationHelpers
+        .locationVerify(payload.submission, 'pickup', 'schedule_trip');
+      respond(verifiable);
     } catch (error) {
       bugsnagHelper.log(error);
+      if (error instanceof GoogleMapsError && error.code === GoogleMapsError.UNAUTHENTICATED) {
+        return InteractivePrompts.sendSelectDestination(respond);
+      }
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     }
   },
 
-  selectDestination: async (payload, respond) => {
+  destinationSelection: async (payload, respond) => {
     try {
       respond(new SlackInteractiveMessage('Noted...'));
-      DialogPrompts.sendTripDetailsForm(payload, 'tripDestinationLocationForm',
-        'schedule_trip_locationTime', 'Destination Details');
+      return await DialogPrompts.sendTripDetailsForm(payload, 'tripDestinationLocationForm',
+        'schedule_trip_confirmDestination', 'Destination Details');
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     }
   },
 
-  locationTime: async (payload, respond) => {
+  confirmDestination: async (payload, respond) => {
+    let tripData;
     try {
-      const { submission, user: { id: userId } } = payload;
-      const { pickupLocation } = await Cache.fetch(`${userId}_pickup`);
       const payloadCopy = { ...payload };
-      const tripsObject = {
-        ...pickupLocation,
-        ...submission
-      };
-      payloadCopy.submission = tripsObject;
-      const errors = await ScheduleTripController
-        .validateTripDetailsForm(payloadCopy, 'destination');
-      if (errors.length > 0) {
-        return { errors };
+      const { submission: { destination, othersDestination }, user: { id: userId } } = payload;
+      const { tripDetails } = await Cache.fetch(userId);
+      tripDetails.destination = destination;
+      tripDetails.othersDestination = othersDestination;
+      payloadCopy.submission.pickup = tripDetails.pickup;
+      payloadCopy.submission.othersPickup = tripDetails.othersPickup;
+      const errors = await ScheduleTripController.validateTripDetailsForm(payloadCopy, 'destination');
+      if (errors.length) return { errors };
+      
+      tripData = UserInputValidator.getScheduleTripDetails(tripDetails);
+      await Cache.save(userId, 'tripDetails', tripDetails);
+      if (destination !== 'Others') return InteractivePrompts.sendScheduleTripResponse(tripData, respond);
+      const verifiable = await LocationHelpers.locationVerify(payload.submission, 'destination', 'schedule_trip');
+      respond(verifiable);
+    } catch (error) {
+      bugsnagHelper.log(error);
+      if (error instanceof GoogleMapsError && error.code === GoogleMapsError.UNAUTHENTICATED) {
+        return InteractivePrompts.sendScheduleTripResponse(tripData, respond);
       }
-      respond(new SlackInteractiveMessage('Noted...'));
+      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+    }
+  },
 
-      const tripType = 'Regular Trip';
-      const userObj = await Cache.fetch(userId);
-      const tripRequestDetails = { ...userObj, ...tripsObject, tripType };
+  detailsConfirmation: async (payload, respond) => {
+    try {
+      const { user: { id: userId } } = payload;
+      const userTripData = await Cache.fetch(userId);
+      const tripData = UserInputValidator.getScheduleTripDetails(userTripData);
 
-      await ScheduleTripController.createTripRequest(payloadCopy, respond, tripRequestDetails);
+      if (tripData.pickup === tripData.destination) {
+        respond(new SlackInteractiveMessage('Pickup and Destination cannot be the same...'));
+        return await DialogPrompts.sendTripDetailsForm(payload, 'tripDestinationLocationForm',
+          'schedule_trip_confirmDestination', 'Destination Details');
+      }
+      await Cache.save(userId, 'tripDetails', tripData);
+
+      return InteractivePrompts.sendScheduleTripResponse(tripData, respond);
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     }
-  }
+  },
+
+  confirmation: async (payload, respond) => {
+    try {
+      const { user: { id: userId } } = payload;
+      const tripData = await Cache.fetch(userId);
+      respond(new SlackInteractiveMessage('Noted...'));
+      await ScheduleTripController.createTripRequest(payload, respond, tripData);
+    } catch (error) {
+      bugsnagHelper.log(error);
+      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+    }
+  },
+
+  suggestions: async (payload, respond) => {
+    try {
+      const actionName = payload.actions[0].name;
+      await LocationHelpers.locationSuggestions(payload, respond, actionName, 'schedule_trip');
+    } catch (error) {
+      bugsnagHelper.log(error);
+      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+    }
+  },
+
+  locationNotFound: (payload, respond) => {
+    respond(new SlackInteractiveMessage(
+      'Sorry😞, your location wasn\'t found on the map...contact the ops team'
+    ));
+  },
 };
 
 export default ScheduleTripInputHandlers;

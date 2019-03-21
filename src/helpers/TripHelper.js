@@ -1,3 +1,5 @@
+import Cache from '../cache';
+
 export default class TripHelper {
   static cleanDateQueryParam(query, field) {
     if (query[field]) {
@@ -27,5 +29,18 @@ export default class TripHelper {
       return [key, value];
     }
     return [];
+  }
+
+  static async updateTripData(userId, name, pickup, othersPickup, dateTime,
+    tripType = 'Regular Trip') {
+    const userTripData = await Cache.fetch(userId);
+    userTripData.id = userId;
+    userTripData.name = name;
+    userTripData.pickup = pickup;
+    userTripData.othersPickup = othersPickup;
+    userTripData.dateTime = dateTime;
+    userTripData.departmentId = userTripData.department.value;
+    userTripData.tripType = tripType;
+    await Cache.save(userId, 'tripDetails', userTripData);
   }
 }

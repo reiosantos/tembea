@@ -11,6 +11,7 @@ import { slackEventNames } from '../../../events/slackEvents';
 import Services from '../../../../../services/UserService';
 import { LocationPrompts } from '../../../RouteManagement/rootFile';
 import TravelLocationHelper from './travelHelper';
+import GoogleMapsError from '../../../../../helpers/googleMaps/googleMapsError';
 
 const travelTripHelper = {
   contactDetails: async (payload, respond) => {
@@ -91,7 +92,15 @@ const travelTripHelper = {
       }
       const tripDetails = await createTravelTripDetails(payload);
       await Cache.save(payload.user.id, 'tripDetails', tripDetails);
-      await TravelLocationHelper.getPickupType(payload, respond);
+      try {
+        const verifiable = await TravelLocationHelper.getPickupType(payload.submission);
+        if (verifiable) respond(verifiable);
+      } catch (err) {
+        if (err instanceof GoogleMapsError && err.code === GoogleMapsError.UNAUTHENTICATED) {
+          const message = InteractivePrompts.openDestinationDialog();
+          respond(message);
+        }
+      }
     } catch (error) {
       bugsnagHelper.log(error);
       respond(

@@ -76,40 +76,6 @@ class UserInputValidator {
     return errors;
   }
 
-  static validatePickupDestinationLocationEntries(payload, typeOfDialogBox) {
-    if (typeOfDialogBox === 'pickup') {
-      const {
-        pickup,
-        othersPickup,
-      } = payload.submission;
-      return UserInputValidator.validateDialogBoxLocation(pickup,
-        othersPickup, typeOfDialogBox);
-    }
-    const {
-      destination,
-      othersDestination,
-      pickup
-    } = payload.submission;
-    const errors = [];
-    errors.push(...Validators.checkOriginAnDestination(
-      pickup,
-      destination,
-      'pickup',
-      'destination'
-    ));
-    errors.push(...UserInputValidator.validateDialogBoxLocation(destination,
-      othersDestination, typeOfDialogBox));
-    return errors;
-  }
-
-  static validateDialogBoxLocation(firstLocation, secondLocation, typeOfDialogBox) {
-    const errors = [];
-    errors.push(...Validators.validateRegex('checkWord', firstLocation, typeOfDialogBox));
-    errors.push(...this.checkLocations(firstLocation, secondLocation,
-      typeOfDialogBox, `others${typeOfDialogBox}`));
-    return errors;
-  }
-
   static async validatePickupDestinationEntry(payload, type, dateFieldName,
     travelDateTime, allowedHours) {
     const errors = [];
@@ -136,6 +102,31 @@ class UserInputValidator {
       errors.push(...this.checkLocations(destination, othersDestination,
         'destination', 'othersDestination'));
     }
+    return errors;
+  }
+  
+  static validatePickupDestinationLocationEntries(payload, typeOfDialogBox) {
+    if (typeOfDialogBox === 'pickup') {
+      const { submission: { pickup, othersPickup } } = payload;
+      return UserInputValidator.validateDialogBoxLocation(pickup,
+        othersPickup, typeOfDialogBox);
+    }
+    const { submission: { destination, othersDestination, pickup } } = payload;
+    const errors = [];
+    errors.push(...Validators.checkOriginAnDestination(
+      pickup, destination,
+      'pickup', 'destination'
+    ));
+    errors.push(...UserInputValidator.validateDialogBoxLocation(destination,
+      othersDestination, typeOfDialogBox));
+    return errors;
+  }
+
+  static validateDialogBoxLocation(firstLocation, secondLocation, typeOfDialogBox) {
+    const errors = [];
+    errors.push(...Validators.validateRegex('checkWord', firstLocation, typeOfDialogBox));
+    errors.push(...UserInputValidator.checkLocations(firstLocation, secondLocation,
+      typeOfDialogBox, `others${typeOfDialogBox}`));
     return errors;
   }
 
@@ -261,6 +252,29 @@ class UserInputValidator {
       errors = UserInputValidator.validateSearchRoute(submission.search);
     }
     return errors;
+  }
+
+  static getScheduleTripDetails(tripData) {
+    const userTripData = {
+      ...tripData
+    };
+    const {
+      destination, pickup, othersDestination, othersPickup
+    } = userTripData;
+    userTripData.destination = destination === 'Others' ? othersDestination : destination;
+    userTripData.pickup = pickup === 'Others' ? othersPickup : pickup;
+    Object.keys(userTripData).map((key) => {
+      if (key === 'pickUpAddress' || key === 'destinationAddress') {
+        const type = key === 'pickUpAddress' ? 'pickup' : 'destination';
+        userTripData[type] = userTripData[key].address;
+        userTripData[`${type}Lat`] = userTripData[key].latitude;
+        userTripData[`${type}Long`] = userTripData[key].longitude;
+        delete userTripData[key];
+      }
+      return true;
+    });
+    delete userTripData.tripDetails;
+    return userTripData;
   }
 }
 

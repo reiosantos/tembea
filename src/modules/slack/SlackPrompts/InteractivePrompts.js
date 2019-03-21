@@ -13,6 +13,7 @@ import previewTripDetailsAttachment
   from '../helpers/slackHelpers/TravelTripHelper/previewTripDetailsAttachment';
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
 import DepartmentService from '../../../services/DepartmentService';
+import PreviewScheduleTrip from '../helpers/slackHelpers/previewScheduleTripAttachments';
 
 const web = new WebClientSingleton();
 
@@ -34,7 +35,6 @@ class InteractivePrompts {
   static sendCompletionResponse(respond, requestId) {
     const attachment = new SlackAttachment();
     attachment.addFieldsOrActions('actions', [
-      // sample button actions
       new SlackButtonAction('view', 'View', requestId),
       new SlackButtonAction('reschedule', 'Reschedule ', requestId),
       new SlackCancelButtonAction(
@@ -86,7 +86,6 @@ class InteractivePrompts {
 
   static sendTripItinerary(payload, respond) {
     const attachment = new SlackAttachment();
-    // main buttons
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('history', 'Trip History', 'view_trips_history'),
       new SlackButtonAction(
@@ -268,7 +267,8 @@ class InteractivePrompts {
       );
     }
 
-    const message = new SlackInteractiveMessage(text, [...attachments, pageButtonsAttachment, navButtonsAttachment]);
+    const message = new SlackInteractiveMessage(text,
+      [...attachments, pageButtonsAttachment, navButtonsAttachment]);
     respond(message);
   }
 
@@ -313,6 +313,7 @@ class InteractivePrompts {
       await DepartmentService.getDepartmentsForSlack(payload.team.id),
       attachmentCallbackId
     );
+
     attachment.push(createNavButtons(navButtonCallbackId, navButtonValue));
 
     const message = new SlackInteractiveMessage(
@@ -355,7 +356,7 @@ class InteractivePrompts {
         'cancel_trip'
       )
     ]);
-    attachment.addOptionalProps('schedule_trip_selectDestination');
+    attachment.addOptionalProps('schedule_trip_destinationSelection');
     const message = new SlackInteractiveMessage('*Select Destination*', [
       attachment,
     ]);
@@ -392,7 +393,7 @@ class InteractivePrompts {
     respond(message);
   }
 
-  static openDestinationDialog(respond) {
+  static openDestinationDialog() {
     const attachment = new SlackAttachment(
       '',
       '',
@@ -413,7 +414,7 @@ class InteractivePrompts {
     const message = new SlackInteractiveMessage('*Travel Trip Request *', [
       attachment
     ]);
-    respond(message);
+    return message;
   }
 
   static sendCancelRequestResponse(respond) {
@@ -427,6 +428,33 @@ class InteractivePrompts {
     message = 'Dang! I hit an error with this request. Please contact Tembea Technical support'
   ) {
     return new SlackInteractiveMessage(message);
+  }
+
+  static async sendScheduleTripResponse(tripDetails, respond) {
+    const fields = await PreviewScheduleTrip.previewScheduleTripAttachments(tripDetails);
+    const attachment = new SlackAttachment(
+      '',
+      'Trip Summary',
+      '', '', '', 'default', 'info'
+    );
+
+    const actions = [
+      new SlackButtonAction('confirmTripRequest', 'Confirm Trip', 'confirm'),
+      new SlackCancelButtonAction(
+        'Cancel Trip',
+        'cancel',
+        'Are you sure you want to cancel this schedule trip',
+        'cancel_request'
+      )
+    ];
+    const message = new SlackInteractiveMessage('*Trip request preview*', [
+      attachment
+    ]);
+    attachment.addFieldsOrActions('actions', actions);
+    attachment.addFieldsOrActions('fields', fields);
+    attachment.addOptionalProps('schedule_trip_confirmation', 'fallback', undefined, 'default');
+
+    respond(message);
   }
 }
 

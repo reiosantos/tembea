@@ -35,6 +35,51 @@ jest.mock('@slack/client', () => ({
 const err = new Error('Dummy error');
 const rejectMock = jest.fn(() => Promise.reject(err));
 
+describe('Test PassedStatus Method', () => {
+  const payload = createPayload();
+  beforeEach(() => {
+    jest.spyOn(Validators, 'checkDateTimeIsHoursAfterNow').mockReturnValue([]);
+    jest.spyOn(UserInputValidator, 'validatePickupDestinationEntry').mockResolvedValue([]);
+    jest.spyOn(Validators, 'validateDialogSubmission').mockReturnValue([]);
+    jest.spyOn(UserInputValidator, 'validateLocationEntries').mockReturnValue([]);
+    jest.spyOn(UserInputValidator, 'validateDateAndTimeEntry').mockResolvedValue([]);
+    jest.spyOn(UserInputValidator, 'validateTravelFormSubmission').mockReturnValue([]);
+  });
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
+  });
+
+
+  it('should test PassedStatus Method when status is "pickup"', async () => {
+    const {
+      submission
+    } = payload;
+    const travelDateTime = submission.flightDateTime;
+    const result = await ScheduleTripController
+      .passedStatus(submission, payload, 'pickup', travelDateTime, 'flightDateTime', 3);
+    expect(result.length).toBe(0);
+  });
+  it('should test PassedStatus Method when status is "destination"', async () => {
+    const {
+      submission
+    } = payload;
+    const travelDateTime = submission.flightDateTime;
+    const result = await ScheduleTripController
+      .passedStatus(submission, payload, 'destination', travelDateTime, 'flightDateTime', 3);
+    expect(result.length).toBe(0);
+  });
+  it('should test PassedStatus Method when status is "standard"', async () => {
+    const {
+      submission
+    } = payload;
+    const travelDateTime = submission.flightDateTime;
+    const result = await ScheduleTripController
+      .passedStatus(submission, payload, 'standard', travelDateTime, 'flightDateTime', 3);
+    expect(result.length).toBe(0);
+  });
+});
+
 describe('ScheduleTripController Tests', () => {
   describe('createLocation', () => {
     const longitude = 23;
@@ -62,12 +107,24 @@ describe('ScheduleTripController Tests', () => {
   });
 
   describe('validateTripDetailsForm', () => {
-    const payload = { submission: { pickup: 'andela', destination: 'home', othersPickup: undefined } };
+    const payload = createPayload();
 
-    it('should return an empty array if no errors in submission for pickup', async () => {
+    it('should return date validation errors if they exist for pickup dialog', async () => {
+      Validators.validateDialogSubmission = jest.fn(() => []);
       UserInputValidator.validateLocationEntries = jest.fn(() => []);
       UserInputValidator.validateDateAndTimeEntry = jest.fn(() => []);
-      const errors = await ScheduleTripController.validateTripDetailsForm(payload, 'pickup');
+      UserInputValidator
+        .validatePickupDestinationLocationEntries = jest.fn(() => []);
+      const errors = await ScheduleTripController.validateTripDetailsForm('payload', 'pickup');
+      expect(errors.length).toEqual(0);
+    });
+    it('should return date validation errors if they exist for destination dialog', async () => {
+      Validators.validateDialogSubmission = jest.fn(() => []);
+      UserInputValidator.validateLocationEntries = jest.fn(() => []);
+      UserInputValidator.validateDateAndTimeEntry = jest.fn(() => []);
+      UserInputValidator
+        .validatePickupDestinationLocationEntries = jest.fn(() => []);
+      const errors = await ScheduleTripController.validateTripDetailsForm('payload', 'destination');
       expect(errors.length).toEqual(0);
     });
 
@@ -81,7 +138,7 @@ describe('ScheduleTripController Tests', () => {
     it('should throw an error', async () => {
       try {
         UserInputValidator.validateDateAndTimeEntry = rejectMock;
-        await ScheduleTripController.validateTripDetailsForm(payload, 'pickup');
+        await ScheduleTripController.validateTripDetailsForm('payload', 'pickup');
       } catch (e) {
         expect(e).toEqual(err);
       }
@@ -98,6 +155,15 @@ describe('ScheduleTripController Tests', () => {
       const locationIds = await ScheduleTripController.getLocationIds(payload.submission);
       expect(locationIds).toEqual({ originId: 2, destinationId: 2 });
     });
+    it('should return originId and destinationId for "Others"', async () => {
+      ScheduleTripController.createLocation = jest.fn(() => 2);
+      const tripData = tripRequestDetails();
+      tripData.pickup = 'Others';
+      tripData.destination = 'Others';
+
+      const locationIds = await ScheduleTripController.getLocationIds(tripData);
+      expect(locationIds).toEqual({ originId: 2, destinationId: 2 });
+    });
   });
 
   describe('createRequestObject', () => {
@@ -109,6 +175,20 @@ describe('ScheduleTripController Tests', () => {
       expect(request).toHaveProperty('riderId', 4);
       expect(request).toHaveProperty('reason', tripRequestDetails().reason);
     });
+    it('should return an object containing trip request details when "pickup" is Others', async () => {
+      ScheduleTripController.getLocationIds = jest.fn(() => 2);
+      dateHelper.changeDateTimeFormat = jest.fn(() => '22/12/2018 22:00');
+      const tripData = tripRequestDetails();
+      tripData.pickup = 'Others';
+      tripData.destination = 'Others';
+      const request = await ScheduleTripController
+        .createRequestObject(tripData, {
+          id: 4
+        });
+      expect(request).toHaveProperty('riderId', 4);
+      expect(request).toHaveProperty('reason', tripRequestDetails().reason);
+    });
+
 
     it('should throw an error', async () => {
       try {
@@ -239,6 +319,7 @@ describe('Create trip Detail test', () => {
 
 describe('Create Travel Trip request test', () => {
   afterEach(() => {
+    jest.clearAllMocks();
     jest.resetAllMocks();
     jest.restoreAllMocks();
   });
@@ -285,12 +366,30 @@ describe('Create Travel Trip request test', () => {
     });
 
     it('should test validateTravelDetailsForm Method', async () => {
-      UserInputValidator.validateTravelDetailsForm = jest.fn(() => errorMock);
+      jest.spyOn(ScheduleTripController, 'passedStatus').mockResolvedValue([]);
       UserInputValidator.validateLocationEntries = jest.fn(() => errorMock);
       UserInputValidator.validateDateAndTimeEntry = jest.fn(() => errorMock);
       const payload = createPayload();
-      const result = await UserInputValidator.validateTravelDetailsForm(payload, 'tripType');
-      expect(result[0]).toEqual(errorMock[0]);
+      const result = await ScheduleTripController.validateTravelDetailsForm(payload, 'embassy');
+      expect(result.length).toBe(0);
+    });
+
+    it('should test validateTravelDetailsForm Method for embassy visit', async () => {
+      jest.spyOn(ScheduleTripController, 'passedStatus').mockResolvedValue([]);
+      UserInputValidator.validateLocationEntries = jest.fn(() => errorMock);
+      UserInputValidator.validateDateAndTimeEntry = jest.fn(() => errorMock);
+      const payload = createPayload();
+      const result = await ScheduleTripController.validateTravelDetailsForm(payload, 'embassy');
+      expect(result.length).toBe(0);
+    });
+    it('should test validateTravelDetailsForm Method for flight date Time', async () => {
+      jest.spyOn(ScheduleTripController, 'passedStatus').mockResolvedValue([]);
+      UserInputValidator.validateLocationEntries = jest.fn(() => errorMock);
+      UserInputValidator.validateDateAndTimeEntry = jest.fn(() => errorMock);
+      const payload = createPayload();
+      delete payload.submission.flightDateTime;
+      const result = await ScheduleTripController.validateTravelDetailsForm(payload, 'flight');
+      expect(result.length).toBe(0);
     });
 
 
@@ -299,7 +398,7 @@ describe('Create Travel Trip request test', () => {
         throw new Error('Not working');
       });
       UserInputValidator.validateDateAndTimeEntry = jest.fn(() => errorMock);
-      Validators.checkDateTimeIsHoursAfterNow = jest.fn(() => errorMock);
+      jest.spyOn(Validators, 'checkDateTimeIsHoursAfterNow').mockResolvedValue(errorMock);
 
       try {
         await ScheduleTripController.validateTravelDetailsForm('payload');

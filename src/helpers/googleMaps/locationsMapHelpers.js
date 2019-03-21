@@ -12,6 +12,7 @@ import InteractivePrompts from '../../modules/slack/SlackPrompts/InteractiveProm
 import DialogPrompts from '../../modules/slack/SlackPrompts/DialogPrompts';
 import bugsnagHelper from '../bugsnagHelper';
 import { SlackInteractiveMessage } from '../../modules/slack/SlackModels/SlackMessageModels';
+import GoogleMapsError from './googleMapsError';
 
 export default class LocationHelpers {
   static convertStringToUrl(string) {
@@ -28,17 +29,15 @@ export default class LocationHelpers {
     return tripData;
   }
 
-  static checkTripType(string, payload) {
+  static checkTripType(string, data) {
     let locationSearchString;
     const {
-      submission: {
-        pickup, othersPickup, destination, othersDestination
-      }
-    } = payload;
+      pickup, othersPickup, destination, othersDestination
+    } = data;
     if (string === 'pickup') {
-      locationSearchString = this.getLocation(pickup, othersPickup);
+      locationSearchString = LocationHelpers.getLocation(pickup, othersPickup);
     } else {
-      locationSearchString = this.getLocation(destination, othersDestination);
+      locationSearchString = LocationHelpers.getLocation(destination, othersDestination);
     }
     return locationSearchString;
   }
@@ -49,7 +48,7 @@ export default class LocationHelpers {
     }
     return searchstring;
   }
-  
+
   static locationMarker(predictedPlacesResults) {
     let markerLabel = 0;
     return predictedPlacesResults.map((prediction) => {
@@ -59,33 +58,32 @@ export default class LocationHelpers {
     });
   }
 
-  static async locationVerify(payload, respond, buttonType, tripType) {
-    const locationSearchString = this.checkTripType(buttonType, payload);
+  static async locationVerify(submission, buttonType, tripType) {
+    const locationSearchString = LocationHelpers.checkTripType(buttonType, submission);
     try {
       const locationPredictions = new GoogleMapsLocationSuggestionOptions(locationSearchString);
-    
+
       const { predictions: predictedPlacesResults } = await GoogleMapsSuggestions
         .getPlacesAutoComplete(locationPredictions);
-    
+
       const predictedLocations = predictedPlacesResults.map(
         prediction => ({ text: prediction.description, value: prediction.place_id })
       );
-    
-      const locationMarkers = this.locationMarker(predictedPlacesResults);
-    
+
+      const locationMarkers = LocationHelpers.locationMarker(predictedPlacesResults);
+
       const staticMapString = GoogleMapsStatic.getLocationScreenShotUrl(locationMarkers);
-      const staticMapUrl = this.convertStringToUrl(staticMapString);
+      const staticMapUrl = LocationHelpers.convertStringToUrl(staticMapString);
       const pickupOrDestination = buttonType === 'pickup' ? 'Pick up' : 'Destination';
 
       const locationData = {
         staticMapUrl, predictedLocations, pickupOrDestination, buttonType, tripType
       };
-
       const message = LocationPrompts.sendMapSuggestionsResponse(locationData);
-      respond(message);
+      return message;
     } catch (error) {
-      respond(InteractivePrompts.sendError());
       bugsnagHelper.log(error);
+      throw new GoogleMapsError(GoogleMapsError.UNAUTHENTICATED, 'cannot verify location');
     }
   }
 
@@ -114,17 +112,17 @@ export default class LocationHelpers {
         LocationPrompts.sendLocationCoordinatesNotFound(respond);
         return;
       }
-    
+
       const { geometry: { location: { lat: latitude } } } = place;
       const { geometry: { location: { lng: longitude } } } = place;
       const locationGeometry = `${latitude},${longitude}`;
-    
+
       const placeDetails = await GoogleMapsPlaceDetails.getPlaceDetails(place.place_id);
       const address = `${placeDetails.result.name}, ${placeDetails.result.formatted_address}`;
       const locationMarker = new Marker('red', 'H');
       locationMarker.addLocation(locationGeometry);
       const staticMapString = GoogleMapsStatic.getLocationScreenShotUrl([locationMarker]);
-      const staticMapUrl = this.convertStringToUrl(staticMapString);
+      const staticMapUrl = LocationHelpers.convertStringToUrl(staticMapString);
       const locationData = {
         staticMapUrl, address, latitude, longitude, locationGeometry, actionType
       };

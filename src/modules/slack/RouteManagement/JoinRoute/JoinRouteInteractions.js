@@ -17,7 +17,7 @@ import {
 import { SlackDialog, SlackDialogTextarea } from '../../SlackModels/SlackDialogModels';
 import BatchUseRecordService from '../../../../services/BatchUseRecordService';
 import RateTripController from '../../TripManagement/RateTripController';
-import validateDialogSubmission from '../../../../helpers/slack/UserInputValidator/validateDialogSubmission';
+import Validators from '../../../../helpers/slack/UserInputValidator/Validators';
 
 class JoinRouteInteractions {
   static async handleViewAvailableRoutes(payload, respond) {
@@ -119,7 +119,7 @@ class JoinRouteInteractions {
   static async handleRouteSkipped(payload, respond) {
     try {
       const { submission, state: batchUseRecordId } = payload;
-      const checkIfEmpty = validateDialogSubmission(payload);
+      const checkIfEmpty = Validators.validateDialogSubmission(payload);
       if (checkIfEmpty.length) { return { errors: checkIfEmpty }; }
 
       await BatchUseRecordService.updateBatchUseRecord(batchUseRecordId, { reasonForSkip: submission.tripNotTakenReason, userAttendStatus: 'Skip' });

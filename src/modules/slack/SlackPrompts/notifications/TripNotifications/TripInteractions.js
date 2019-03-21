@@ -33,7 +33,7 @@ class TripInteractions {
     const { actions: [{ value }] } = payload;
     await tripService.updateRequest(value, { tripStatus: 'InTransit' });
     const actions = [new SlackButtonAction('completed', 'Yes', value),
-    new SlackButtonAction('not_completed', 'No', value, 'danger')];
+      new SlackButtonAction('not_completed', 'No', value, 'danger')];
     const attachment = new SlackAttachment('', '', '', '', '');
     attachment.addFieldsOrActions('actions', actions);
     attachment.addOptionalProps('trip_completion');

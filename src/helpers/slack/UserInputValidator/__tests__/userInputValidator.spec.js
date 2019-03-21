@@ -3,7 +3,7 @@ import UserInputValidator from '../index';
 import Validators from '../Validators';
 import DateDialogHelper from '../../../dateHelper';
 import {
-  createPayload
+  createPayload, createPayloadWithEmbassyTime, createTripDetails,
 } from '../../../../modules/slack/SlackInteractions/__mocks__/SlackInteractions.mock';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import ManagerFormValidator from '../managerFormValidator';
@@ -28,6 +28,15 @@ jest.mock('@slack/client', () => ({
   }))
 }));
 
+describe('UserInputValidator', () => {
+  it('should strip trip data to get trip details', () => {
+    const tripData = createTripDetails();
+    const result = UserInputValidator.getScheduleTripDetails(tripData);
+    expect(result.pickupLat).toBeDefined();
+    expect(result.destinationLat).toBeDefined();
+    expect(result.destinationLat).toEqual(-1.2197531);
+  });
+});
 
 describe('checkNumbersAndLetters', () => {
   it('should accept numbers and letters', () => {
@@ -225,6 +234,14 @@ describe('UserInputValidator tests', () => {
       const errors = await UserInputValidator.validateDateAndTimeEntry(payload);
       expect(errors.length).toEqual(0);
     });
+    it('should return Embassy date validation errors if they exist', async () => {
+      Validators.checkDate = jest.fn(() => []);
+      Validators.checkDateTimeFormat = jest.fn(() => []);
+      TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => {});
+      const payload = createPayloadWithEmbassyTime();
+      const errors = await UserInputValidator.validateDateAndTimeEntry(payload);
+      expect(errors.length).toEqual(0);
+    });
     it('should handle and throw errors within validateDateAndTimeEntry', async () => {
       try {
         UserInputValidator.fetchUserInformationFromSlack = jest.fn(() => Promise.reject());
@@ -415,7 +432,7 @@ describe('validateCoordinates', () => {
 describe('validatePickupDestinationEntry', () => {
   it('should return location validation errors if they exist', async () => {
     const payload = createPayload();
-    UserInputValidator.validateDateAndTimeEntry = jest.fn().mockReturnValue({ error: 'Yess !!!' });
+    UserInputValidator.validateDateAndTimeEntry = jest.fn().mockResolvedValue({ error: 'Yess !!!' });
     const date = moment().add(4, 'hours');
     const errors = await UserInputValidator.validatePickupDestinationEntry(payload,
       'pickup', 'flightTime', date, 2);
@@ -453,5 +470,34 @@ describe('validateEngagementForm', () => {
 
     expect(Validators.isDateFormatValid).toHaveBeenCalledTimes(1);
     expect(Validators.isDateFormatValid).toHaveBeenCalledWith(engagementFormData.workingHours);
+  });
+});
+describe('validateDialogBoxLocation', () => {
+  it('should return collected errors if found in destination dialog box', () => {
+    const errors = UserInputValidator.validateDialogBoxLocation();
+    expect(errors.length).toEqual(1);
+  });
+});
+describe('validatePickupDestinationLocationEntries', () => {
+  const payData = createPayload();
+
+  it('should return collected errors if found in pickup dialog box', () => {
+    UserInputValidator.validateDialogBoxLocation = jest.fn().mockReturnValue([{
+      error: 'Yes error'
+    }]);
+    const errors = UserInputValidator.validatePickupDestinationLocationEntries(payData, 'pickup');
+
+    expect(errors.length).toEqual(1);
+  });
+  it('should return collected errors if found in destination dialog box', () => {
+    UserInputValidator.validateDialogBoxLocation = jest.fn().mockReturnValue([{
+      error: 'Yes error'
+    }]);
+    Validators.checkOriginAnDestination = jest.fn().mockReturnValue([{
+      error: 'Yes error'
+    }]);
+    const errors = UserInputValidator
+      .validatePickupDestinationLocationEntries(payData, 'destination');
+    expect(errors.length).toEqual(2);
   });
 });

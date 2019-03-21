@@ -6,8 +6,6 @@ import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import Validators from '../../../helpers/slack/UserInputValidator/Validators';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
-import validateDialogSubmission
-  from '../../../helpers/slack/UserInputValidator/validateDialogSubmission';
 import AddressService from '../../../services/AddressService';
 import TripDetailsService from '../../../services/TripDetailsService';
 import tripService, { TripService } from '../../../services/TripService';
@@ -24,14 +22,14 @@ class ScheduleTripController {
     const travelDateTime = submission.flightDateTime || submission.embassyVisitDateTime;
     const dateFieldName = tripType === 'embassy' ? 'embassyVisitDateTime' : 'flightDateTime';
     const allowedHours = tripType === 'embassy' ? 3 : 4;
-    return this.passedStatus(submission, payload, status,
+    return ScheduleTripController.passedStatus(submission, payload, status,
       travelDateTime, dateFieldName, allowedHours);
   }
 
   static async passedStatus(submission, payload, status,
     travelDateTime, dateFieldName, allowedHours) {
     const errors = [];
-    if (status === 'pickup' || 'destination') {
+    if (status === 'pickup' || status === 'destination') {
       errors.push(...await UserInputValidator.validatePickupDestinationEntry(payload, status,
         dateFieldName, travelDateTime, allowedHours));
     } else {
@@ -41,7 +39,7 @@ class ScheduleTripController {
       errors.push(...UserInputValidator.validateLocationEntries(payload));
       errors.push(...Validators.checkDateTimeIsHoursAfterNow(allowedHours,
         travelDateTime, dateFieldName));
-      errors.push(...validateDialogSubmission(payload));
+      errors.push(...Validators.validateDialogSubmission(payload));
     }
     return errors;
   }
@@ -49,6 +47,7 @@ class ScheduleTripController {
   static async validateTripDetailsForm(payload, typeOfDialogBox) {
     const errors = [];
     try {
+      errors.push(...Validators.validateDialogSubmission(payload));
       if (typeOfDialogBox === 'pickup') {
         errors.push(...UserInputValidator
           .validatePickupDestinationLocationEntries(payload, typeOfDialogBox));
@@ -113,7 +112,8 @@ class ScheduleTripController {
         SlackHelpers.getUserInfoFromSlack(slackUserId, teamId)
       ]);
 
-      const request = await ScheduleTripController.createRequestObject(tripRequestDetails, requester, slackInfo.tz);
+      const request = await ScheduleTripController
+        .createRequestObject(tripRequestDetails, requester, slackInfo.tz);
 
       if (tripRequestDetails.forSelf === 'false') {
         const { rider } = tripRequestDetails;
@@ -131,10 +131,8 @@ class ScheduleTripController {
     try {
       const tripRequest = await ScheduleTripController.createRequest(payload, tripRequestDetails);
       const trip = await TripService.createRequest(tripRequest);
-      
       InteractivePrompts.sendCompletionResponse(respond, trip.id);
       SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, trip, respond);
-
       return true;
     } catch (error) {
       bugsnagHelper.log(error);

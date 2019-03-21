@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { SlackDialogError } from '../../../modules/slack/SlackModels/SlackDialogModels';
 import UserInputValidator from './index';
-import validateDialogSubmission from './validateDialogSubmission';
+import Validators from './Validators';
 
 export default class ManagerFormValidator {
   static validateReasons(reason, field) {
@@ -51,7 +51,7 @@ export default class ManagerFormValidator {
 
   static approveRequestFormValidation(payload) {
     const errors = [];
-    const checkIfEmpty = validateDialogSubmission(payload);
+    const checkIfEmpty = Validators.validateDialogSubmission(payload);
     errors.push(...checkIfEmpty);
 
     if (payload.submission.routeName) {

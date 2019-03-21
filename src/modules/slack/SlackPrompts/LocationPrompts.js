@@ -123,6 +123,48 @@ class LocationPrompts {
     );
     respond(message);
   }
+
+  static sendTripSuggestionsResponse(staticMapUrl, predictedLocations, locationType, buttonValue) {
+    const title = 'Locations on the map are marked in the order they appear on the list';
+    const attachment = new SlackAttachment('', title, '', '',
+      predictedLocations.length ? staticMapUrl : '');
+
+    attachment.addFieldsOrActions('actions', [
+      new SlackSelectAction(`${buttonValue}Btn`, `${locationType} location`, predictedLocations),
+      new SlackButtonAction('no', 'Location not listed', 'no')
+    ]);
+
+    attachment.addOptionalProps(predictedLocations.length
+      ? 'schedule_trip_tripSuggestions'
+      : 'schedule_trip_locationNotFound', '', '#3AAF85', 'default', buttonValue);
+
+    return new SlackInteractiveMessage(
+      `Select your ${locationType} location`, [attachment]
+    );
+  }
+
+  static sendTravelConfirmationResponse(respond, staticMapUrl, locationName,
+    locationGeometry, type) {
+    const attachment = new SlackAttachment(
+      '', locationName, '', '', staticMapUrl
+    );
+    attachment.addFieldsOrActions('actions', [
+      new SlackButtonAction(`confirm${type}`, `Confirm ${type} location`, locationGeometry)
+    ]);
+    let message;
+    if (type === 'pickup') {
+      attachment.addOptionalProps('schedule_trip_destinationSelection');
+      message = new SlackInteractiveMessage(
+        'Confirm your pickup location', [attachment]
+      );
+    } else {
+      attachment.addOptionalProps('schedule_trip_detailsConfirmation');
+      message = new SlackInteractiveMessage(
+        'Confirm your Destination location', [attachment]
+      );
+    }
+    respond(message);
+  }
 }
 
 export default LocationPrompts;

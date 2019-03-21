@@ -1,4 +1,3 @@
-import validateDialogSubmission from '../validateDialogSubmission';
 import {
   createPayload
 } from '../../../../modules/slack/SlackInteractions/__mocks__/SlackInteractions.mock';
@@ -14,7 +13,7 @@ describe('Validates Dialog Submission Inputs', () => {
 
   it('should validate inputs with valid data', () => {
     const payload = createPayload();
-    const invalidInputs = validateDialogSubmission(payload);
+    const invalidInputs = Validators.validateDialogSubmission(payload);
     expect(Validators.checkEmpty).toHaveBeenCalled();
     expect(invalidInputs.length).toEqual(0);
   });
@@ -24,7 +23,7 @@ describe('Validates Dialog Submission Inputs', () => {
       ...payload
     };
     copyPayload.submission.reason = '  ';
-    const invalidInputs = validateDialogSubmission(copyPayload);
+    const invalidInputs = Validators.validateDialogSubmission(copyPayload);
     expect(Validators.checkEmpty).toHaveBeenCalled();
     expect(invalidInputs.length).toEqual(1);
   });

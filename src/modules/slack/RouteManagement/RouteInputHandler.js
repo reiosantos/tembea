@@ -115,7 +115,6 @@ const RouteInputHandlers = {
     try {
       const { otherBusStop, selectBusStop } = payload.submission;
       const busStopCoordinate = selectBusStop || otherBusStop;
-
       const errors = validateBusStop(otherBusStop, selectBusStop);
       if (errors) return errors;
 

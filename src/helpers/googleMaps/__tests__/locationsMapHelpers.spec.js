@@ -71,11 +71,14 @@ describe('Tests for google maps locations', () => {
   });
 
   it('should check trip type and return required response', () => {
-    expect(LocationHelpers.checkTripType(pickUpString, pickupPayload)).toEqual('Nairobi');
-    expect(LocationHelpers.checkTripType(destinationString, destinationPayload)).toEqual('Kisumu');
+    expect(LocationHelpers
+      .checkTripType(pickUpString, pickupPayload.submission)).toEqual('Nairobi');
+    expect(LocationHelpers
+      .checkTripType(destinationString, destinationPayload.submission)).toEqual('Kisumu');
 
-    expect(LocationHelpers.checkTripType(pickUpString, pickupOthers)).toEqual('Allsops');
-    expect(LocationHelpers.checkTripType(destinationString, destinationOthers)).toEqual('Kigali');
+    expect(LocationHelpers.checkTripType(pickUpString, pickupOthers.submission)).toEqual('Allsops');
+    expect(LocationHelpers
+      .checkTripType(destinationString, destinationOthers.submission)).toEqual('Kigali');
   });
 
   it('should call sendMapSuggestionsResponse', async () => {
@@ -92,21 +95,6 @@ describe('Tests for google maps locations', () => {
     LocationPrompts.sendMapSuggestionsResponse = jest.fn().mockReturnValue({});
     await LocationHelpers.locationVerify(payload, respond, pickUpString, 'travel_trip');
     expect(LocationPrompts.sendMapSuggestionsResponse).toHaveBeenCalled();
-  });
-
-  it('should catch thrown errors', async () => {
-    const payload = {
-      type: 'dialog_submission',
-      submission: {
-        location: 'test location'
-      }
-    };
-    GoogleMapsSuggestions.getPlacesAutoComplete = jest.fn().mockImplementation(() => {
-      throw new Error('Dummy error');
-    });
-    bugsnagHelper.log = jest.fn().mockReturnValue({});
-    await LocationHelpers.locationVerify(payload, respond, pickUpString);
-    expect(bugsnagHelper.log).toHaveBeenCalled();
   });
 
   it('Should not return "other" if destination or pick up is other', () => {

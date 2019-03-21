@@ -6,7 +6,7 @@ import {
   PartnerService,
   RouteRequestService,
   RoutesHelper,
-  SlackHelpers
+  SlackHelpers,
 } from './rootFile';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 
@@ -135,6 +135,7 @@ export default class RouteInputHandlerHelper {
       if (locationMatch.length) {
         return locationMatch[0];
       }
+
       return null;
     }
     return locationResult;
@@ -151,7 +152,9 @@ export default class RouteInputHandlerHelper {
     ]);
 
     const {
-      homeToDropOffDistance, dojoToDropOffDistance, validationError
+      homeToDropOffDistance,
+      dojoToDropOffDistance,
+      validationError
     } = await RouteInputHandlerHelper.calculateDistance(savedBusStop, savedHomeAddress, theDojo);
 
     const staticMapUrl = RouteInputHandlerHelper.convertStringToUrl(staticMapString);

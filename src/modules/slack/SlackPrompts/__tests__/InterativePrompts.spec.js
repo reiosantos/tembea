@@ -12,6 +12,8 @@ import {
 import LocationPrompts from '../LocationPrompts';
 import WebClientSingleton from '../../../../utils/WebClientSingleton';
 import BugsnagHelper from '../../../../helpers/bugsnagHelper';
+import { createTripData } from '../../SlackInteractions/__mocks__/SlackInteractions.mock';
+import PreviewScheduleTrip from '../../helpers/slackHelpers/previewScheduleTripAttachments';
 
 jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../../slack/events/', () => ({
@@ -405,6 +407,71 @@ describe('LocationPrompts', () => {
     it('Should trip histroy Dialog', () => {
       InteractivePrompts.sendTripHistory([], 2, 1, [], respond);
       expect(InteractivePromptsHelpers.formatTripHistory).toBeCalled();
+    });
+  });
+
+  describe('InteractivePrompts_sendScheduleTripHistory', () => {
+    beforeEach(() => {
+      fieldsOrActionsSpy = jest.spyOn(SlackAttachment.prototype, 'addFieldsOrActions');
+      optionalPropsSpy = jest.spyOn(SlackAttachment.prototype, 'addOptionalProps');
+    });
+
+    afterEach(() => {
+      jest.resetAllMocks();
+      jest.clearAllMocks();
+    });
+
+    it('should create view open schedule trips response', async () => {
+      const tripDetails = createTripData();
+      const respond = jest.fn(value => value);
+      jest.spyOn(PreviewScheduleTrip, 'previewScheduleTripAttachments').mockResolvedValue();
+      await InteractivePrompts.sendScheduleTripResponse(tripDetails, respond);
+      const confirm = new SlackButtonAction('confirmTripRequest', 'Confirm Trip', 'confirm');
+      const cancel = new SlackCancelButtonAction(
+        'Cancel Trip',
+        'cancel',
+        'Are you sure you want to cancel this schedule trip',
+        'cancel_request'
+      );
+
+      expect(fieldsOrActionsSpy).toBeCalledWith('actions', [confirm, cancel]);
+      expect(optionalPropsSpy).toBeCalledWith('schedule_trip_confirmation', 'fallback', undefined, 'default');
+      expect(respond).toBeCalled();
+    });
+  });
+  describe('InteractivePrompts_sendCancelRequestResponse', () => {
+    it('should create view open schedule trips response', async () => {
+      const respond = jest.fn(value => value);
+      const result = await InteractivePrompts.sendCancelRequestResponse(respond);
+      expect(result).toBe(undefined);
+      expect(respond).toHaveBeenCalled();
+    });
+  });
+  describe('InteractivePrompts_openDestinationDialog', () => {
+    beforeEach(() => {
+      fieldsOrActionsSpy = jest.spyOn(SlackAttachment.prototype, 'addFieldsOrActions');
+      optionalPropsSpy = jest.spyOn(SlackAttachment.prototype, 'addOptionalProps');
+    });
+
+    afterEach(() => {
+      jest.resetAllMocks();
+      jest.clearAllMocks();
+    });
+
+    it('should create view open schedule trips response', async () => {
+      await InteractivePrompts.openDestinationDialog();
+      expect(optionalPropsSpy).toBeCalledWith('travel_trip_destinationSelection',
+        'fallback', undefined, 'default');
+    });
+  });
+  describe('InteractivePrompts_sendSelectDestination', () => {
+    it('should create select destination button', async () => {
+      optionalPropsSpy = jest.spyOn(SlackAttachment.prototype, 'addOptionalProps');
+      const respond = jest.fn(value => value);
+      const result = await InteractivePrompts.sendSelectDestination(respond);
+      expect(result).toBe(undefined);
+      expect(respond).toHaveBeenCalled();
+      expect(optionalPropsSpy).toBeCalledWith('schedule_trip_destinationSelection');
     });
   });
 });

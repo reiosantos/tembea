@@ -14,7 +14,6 @@ import TeamDetailsService from '../../../services/TeamDetailsService';
 class DialogPrompts {
   static async sendTripDetailsForm(payload, formElementsFunction, callbackId, dialogTitle) {
     const dialogForm = createDialogForm(payload, formElementsFunction, callbackId, dialogTitle);
-
     const slackBotOauthToken = await
     TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
     await sendDialogTryCatch(dialogForm, slackBotOauthToken);
@@ -195,7 +194,8 @@ class DialogPrompts {
       new SlackDialogText(
         'Address coordinates:', 'coordinates',
         'Type in your home address latitude and longitude', false, hint
-      )]);
+      )
+    ]);
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
