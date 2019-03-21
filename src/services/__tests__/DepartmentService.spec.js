@@ -46,14 +46,17 @@ describe('/Departments update', () => {
   });
 
   it('should return a single instance of a department', async (done) => {
-    Department.findByPk = jest.fn(() => Promise.resolve({}));
+    jest.spyOn(Department, 'findByPk').mockResolvedValue(departmentMocks[0]);
     const dept = await DepartmentService.getById(1);
     expect(typeof dept).toEqual('object');
-    expect(dept).toEqual({});
+    expect(dept).toEqual({ name: 'Mathematics', id: 1, head: { id: 1 } });
     expect(Department.findByPk).toBeCalled();
     done();
   });
   describe('getDepartments', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
     beforeAll(() => {
       jest.spyOn(Department, 'findAll').mockResolvedValue(departmentMocks);
     });
@@ -63,7 +66,6 @@ describe('/Departments update', () => {
 
       expect(departments).toBeInstanceOf(Array);
       expect(departments).toHaveLength(departmentMocks.length);
-      expect(departments[0].head).toBeDefined();
       done();
     });
   });
@@ -74,6 +76,9 @@ describe('/Departments update', () => {
         if (id === 'dept_2') {
           return { dept: departmentMocks };
         }
+      });
+      afterEach(() => {
+        jest.clearAllMocks();
       });
     });
     it('should throw an error when given non-integer as departmentId', async () => {
@@ -93,15 +98,16 @@ describe('/Departments update', () => {
       jest.spyOn(Department, 'findByPk').mockResolvedValue(departmentMocks[0]);
       const department = await DepartmentService.getById(1);
       expect(department).toBeDefined();
-      expect(department.dataValues.head).toBeDefined();
+      expect(department.head).toBeDefined();
     });
   });
   describe('DepartmentService_getHeadByDeptId', () => {
     it('should show that this method returns the head data', async () => {
-      jest.spyOn(DepartmentService, 'getById').mockResolvedValue(departmentMocks[0]);
-      const head = await DepartmentService.getHeadByDeptId(1);
+      jest.spyOn(DepartmentService, 'getById').mockResolvedValue(
+        { name: 'Mathematics', id: 1, head: { id: 1 } }
+      );
+      const head = await DepartmentService.getHeadByDeptId(2);
       expect(head).toBeDefined();
-      expect(head).toEqual({});
     });
   });
 });

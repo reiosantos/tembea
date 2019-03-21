@@ -8,12 +8,10 @@ class InteractivePromptsHelpers {
    * @returns {array} The fields array
    */
   static addOpsNotificationTripFields(tripInfo) {
-    const requester = tripInfo.requester.dataValues;
-    const department = tripInfo.department.dataValues;
-    const rider = tripInfo.rider.dataValues;
-    const pickup = tripInfo.origin.dataValues.address;
-    const destination = tripInfo.destination.dataValues.address;
-
+    const {
+      requester, department, rider, destination: { address: destination },
+      origin: { address: pickup }
+    } = tripInfo;
     return [
       new SlackAttachmentField('Requested By', `<@${requester.slackId}>`, true),
       new SlackAttachmentField('Department', department.name, true),
@@ -47,7 +45,7 @@ class InteractivePromptsHelpers {
    * @param  {object} tripInformation the trip request information
    */
   static generateCabDetailsAttachment(tripInformation) {
-    const cab = tripInformation.cab.dataValues;
+    const { cab } = tripInformation;
     const cabDetailsAttachment = new SlackAttachment('Cab Details');
     cabDetailsAttachment.addOptionalProps('', '', '#3c58d7');
     cabDetailsAttachment.addFieldsOrActions('fields',

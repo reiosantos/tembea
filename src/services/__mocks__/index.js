@@ -124,7 +124,9 @@ export const departmentMocks = [
       name: 'Mathematics',
       id: 1,
       head: {
-        dataValues: {}
+        dataValues: {
+          id: 1
+        }
       }
     }
   }

@@ -1,7 +1,10 @@
 import tripService, { TripService } from '../TripService';
 import models from '../../database/models';
-import { mockedValue, tripInfo, mockTrip } from '../../modules/trips/__tests__/__mocks__';
+import {
+  mockedValue, tripInfo, mockTrip, updatedValue
+} from '../../modules/trips/__tests__/__mocks__';
 import cache from '../../cache';
+import RemoveDataValues from '../../helpers/removeDataValues';
 
 const { TripRequest } = models;
 
@@ -196,15 +199,18 @@ describe('TripService', () => {
     });
   });
   describe('tripService_updateRequest', () => {
-    const err = new Error('Error updating trip request');
-
     it('should update a trip request', async () => {
-      jest.spyOn(TripRequest, 'update').mockResolvedValue(mockedValue);
+      jest.spyOn(TripRequest, 'update').mockResolvedValue(updatedValue);
+      jest.spyOn(RemoveDataValues, 'removeDataValues').mockReturnValue(
+        mockedValue
+      );
       await TripService.updateRequest(1,
         { tripStatus: 'Confirmed' });
       expect(TripRequest.update).toBeCalled();
     });
     it('should throw an error when trip request update fails', async () => {
+      const err = new Error('Error updating trip request');
+
       jest.spyOn(TripRequest, 'update').mockRejectedValue(new Error());
       try {
         await TripService.updateRequest(1,

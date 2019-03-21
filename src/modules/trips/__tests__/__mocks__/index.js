@@ -77,6 +77,30 @@ const mockTrip = {
     cabId: 5
   }]
 };
+const updatedValue = [
+  1,
+  [{
+    name: 'my trip to the dojo',
+    status: 'DeclinedByManager',
+    arrivalTime: null,
+    type: 'Regular Trip',
+    departureTime: '2018-11-16T06:30:00.000Z',
+    requestedOn: '2018-12-03T00:00:00.000Z',
+    department: 'People',
+    destination: 'the dojo',
+    pickup: 'the dojo',
+    rider: {
+      name: 'Opeoluwa Iyi-kuyoro',
+      email: 'opeoluwa.iyi-kuyoro@andela.com',
+      slackId: 'UE1920ZNW'
+    },
+    requester: {
+      name: 'Opeoluwa Iyi-kuyoro',
+      email: 'opeoluwa.iyi-kuyoro@andela.com',
+      slackId: 'UE1920ZNW'
+    }
+  }]
+];
 export {
-  mockedValue, resultValue, response, tripInfo, mockTrip
+  mockedValue, resultValue, response, tripInfo, mockTrip, updatedValue
 };

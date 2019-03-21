@@ -162,7 +162,7 @@ class InteractivePrompts {
   static async sendManagerDeclineOrApprovalCompletion(
     decline, tripInformation, timeStamp, channel, slackBotOauthToken
   ) {
-    const requester = tripInformation.requester.dataValues;
+    const { requester } = tripInformation;
     const attachments = [
       new SlackAttachment(decline ? 'Trip Declined' : 'Trip Approved'),
       new SlackAttachment(
@@ -219,7 +219,7 @@ class InteractivePrompts {
     const tripDetailsAttachment = new SlackAttachment(decline ? 'Trip Declined' : 'Trip Confirmed');
     const confirmationDetailsAttachment = new SlackAttachment(
       decline
-        ? `:X: <@${tripInformation.decliner.dataValues.slackId}> declined this request`
+        ? `:X: <@${tripInformation.decliner.slackId}> declined this request`
         : `:white_check_mark: <@${tripInformation.confirmer.slackId}> approved this request`
     );
     const cabDetailsAttachment = !decline

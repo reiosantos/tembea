@@ -31,6 +31,7 @@ class NotificationsResponse {
         channelId, data, color, actions, callbackId, payload
       );
     }
+    
     return this.travelOperationsDepartmentResponse(
       channelId, data, color, actions, callbackId
     );
@@ -80,6 +81,7 @@ class NotificationsResponse {
     const {
       tripStatus, requester, pickup, departureDate, rider, destination, managerComment, department
     } = responseData;
+    
     const riderInfo = this.riderInfoResponse(rider, requester);
 
     const detailedAttachment = new SlackAttachment(

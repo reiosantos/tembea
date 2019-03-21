@@ -10,7 +10,7 @@ import validateDialogSubmission
   from '../../../helpers/slack/UserInputValidator/validateDialogSubmission';
 import AddressService from '../../../services/AddressService';
 import TripDetailsService from '../../../services/TripDetailsService';
-import tripService from '../../../services/TripService';
+import tripService, { TripService } from '../../../services/TripService';
 
 class ScheduleTripController {
   static validateTravelContactDetailsForm(payload) {
@@ -116,7 +116,7 @@ class ScheduleTripController {
   static async createTripRequest(payload, respond, tripRequestDetails) {
     try {
       const tripRequest = await this.createRequest(payload, tripRequestDetails);
-      const trip = await tripService.createRequest(tripRequest);
+      const trip = await TripService.createRequest(tripRequest);
 
       InteractivePrompts.sendCompletionResponse(respond, trip.id);
       SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, trip.dataValues, respond);

@@ -10,7 +10,7 @@ import SlackEvents from '../../events';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import AddressService from '../../../../services/AddressService';
 import TripDetailsService from '../../../../services/TripDetailsService';
-import tripService from '../../../../services/TripService';
+import tripService, { TripService } from '../../../../services/TripService';
 
 
 jest.mock('@slack/client', () => ({
@@ -157,7 +157,7 @@ describe('ScheduleTripController Tests', () => {
     const responder = respondMock();
     it('should persist details of a trip', async () => {
       const payload = createPayload();
-      tripService.createRequest = jest.fn(() => ({ dataValues: 'someValue' }));
+      TripService.createRequest = jest.fn(() => ({ dataValues: 'someValue' }));
       InteractivePrompts.sendCompletionResponse = jest.fn();
       SlackEvents.raise = jest.fn();
       ScheduleTripController.createRequest = jest.fn(() => tripRequestDetails());
@@ -167,7 +167,7 @@ describe('ScheduleTripController Tests', () => {
 
       expect(request).toEqual(true);
       expect(SlackEvents.raise).toBeCalled();
-      expect(tripService.createRequest).toBeCalled();
+      expect(TripService.createRequest).toBeCalled();
     });
 
     it('should persist details of a trip', async () => {

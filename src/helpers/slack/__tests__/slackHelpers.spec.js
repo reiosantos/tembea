@@ -6,7 +6,7 @@ import {
   testUserFromDb, testTripFromDb, slackUserMock, createNewUserMock, newUser
 } from '../__mocks__';
 import UserService from '../../../services/UserService';
-import tripService from '../../../services/TripService';
+import tripService, { TripService } from '../../../services/TripService';
 
 const { TripRequest, User } = models;
 
@@ -144,7 +144,10 @@ describe('slackHelpers', () => {
     });
 
     it('should return a valid approval status when request exists', async (done) => {
-      jest.spyOn(tripService, 'getById').mockResolvedValue(testTripFromDb);
+      jest.spyOn(tripService, 'getById').mockResolvedValue({
+        tripStatus: 'Approved',
+        approvedById: testUserFromDb.dataValues.slackId
+      });
       jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId')
         .mockResolvedValue(testUserFromDb.dataValues);
       const trip = await SlackHelpers.isRequestApproved(23, 'UE45');
@@ -157,12 +160,15 @@ describe('slackHelpers', () => {
 
   describe('approveRequest', () => {
     it('should approve request when parameters is valid', async (done) => {
-      jest.spyOn(tripService, 'getById').mockResolvedValue(testTripFromDb);
-      jest.spyOn(testTripFromDb, 'update').mockResolvedValue({});
+      jest.spyOn(tripService, 'getById').mockResolvedValue({
+        tripStatus: 'Approved',
+        approvedById: testUserFromDb.dataValues.slackId
+      });
+      jest.spyOn(TripService, 'updateRequest').mockResolvedValue({});
       jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockResolvedValue({ id: 5 });
 
       const tripStatus = await SlackHelpers.approveRequest(23, 'UE45', 'some text');
-      expect(testTripFromDb.update).toBeCalledTimes(1);
+      expect(TripService.updateRequest).toBeCalledTimes(1);
       expect(tripStatus).toBeTruthy();
       done();
     });
@@ -235,6 +241,51 @@ describe('slackHelpers', () => {
       expect(result.length === 10);
       expect(result[0]).toHaveProperty('text');
       expect(result[0]).toHaveProperty('value');
+    });
+  });
+
+  describe('addMissingTripObjects', () => {
+    it('should add decliner object to trip data', async () => {
+      jest.spyOn(UserService, 'getUserById').mockResolvedValue({
+        dataValues: {
+          id: 15,
+          name: 'Tembea SuperAdmin',
+          slackId: 'UG93CNE80',
+          phoneNo: null,
+          email: 'ronald.okello@andela.com',
+        }
+      });
+      const result = await SlackHelpers.addMissingTripObjects({ declinedById: 15 });
+      expect(result.decliner).toBeDefined();
+      expect(result.decliner.dataValues.slackId).toEqual('UG93CNE80');
+    });
+    it('should add confirmer object to trip data', async () => {
+      jest.spyOn(UserService, 'getUserById').mockResolvedValue({
+        dataValues: {
+          id: 15,
+          name: 'Tembea SuperAdmin',
+          slackId: 'UG93CNE80',
+          phoneNo: null,
+          email: 'ronald.okello@andela.com',
+        }
+      });
+      const result = await SlackHelpers.addMissingTripObjects({ confirmedById: 15 });
+      expect(result.confirmer).toBeDefined();
+      expect(result.confirmer.dataValues.slackId).toEqual('UG93CNE80');
+    });
+    it('should add cab object to trip data', async () => {
+      jest.spyOn(UserService, 'getUserById').mockResolvedValue({
+        dataValues: {
+          id: 2,
+          driverName: 'Tembea SuperAdmin',
+          slackId: 'UG93CNE80',
+          driverPhoneNo: null
+        }
+      });
+      const result = await SlackHelpers.addMissingTripObjects({ cabId: 2 });
+      expect(result.cab).toBeDefined();
+      expect(result.cab.dataValues.id).toEqual(2);
+      expect(result.cab.dataValues.driverName).toEqual('Tembea SuperAdmin');
     });
   });
 });

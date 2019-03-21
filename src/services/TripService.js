@@ -6,8 +6,11 @@ import Utils from '../utils';
 import cache from '../cache';
 import HttpError from '../helpers/errorHandler';
 import SlackPagination from '../helpers/slack/SlackPaginationHelper';
+import RemoveDataValues from '../helpers/removeDataValues';
 
-const { TripRequest, Department, Sequelize } = models;
+const {
+  TripRequest, Department, Sequelize
+} = models;
 const getTripKey = pk => `tripDetail_${pk}`;
 
 export class TripService {
@@ -187,15 +190,17 @@ export class TripService {
       return cachedTrip;
     }
     try {
-      const { dataValues: trip } = await TripRequest.findByPk(pk, {
+      const trip = await TripRequest.findByPk(pk, {
         include: [...this.defaultInclude]
       });
-      await cache.saveObject(getTripKey(pk), trip);
-      return trip;
+      const data = RemoveDataValues.removeDataValues(trip.dataValues);
+      await cache.saveObject(getTripKey(pk), data);
+      return data;
     } catch (error) {
       throw new Error('Could not return the requested trip');
     }
   }
+
 
   /**
    *this method returns a non-paginated array of trips from the database.
@@ -217,9 +222,10 @@ export class TripService {
 
   static async updateRequest(tripId, updateObject) {
     try {
-      const { dataValues: updatedTrip } = await TripRequest.update(updateObject,
-        { where: { id: tripId } });
-      return updatedTrip;
+      const data = await TripRequest.update({ ...updateObject },
+        { returning: true, where: { id: tripId } });
+      
+      return RemoveDataValues.removeDataValues(data[1][0]);
     } catch (error) {
       HttpError.throwErrorIfNull(null, 'Error updating trip request', 500);
     }

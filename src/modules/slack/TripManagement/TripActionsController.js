@@ -6,6 +6,7 @@ import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import CabService from '../../../services/CabService';
+import RemoveDataValues from '../../../helpers/removeDataValues';
 
 
 class TripActionsController {
@@ -59,18 +60,21 @@ class TripActionsController {
 
     const cab = await CabService.findOrCreateCab(driverName, driverPhoneNo, regNumber);
 
-    await TripService.updateRequest(tripId, {
+    const updatedTrip = await TripService.updateRequest(tripId, {
       tripStatus: 'Confirmed',
       operationsComment: confirmationComment,
       confirmedById: opsUserId,
       cabId: cab.id
     });
-    const trip = await tripService.getById(tripId);
+    let trip = await tripService.getById(tripId);
+    trip = { ...trip, ...await SlackHelpers.addMissingTripObjects(updatedTrip) };
+    trip = RemoveDataValues.removeDataValues(trip);
     await TripActionsController.sendAllNotifications(teamId, userId, trip,
       timeStamp, channel, slackBotOauthToken);
+
     return 'success';
   }
-
+ 
   static async sendAllNotifications(teamId, userId, trip, timeStamp, channel,
     slackBotOauthToken, isDecline = false) {
     await Promise.all([
@@ -95,14 +99,17 @@ class TripActionsController {
     const { trip: stateTrip, actionTs } = JSON.parse(payloadState);
     const tripId = Number(stateTrip);
 
-    await TripService.updateRequest(tripId, {
+    const updatedTrip = await TripService.updateRequest(tripId, {
       tripStatus: 'DeclinedByOps',
       operationsComment: opsDeclineComment,
       declinedById: opsUserId
     });
-    const trip = await tripService.getById(tripId);
+    let trip = await tripService.getById(tripId);
+    trip = { ...trip, ...await SlackHelpers.addMissingTripObjects(updatedTrip) };
+    trip = RemoveDataValues.removeDataValues(trip);
     await TripActionsController.sendAllNotifications(teamId, userId, trip,
       actionTs, channelId, slackBotOauthToken, true);
+    
     return 'success';
   }
 }

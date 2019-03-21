@@ -94,39 +94,27 @@ class SlackNotifications {
         TeamDetailsService.getTeamDetails(payload.team.id)]);
       const { botToken: slackBotOauthToken, opsChannelId } = teamDetails;
       const checkTripType = type === 'regular';
-      SlackNotifications.restructureTripData(tripInformation, checkTripType);
-      const { dataValues: { name } } = await DepartmentService
+      const { name } = await DepartmentService
         .getById(tripInformation.departmentId);
       tripInformation.department = name;
       if (checkTripType) {
         SlackEvents.raise(slackEventNames.TRIP_WAITING_CONFIRMATION,
           tripInformation, respond, slackBotOauthToken);
       }
+      tripInformation.pickup = tripInformation.origin;
+      
       const opsRequestMessage = NotificationsResponse.getRequestMessageForOperationsChannel(
         tripInformation, payload, opsChannelId, type
       );
       await SlackNotifications.sendNotification(opsRequestMessage, slackBotOauthToken);
-    } catch (error) { bugsnagHelper.log(error);
+    } catch (error) {
+      bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         'An error occurred while processing your request. '
         + 'Please contact the administrator.', [], undefined, '#b52833'
       );
       respond(message);
     }
-  }
-
-  static restructureTripData(tripInformation, checkTripType) {
-    Object.assign(tripInformation, {
-      ...tripInformation,
-      requestDate: tripInformation.createdAt,
-      departureDate: tripInformation.departureTime,
-      rider: tripInformation.rider.dataValues,
-      requester: tripInformation.requester.dataValues,
-      destination: tripInformation.destination.dataValues,
-      pickup: tripInformation.origin.dataValues,
-      tripDetail: checkTripType ? null : tripInformation.tripDetail.dataValues,
-      origin: {}
-    });
   }
 
   static async sendRequesterApprovedNotification(
@@ -214,9 +202,9 @@ class SlackNotifications {
   static async sendManagerConfirmOrDeclineNotification(
     teamId, userId, tripInformation, decline
   ) {
-    const { headId } = tripInformation.department.dataValues;
+    const { headId } = tripInformation.department;
     const headOfDepartment = await SlackHelpers.findUserByIdOrSlackId(headId);
-    const rider = tripInformation.rider.dataValues.slackId;
+    const rider = tripInformation.rider.slackId;
     const { slackId } = headOfDepartment;
     const messageBaseOnDecline = SlackNotifications.getMessageBaseOnDeclineOrConfirm(decline);
     const message = `The trip you approved for <@${rider}> trip has been ${messageBaseOnDecline}`;
@@ -267,8 +255,8 @@ class SlackNotifications {
     teamId, userId, tripInformation, decline
   ) {
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-    const requester = tripInformation.requester.dataValues.slackId;
-    const rider = tripInformation.rider.dataValues.slackId;
+    const requester = tripInformation.requester.slackId;
+    const rider = tripInformation.rider.slackId;
     let message;
     let channelId;
     const label = !decline ? 'Confirmed Trip Request' : 'Declined Trip Request';
@@ -305,7 +293,7 @@ class SlackNotifications {
   static notificationFields(tripInformation) {
     const pickup = tripInformation.origin.address;
     const destination = tripInformation.destination.address;
-    const passenger = tripInformation.rider.dataValues.name;
+    const passenger = tripInformation.rider.name;
     return [
       new SlackAttachmentField('Pickup Location', pickup, true),
       new SlackAttachmentField('Destination', destination, true),
@@ -336,7 +324,7 @@ class SlackNotifications {
 
   static approveNotificationFields(tripInformation, userId) {
     const reason = tripInformation.operationsComment;
-    const { driverName, driverPhoneNo, regNumber } = tripInformation.cab.dataValues;
+    const { driverName, driverPhoneNo, regNumber } = tripInformation.cab;
     const notifications = SlackNotifications.notificationFields(
       tripInformation
     );

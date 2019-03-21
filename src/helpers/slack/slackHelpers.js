@@ -1,4 +1,4 @@
-import tripService from '../../services/TripService';
+import tripService, { TripService } from '../../services/TripService';
 import WebClientSingleton from '../../utils/WebClientSingleton';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import UserService from '../../services/UserService';
@@ -59,13 +59,11 @@ class SlackHelpers {
 
     const trip = await tripService.getById(requestId);
 
-    if (!trip.dataValues) {
+    if (!trip) {
       return { isApproved: false, approvedBy };
     }
 
-    const {
-      dataValues: { tripStatus, approvedById }
-    } = trip;
+    const { tripStatus, approvedById } = trip;
 
     if (approvedById && tripStatus && tripStatus.toLowerCase() !== 'pending') {
       isApproved = true;
@@ -80,13 +78,14 @@ class SlackHelpers {
     let approved = false;
 
     const response = await tripService.getById(requestId);
+    
 
     if (!response) return approved;
     const user = await SlackHelpers.findUserByIdOrSlackId(managerId);
 
     if (!user.id) return approved;
 
-    const update = await response.update({
+    const update = await TripService.updateRequest(response.id, {
       approvedById: user.id,
       managerComment: description,
       tripStatus: 'Approved'
@@ -107,6 +106,20 @@ class SlackHelpers {
   static async handleCancellation(tripRequestId) {
     const { tripStatus } = await tripService.getById(tripRequestId);
     return tripStatus === 'Cancelled';
+  }
+
+  static async addMissingTripObjects(updatedTrip) {
+    const trip = {};
+    if (updatedTrip.declinedById) {
+      trip.decliner = await UserService.getUserById(updatedTrip.declinedById);
+    }
+    if (updatedTrip.confirmedById) {
+      trip.confirmer = await UserService.getUserById(updatedTrip.confirmedById);
+    }
+    if (updatedTrip.cabId) {
+      trip.cab = await UserService.getUserById(updatedTrip.cabId);
+    }
+    return trip;
   }
 }
 export default SlackHelpers;

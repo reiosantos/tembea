@@ -122,14 +122,15 @@ class DepartmentService {
     if (cachedDept) {
       return cachedDept;
     }
-    const dept = Department.findByPk(departmentId, { include: [...includeOptions] });
+    const { dataValues: dept } = await Department.findByPk(departmentId, { include: [...includeOptions] });
+    dept.head = { ...dept.head.dataValues };
     await cache.saveObject(getDeptKey(departmentId), dept);
     return dept;
   }
 
   static async getHeadByDeptId(departmentId) {
     const department = await DepartmentService.getById(departmentId);
-    const head = department.dataValues.head.dataValues;
+    const { head } = department;
     return head;
   }
 
