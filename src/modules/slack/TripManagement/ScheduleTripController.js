@@ -10,7 +10,7 @@ import validateDialogSubmission
   from '../../../helpers/slack/UserInputValidator/validateDialogSubmission';
 import AddressService from '../../../services/AddressService';
 import TripDetailsService from '../../../services/TripDetailsService';
-import tripService, { TripService } from '../../../services/TripService';
+import { TripService } from '../../../services/TripService';
 
 class ScheduleTripController {
   static validateTravelContactDetailsForm(payload) {
@@ -134,7 +134,7 @@ class ScheduleTripController {
       const { id } = await this.createTripDetail(tripDetails);
 
       const tripData = { ...tripRequest, tripDetailId: id };
-      const trip = await tripService.createRequest(tripData);
+      const trip = await TripService.createRequest(tripData);
       const newPayload = { ...payload, submission: { rider: false } };
       return { newPayload, id: trip.id };
     } catch (error) {

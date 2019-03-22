@@ -87,10 +87,10 @@ class SlackNotifications {
     return SlackNotifications.createDirectMessage(imResponse, msg, attachments);
   }
 
-  static async sendOperationsTripRequestNotification(tripId, payload, respond, type = 'regular') {
+  static async sendOperationsTripRequestNotification(trip, payload, respond, type = 'regular') {
     try {
-      const [tripInformation, teamDetails] = await Promise.all([
-        tripService.getById(tripId),
+      const tripInformation = trip;
+      const [teamDetails] = await Promise.all([
         TeamDetailsService.getTeamDetails(payload.team.id)]);
       const { botToken: slackBotOauthToken, opsChannelId } = teamDetails;
       const checkTripType = type === 'regular';

@@ -12,6 +12,7 @@ import RouteRequestService from '../../../../services/RouteRequestService';
 import { mockRouteRequestData } from '../../../../services/__mocks__/index';
 import Services from '../../../../services/UserService';
 import tripService from '../../../../services/TripService';
+import responseMock from '../__mocks__/NotificationResponseMock';
 
 
 const tripInitial = {
@@ -598,9 +599,9 @@ describe('SlackNotifications', () => {
     afterEach(() => {
       jest.restoreAllMocks();
     });
-    it('should notify ops on manager\'s approval', async () => {
+    it.only('should notify ops on manager\'s approval', async () => {
       sendNotification.mockImplementationOnce(fn);
-      await SlackNotifications.sendOperationsTripRequestNotification(23, payload, respond);
+      await SlackNotifications.sendOperationsTripRequestNotification(responseMock, payload, respond);
       expect(sendNotification).toHaveBeenCalledTimes(1);
       expect(respond).not.toHaveBeenCalled();
     });

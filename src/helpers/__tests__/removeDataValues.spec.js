@@ -12,8 +12,10 @@ describe('RemoveDataValues', () => {
             id: 3,
             name: 'James',
             head: {
-              id: 10,
-              title: 'Head of department'
+              dataValues: {
+                id: 10,
+                title: 'Head of department'
+              }
             }
           }
         }

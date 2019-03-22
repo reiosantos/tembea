@@ -11,6 +11,8 @@ const responseData = {
   },
   destination: 'dest',
   department: 'dept',
+  departmentId: 3,
+  origin: {},
   noOfPassengers: 'noPa',
   managerComment: 'manager'
 };

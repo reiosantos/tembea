@@ -176,8 +176,11 @@ class SlackInteractions {
       const hasApproved = await SlackHelpers.approveRequest(tripId, user.id, approveReason);
 
       if (hasApproved) {
-        SlackEvents.raise(slackEventNames.TRIP_APPROVED, tripId, payload, respond);
         const trip = await tripService.getById(tripId);
+        trip.managerComment = approveReason;
+        SlackEvents.raise(slackEventNames.TRIP_APPROVED, trip, payload, respond);
+        
+        
         const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
         InteractivePrompts.sendManagerDeclineOrApprovalCompletion(
           false, trip, timeStamp, channelId, slackBotOauthToken

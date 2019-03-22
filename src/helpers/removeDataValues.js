@@ -8,9 +8,9 @@ class RemoveDataValues {
     Object.keys(sorted).map((key) => {
       if (sorted[key] && sorted[key].dataValues) {
         sorted[key] = sorted[key].dataValues;
-        const data = this.removeDataValues(sorted[key]);
+        const data = RemoveDataValues.removeDataValues(sorted[key]);
         sorted[key] = data;
-      } else {
+      } else if (sorted[key]) {
         sorted[key] = sorted[key];
       }
       return sorted;
