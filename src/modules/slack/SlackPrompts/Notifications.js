@@ -102,7 +102,7 @@ class SlackNotifications {
           tripInformation, respond, slackBotOauthToken);
       }
       tripInformation.pickup = tripInformation.origin;
-      
+
       const opsRequestMessage = NotificationsResponse.getRequestMessageForOperationsChannel(
         tripInformation, payload, opsChannelId, type
       );
@@ -162,6 +162,7 @@ class SlackNotifications {
   static async sendRequesterDeclinedNotification(tripInformation, respond,
     slackBotOauthToken) {
     try {
+      console.log('handling manager response');
       const [requester, decliner] = await Promise.all([
         SlackHelpers.findUserByIdOrSlackId(tripInformation.requestedById),
         SlackHelpers.findUserByIdOrSlackId(tripInformation.declinedById)

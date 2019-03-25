@@ -43,10 +43,21 @@ class AddressService {
   static async createNewAddress(longitude, latitude, address) {
     try {
       const location = await LocationService.createLocation(longitude, latitude);
-      const addressData = await Address.create({
-        locationId: location.id, address
+      const [addressData] = await Address.findOrCreate({
+        where: {
+          address: { [Op.iLike]: `${address}%` }
+        },
+        defaults: {
+          address,
+          locationId: location.id
+        }
       });
-      const newAddressData = { ...addressData.dataValues, ...location };
+      const newAddressData = {
+        id: addressData.dataValues.id,
+        address: addressData.dataValues.address,
+        longitude: location.longitude,
+        latitude: location.latitude
+      };
       return newAddressData;
     } catch (error) {
       bugsnagHelper.log(error);

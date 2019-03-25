@@ -51,13 +51,10 @@ class ScheduleTripController {
     const {
       destination, pickup, othersPickup, othersDestination
     } = tripRequestDetails;
-
     const pickupAddress = pickup === 'Others' ? othersPickup : pickup;
     const destinationAddress = destination === 'Others' ? othersDestination : destination;
-
     const originId = await this.createLocation(pickupAddress, 23, 24);
     const destinationId = await this.createLocation(destinationAddress, 15, 30);
-
     return { originId, destinationId };
   }
 
@@ -119,7 +116,7 @@ class ScheduleTripController {
       const trip = await TripService.createRequest(tripRequest);
 
       InteractivePrompts.sendCompletionResponse(respond, trip.id);
-      SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, trip.dataValues, respond);
+      SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, trip, respond);
 
       return true;
     } catch (error) {
