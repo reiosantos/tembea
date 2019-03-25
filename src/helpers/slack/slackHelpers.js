@@ -1,4 +1,4 @@
-import tripService, { TripService } from '../../services/TripService';
+import tripService from '../../services/TripService';
 import WebClientSingleton from '../../utils/WebClientSingleton';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import UserService from '../../services/UserService';
@@ -47,11 +47,6 @@ class SlackHelpers {
       user: slackId
     });
     return user;
-  }
-
-  static async getTripRequest(tripId) {
-    const tripRequest = await tripService.getById(tripId);
-    return tripRequest.dataValues;
   }
 
   static async isRequestApproved(requestId, slackId) {

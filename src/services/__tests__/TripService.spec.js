@@ -201,10 +201,11 @@ describe('TripService', () => {
   describe('tripService_updateRequest', () => {
     it('should update a trip request', async () => {
       jest.spyOn(TripRequest, 'update').mockResolvedValue(updatedValue);
+      jest.spyOn(tripService, 'getById').mockResolvedValue(updatedValue);
       jest.spyOn(RemoveDataValues, 'removeDataValues').mockReturnValue(
         mockedValue
       );
-      await TripService.updateRequest(1,
+      await tripService.updateRequest(1,
         { tripStatus: 'Confirmed' });
       expect(TripRequest.update).toBeCalled();
     });
@@ -213,7 +214,7 @@ describe('TripService', () => {
 
       jest.spyOn(TripRequest, 'update').mockRejectedValue(new Error());
       try {
-        await TripService.updateRequest(1,
+        await tripService.updateRequest(1,
           { tripStatus: 'Confirmed' });
       } catch (error) {
         expect(error).toEqual(err);

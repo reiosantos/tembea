@@ -503,9 +503,8 @@ describe('SlackNotifications', () => {
     it('should successfully send approve notification to requester', async () => {
       const fn = () => ({});
       // mock dependencies
-      findSelectedDepartment.mockImplementationOnce(() => ({
-        dataValues: { head: { dataValues: { name: 'Tembea' } } }
-      }));
+      findSelectedDepartment.mockImplementationOnce(() => (
+        { head: { name: 'Tembea' } }));
       responseForRequester.mockImplementationOnce(fn);
       sendNotification.mockImplementationOnce(fn);
 
@@ -599,20 +598,13 @@ describe('SlackNotifications', () => {
     afterEach(() => {
       jest.restoreAllMocks();
     });
-    it.only('should notify ops on manager\'s approval', async () => {
+    it('should notify ops on manager\'s approval', async () => {
       sendNotification.mockImplementationOnce(fn);
-      await SlackNotifications.sendOperationsTripRequestNotification(responseMock, payload, respond);
-      expect(sendNotification).toHaveBeenCalledTimes(1);
-      expect(respond).not.toHaveBeenCalled();
-    });
-
-    it('should throw an error when accessing dataValues form non existing dept', async () => {
-      sendNotification.mockImplementationOnce(() => Promise.reject());
       await SlackNotifications.sendOperationsTripRequestNotification(
-        23, payload, respond, 'not-regular'
+        responseMock, payload, respond
       );
       expect(sendNotification).toHaveBeenCalledTimes(1);
-      expect(respond).toHaveBeenCalledTimes(1);
+      expect(respond).not.toHaveBeenCalled();
     });
   });
 

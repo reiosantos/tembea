@@ -303,7 +303,7 @@ describe('JoinInputHandlers', () => {
   });
 });
 
-describe.skip('JoinRouteInteractions', () => {
+describe('JoinRouteInteractions', () => {
   const respond = jest.fn();
   const payload = {
     callback_id: 'join_route_fellowDetails_1',

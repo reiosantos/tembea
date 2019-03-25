@@ -6,7 +6,7 @@ import {
   testUserFromDb, testTripFromDb, slackUserMock, createNewUserMock, newUser
 } from '../__mocks__';
 import UserService from '../../../services/UserService';
-import tripService, { TripService } from '../../../services/TripService';
+import tripService from '../../../services/TripService';
 import CabService from '../../../services/CabService';
 
 const { TripRequest, User } = models;
@@ -138,7 +138,7 @@ describe('slackHelpers', () => {
 
   describe('isRequestApproved', () => {
     it('should return trip status object with approved false', async (done) => {
-      tripService.getById = jest.fn(() => Promise.resolve({}));
+      jest.spyOn(tripService, 'getById').mockResolvedValue(undefined);
       const trip = await SlackHelpers.isRequestApproved(23, 'UE45');
       expect(trip).toEqual({ approvedBy: null, isApproved: false });
       done();
@@ -165,25 +165,17 @@ describe('slackHelpers', () => {
         tripStatus: 'Approved',
         approvedById: testUserFromDb.dataValues.slackId
       });
-      jest.spyOn(TripService, 'updateRequest').mockResolvedValue({});
+      jest.spyOn(tripService, 'updateRequest').mockResolvedValue({});
       jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockResolvedValue({ id: 5 });
 
       const tripStatus = await SlackHelpers.approveRequest(23, 'UE45', 'some text');
-      expect(TripService.updateRequest).toBeCalledTimes(1);
+      expect(tripService.updateRequest).toBeCalledTimes(1);
       expect(tripStatus).toBeTruthy();
       done();
     });
 
     it('should return false when trip is not found', async (done) => {
       jest.spyOn(tripService, 'getById').mockResolvedValue(undefined);
-      const trip = await SlackHelpers.approveRequest(23, 'UE45', 'some text');
-      expect(trip).toBeFalsy();
-      done();
-    });
-
-    it('should return false if manager is not found', async (done) => {
-      jest.spyOn(tripService, 'getById').mockResolvedValue(testTripFromDb);
-      SlackHelpers.findUserByIdOrSlackId = jest.fn(() => Promise.resolve({}));
       const trip = await SlackHelpers.approveRequest(23, 'UE45', 'some text');
       expect(trip).toBeFalsy();
       done();

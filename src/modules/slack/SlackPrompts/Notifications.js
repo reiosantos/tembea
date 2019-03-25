@@ -108,6 +108,7 @@ class SlackNotifications {
       );
       await SlackNotifications.sendNotification(opsRequestMessage, slackBotOauthToken);
     } catch (error) {
+      console.log(error);
       bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         'An error occurred while processing your request. '

@@ -1,4 +1,4 @@
-import tripService, { TripService } from '../../../services/TripService';
+import tripService from '../../../services/TripService';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import { SlackInteractiveMessage } from '../RouteManagement/rootFile';
 
@@ -11,7 +11,7 @@ class CancelTripController {
       if (!trip) {
         message = 'Trip not found';
       } else {
-        await TripService.updateRequest(tripId,
+        await tripService.updateRequest(tripId,
           { tripStatus: 'Cancelled' });
         message = 'Success! Your Trip request has been cancelled';
       }

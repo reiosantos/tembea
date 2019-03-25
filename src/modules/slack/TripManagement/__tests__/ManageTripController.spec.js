@@ -18,16 +18,18 @@ afterAll(() => {
 
 describe('Manage trip controller run validations', () => {
   it('should be able to run validations on empty string', (done) => {
-    const res = ManageTripController.runValidation('        ');
+    const res = ManageTripController.runValidation({ declineReason: '        ' });
     expect(res).toEqual([{ name: 'declineReason', error: 'This field cannot be empty' }]);
     done();
   });
 
   it('should be able to run validations on very long strings', (done) => {
-    const res = ManageTripController.runValidation(`
+    const res = ManageTripController.runValidation({
+      declineReason: `
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxv
-    `);
+    `
+    });
     expect(res).toEqual([
       { name: 'declineReason', error: 'Character length must be less than or equal to 100' }
     ]);

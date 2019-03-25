@@ -546,7 +546,7 @@ describe('SlackInteractions', () => {
       const teamId = 190;
       const payload = {
         submission: {
-          approveRequest: 'dfghj'
+          approveReason: 'dfghj'
         },
         team: {
           id: teamId
@@ -576,16 +576,32 @@ describe('SlackInteractions', () => {
     it('should respond with error', async () => {
       const payload = {
         submission: {
-          approveRequest: 'dfghj'
+          approveReason: 'dfghj'
         },
         user: {},
-        state: 'cvbn jhgf ty'
+        state: 'cvbn jhgf ty',
+        team: { id: 'abcde' }
       };
       const respond = jest.fn();
       SlackHelpers.approveRequest = jest.fn(() => false);
 
       await SlackInteractions.handleManagerApprovalDetails(payload, respond);
       expect(respond).toHaveBeenCalled();
+    });
+    it('should return errors if approveReason is empty', async () => {
+      const payload = {
+        submission: { approveReason: '    ' },
+        state: 'yes no maybe',
+        team: { id: 'abcde' }
+      };
+      const respond = jest.fn();
+
+      const result = await SlackInteractions.handleManagerApprovalDetails(payload, respond);
+
+      expect(result).toEqual({
+        errors:
+        [{ error: 'This field cannot be empty', name: 'approveReason' }]
+      });
     });
   });
 
