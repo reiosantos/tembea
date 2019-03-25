@@ -16,8 +16,17 @@ import {
 } from '../../SlackModels/SlackMessageModels';
 
 class JoinRouteInteractions {
+  static async handleViewAvailableRoutes(payload, respond) {
+    const { type } = payload;
+    if (type === 'interactive_message') {
+      await JoinRouteInteractions.handleSendAvailableRoutesActions(payload, respond);
+    }
+    if (type === 'dialog_submission') {
+      await JoinRouteInteractions.sendAvailableRoutesMessage(payload, respond);
+    }
+  }
+
   static async sendAvailableRoutesMessage(payload, respond) {
-    const { actions } = payload;
     const page = getPageNumber(payload);
     const sort = SequelizePaginationHelper.deserializeSort(
       'name,asc,batch,asc'
@@ -25,10 +34,6 @@ class JoinRouteInteractions {
     const pageable = { page, sort, size: SLACK_DEFAULT_SIZE };
     const where = JoinRouteInteractions.createWhereClause(payload);
 
-    if (actions && actions[0].name !== 'See Available Routes') {
-      JoinRouteInteractions.handleSendAvailableRoutesActions(payload, respond);
-      return;
-    }
     const {
       routes: availableRoutes,
       totalPages,
@@ -42,11 +47,14 @@ class JoinRouteInteractions {
     respond(availableRoutesMessage);
   }
 
-  static handleSendAvailableRoutesActions(payload, respond) {
-    const { actions } = payload;
-    if (actions && actions[0].name) {
-      triggerPage(payload, respond);
+  static async handleSendAvailableRoutesActions(payload, respond) {
+    const { name: actionName } = payload.actions[0];
+
+    if (actionName === 'See Available Routes' || actionName.startsWith('page_')) {
+      await JoinRouteInteractions.sendAvailableRoutesMessage(payload, respond);
+      return;
     }
+    triggerPage(payload, respond);
   }
 
   static createWhereClause(payload) {

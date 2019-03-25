@@ -289,7 +289,7 @@ class SlackInteractions {
         DialogPrompts.sendLocationForm(payload);
         break;
       case 'view_available_routes':
-        await JoinRouteInteractions.sendAvailableRoutesMessage(payload, respond);
+        await JoinRouteInteractions.handleViewAvailableRoutes(payload, respond);
         break;
       default:
         respond(SlackInteractions.goodByeMessage());

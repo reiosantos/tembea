@@ -664,12 +664,12 @@ describe('SlackInteractions', () => {
     beforeEach(() => {
       respond = respondMock();
       DialogPrompts.sendLocationForm = jest.fn();
-      jest.spyOn(JoinRouteInteractions, 'sendAvailableRoutesMessage').mockResolvedValue();
+      jest.spyOn(JoinRouteInteractions, 'handleViewAvailableRoutes').mockResolvedValue();
     });
     it('should test view_available_routes action', (done) => {
       const payload = createPayload('view_available_routes');
       SlackInteractions.startRouteActions(payload, respond);
-      expect(JoinRouteInteractions.sendAvailableRoutesMessage).toBeCalled();
+      expect(JoinRouteInteractions.handleViewAvailableRoutes).toBeCalled();
       done();
     });
 

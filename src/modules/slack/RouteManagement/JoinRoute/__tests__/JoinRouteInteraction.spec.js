@@ -3,6 +3,7 @@ import SequelizePaginationHelper from '../../../../../helpers/sequelizePaginatio
 import RouteService from '../../../../../services/RouteService';
 import RoutesHelpers from '../../../helpers/routesHelper';
 import JoinRouteInputHandlers from '../JoinRouteInputHandler';
+import mockPayload from '../../__mocks__/payload.mock';
 
 describe('Test JointRouteInteractions', () => {
   const res = jest.fn();
@@ -35,6 +36,55 @@ describe('Test JointRouteInteractions', () => {
       expect(result).toBe(undefined);
       expect(RoutesHelpers.toAvailableRoutesAttachment).toBeCalled();
       expect(RouteService.getRoutes).toBeCalled();
+    });
+  });
+  describe('Test handleSendAvailableRoutesActions', () => {
+    let respond;
+    let payload;
+    let mockFn;
+    beforeEach(() => {
+      respond = jest.fn();
+      mockFn = jest.spyOn(JoinRouteInteractions, 'sendAvailableRoutesMessage').mockResolvedValue();
+    });
+    afterEach(() => {
+      mockFn.mockRestore();
+    });
+    it('should call sendAvailableRoutesMessage for "See Available Routes"', async () => {
+      payload = mockPayload('value', 'See Available Routes');
+      await JoinRouteInteractions.handleSendAvailableRoutesActions(payload, respond);
+      expect(JoinRouteInteractions.sendAvailableRoutesMessage).toHaveBeenCalledTimes(1);
+      expect(JoinRouteInteractions.sendAvailableRoutesMessage).toHaveBeenCalledWith(payload, respond);
+    });
+    it('should call sendAvailableRoutesMessage for action names starting with "page_"', async () => {
+      payload = mockPayload('value', 'page_3');
+      await JoinRouteInteractions.handleSendAvailableRoutesActions(payload, respond);
+      expect(JoinRouteInteractions.sendAvailableRoutesMessage).toHaveBeenCalledTimes(1);
+      expect(JoinRouteInteractions.sendAvailableRoutesMessage).toHaveBeenCalledWith(payload, respond);
+    });
+  });
+  describe('Test handleViewAvailableRoutes', () => {
+    let respond;
+    let payload;
+    beforeEach(() => {
+      respond = jest.fn();
+      jest.spyOn(JoinRouteInteractions, 'sendAvailableRoutesMessage').mockResolvedValue();
+      jest.spyOn(JoinRouteInteractions, 'handleSendAvailableRoutesActions').mockResolvedValue();
+    });
+    afterEach(() => {
+      jest.resetAllMocks();
+      jest.restoreAllMocks();
+    });
+    it('should call handleSendAvailableRoutesActions for interactive message', async () => {
+      payload = { type: 'interactive_message' };
+      await JoinRouteInteractions.handleViewAvailableRoutes(payload, respond);
+      expect(JoinRouteInteractions.handleSendAvailableRoutesActions).toHaveBeenCalledTimes(1);
+      expect(JoinRouteInteractions.handleSendAvailableRoutesActions).toHaveBeenCalledWith(payload, respond);
+    });
+    it('should call sendAvailableRoutesMessage for dialog submission', async () => {
+      payload = { type: 'dialog_submission' };
+      await JoinRouteInteractions.handleViewAvailableRoutes(payload, respond);
+      expect(JoinRouteInteractions.sendAvailableRoutesMessage).toHaveBeenCalledTimes(1);
+      expect(JoinRouteInteractions.sendAvailableRoutesMessage).toHaveBeenCalledWith(payload, respond);
     });
   });
   describe('Test full capacity', () => {
