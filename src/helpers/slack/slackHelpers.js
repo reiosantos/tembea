@@ -77,16 +77,8 @@ class SlackHelpers {
 
   static async approveRequest(requestId, managerId, description) {
     let approved = false;
-
-    const response = await tripService.getById(requestId);
-    
-
-    if (!response) return approved;
     const user = await SlackHelpers.findUserByIdOrSlackId(managerId);
-
-    if (!user.id) return approved;
-
-    const update = await TripService.updateRequest(response.id, {
+    const update = await tripService.updateRequest(requestId, {
       approvedById: user.id,
       managerComment: description,
       tripStatus: 'Approved'
@@ -123,7 +115,7 @@ class SlackHelpers {
     if (updatedTrip.operationsComment) {
       trip.operationsComment = updatedTrip.operationsComment;
     }
-    
+
     return trip;
   }
 }

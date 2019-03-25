@@ -184,10 +184,12 @@ export class TripService {
     return false;
   }
 
-  async getById(pk) {
-    const cachedTrip = await cache.fetch(getTripKey(pk));
-    if (cachedTrip) {
-      return cachedTrip;
+  async getById(pk, refresh = false) {
+    if (!refresh) {
+      const cachedTrip = await cache.fetch(getTripKey(pk));
+      if (cachedTrip) {
+        return cachedTrip;
+      }
     }
     try {
       const trip = await TripRequest.findByPk(pk, {
@@ -220,12 +222,14 @@ export class TripService {
     return trips;
   }
 
-  static async updateRequest(tripId, updateObject) {
+  async updateRequest(tripId, updateObject) {
     try {
-      const data = await TripRequest.update({ ...updateObject },
+      await TripRequest.update({ ...updateObject },
         { returning: true, where: { id: tripId } });
-      
-      return RemoveDataValues.removeDataValues(data[1][0]);
+
+      const result = await this.getById(tripId, true);
+      await cache.saveObject(getTripKey(tripId), result);
+      return result;
     } catch (error) {
       HttpError.throwErrorIfNull(null, 'Error updating trip request', 500);
     }

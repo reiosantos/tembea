@@ -1,4 +1,4 @@
-import tripService, { TripService } from '../../../services/TripService';
+import tripService from '../../../services/TripService';
 import SendNotifications from '../SlackPrompts/Notifications';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
@@ -6,7 +6,6 @@ import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import CabService from '../../../services/CabService';
-import RemoveDataValues from '../../../helpers/removeDataValues';
 
 
 class TripActionsController {
@@ -60,21 +59,18 @@ class TripActionsController {
 
     const cab = await CabService.findOrCreateCab(driverName, driverPhoneNo, regNumber);
 
-    const updatedTrip = await TripService.updateRequest(tripId, {
+    const trip = await tripService.updateRequest(tripId, {
       tripStatus: 'Confirmed',
       operationsComment: confirmationComment,
       confirmedById: opsUserId,
       cabId: cab.id
     });
-    let trip = await tripService.getById(tripId);
-    trip = { ...trip, ...await SlackHelpers.addMissingTripObjects(updatedTrip) };
-    trip = RemoveDataValues.removeDataValues(trip);
     await TripActionsController.sendAllNotifications(teamId, userId, trip,
       timeStamp, channel, slackBotOauthToken);
 
     return 'success';
   }
- 
+
   static async sendAllNotifications(teamId, userId, trip, timeStamp, channel,
     slackBotOauthToken, isDecline = false) {
     await Promise.all([
@@ -99,17 +95,14 @@ class TripActionsController {
     const { trip: stateTrip, actionTs } = JSON.parse(payloadState);
     const tripId = Number(stateTrip);
 
-    const updatedTrip = await TripService.updateRequest(tripId, {
+    const trip = await tripService.updateRequest(tripId, {
       tripStatus: 'DeclinedByOps',
       operationsComment: opsDeclineComment,
       declinedById: opsUserId
     });
-    let trip = await tripService.getById(tripId);
-    trip = { ...trip, ...await SlackHelpers.addMissingTripObjects(updatedTrip) };
-    trip = RemoveDataValues.removeDataValues(trip);
     await TripActionsController.sendAllNotifications(teamId, userId, trip,
       actionTs, channelId, slackBotOauthToken, true);
-    
+
     return 'success';
   }
 }
