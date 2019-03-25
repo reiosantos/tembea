@@ -10,14 +10,15 @@ import bugsnagHelper from '../../../helpers/bugsnagHelper';
 
 
 class ManageTripController {
-  static runValidation(declineReason) {
+  static runValidation(reasonObject) {
+    const [field, reason] = Object.entries(reasonObject)[0];
     const errors = [];
-    if (declineReason.trim() === '') {
-      errors.push(new SlackDialogError('declineReason',
+    if (reason.trim() === '') {
+      errors.push(new SlackDialogError(field,
         'This field cannot be empty'));
     }
-    if (declineReason.trim().length > 100) {
-      errors.push(new SlackDialogError('declineReason',
+    if (reason.trim().length > 100) {
+      errors.push(new SlackDialogError(field,
         'Character length must be less than or equal to 100'));
     }
     return errors;

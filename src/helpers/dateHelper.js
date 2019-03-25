@@ -102,7 +102,14 @@ class DateDialogHelper {
     const dateFormat = new RegExp(
       `^${month}[/]${day}[/]${year}$`
     );
-    return dateFormat.test(date);
+    const dateFormat2 = new RegExp(
+      `^${day}[/]${month}[/]${year}$`
+    );
+
+    let test = dateFormat.test(date);
+
+    if (!test) test = dateFormat2.test(date);
+    return test;
   }
 
   static validateTime(time) {

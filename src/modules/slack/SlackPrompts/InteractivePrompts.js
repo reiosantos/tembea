@@ -56,9 +56,9 @@ class InteractivePrompts {
     const attachments = new SlackAttachment();
     attachments.addFieldsOrActions('actions', [
       new SlackButtonAction('view', 'View', 'view'),
-      new SlackButtonAction('reschedule', 'Reschedule ', trip.dataValues.id),
+      new SlackButtonAction('reschedule', 'Reschedule ', trip.id),
       new SlackCancelButtonAction(
-        'Cancel Trip', trip.dataValues.id,
+        'Cancel Trip', trip.id,
         'Are you sure you want to cancel this trip', 'cancel_trip'
       ),
       new SlackCancelButtonAction()
