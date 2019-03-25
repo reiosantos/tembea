@@ -1,5 +1,5 @@
 import validator from 'validator';
-import tripService, { TripService } from '../../../services/TripService';
+import tripService from '../../../services/TripService';
 import DepartmentService from '../../../services/DepartmentService';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
@@ -35,7 +35,7 @@ class ManageTripController {
       ride.managerComment = reason;
       ride.declinedById = head.id;
 
-      await TripService.updateRequest(trip.id, ride);
+      await tripService.updateRequest(trip.id, ride);
 
       const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
       InteractivePrompts.sendManagerDeclineOrApprovalCompletion(true,

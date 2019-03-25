@@ -127,10 +127,9 @@ class SlackNotifications {
         responseData.departmentId
       );
 
-      if (!dept || !dept.dataValues) return;
+      if (!dept) return;
 
-      const { dataValues: { head: { dataValues: department } } } = dept;
-      const { name } = department;
+      const { head: { name } } = dept;
 
       Object.assign(responseData, { department: name });
 
@@ -162,7 +161,6 @@ class SlackNotifications {
   static async sendRequesterDeclinedNotification(tripInformation, respond,
     slackBotOauthToken) {
     try {
-      console.log('handling manager response');
       const [requester, decliner] = await Promise.all([
         SlackHelpers.findUserByIdOrSlackId(tripInformation.requestedById),
         SlackHelpers.findUserByIdOrSlackId(tripInformation.declinedById)
