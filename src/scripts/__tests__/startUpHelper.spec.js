@@ -21,6 +21,18 @@ describe('Super Admin test', () => {
     expect(RoleFindOrCreateMock).toHaveBeenCalledTimes(1);
   });
 
+  it('should test getUserNameFromEmail successfully with single name in email', () => {
+    const email = 'tembea@gmail.com';
+    const userName = StartUpHelper.getUserNameFromEmail(email);
+    expect(userName).toEqual('Tembea');
+  });
+
+  it('should test getUserNameFromEmail successfully with both names in email', () => {
+    const email = 'tembea.devs@gmail.com';
+    const userName = StartUpHelper.getUserNameFromEmail(email);
+    expect(userName).toEqual('Tembea Devs');
+  });
+
   it('should test createSuperAdmin and throw an error', async () => {
     const mockErr = new Error('boo');
     const UserFindOrCreateMock = jest.spyOn(User, 'findOrCreate').mockRejectedValue(mockErr);
