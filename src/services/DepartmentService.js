@@ -4,6 +4,7 @@ import models from '../database/models';
 import UserService from './UserService';
 import HttpError from '../helpers/errorHandler';
 import cache from '../cache';
+import RemoveDataValues from '../helpers/removeDataValues';
 
 
 const { Department, User } = models;
@@ -122,8 +123,9 @@ class DepartmentService {
     if (cachedDept) {
       return cachedDept;
     }
-    const { dataValues: dept } = await Department.findByPk(departmentId, { include: [...includeOptions] });
-    dept.head = { ...dept.head.dataValues };
+    const department = await Department.findByPk(departmentId, { include: [...includeOptions] });
+    const dept = RemoveDataValues.removeDataValues(department);
+
     await cache.saveObject(getDeptKey(departmentId), dept);
     return dept;
   }

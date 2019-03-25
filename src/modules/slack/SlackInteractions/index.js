@@ -155,7 +155,7 @@ class SlackInteractions {
     const state = payload.state.split(' ');
     const teamId = payload.team.id;
     try {
-      const errors = await ManageTripController.runValidation(declineReason);
+      const errors = await ManageTripController.runValidation({ declineReason });
       if (errors.length > 0) {
         return { errors };
       }
@@ -173,6 +173,12 @@ class SlackInteractions {
       const { submission: { approveReason }, user, team: { id: teamId } } = payload;
       const state = payload.state.split(' ');
       const [timeStamp, channelId, tripId] = state;
+
+      const errors = await ManageTripController.runValidation({ approveReason });
+      if (errors.length > 0) {
+        return { errors };
+      }
+
       const hasApproved = await SlackHelpers.approveRequest(tripId, user.id, approveReason);
 
       if (hasApproved) {
