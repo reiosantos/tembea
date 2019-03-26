@@ -230,7 +230,7 @@ export class TripService {
   }
 
   static async createRequest(requestObject) {
-    const trip = await TripRequest.create(requestObject);
+    const { dataValues: trip } = await TripRequest.create(requestObject);
     return trip;
   }
 }

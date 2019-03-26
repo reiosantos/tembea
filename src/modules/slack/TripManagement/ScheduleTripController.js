@@ -10,7 +10,7 @@ import validateDialogSubmission
   from '../../../helpers/slack/UserInputValidator/validateDialogSubmission';
 import AddressService from '../../../services/AddressService';
 import TripDetailsService from '../../../services/TripDetailsService';
-import { TripService } from '../../../services/TripService';
+import tripService, { TripService } from '../../../services/TripService';
 
 class ScheduleTripController {
   static validateTravelContactDetailsForm(payload) {
@@ -64,7 +64,7 @@ class ScheduleTripController {
         reason, dateTime, departmentId, destination, pickup,
         othersPickup, othersDestination, passengers, tripType
       } = tripRequestDetails;
-      const { originId, destinationId } = await this.getLocationIds(tripRequestDetails);
+      const { originId, destinationId } = await ScheduleTripController.getLocationIds(tripRequestDetails);
       const pickupName = `${pickup === 'Others' ? othersPickup : pickup}`;
       const destinationName = `${destination === 'Others' ? othersDestination : destination}`;
       const name = `From ${pickupName} to ${destinationName} on ${dateTime}`;
@@ -96,7 +96,7 @@ class ScheduleTripController {
         SlackHelpers.getUserInfoFromSlack(slackUserId, teamId)
       ]);
 
-      const request = await this.createRequestObject(tripRequestDetails, requester, slackInfo.tz);
+      const request = await ScheduleTripController.createRequestObject(tripRequestDetails, requester, slackInfo.tz);
 
       if (tripRequestDetails.forSelf === 'false') {
         const { rider } = tripRequestDetails;
@@ -112,7 +112,7 @@ class ScheduleTripController {
 
   static async createTripRequest(payload, respond, tripRequestDetails) {
     try {
-      const tripRequest = await this.createRequest(payload, tripRequestDetails);
+      const tripRequest = await ScheduleTripController.createRequest(payload, tripRequestDetails);
       const trip = await TripService.createRequest(tripRequest);
 
       InteractivePrompts.sendCompletionResponse(respond, trip.id);
@@ -127,13 +127,11 @@ class ScheduleTripController {
 
   static async createTravelTripRequest(payload, tripDetails) {
     try {
-      const tripRequest = await this.createRequest(payload, tripDetails);
-      const { id } = await this.createTripDetail(tripDetails);
-
+      const tripRequest = await ScheduleTripController.createRequest(payload, tripDetails);
+      const { id } = await ScheduleTripController.createTripDetail(tripDetails);
       const tripData = { ...tripRequest, tripDetailId: id };
       const trip = await TripService.createRequest(tripData);
-      const newPayload = { ...payload, submission: { rider: false } };
-      return { newPayload, id: trip.id };
+      return tripService.getById(trip.id, true);
     } catch (error) {
       bugsnagHelper.log(error);
       throw error;

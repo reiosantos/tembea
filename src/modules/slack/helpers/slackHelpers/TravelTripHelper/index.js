@@ -43,8 +43,8 @@ const travelTripHelper = {
 
       const { user: { id }, actions } = payload;
       const { value, name } = actions[0];
-      Cache.save(id, 'departmentId', value);
-      Cache.save(id, 'departmentName', name);
+      await Cache.save(id, 'departmentId', value);
+      await Cache.save(id, 'departmentName', name);
 
       const { tripType } = await Cache.fetch(id);
       if (tripType === 'Airport Transfer') {
@@ -108,10 +108,9 @@ const travelTripHelper = {
       const tripRequest = await ScheduleTripController.createTravelTripRequest(
         payload, tripDetails
       );
-      const { id } = tripRequest;
-      InteractivePrompts.sendCompletionResponse(respond, id);
+      InteractivePrompts.sendCompletionResponse(respond, tripRequest.id);
       SlackEvents.raise(
-        slackEventNames.NEW_TRAVEL_TRIP_REQUEST, id, payload, respond, 'travel'
+        slackEventNames.NEW_TRAVEL_TRIP_REQUEST, tripRequest, payload, respond, 'travel'
       );
     } catch (error) {
       bugsnagHelper.log(error);
