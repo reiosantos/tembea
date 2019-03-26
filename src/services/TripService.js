@@ -26,27 +26,15 @@ export class TripService {
       status: tripStatus, department: departmentName, departureTime, requestedOn, type: tripType
     } = filterParams;
     let where = {};
-    if (tripStatus) {
-      where = { tripStatus };
-    }
-    if (departmentName) {
-      where = {
-        ...where,
-        departmentName
-      };
-    }
-    if (tripType) {
-      where = { tripType };
-    }
+
+    if (tripStatus) where = { tripStatus };
+    if (departmentName) where = { ...where, departmentName };
+    if (tripType) where = { ...where, tripType };
 
     let dateFilters = TripService.getDateFilters('departureTime', departureTime || {});
-    where = {
-      ...where, ...dateFilters
-    };
+    where = { ...where, ...dateFilters };
     dateFilters = TripService.getDateFilters('TripRequest.createdAt', requestedOn || {});
-    where = {
-      ...where, ...dateFilters
-    };
+    where = { ...where, ...dateFilters };
     return where;
   }
 
@@ -121,6 +109,16 @@ export class TripService {
     }
   }
 
+  static serializeFlightNumber(trip) {
+    const { tripType } = trip;
+    if (tripType === 'Airport Transfer') {
+      const { tripDetail } = trip;
+      if (!tripDetail) return '-';
+      const { flightNumber } = tripDetail;
+      return flightNumber || '-';
+    }
+  }
+
   static serializeTripRequest(trip) {
     const {
       requester, origin, destination, rider, department, approver, confirmer, decliner, ...tripInfo
@@ -128,7 +126,6 @@ export class TripService {
     const {
       id, name, tripStatus: status, departureTime, arrivalTime, createdAt, tripType: type, noOfPassenger
     } = tripInfo;
-    const dtIsoTime = moment(departureTime, 'YYYY-MM-DD HH:mm:ss').toISOString();
     return {
       id,
       name,
@@ -136,11 +133,12 @@ export class TripService {
       arrivalTime,
       type,
       passenger: noOfPassenger,
-      departureTime: dtIsoTime,
+      departureTime: moment(departureTime, 'YYYY-MM-DD HH:mm:ss').toISOString(),
       requestedOn: createdAt,
       department: TripService.serializeDepartment(department),
       destination: TripService.serializeAddress(destination),
       pickup: TripService.serializeAddress(origin),
+      flightNumber: TripService.serializeFlightNumber(trip),
       decliner: TripService.serializeUser(decliner),
       rider: TripService.serializeUser(rider),
       requester: TripService.serializeUser(requester),

@@ -1,7 +1,7 @@
 import tripService, { TripService } from '../TripService';
 import models from '../../database/models';
 import {
-  mockedValue, tripInfo, mockTrip, updatedValue
+  mockedValue, tripInfo, mockTrip, updatedValue, mockAirportTransferTrip
 } from '../../modules/trips/__tests__/__mocks__';
 import cache from '../../cache';
 import RemoveDataValues from '../../helpers/removeDataValues';
@@ -122,6 +122,26 @@ describe('TripService', () => {
       const response = TripService.serializeDepartment();
       expect(response).toBeUndefined();
       expect(response).toBeFalsy();
+    });
+  });
+  describe('TripService__serializeFlightNumber', () => {
+    it('should return flight number', () => {
+      const response = TripService.serializeFlightNumber(mockAirportTransferTrip);
+      expect(response).toEqual(mockAirportTransferTrip.tripDetail.flightNumber);
+    });
+    it('should return a placeholder if no trip details exist', () => {
+      const response = TripService.serializeFlightNumber({
+        ...mockAirportTransferTrip,
+        tripDetail: undefined,
+      });
+      expect(response).toEqual('-');
+    });
+    it('should return a placeholder if flight number was not provided', () => {
+      const response = TripService.serializeFlightNumber({
+        ...mockAirportTransferTrip,
+        tripDetail: { flightNumber: null }
+      });
+      expect(response).toEqual('-');
     });
   });
   describe('TripService__serializeTripRequest', () => {

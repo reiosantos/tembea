@@ -101,6 +101,20 @@ const updatedValue = [
     }
   }]
 ];
+
+const mockAirportTransferTrip = {
+  id: 1,
+  name: 'From JFK to LAX',
+  reason: 'explore?',
+  tripType: 'Airport Transfer',
+  tripDetail: {
+    flightNumber: 'FL6921GG'
+  },
+  rider: {},
+  noOfPassengers: 2,
+  department: {},
+};
+
 export {
-  mockedValue, resultValue, response, tripInfo, mockTrip, updatedValue
+  mockedValue, resultValue, response, tripInfo, mockTrip, updatedValue, mockAirportTransferTrip
 };

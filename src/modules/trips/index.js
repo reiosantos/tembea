@@ -28,6 +28,40 @@ tripsRouter.use('/trips',
  *        required: false
  *        description: number of items per page
  *        type: number
+ *      - name: status
+ *        in: query
+ *        required: false
+ *        description: trip status
+ *        type: string
+ *        enum:
+ *          - Pending
+ *          - Approved
+ *          - Confirmed
+ *      - name: department
+ *        in: query
+ *        required: false
+ *        description: department of the trip taker
+ *        type: string
+ *      - name: departureTime
+ *        in: query
+ *        required: false
+ *        description: format - before:YYYY-MM-DD;after:YYYY-MM-DD (example - before:2018-12-30;after:2018-01-01)
+ *        example: before:2018-12-30;after:2018-01-01
+ *        type: string
+ *      - name: requestedOn
+ *        in: query
+ *        required: false
+ *        description: format - before:YYYY-MM-DD;after:YYYY-MM-DD
+ *        type: string
+ *      - name: type
+ *        in: query
+ *        required: false
+ *        description: type of trip
+ *        type: string
+ *        enum:
+ *          - Regular Trip
+ *          - Airport Transfer
+ *          - Embassy Visit
  *    responses:
  *      200:
  *        description: response object containing all trips from the database
