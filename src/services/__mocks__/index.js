@@ -134,3 +134,58 @@ export const departmentMocks = [
 export const mockRouteBatchData = {
   cabDetails, route, riders, ...batchDetails
 };
+export const mockDataMissingTeamUrl = {
+  newOpsStatus: 'decline',
+  comment: 'some comment',
+  reviewerEmail: 'test.buddy2@andela.com'
+};
+export const mockDeclinedRouteRequest = {
+  newOpsStatus: 'decline',
+  comment: 'some comment',
+  reviewerEmail: 'test.buddy2@andela.com',
+  teamUrl: 'tembea.slack.com'
+};
+export const mockDataMissingParams = {
+  newOpsStatus: 'approve',
+  comment: 'some comment',
+  reviewerEmail: 'test.buddy2@andela.com',
+  teamUrl: 'andela.slack.com'
+};
+export const mockDataInvalidComment = {
+  newOpsStatus: 'decline',
+  comment: 'some = comment',
+  reviewerEmail: 'test.buddy2@andela.com',
+  teamUrl: 'tembea.slack.com'
+};
+export const mockDataInvalidCapacity = {
+  newOpsStatus: 'approve',
+  comment: 'comment',
+  reviewerEmail: 'test.buddy2@andela.com',
+  teamUrl: 'tembea.slack.com',
+  routeName: 'ParksWay',
+  capacity: 'capacity',
+  takeOff: '2:30',
+  cabRegNumber: 'KCX XXX0'
+};
+
+export const mockDataInvalidTakeOffTime = {
+  newOpsStatus: 'approve',
+  comment: 'comment',
+  reviewerEmail: 'test.buddy2@andela.com',
+  teamUrl: 'tembea.slack.com',
+  routeName: 'ParksWay',
+  capacity: '2',
+  takeOff: 'Take Off',
+  cabRegNumber: 'KCX XXX0'
+};
+
+export const mockDataCorrectRouteRequest = {
+  newOpsStatus: 'approve',
+  comment: 'some comment',
+  reviewerEmail: 'test.buddy2@andela.com',
+  teamUrl: 'tembea.slack.com',
+  routeName: 'ParksWay',
+  capacity: '2',
+  takeOff: '9:30',
+  cabRegNumber: 'KCX XXX0'
+};

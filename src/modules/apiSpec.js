@@ -20,5 +20,5 @@ export default swaggerJSDoc({
     },
     security: [{ JWT: [] }]
   },
-  apis: ['src/modules/**/index.js']
+  apis: ['./**/index.js']
 });

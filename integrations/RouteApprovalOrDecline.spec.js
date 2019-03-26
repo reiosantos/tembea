@@ -2,12 +2,21 @@ import request from 'supertest';
 import app from '../src/app';
 import model from '../src/database/models';
 import Utils from '../src/utils';
-
+import {
+  mockDeclinedRouteRequest,
+  mockDataMissingParams,
+  mockDataMissingTeamUrl,
+  mockDataInvalidComment,
+  mockDataInvalidCapacity,
+  mockDataInvalidTakeOffTime,
+  mockDataCorrectRouteRequest
+} from '../src/services/__mocks__';
 
 const { RouteRequest } = model;
 
 describe('Decline route request', () => {
   let validToken;
+  let reqHeaders;
   describe('/api/v1/routes/requests/status/:requestId', () => {
     beforeAll(async () => {
       await RouteRequest.bulkCreate([
@@ -34,6 +43,10 @@ describe('Decline route request', () => {
         }
       ]);
       validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+      reqHeaders = {
+        Accept: 'application/json',
+        Authorization: validToken
+      };
     });
 
     afterAll(async () => {
@@ -47,14 +60,8 @@ describe('Decline route request', () => {
     it('should respond with an missing request param response', (done) => {
       request(app)
         .put('/api/v1/routes/requests/status/1')
-        .set({
-          Accept: 'application/json'
-        })
-        .send({
-          newOpsStatus: 'decline',
-          comment: 'some comment',
-          reviewerEmail: 'test.buddy2@andela.com'
-        })
+        .set(reqHeaders)
+        .send(mockDataMissingTeamUrl)
         .expect(
           400,
           {
@@ -71,15 +78,8 @@ describe('Decline route request', () => {
     it('should respond with an invalid request', (done) => {
       request(app)
         .put('/api/v1/routes/requests/status/1')
-        .set({
-          Accept: 'application/json'
-        })
-        .send({
-          newOpsStatus: 'decline',
-          comment: 'some = comment',
-          reviewerEmail: 'test.buddy2@andela.com',
-          teamUrl: 'tembea.slack.com'
-        })
+        .set(reqHeaders)
+        .send(mockDataInvalidComment)
         .expect(
           400,
           {
@@ -93,14 +93,8 @@ describe('Decline route request', () => {
     it('should respond with pending route request response', async () => {
       const response = await request(app)
         .put('/api/v1/routes/requests/status/2')
-        .set('Content-Type', 'application/json')
-        .send({
-          newOpsStatus: 'decline',
-          comment: 'some comment',
-          reviewerEmail: 'test.buddy2@andela.com',
-          teamUrl: 'tembea.slack.com'
-        });
-
+        .set(reqHeaders)
+        .send(mockDeclinedRouteRequest);
       expect(response.status).toEqual(403);
       expect(response.body.message).toEqual(
         'This request needs to be confirmed by the manager first'
@@ -112,12 +106,7 @@ describe('Decline route request', () => {
         .put('/api/v1/routes/requests/status/3')
         .set('Content-Type', 'application/json')
         .set('Authorization', 'XXXXXXXXXXX')
-        .send({
-          newOpsStatus: 'decline',
-          comment: 'some comment',
-          reviewerEmail: 'test.buddy2@andela.com',
-          teamUrl: 'tembea.slack.com'
-        });
+        .send(mockDeclinedRouteRequest);
 
       expect(response.body.message).toEqual(
         'Failed to authenticate token! Valid token required'
@@ -127,14 +116,8 @@ describe('Decline route request', () => {
     it('should decline request', async () => {
       const response = await request(app)
         .put('/api/v1/routes/requests/status/3')
-        .set('Content-Type', 'application/json')
-        .set('Authorization', validToken)
-        .send({
-          newOpsStatus: 'decline',
-          comment: 'some comment',
-          reviewerEmail: 'test.buddy2@andela.com',
-          teamUrl: 'tembea.slack.com'
-        });
+        .set(reqHeaders)
+        .send(mockDeclinedRouteRequest);
 
       expect(response.body.message).toEqual(
         'This route request has been updated'
@@ -145,6 +128,7 @@ describe('Decline route request', () => {
 
 describe('Approve a route request', () => {
   let validToken;
+  let reqHeaders;
   describe('/api/v1/routes/requests/:requestId', () => {
     beforeAll(async () => {
       await RouteRequest.bulkCreate([
@@ -170,8 +154,8 @@ describe('Approve a route request', () => {
           homeId: 1
         },
       ]);
-
       validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+      reqHeaders = { Accept: 'application/json', Authorization: validToken };
     });
 
     afterAll(async () => {
@@ -185,15 +169,8 @@ describe('Approve a route request', () => {
     it('should respond with a missing request param response', (done) => {
       request(app)
         .put('/api/v1/routes/requests/status/1')
-        .set({
-          Accept: 'application/json'
-        })
-        .send({
-          newOpsStatus: 'approve',
-          comment: 'some comment',
-          reviewerEmail: 'test.buddy2@andela.com',
-          teamUrl: 'andela.slack.com'
-        })
+        .set(reqHeaders)
+        .send(mockDataMissingParams)
         .expect(
           400,
           {
@@ -212,19 +189,8 @@ describe('Approve a route request', () => {
     it('should respond with an invalid request for invalid capacity', (done) => {
       request(app)
         .put('/api/v1/routes/requests/status/1')
-        .set({
-          Accept: 'application/json'
-        })
-        .send({
-          newOpsStatus: 'approve',
-          comment: 'comment',
-          reviewerEmail: 'test.buddy2@andela.com',
-          teamUrl: 'tembea.slack.com',
-          routeName: 'ParksWay',
-          capacity: 'capacity',
-          takeOff: '2:30',
-          cabRegNumber: 'KCX XXX0'
-        })
+        .set(reqHeaders)
+        .send(mockDataInvalidCapacity)
         .expect(
           400,
           {
@@ -238,19 +204,8 @@ describe('Approve a route request', () => {
     it('should respond with an invalid request for invalid take off time', (done) => {
       request(app)
         .put('/api/v1/routes/requests/status/1')
-        .set({
-          Accept: 'application/json'
-        })
-        .send({
-          newOpsStatus: 'approve',
-          comment: 'comment',
-          reviewerEmail: 'test.buddy2@andela.com',
-          teamUrl: 'tembea.slack.com',
-          routeName: 'ParksWay',
-          capacity: '2',
-          takeOff: 'Take Off',
-          cabRegNumber: 'KCX XXX0'
-        })
+        .set(reqHeaders)
+        .send(mockDataInvalidTakeOffTime)
         .expect(
           400,
           {
@@ -263,20 +218,8 @@ describe('Approve a route request', () => {
     it('should approve request', (done) => {
       request(app)
         .put('/api/v1/routes/requests/status/4')
-        .set({
-          Accept: 'application/json',
-          Authorization: validToken
-        })
-        .send({
-          newOpsStatus: 'approve',
-          comment: 'some comment',
-          reviewerEmail: 'test.buddy2@andela.com',
-          teamUrl: 'tembea.slack.com',
-          routeName: 'ParksWay',
-          capacity: '2',
-          takeOff: '9:30',
-          cabRegNumber: 'KCX XXX0'
-        })
+        .set(reqHeaders)
+        .send(mockDataCorrectRouteRequest)
         .expect(
           201,
           done

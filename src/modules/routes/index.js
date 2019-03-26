@@ -6,6 +6,11 @@ import middlewares from '../../middlewares';
 const { GeneralValidator, RouteValidator, RouteRequestValidator } = middlewares;
 const routesRouter = express.Router();
 
+routesRouter.use(
+  '/routes',
+  TokenValidator.attachJwtSecretKey,
+  TokenValidator.authenticateToken,
+);
 /**
  * @swagger
  * /routes:
@@ -82,8 +87,6 @@ routesRouter.get(
  */
 routesRouter.post(
   '/routes',
-  TokenValidator.attachJwtSecretKey,
-  TokenValidator.authenticateToken,
   RouteValidator.verifyAllPropsExist,
   RouteValidator.verifyPropsValuesAreSetAndValid,
   RouteValidator.validateDestinationAddress,
@@ -147,8 +150,6 @@ routesRouter.post(
  */
 routesRouter.put(
   '/routes/:routeId',
-  TokenValidator.attachJwtSecretKey,
-  TokenValidator.authenticateToken,
   RouteValidator.validateRouteIdParam,
   GeneralValidator.validateTeamUrlInRequestBody,
   GeneralValidator.validateAllProvidedReqBody,
@@ -169,8 +170,6 @@ routesRouter.put(
  *        description: response object containing confirmed route requests
  */
 routesRouter.get('/routes/requests',
-  TokenValidator.attachJwtSecretKey,
-  TokenValidator.authenticateToken,
   RoutesController.getAll);
 
 /**
@@ -244,8 +243,6 @@ routesRouter.put(
   RouteRequestValidator.validateRequestBody,
   RouteRequestValidator.validateParams,
   RouteRequestValidator.validateRouteStatus,
-  TokenValidator.attachJwtSecretKey,
-  TokenValidator.authenticateToken,
   RoutesController.changeRouteRequestStatus
 );
 
