@@ -2,7 +2,6 @@ import { IncomingWebhook } from '@slack/client';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import Utils from '../../../utils';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
-import { slackEventNames, SlackEvents } from '../events/slackEvents';
 import {
   SlackAttachment,
   SlackAttachmentField,
@@ -90,16 +89,16 @@ class SlackNotifications {
   static async sendOperationsTripRequestNotification(trip, payload, respond, type = 'regular') {
     try {
       const tripInformation = trip;
-      const [teamDetails] = await Promise.all([
-        TeamDetailsService.getTeamDetails(payload.team.id)]);
+      const teamDetails = await TeamDetailsService.getTeamDetails(payload.team.id);
       const { botToken: slackBotOauthToken, opsChannelId } = teamDetails;
       const checkTripType = type === 'regular';
       const { name } = await DepartmentService
         .getById(tripInformation.departmentId);
       tripInformation.department = name;
       if (checkTripType) {
-        SlackEvents.raise(slackEventNames.TRIP_WAITING_CONFIRMATION,
-          tripInformation, respond, slackBotOauthToken);
+        SlackNotifications.sendRequesterApprovedNotification(
+          tripInformation, respond, slackBotOauthToken
+        );
       }
       tripInformation.pickup = tripInformation.origin;
 
