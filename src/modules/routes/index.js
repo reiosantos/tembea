@@ -287,4 +287,30 @@ routesRouter.delete(
   RoutesController.deleteRouteBatch
 );
 
+/**
+ * @swagger
+ * /routes/:id:
+ *  get:
+ *    summary: get a specic route's details
+ *    tags:
+ *      - Route Details
+ *    parameters:
+ *      - name: id
+ *        in: path
+ *        required: true
+ *        description: the id to the desired route
+ *    responses:
+ *      200:
+ *        description: response object contains a Route's Details
+ *      400:
+ *        description: invalid id parameter
+ *      404:
+ *        description: no route associated to the id parameter passed
+ */
+routesRouter.get(
+  '/routes/:id',
+  GeneralValidator.validateRouteId,
+  RoutesController.getOne
+);
+
 export default routesRouter;

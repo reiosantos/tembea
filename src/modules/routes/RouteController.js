@@ -136,8 +136,28 @@ class RoutesController {
     }
   }
 
-  static getOne() {
-    // TODO return a single route request
+  /**
+   * @description returns a given route's details
+   * @param req
+   * @param res
+   * @returns {object} The http response object
+   */
+  static async getOne(req, res) {
+    try {
+      const route = await RouteService.getRoute(req.params.id);
+      return res.status(200).json({
+        message: 'Success',
+        route
+      });
+    } catch (error) {
+      BugSnagHelper.log(error);
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: 'Route not found'
+        });
+    }
   }
 
   /**

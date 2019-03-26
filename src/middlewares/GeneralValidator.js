@@ -50,6 +50,17 @@ class GeneralValidator {
     return regex.test(num);
   }
 
+  static validateRouteId(req, res, next) {
+    const { params: { id } } = req;
+    if (!GeneralValidator.validateNumber(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a positive integer value'
+      });
+    }
+    return next();
+  }
+
   static validateQueryParams(req, res, next) {
     const { page, size } = req.query;
 

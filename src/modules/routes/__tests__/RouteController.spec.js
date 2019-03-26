@@ -135,6 +135,59 @@ describe('RoutesController', () => {
       done();
     });
   });
+  describe('getOne', () => {
+    let req;
+    let res;
+    beforeEach(() => {
+      req = {
+        params: {
+          id: 2
+        }
+      };
+      res = {
+        status: jest.fn(() => ({})).mockReturnValue({ json: jest.fn() })
+      };
+    });
+    it('should give error message if route doesnt exist', (done) => {
+      request(app)
+        .get('/api/v1/routes/178882')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', validToken)
+        .expect(404, (err, response) => {
+          const { body } = response;
+          expect(body).toHaveProperty('message');
+          expect(body).toEqual({ message: 'Route not found', success: false });
+          done();
+        });
+    });
+    it('should successfully fetch one routes', async (done) => {
+      jest.spyOn(RouteService, 'getRoute').mockResolvedValue(mockRouteBatchData);
+      await RoutesController.getOne(req, res);
+      expect(res.status).toHaveBeenCalledTimes(1);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.status().json).toHaveBeenCalledTimes(1);
+      expect(res.status().json).toHaveBeenCalledWith({
+        message: 'Success',
+        route: mockRouteBatchData
+      });
+      done();
+    });
+    it('should give error message if route is not integer', (done) => {
+      request(app)
+        .get('/api/v1/routes/102ed')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', validToken)
+        .expect(200, (err, response) => {
+          const { body } = response;
+          expect(body).toHaveProperty('message');
+          expect(body).toEqual({
+            message: 'Please provide a positive integer value',
+            success: false
+          });
+          done();
+        });
+    });
+  });
   describe('getRoutes', () => {
     it('should successfully fetch routes', (done) => {
       request(app)

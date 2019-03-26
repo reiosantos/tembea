@@ -28,7 +28,10 @@ describe('General Validator', () => {
 
   describe('validate Object Key and Values', () => {
     it('should return errors when the object passed has empty keyValues', () => {
-      const body = { name: '', game: '' };
+      const body = {
+        name: '',
+        game: ''
+      };
       const result = GeneralValidator.validateObjectKeyValues(body);
       expect(result).toEqual(['name cannot be empty', 'game cannot be empty']);
     });
@@ -36,7 +39,11 @@ describe('General Validator', () => {
 
   describe('Validate All parameters provided in the request body', () => {
     it('should call the next method when they are no errors', () => {
-      const reqMock = { body: { name: 'Go' } };
+      const reqMock = {
+        body: {
+          name: 'Go'
+        }
+      };
       const nextMock = jest.fn();
       jest
         .spyOn(GeneralValidator, 'validateObjectKeyValues')
@@ -49,7 +56,11 @@ describe('General Validator', () => {
     });
 
     it('should call the response method when they are errors', () => {
-      const reqMock = { body: { name: 'Go' } };
+      const reqMock = {
+        body: {
+          name: 'Go'
+        }
+      };
       const nextMock = jest.fn();
       jest
         .spyOn(GeneralValidator, 'validateObjectKeyValues')
@@ -74,7 +85,11 @@ describe('General Validator', () => {
 
   describe('Validate TeamUrl in the request body', () => {
     it("should call next method when teamUrl exists in body and when it's valid", () => {
-      const reqMock = { body: { teamUrl: 'lala@slack.com' } };
+      const reqMock = {
+        body: {
+          teamUrl: 'lala@slack.com'
+        }
+      };
       const nextMock = jest.fn();
       jest.spyOn(Response, 'sendResponse').mockImplementation();
       jest.spyOn(GeneralValidator, 'validateTeamUrl').mockReturnValue(true);
@@ -85,7 +100,11 @@ describe('General Validator', () => {
     });
 
     it("should call response method when teamUrl doesn't exist with error message", () => {
-      const reqMock = { body: { teamUrl: false } };
+      const reqMock = {
+        body: {
+          teamUrl: false
+        }
+      };
       const nextMock = jest.fn();
       const err = 'Please pass the teamUrl in the request body, e.g: "teamUrl: dvs.slack.com"';
       jest.spyOn(Response, 'sendResponse').mockImplementation();
@@ -120,7 +139,11 @@ describe('General Validator', () => {
   });
   describe('Validate get all trips filter parameters.', () => {
     it('should call next method when trip status is correct', () => {
-      const reqMock = { query: { status: 'Pending' } };
+      const reqMock = {
+        query: {
+          status: 'Pending'
+        }
+      };
       const nextMock = jest.fn();
 
       jest.spyOn(GeneralValidator, 'isEmpty').mockReturnValue(true);
@@ -130,7 +153,11 @@ describe('General Validator', () => {
       expect(nextMock).toHaveBeenCalled();
     });
     it('should return error when trip stauts is not correct', () => {
-      const reqMock = { query: { status: 'Pend' } };
+      const reqMock = {
+        query: {
+          status: 'Pend'
+        }
+      };
       const nextMock = jest.fn();
       const err = 'Status of trips are either Confirmed or Pending';
       jest.spyOn(GeneralValidator, 'isEmpty').mockReturnValue(false);
@@ -173,6 +200,42 @@ describe('General Validator', () => {
       const value = '3094545';
       const result = GeneralValidator.disallowNumericsAsValuesOnly(value);
       expect(result).toEqual(false);
+    });
+  });
+  describe('general validator', () => {
+    const next = jest.fn();
+    let req;
+    const res = {
+      status() {
+        return this;
+      },
+      json() {
+        return {
+          success: false,
+          message: 'Please provide a positive integer value'
+        };
+      }
+    };
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+    it('should return next', () => {
+      req = {
+        params: { id: 4 },
+      };
+      GeneralValidator.validateRouteId(req, res, next);
+      expect(next).toBeCalled();
+    });
+    it('should return 400 if params is not a number', () => {
+      req = {
+        params: {
+          id: 'mbsh'
+        }
+      };
+      const result = GeneralValidator.validateRouteId(req, res, next);
+      const str = 'Please provide a positive integer value';
+      expect(result.message).toEqual(str);
+      expect(result.success).toEqual(false);
     });
   });
 });
