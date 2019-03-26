@@ -59,13 +59,10 @@ class SlackController {
   static getRouteCommandMsg() {
     const attachment = SlackController.greetings();
 
-    // TODO: remove rate a trip button and incorporate @kica's work
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('Request New Route', 'Request New Route', 'request_new_route'),
       new SlackButtonAction('See Available Routes',
         'See Available Routes', 'view_available_routes'),
-      new SlackButtonAction('Rate a trip',
-        'Rate a trip', 'rate_trip'),
       new SlackCancelButtonAction()
     ]);
     attachment.addOptionalProps(

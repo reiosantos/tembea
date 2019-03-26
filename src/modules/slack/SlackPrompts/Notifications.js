@@ -16,6 +16,7 @@ import RouteRequestService from '../../../services/RouteRequestService';
 import AttachmentHelper from './notifications/AttachmentHelper';
 import Services from '../../../services/UserService';
 import tripService from '../../../services/TripService';
+import TripCompletion from '../../../services/jobScheduler/jobs/TripCompletionJob';
 
 const web = new WebClientSingleton();
 
@@ -274,6 +275,9 @@ class SlackNotifications {
     message = `Your trip has been ${confirmedOrDeclined}`;
     channelId = await SlackNotifications.getDMChannelId(rider, slackBotOauthToken);
     SlackNotifications.sendNotifications(channelId, attachments, message, slackBotOauthToken);
+    if (confirmedOrDeclined === 'Confirmed') {
+      TripCompletion.createScheduleForATrip(tripInformation);
+    }
   }
 
   static notificationActions(tripInformation) {

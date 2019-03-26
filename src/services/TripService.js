@@ -208,8 +208,7 @@ export class TripService {
     const trips = await TripRequest.findAll(
       {
         where: params.where,
-        include: [...this.defaultInclude, 'department'],
-        raw: true,
+        include: [...this.defaultInclude],
         order: [...order.order]
       }
     );

@@ -32,7 +32,7 @@ class Utils {
   static formatDateForDatabase(dateStr, timezone = 'Africa/Nairobi') {
     if (!dateStr || typeof dateStr !== 'string') return dateStr;
     const formattedDate = DateHelpers.changeDateFormat(dateStr);
-    return momenttz.tz(formattedDate, 'MM/DD/YYYY HH:ss', timezone).toISOString();
+    return momenttz.tz(formattedDate, 'MM/DD/YYYY HH:mm', timezone).toISOString();
   }
 
   static nextAlphabet(firstChar) {

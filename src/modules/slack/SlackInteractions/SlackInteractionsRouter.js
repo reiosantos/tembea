@@ -4,6 +4,7 @@ import ManagerController from '../RouteManagement/ManagerController';
 import OperationsController from '../RouteManagement/OperationsController';
 import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInteractions';
 import RateTripController from '../TripManagement/RateTripController';
+import TripInteractions from '../SlackPrompts/notifications/TripNotifications/TripInteractions';
 
 const slackInteractionsRouter = createMessageAdapter(process.env.SLACK_SIGNING_SECRET);
 
@@ -49,5 +50,9 @@ slackInteractionsRouter.action({ callbackId: /^join_route/ },
   JoinRouteInteractions.handleJoinRouteActions);
 slackInteractionsRouter.action({ callbackId: 'rate_trip' },
   RateTripController.rateTrip);
+slackInteractionsRouter.action({ callbackId: 'trip_completion' },
+  TripInteractions.tripCompleted);
+slackInteractionsRouter.action({ callbackId: 'trip_not_taken' },
+  TripInteractions.resonForNotTakingTrip);
 
 export default slackInteractionsRouter;

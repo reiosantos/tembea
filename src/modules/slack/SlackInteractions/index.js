@@ -23,7 +23,6 @@ import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import handleActions from './SlackInteractionsHelper';
 import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInteractions';
 import tripService from '../../../services/TripService';
-import RateTripController from '../TripManagement/RateTripController';
 
 class SlackInteractions {
   static launch(payload, respond) {
@@ -292,13 +291,6 @@ class SlackInteractions {
       case 'view_available_routes':
         await JoinRouteInteractions.handleViewAvailableRoutes(payload, respond);
         break;
-
-      // TODO: remove this and replace with @kica's work
-      case 'rate_trip':
-        await RateTripController.sendTripRatingDialog(payload, 3);
-        respond(new SlackInteractiveMessage('Noted.'));
-        break;
-
       default:
         respond(SlackInteractions.goodByeMessage());
         break;

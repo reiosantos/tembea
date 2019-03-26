@@ -84,7 +84,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     rating: {
       type: DataTypes.INTEGER
-    }
+    },
+    tripNotTakenReason: {
+      type: DataTypes.TEXT
+    },
   }, {});
   TripRequest.associate = (models) => {
     TripRequest.belongsTo(models.User, {
