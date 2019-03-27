@@ -276,3 +276,33 @@ export const data = {
     }
   }
 };
+
+export const mockReturnedCountryData = {
+  name: 'Kenya',
+  topLevelDomain: [
+    '.ke'
+  ],
+  alpha2Code: 'KE',
+  alpha3Code: 'KEN',
+  callingCodes: [
+    '254'
+  ],
+  capital: 'Nairobi',
+  altSpellings: [
+    'KE',
+    'Republic of Kenya',
+    'Jamhuri ya Kenya'
+  ],
+  region: 'Africa',
+  subregion: 'Eastern Africa',
+  population: 47251000,
+  latlng: [
+    1,
+    38
+  ]
+};
+
+export const mockCountryError = {
+  status: 404,
+  message: 'Country not found'
+};

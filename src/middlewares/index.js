@@ -8,6 +8,7 @@ import RouteRequestValidator from './RouteRequestValidator';
 import TripValidator from './TripValidator';
 import CabsValidator from './CabsValidator';
 import CleanRequestBody from './CleanRequestBody';
+import CountryValidator from './CountryValidator';
 
 const middleware = {
   UserValidator,
@@ -19,7 +20,8 @@ const middleware = {
   RouteRequestValidator,
   TripValidator,
   CabsValidator,
-  CleanRequestBody
+  CleanRequestBody,
+  CountryValidator
 };
 
 export default middleware;

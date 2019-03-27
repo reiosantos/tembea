@@ -21,7 +21,6 @@ class DepartmentService {
         location
       }
     });
-    
 
     if (department[0] && department[0].dataValues.status === 'Inactive') {
       department[0].headId = user.id;
