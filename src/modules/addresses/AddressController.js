@@ -97,7 +97,8 @@ class AddressController {
           page
         }
       };
-      return Response.sendResponse(res, 200, true, message, pageData);
+      const addressData = { pageData, data };
+      return Response.sendResponse(res, 200, true, message, addressData);
     } catch (error) {
       HttpError.sendErrorResponse(error, res);
     }

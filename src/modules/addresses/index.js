@@ -124,7 +124,7 @@ addressRouter.put(
 addressRouter.get(
   '/addresses',
   GeneralValidator.validateQueryParams,
-  AddressController.getAddresses
+  AddressController.getAddresses,
 );
 
 export default addressRouter;

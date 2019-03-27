@@ -17,15 +17,24 @@ describe('AddressService', () => {
   });
   describe('createNewAddress', () => {
     it('should create new address', async () => {
-      const mockLocationModel = { longitude: 23, latitude: 34 };
-      const mockAddressModel = { dataValues: { id: 1, address: 'some place' } };
-      const createLocationSpy = jest.spyOn(LocationService, 'createLocation')
+      const mockLocationModel = {
+        
+        longitude: 5677,
+        latitude: 908998
+      };
+      const mockAddressModel = {
+        dataValues: {
+          id: 123,
+          address: 'gsg45',
+        }
+      };
+      jest.spyOn(LocationService, 'createLocation')
         .mockResolvedValue(mockLocationModel);
-      const findCreateSpy = jest.spyOn(Address, 'findOrCreate')
+      jest.spyOn(Address, 'findOrCreate')
         .mockResolvedValue([mockAddressModel]);
       const result = await AddressService.createNewAddress(1.0, -1.0, 'Address');
-      expect(createLocationSpy).toHaveBeenCalledWith(1.0, -1.0);
-      expect(findCreateSpy).toHaveBeenCalledTimes(1);
+      expect(LocationService.createLocation).toHaveBeenCalledWith(1.0, -1.0);
+      expect(Address.findOrCreate).toHaveBeenCalledTimes(1);
       expect(result).toEqual({ ...mockAddressModel.dataValues, ...mockLocationModel });
     });
     it('should raise error when having invalid parameters', async () => {
