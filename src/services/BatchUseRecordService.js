@@ -4,7 +4,7 @@ import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import RemoveDataValues from '../helpers/removeDataValues';
 
 const {
-  BatchUseRecord, RouteUseRecord, RouteBatch
+  BatchUseRecord, RouteUseRecord, RouteBatch, Route
 } = models;
 
 class BatchUseRecordService {
@@ -45,7 +45,13 @@ class BatchUseRecordService {
         {
           model: RouteUseRecord,
           as: 'batchRecord',
-          include: [{ model: RouteBatch, as: 'batch', include: ['cabDetails'] }]
+          include: [{
+            model: RouteBatch,
+            as: 'batch',
+            include: ['cabDetails', {
+              model: Route, as: 'route', include: ['destination']
+            }]
+          }]
         }]
     };
     const pagenatedData = await paginatedRoutes.getPageItems(page);
@@ -81,6 +87,9 @@ class BatchUseRecordService {
       id, batchUseDate, batch: {
         id: batchId, takeOff, status, comments, routeId, cabId, cabDetails: {
           driverName, driverPhoneNo, regNumber
+        },
+        route: {
+          name, destination: { locationId, address }
         }
       }
     } = batchRecord;
@@ -93,6 +102,9 @@ class BatchUseRecordService {
       },
       cabDetails: {
         cabId, driverName, driverPhoneNo, regNumber
+      },
+      route: {
+        routeId, name, destination: { locationId, address }
       }
     };
   }

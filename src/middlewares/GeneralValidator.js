@@ -145,6 +145,15 @@ class GeneralValidator {
     }
     return next();
   }
+
+  static validateFellowId(req, res, next) {
+    const { query: { id } } = req;
+    if (!GeneralValidator.validateNumber(id)) {
+      const message = 'Please provide a positive integer value';
+      return Response.sendResponse(res, 400, false, message);
+    }
+    return next();
+  }
 }
 
 export default GeneralValidator;

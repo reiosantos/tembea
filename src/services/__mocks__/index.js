@@ -241,6 +241,14 @@ export const routeData = {
       driverName: 'Kafuuma Henry',
       driverPhoneNo: 256772312456,
       regNumber: 'UBE321A'
+    },
+    route: {
+      routeId: 1001,
+      name: 'Hoeger Pine',
+      destination: {
+        locationId: 1002,
+        address: '629 O\'Connell Flats'
+      }
     }
   }
 };

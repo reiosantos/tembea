@@ -91,6 +91,14 @@ describe('BatchUseRecordService', () => {
           },
           departureDate: '2018-05-03 09:50',
           id: 1,
+          route: {
+            destination: {
+              address: '629 O\'Connell Flats',
+              locationId: 1002,
+            },
+            name: 'Hoeger Pine',
+            routeId: 1001
+          },
           routeId: 1001
         }
       );
