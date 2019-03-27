@@ -60,6 +60,7 @@ describe('JoinInputHandlers', () => {
     afterEach(() => {
       jest.resetAllMocks();
     });
+
     it('should call sendFellowDetailsForm', async () => {
       RouteService.getRoute.mockResolvedValue({ ...mockRouteBatchData, riders: [] });
       jest.spyOn(formHelper, 'getFellowEngagementDetails')
@@ -71,6 +72,7 @@ describe('JoinInputHandlers', () => {
         .toBeCalledWith(payload, JSON.stringify({ routeId: 1, capacityFilled: false }), engagement);
       expect(RouteService.getRoute).toHaveBeenCalledWith(1);
     });
+
     it('should stop fellow with a route', async () => {
       RouteService.getRoute.mockResolvedValue({ ...mockRouteBatchData, riders: [{ slackId: 'ss' }] });
       jest.spyOn(formHelper, 'getFellowEngagementDetails')
@@ -82,6 +84,7 @@ describe('JoinInputHandlers', () => {
       expect(respond).toBeCalledTimes(1);
       expect(restrictions).toBeCalledTimes(1);
     });
+
     it('should stop fellow who is not on engagement', async () => {
       RouteService.getRoute.mockResolvedValue({ ...mockRouteBatchData, riders: [] });
       const notOnEngagement = null;
@@ -101,6 +104,7 @@ describe('JoinInputHandlers', () => {
         user: undefined
       });
     });
+
     it('should send full capacity notice to user', async () => {
       jest.spyOn(formHelper, 'getFellowEngagementDetails')
         .mockResolvedValue(engagement);
@@ -117,6 +121,7 @@ describe('JoinInputHandlers', () => {
       expect(RouteService.getRoute)
         .toHaveBeenCalledWith(1);
     });
+
     it('should log caught error on bugsnag', async () => {
       RouteService.getRoute.mockRejectedValue(new Error('very error'));
       const spy = jest.spyOn(Bugsnag.prototype, 'log');
@@ -136,12 +141,14 @@ describe('JoinInputHandlers', () => {
       jest.spyOn(formHelper, 'getFellowEngagementDetails')
         .mockResolvedValue(engagement);
     });
+
     it('should continue with join route request', async () => {
       await JoinRouteInputHandlers.continueJoinRoute(payload, respond);
       expect(JoinRouteDialogPrompts.sendFellowDetailsForm)
         .toBeCalledWith(payload, JSON.stringify({ routeId: 1, capacityFilled: true }), engagement);
       expect(respond).toBeCalledWith(new SlackInteractiveMessage('Noted'));
     });
+
     it('should stop fellow who is not on engagement', async () => {
       const notengagement = null;
       jest.spyOn(formHelper, 'getFellowEngagementDetails')
@@ -175,6 +182,7 @@ describe('JoinInputHandlers', () => {
       jest.resetAllMocks();
       jest.restoreAllMocks();
     });
+
     it('should call respond()', async () => {
       JoinRouteNotifications.sendFellowDetailsPreview
         .mockResolvedValue('preview attachment');
@@ -228,9 +236,11 @@ describe('JoinInputHandlers', () => {
         .mockResolvedValue();
       jest.spyOn(SlackEvents, 'raise').mockReturnValue();
     });
+
     afterEach(() => {
       jest.restoreAllMocks();
     });
+
     it('should save join request and send notification to managers', async (done) => {
       const routeId = 1;
       const value = JSON.stringify({ routeId, capacityFilled: false });
@@ -249,6 +259,7 @@ describe('JoinInputHandlers', () => {
         .toBeCalledWith(slackEventNames.MANAGER_RECEIVE_JOIN_ROUTE, payload, 2);
       done();
     });
+
     it('should send request to ops when user trying to join a full route', async () => {
       const routeId = 1;
       const value = JSON.stringify({ routeId, capacityFilled: true });

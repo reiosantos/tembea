@@ -226,3 +226,53 @@ export const mockCabsData = {
     }
   ]
 };
+
+export const routeData = {
+  id: 1,
+  batchUseDate: '2018-05-03',
+  batch: {
+    id: 1001,
+    takeOff: '09:50',
+    status: 'Activ',
+    comments: 'Went to the trip',
+    routeId: 1001,
+    cabId: 10,
+    cabDetails: {
+      driverName: 'Kafuuma Henry',
+      driverPhoneNo: 256772312456,
+      regNumber: 'UBE321A'
+    }
+  }
+};
+
+export const data = {
+  id: 2,
+  userId: 15,
+  batchRecordId: 2,
+  userAttendStatus: 'NotConfirmed',
+  reasonForSkip: null,
+  rating: null,
+  user: {
+    id: 15,
+    name: 'Ronald Okello',
+    slackId: 'UG93CNE',
+    email: 'ronald.okello@andela.com'
+  },
+  routeUseRecord: {
+    id: 2,
+    departureDate: '2019-04-03 03:00',
+    routeId: 1002,
+    batch: {
+      batchId: 1003,
+      takeOff: '03:00',
+      status: 'Active',
+      comments: 'Consequatur cumque est veritatis unde quae.'
+    },
+    cabDetails: {
+      cabId: 1,
+      driverName: 'Dominic Toretto',
+      driverPhoneNo: '(566) 790-4855',
+      regNumber: 'SMK 319 JK'
+    }
+  }
+};

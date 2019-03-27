@@ -6,6 +6,7 @@ import ManagerFormValidator from '../../../helpers/slack/UserInputValidator/mana
 import OperationsNotifications from '../SlackPrompts/notifications/OperationsRouteRequest/index';
 import RouteService from '../../../services/RouteService';
 import { getAction } from './rootFile';
+import ConfirmRouteUseJob from '../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 
 const saveRoute = async (updatedRequest, submission) => {
   const { busStop, routeImageUrl } = updatedRequest;
@@ -21,7 +22,8 @@ const saveRoute = async (updatedRequest, submission) => {
     vehicleRegNumber: regNumber,
     status: 'Active',
   };
-  await RouteService.createRouteBatch(data);
+  const batch = await RouteService.createRouteBatch(data);
+  ConfirmRouteUseJob.scheduleBatchStartJob(batch);
 };
 
 const handlers = {

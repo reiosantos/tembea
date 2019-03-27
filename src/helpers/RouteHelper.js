@@ -133,7 +133,7 @@ class RouteHelper {
     );
     batch.cabDetails = cabDetails;
     batch.route = route;
-    
+
     return RouteService.serializeRouteBatch(batch);
   }
 

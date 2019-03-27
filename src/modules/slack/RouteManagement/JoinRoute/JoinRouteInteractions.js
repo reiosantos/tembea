@@ -8,12 +8,16 @@ import RoutesHelpers from '../../helpers/routesHelper';
 import { SLACK_DEFAULT_SIZE } from '../../../../helpers/constants';
 import RouteService from '../../../../services/RouteService';
 import JoinRouteInputHandlers from './JoinRouteInputHandler';
-import { bugsnagHelper } from '../rootFile';
+import { bugsnagHelper, DialogPrompts } from '../rootFile';
 import {
   SlackAttachment,
   SlackButtonAction,
   SlackInteractiveMessage
 } from '../../SlackModels/SlackMessageModels';
+import { SlackDialog, SlackDialogTextarea } from '../../SlackModels/SlackDialogModels';
+import BatchUseRecordService from '../../../../services/BatchUseRecordService';
+import RateTripController from '../../TripManagement/RateTripController';
+import validateDialogSubmission from '../../../../helpers/slack/UserInputValidator/validateDialogSubmission';
 
 class JoinRouteInteractions {
   static async handleViewAvailableRoutes(payload, respond) {
@@ -49,7 +53,6 @@ class JoinRouteInteractions {
 
   static async handleSendAvailableRoutesActions(payload, respond) {
     const { name: actionName } = payload.actions[0];
-
     if (actionName === 'See Available Routes' || actionName.startsWith('page_')) {
       await JoinRouteInteractions.sendAvailableRoutesMessage(payload, respond);
       return;
@@ -92,6 +95,56 @@ class JoinRouteInteractions {
     return new SlackInteractiveMessage('Selected Full Capacity Route', [
       attachment
     ]);
+  }
+
+  static async handleRouteBatchConfirmUse(payload, respond) {
+    try {
+      const { actions: [{ name: buttonName, value: batchUseRecordId }] } = payload;
+      if (buttonName === 'taken') {
+        await BatchUseRecordService
+          .updateBatchUseRecord(batchUseRecordId, { userAttendStatus: 'Confirmed', reasonForSkip: '' });
+        const ratingMessage = await RateTripController.sendRatingMessage(batchUseRecordId, 'rate_route');
+        respond(ratingMessage);
+      }
+      if (buttonName === 'not_taken') {
+        await BatchUseRecordService.updateBatchUseRecord(batchUseRecordId, { userAttendStatus: 'Skip' });
+        await JoinRouteInteractions.hasNotTakenTrip(payload, respond);
+        return new SlackInteractiveMessage('Noted');
+      }
+    } catch (error) {
+      bugsnagHelper.log(error);
+    }
+  }
+
+  static async handleRouteSkipped(payload, respond) {
+    try {
+      const { submission, state: batchUseRecordId } = payload;
+      const checkIfEmpty = validateDialogSubmission(payload);
+      if (checkIfEmpty.length) { return { errors: checkIfEmpty }; }
+
+      await BatchUseRecordService.updateBatchUseRecord(batchUseRecordId, { reasonForSkip: submission.tripNotTakenReason, userAttendStatus: 'Skip' });
+
+      respond(new SlackInteractiveMessage('Thank you for sharing your experience.'));
+    } catch (error) {
+      bugsnagHelper.log(error);
+    }
+  }
+
+  static async hasNotTakenTrip(payload, respond) {
+    try {
+      respond(new SlackInteractiveMessage('Noted...'));
+      const { actions: [{ value }] } = payload;
+      const dialog = new SlackDialog(
+        'route_skipped', 'Reason', 'Submit', true, value
+      );
+      const textarea = new SlackDialogTextarea(
+        'Reason', 'tripNotTakenReason', 'Reason for not taking trip'
+      );
+      dialog.addElements([textarea]);
+      respond(await DialogPrompts.sendDialog(dialog, payload));
+    } catch (error) {
+      bugsnagHelper.log(error);
+    }
   }
 }
 

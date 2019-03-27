@@ -9,7 +9,7 @@ import RateTripController from '../../../TripManagement/RateTripController';
 class TripInteractions {
   static tripCompleted(payload, respond, trip) {
     const { actions: [{ name }] } = payload;
-    
+
     switch (name) {
       case 'taken':
         TripInteractions.hasTakenTrip(payload, respond, trip);
@@ -23,7 +23,7 @@ class TripInteractions {
       case 'not_completed':
         TripInteractions.hasNotCompletedTrip(payload, respond);
         break;
-    
+
       default:
         break;
     }
@@ -33,7 +33,7 @@ class TripInteractions {
     const { actions: [{ value }] } = payload;
     await tripService.updateRequest(value, { tripStatus: 'InTransit' });
     const actions = [new SlackButtonAction('completed', 'Yes', value),
-      new SlackButtonAction('not_completed', 'No', value, 'danger')];
+    new SlackButtonAction('not_completed', 'No', value, 'danger')];
     const attachment = new SlackAttachment('', '', '', '', '');
     attachment.addFieldsOrActions('actions', actions);
     attachment.addOptionalProps('trip_completion');
@@ -43,7 +43,7 @@ class TripInteractions {
   static async hasCompletedTrip(payload, respond) {
     const { actions: [{ value }] } = payload;
     await tripService.updateRequest(value, { tripStatus: 'Completed' });
-    const ratingMessage = await RateTripController.sendTripRatingMessage(value);
+    const ratingMessage = await RateTripController.sendRatingMessage(value, 'rate_trip');
     respond(ratingMessage);
   }
 

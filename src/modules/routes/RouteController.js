@@ -17,6 +17,7 @@ import UserService from '../../services/UserService';
 import RouteHelper from '../../helpers/RouteHelper';
 import RouteNotifications from '../slack/SlackPrompts/notifications/RouteNotifications';
 import TeamDetailsService from '../../services/TeamDetailsService';
+import ConfirmRouteUseJob from '../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 
 class RoutesController {
   /**
@@ -243,7 +244,8 @@ class RoutesController {
       takeOffTime: data.takeOff,
       regNumber: data.vehicleRegNumber
     };
-    await RouteService.createRouteBatch(data);
+    const batch = await RouteService.createRouteBatch(data);
+    ConfirmRouteUseJob.scheduleBatchStartJob(batch);
     return submission;
   }
 

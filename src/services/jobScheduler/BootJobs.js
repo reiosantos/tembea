@@ -1,7 +1,11 @@
 import TripCompletionJob from './jobs/TripCompletionJob';
+import ConfirmRouteUseJob from './jobs/ConfirmRouteUseJob';
 
 
-const bootJobs = [TripCompletionJob.sendNotificationForConfirmedTrips];
+export const bootJobs = [
+  TripCompletionJob.sendNotificationForConfirmedTrips,
+  ConfirmRouteUseJob.autoStartRouteJob,
+];
 
 class BootJobsService {
   static async scheduleJobs() {

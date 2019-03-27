@@ -49,10 +49,16 @@ slackInteractionsRouter.action({ callbackId: 'view_new_trip' },
 slackInteractionsRouter.action({ callbackId: /^join_route/ },
   JoinRouteInteractions.handleJoinRouteActions);
 slackInteractionsRouter.action({ callbackId: 'rate_trip' },
-  RateTripController.rateTrip);
+  RateTripController.rate);
 slackInteractionsRouter.action({ callbackId: 'trip_completion' },
   TripInteractions.tripCompleted);
 slackInteractionsRouter.action({ callbackId: 'trip_not_taken' },
   TripInteractions.resonForNotTakingTrip);
+slackInteractionsRouter.action({ callbackId: 'confirm_route_use' },
+  JoinRouteInteractions.handleRouteBatchConfirmUse);
+slackInteractionsRouter.action({ callbackId: 'route_skipped' },
+  JoinRouteInteractions.handleRouteSkipped);
+slackInteractionsRouter.action({ callbackId: 'rate_route' },
+  RateTripController.rate);
 
 export default slackInteractionsRouter;

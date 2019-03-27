@@ -9,9 +9,9 @@ dotenv.config();
 const logger = debug('log');
 const server = http.createServer(app);
 
-server.listen(env.PORT, () => {
+server.listen(env.PORT, async () => {
   app.set('host', `http://localhost:${env.PORT}`);
 
   logger(`Find me on http://localhost:${env.PORT}`);
-  BootJobsService.scheduleJobs();
+  await BootJobsService.scheduleJobs();
 });

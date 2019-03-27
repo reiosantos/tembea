@@ -3,7 +3,9 @@ import TeamDetailsService from '../../../../../services/TeamDetailsService';
 import BugsnagHelper from '../../../../../helpers/bugsnagHelper';
 import UserService from '../../../../../services/UserService';
 import RouteService from '../../../../../services/RouteService';
-import { SlackAttachmentField, SlackAttachment } from '../../../SlackModels/SlackMessageModels';
+import { SlackAttachmentField, SlackAttachment, SlackButtonAction } from '../../../SlackModels/SlackMessageModels';
+import RemoveDataValues from '../../../../../helpers/removeDataValues';
+import { bugsnagHelper } from '../../../RouteManagement/rootFile';
 
 class RouteNotifications {
   static async sendRouteNotificationToRouteRiders(teamUrl, routeInfo) {
@@ -17,7 +19,7 @@ class RouteNotifications {
     const text = isDeactivation
       ? `Sorry, Your route to *${address}* is no longer available :disappointed:`
       : `Your route to *${address}* has been updated.`;
-    
+
     const message = await SlackNotifications.createDirectMessage(
       '',
       text,
@@ -61,6 +63,36 @@ class RouteNotifications {
     const imId = await SlackNotifications.getDMChannelId(slackId, slackBotOauthToken);
     const response = { ...message, channel: imId };
     await SlackNotifications.sendNotification(response, slackBotOauthToken);
+  }
+
+  static async sendRouteUseConfirmationNotificationToRider(batchUseRecord) {
+    try {
+      const slackBotOauthToken = process.env.SLACK_BOT_OAUTH_TOKEN;
+      const channelID = await SlackNotifications.getDMChannelId(
+        batchUseRecord.user.slackId, slackBotOauthToken
+      );
+      const actions = [new SlackButtonAction('taken', 'Yes', batchUseRecord.id),
+        new SlackButtonAction('not_taken', 'No', batchUseRecord.id, 'danger')];
+      const attachment = new SlackAttachment('', '', '', '', '');
+      const routeBatch = RemoveDataValues.removeDataValues(await RouteService.getRouteBatchByPk(batchUseRecord.routeUseRecord.batch.batchId));
+      const fields = [
+        new SlackAttachmentField('Batch', routeBatch.batch, true),
+        new SlackAttachmentField('Took Off At', routeBatch.takeOff, true),
+        new SlackAttachmentField('Cab Reg No', routeBatch.cabDetails.regNumber, true),
+        new SlackAttachmentField('Driver Name', routeBatch.cabDetails.driverName, true),
+        new SlackAttachmentField('Driver Phone Number', routeBatch.cabDetails.driverPhoneNo, true),
+      ];
+
+      attachment.addFieldsOrActions('actions', actions);
+      attachment.addFieldsOrActions('fields', fields);
+      attachment.addOptionalProps('confirm_route_use');
+
+      const message = SlackNotifications.createDirectMessage(channelID,
+        `Hi! <@${batchUseRecord.user.slackId}> Did you take the trip for route ${routeBatch.route.name}?`, attachment);
+      return SlackNotifications.sendNotification(message, slackBotOauthToken);
+    } catch (error) {
+      bugsnagHelper.log(error);
+    }
   }
 }
 

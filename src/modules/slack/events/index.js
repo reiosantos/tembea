@@ -49,8 +49,11 @@ SlackEvents.handle(slackEventNames.MANAGER_RECEIVE_JOIN_ROUTE,
 
 SlackEvents.handle(slackEventNames.OPS_FILLED_CAPACITY_ROUTE_REQUEST,
   JoinRouteNotifications.sendFilledCapacityJoinRequest);
-  
+
 SlackEvents.handle(slackEventNames.TRIP_COMPLETION,
   TripNotifications.sendCompletionNotification);
+
+SlackEvents.handle(slackEventNames.RIDERS_CONFIRM_ROUTE_USE,
+  RouteNotifications.sendRouteUseConfirmationNotificationToRider);
 
 export default slackEvents;

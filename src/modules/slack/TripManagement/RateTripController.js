@@ -1,15 +1,17 @@
+/* eslint-disable camelcase */
 import { SlackInteractiveMessage } from '../RouteManagement/rootFile';
 import tripService from '../../../services/TripService';
 import { SlackAttachment, SlackButtonAction } from '../SlackModels/SlackMessageModels';
+import BatchUseRecordService from '../../../services/BatchUseRecordService';
 
 class RateTripController {
-  static async sendTripRatingMessage(tripId) {
+  static async sendRatingMessage(tripId, prop) {
     const attachment = new SlackAttachment();
     const buttons = RateTripController.createRatingButtons(tripId);
-    attachment.addOptionalProps('rate_trip');
+    attachment.addOptionalProps(prop);
     attachment.addFieldsOrActions('actions', buttons);
     const message = new SlackInteractiveMessage(
-      '*Please rate this trip on a scale of `1 - 5` :star: *', [attachment]
+      `*Please rate this ${prop.split('_')[1]} on a scale of '1 - 5' :star: *`, [attachment]
     );
     return message;
   }
@@ -24,9 +26,14 @@ class RateTripController {
     ];
   }
 
-  static async rateTrip(payload, respond) {
-    const { actions: [{ name, value }] } = payload;
-    await tripService.updateRequest(value, { rating: name });
+  static async rate(payload, respond) {
+    const { actions: [{ name, value }], callback_id } = payload;
+    if (callback_id === 'rate_trip') {
+      await tripService.updateRequest(value, { rating: name });
+    }
+    if (callback_id === 'rate_route') {
+      await BatchUseRecordService.updateBatchUseRecord(value, { rating: name });
+    }
     respond(new SlackInteractiveMessage('Thank you for sharing your experience.'));
   }
 }

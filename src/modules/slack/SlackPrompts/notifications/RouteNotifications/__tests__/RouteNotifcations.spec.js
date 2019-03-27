@@ -103,4 +103,28 @@ describe('Route Notifications', () => {
       expect(BugsnagHelper.log).toHaveBeenCalled();
     });
   });
+  describe('sendRouteUseConfirmationNotificationToRider', () => {
+    beforeEach(() => {
+      jest.resetAllMocks();
+      jest.restoreAllMocks();
+    });
+    it('should send route update notification to all riders', async () => {
+      const spy = jest.spyOn(RouteService, 'getRouteBatchByPk')
+        .mockResolvedValue({
+          batch: '',
+          takeOff: '',
+          route: { name: '' },
+          cabDetails: { regNumber: '', driverName: '', driverPhoneNo: '' },
+        });
+      const spy2 = jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('9999');
+      jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue('9999');
+
+      await RouteNotifications.sendRouteUseConfirmationNotificationToRider(
+        { id: 3, user: { slackId: '78uu' }, routeUseRecord: { batch: { batchId: 1 } } }
+      );
+
+      expect(spy2).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+  });
 });

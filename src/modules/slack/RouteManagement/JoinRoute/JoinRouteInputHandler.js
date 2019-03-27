@@ -13,6 +13,8 @@ import { getFellowEngagementDetails } from '../../helpers/formHelper';
 import UserService from '../../../../services/UserService';
 import JoinRouteRequestService from '../../../../services/JoinRouteRequestService';
 import PartnerService from '../../../../services/PartnerService';
+import RemoveDataValues from '../../../../helpers/removeDataValues';
+import ConfirmRouteUseJob from '../../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 
 class JoinRouteInputHandlers {
   static async joinRoute(payload, respond) {
@@ -135,6 +137,8 @@ class JoinRouteInputHandlers {
         await RouteService.addUserToRoute(
           routeId, user.id
         );
+        const route = await RouteService.getRoute(routeId);
+        ConfirmRouteUseJob.scheduleBatchStartJob(RemoveDataValues.removeDataValues(route));
         eventArgs = [
           slackEventNames.MANAGER_RECEIVE_JOIN_ROUTE,
           payload,
