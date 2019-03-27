@@ -15,11 +15,16 @@ beforeAll(() => {
 
 describe('Delete department record', () => {
   beforeAll(async () => {
-    await Department.create({
+    await Department.bulkCreate([{
       name: 'Test Department 1',
       headId: 1,
       teamId: 'TEAMID2'
-    });
+    },
+    {
+      name: 'Test Department 2',
+      headId: 2,
+      teamId: 'TEAMID3'
+    }]);
   });
 
   it('should return a 404 if department is not found', (done) => {
@@ -141,11 +146,19 @@ describe('Delete department record', () => {
       );
   });
 
-  it('should not be able to delete a deleted department', (done) => {
+  it('should not be able to delete a deleted department', async (done) => {
+    await request(app).delete('/api/v1/departments').send({
+      name: 'Test Department 2'
+    })
+      .set({
+        Accept: 'application/json',
+        authorization: validToken
+      });
+
     request(app)
       .delete('/api/v1/departments')
       .send({
-        name: 'Test Department 1'
+        name: 'Test Department 2'
       })
       .set({
         Accept: 'application/json',
