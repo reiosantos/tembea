@@ -155,12 +155,19 @@ describe('ScheduleTripController Tests', () => {
 
   describe('createTripRequest', () => {
     const responder = respondMock();
+    afterAll(() => {
+      jest.resetAllMocks();
+      jest.restoreAllMocks();
+    });
     it('should persist details of a trip', async () => {
       const payload = createPayload();
-      TripService.createRequest = jest.fn(() => ({ dataValues: 'someValue' }));
-      InteractivePrompts.sendCompletionResponse = jest.fn();
-      SlackEvents.raise = jest.fn();
-      ScheduleTripController.createRequest = jest.fn(() => tripRequestDetails());
+      jest.spyOn(ScheduleTripController, 'createRequest')
+        .mockResolvedValue(tripRequestDetails());
+      jest.spyOn(TripService, 'createRequest')
+        .mockResolvedValue({ dataValues: 'someValue' });
+      jest.spyOn(InteractivePrompts, 'sendCompletionResponse')
+        .mockImplementation(jest.fn());
+      jest.spyOn(SlackEvents, 'raise').mockImplementation(jest.fn());
 
       const request = await ScheduleTripController
         .createTripRequest(payload, responder, tripRequestDetails());
@@ -173,7 +180,8 @@ describe('ScheduleTripController Tests', () => {
     it('should persist details of a trip', async () => {
       const payload = createPayload();
       try {
-        ScheduleTripController.createRequest = rejectMock;
+        jest.spyOn(ScheduleTripController, 'createRequest')
+          .mockImplementation(() => { throw err; });
 
         await ScheduleTripController
           .createTripRequest(payload, responder, tripRequestDetails());
@@ -208,7 +216,8 @@ describe('Create trip Detail test', () => {
       travelTeamPhoneNo: '',
       flightNumber: ''
     };
-    TripDetailsService.createDetails = rejectMock;
+    jest.spyOn(TripDetailsService, 'createDetails')
+      .mockImplementation(() => { throw err; });
     try {
       await ScheduleTripController.createTripDetail(tripInfo);
     } catch (error) {
@@ -220,34 +229,41 @@ describe('Create trip Detail test', () => {
 
 describe('Create Travel Trip request test', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
   });
 
   it('should create trip request', async () => {
-    ScheduleTripController.createRequest = jest.fn(() => ({ trip: 'Lekki' }));
-    ScheduleTripController.createTripDetail = jest.fn(() => ({ id: 12 }));
-    tripService.createRequest = jest.fn(() => ({ dataValues: { id: 1 } }));
-    InteractivePrompts.sendCompletionResponse = jest.fn();
-    SlackEvents.raise = jest.fn();
-    const payload = createPayload();
-    const respond = jest.fn();
+    const createRequestSpy = jest.spyOn(ScheduleTripController, 'createRequest')
+      .mockResolvedValue({ trip: 'Lekki' });
+    const createTripDetailSpy = jest.spyOn(ScheduleTripController, 'createTripDetail')
+      .mockResolvedValue({ id: 12 });
+    const createTripRequestSpy = jest.spyOn(TripService, 'createRequest')
+      .mockResolvedValue({ id: 1 });
+    const getByIdSpy = jest.spyOn(tripService, 'getById')
+      .mockResolvedValue({ id: 'data', newPayload: 'payload' });
 
-    const result = await ScheduleTripController.createTravelTripRequest(payload, respond, 'trip');
+    const payload = createPayload();
+
+    const result = await ScheduleTripController.createTravelTripRequest(payload, {});
+
     expect(result).toHaveProperty('id');
     expect(result).toHaveProperty('newPayload');
+    expect(createRequestSpy).toBeCalledTimes(1);
+    expect(createTripDetailSpy).toBeCalledTimes(1);
+    expect(createTripRequestSpy).toBeCalledTimes(1);
+    expect(getByIdSpy).toBeCalledTimes(1);
   });
 
   it('should throw an error', async () => {
-    ScheduleTripController.createRequest = jest.fn(() => ({ trip: 'Lekki' }));
-    ScheduleTripController.createTripDetail = jest.fn(() => ({ id: 12 }));
-    tripService.createRequest = jest.fn(() => { throw new Error('failed'); });
+    jest.spyOn(ScheduleTripController, 'createRequest')
+      .mockImplementation(() => { throw err; });
 
     const payload = createPayload();
-    const respond = jest.fn();
     try {
-      await ScheduleTripController.createTravelTripRequest(payload, respond, 'trip');
+      await ScheduleTripController.createTravelTripRequest(payload, 'trip');
     } catch (error) {
-      expect(error).toEqual(new Error('failed'));
+      expect(error).toEqual(new Error('Dummy error'));
     }
   });
   describe('Validate travel form test', () => {
