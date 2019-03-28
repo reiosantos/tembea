@@ -151,3 +151,131 @@ export const dataFromDBMock = {
     }
   }
 };
+
+export const columns = [
+  {
+    id: 'requestedOn',
+    header: 'Requested On',
+    width: 85,
+    height: 40
+  },
+  {
+    id: 'departureTime',
+    header: 'Departing On',
+    width: 85,
+    height: 40
+  },
+  {
+    id: 'pickup', header: 'Pickup', width: 73, height: 40
+  },
+  {
+    id: 'destination',
+    header: 'Destination',
+    width: 73,
+    height: 40
+  },
+  {
+    id: 'requester', header: 'Requested By', width: 73, height: 40
+  },
+  {
+    id: 'department', header: 'Department', width: 85, height: 40
+  },
+  {
+    id: 'rider', header: 'Rider', width: 73, height: 40
+  },
+  {
+    id: 'cost', header: 'Cost', width: 73, height: 40
+  },
+  {
+    id: 'approvedBy', header: 'Approved By', width: 73, height: 40
+  },
+  {
+    id: 'confirmedBy',
+    header: 'Confirmed By',
+    width: 73,
+    height: 40
+  }
+];
+
+export const columnHeaders = [
+  'requestedOn',
+  'departureTime',
+  'pickup',
+  'destination',
+  'requester',
+  'department',
+  'rider',
+  'cost',
+  'approvedBy',
+  'confirmedBy'
+];
+
+export const pendingTripData = {
+  id: 11,
+  name: 'my trip to the Airport',
+  status: 'Pending',
+  arrivalTime: null,
+  type: 'Regular Trip',
+  passenger: undefined,
+  departureTime: 'Thu Dec 21 2017 14:00:15 GMT+0300 (East Africa Time)',
+  requestedOn: 'Wed Nov 14 2018 03:00:00 GMT+0300 (East Africa Time)',
+  department: 'Operations',
+  destination: 'the dojo',
+  pickup: 'Epic Tower',
+  flightNumber: undefined,
+  decliner: undefined,
+  rider: 'Oluwatominiyin Adebanjo',
+  requester: 'Test Buddy1',
+  approvedBy: 'None',
+  confirmedBy: 'None'
+};
+
+export const filteredData = {
+  'Requested On': 'Wed Nov 14 2018 03:00:00 GMT+0300 (East Africa Time)',
+  'Departure Time': 'Thu Dec 21 2017 14:00:15 GMT+0300 (East Africa Time)',
+  Pickup: 'Epic Tower',
+  Destination: 'the dojo',
+  Requester: 'Test Buddy1',
+  Department: 'Operations',
+  Rider: 'Oluwatominiyin Adebanjo',
+  Cost: undefined,
+  'Approved By': 'None',
+  'Confirmed By': 'None'
+};
+
+export const newFormedData = [
+  {
+    'Requested On': 'Wed Nov 14 2018 03:00:00 GMT+0300 (East Africa Time)',
+    'Departure Time': 'Thu Dec 21 2017 14:00:15 GMT+0300 (East Africa Time)',
+    Pickup: 'Epic Tower',
+    Destination: 'the dojo',
+    Requester: 'Test Buddy1',
+    Department: 'Operations',
+    Rider: 'Oluwatominiyin Adebanjo',
+    Cost: undefined,
+    'Approved By': 'None',
+    'Confirmed By': 'None'
+  }
+];
+
+export const listOfDataObj = [
+  {
+    id: 11,
+    name: 'my trip to the Airport',
+    status: 'Pending',
+    arrivalTime: null,
+    type: 'Regular Trip',
+    passenger: undefined,
+    departureTime: 'Thu Dec 21 2017 14:00:15 GMT+0300 (East Africa Time)',
+    requestedOn: 'Wed Nov 14 2018 03:00:00 GMT+0300 (East Africa Time)',
+    department: 'Operations',
+    destination: 'the dojo',
+    pickup: 'Epic Tower',
+    flightNumber: undefined,
+    decliner: undefined,
+    rider: 'Oluwatominiyin Adebanjo',
+    requester: 'Test Buddy1',
+    approvedBy: 'None',
+    confirmedBy: 'None'
+  }
+];

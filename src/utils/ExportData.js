@@ -171,6 +171,57 @@ class ExportData {
     table.addBody(data);
     return pdf;
   }
+
+  static async createCSV(query) {
+    const { table: tableName } = query;
+    const dataFromDB = new DataFromDB(query);
+    const { data, columns } = await dataFromDB.fetchData(tableName);
+    const columnsHeaders = ExportData.getColumnHeaders(columns);
+    const newFormedData = ExportData.formNewRequiredData(data, columnsHeaders);
+    return newFormedData;
+  }
+
+  static filterRequired(obj, columnsHeaders) {
+    const myDict = {};
+    // eslint-disable-next-line no-restricted-syntax
+    for (const key of columnsHeaders) {
+      myDict[ExportData.formatHeaders(key)] = obj[key];
+    }
+    return myDict;
+  }
+
+  static formNewRequiredData(data, headers) {
+    const newFormedData = data.map(objData => ExportData.filterRequired(
+      objData, headers
+    ));
+    return newFormedData;
+  }
+
+  static formatHeaders(keyHeader) {
+    const camelCaseWord = keyHeader.match(/[A-Z]/g);
+    if (camelCaseWord) {
+      const firstChar = `${keyHeader[0].toUpperCase()}`;
+      const firstWordPiece = `${firstChar}${keyHeader.slice(1, keyHeader.indexOf(camelCaseWord[0]))}`;
+      const lastWordPiece = `${keyHeader.slice(keyHeader.indexOf(camelCaseWord[0]), keyHeader.length)}`;
+      const whollyWord = `${firstWordPiece} ${lastWordPiece}`;
+      return whollyWord;
+    }
+    const strDotStr = keyHeader.match(/[.]/g);
+    if (strDotStr) {
+      if (keyHeader === 'head.name') {
+        const whollyWord = 'Lead';
+        return whollyWord;
+      }
+    }
+    const firstWordPiece = `${keyHeader[0].toUpperCase()}`;
+    const whollyWord = `${firstWordPiece}${keyHeader.slice(1, keyHeader.length)}`;
+    return whollyWord;
+  }
+
+  static getColumnHeaders(columns) {
+    const listOfHeaders = columns.map(obj => obj.id);
+    return listOfHeaders; // List of headers;
+  }
 }
 
 export default ExportData;

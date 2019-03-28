@@ -1,4 +1,8 @@
+import { convertArrayToCSV } from 'convert-array-to-csv';
 import ExportData from '../../utils/ExportData';
+import HttpError from '../../helpers/errorHandler';
+import BugsnagHelper from '../../helpers/bugsnagHelper';
+
 
 class ExportDocument {
   static async exportToPDF(req, res) {
@@ -14,12 +18,24 @@ class ExportDocument {
     });
   }
 
-  static exportToCSV(req, res) {
-    const { name } = req.body;
-    return res.status(200).json({
-      success: true,
-      message: `${name}.csv exported successfully!`
-    });
+  static async exportToCSV(req, res) {
+    try {
+      const { table } = req.query;
+      const data = await ExportData.createCSV(req.query);
+      const csv = convertArrayToCSV(data);
+      res.writeHead(200, {
+        'Content-Type': 'text/csv',
+        'Content-Disposition': `attachment; filename=${table}.csv`
+      });
+      res.write(csv);
+      res.end();
+    } catch (e) {
+      BugsnagHelper.log(e);
+      const errorMessage = {
+        message: 'Could not complete the process'
+      };
+      return HttpError.sendErrorResponse(errorMessage, res);
+    }
   }
 }
 

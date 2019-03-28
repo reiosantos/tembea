@@ -1,6 +1,7 @@
 import RouteService from '../../services/RouteService';
 import {
-  routesMock, departmentsMock, tripsMock, dataFromDBMock
+  routesMock, departmentsMock, tripsMock, dataFromDBMock, columns,
+  pendingTripData, columnHeaders, filteredData, newFormedData, listOfDataObj
 } from '../__mocks__/ExportDataMocks';
 import ExportData, { DataFromDB } from '../ExportData';
 import DepartmentService from '../../services/DepartmentService';
@@ -128,6 +129,45 @@ describe('ExportData', () => {
 
       expect(fetchDataSpy).toBeCalledWith('routes');
       expect(result).toEqual({});
+    });
+  });
+
+  describe('createCSV', () => {
+    it('should return new  data', async () => {
+      const query = { table: 'pendingRequests' };
+      jest.spyOn(ExportData, 'getColumnHeaders').mockResolvedValue(columnHeaders);
+      await jest.spyOn(ExportData, 'formNewRequiredData').mockResolvedValue(newFormedData);
+      await ExportData.createCSV(query);
+      expect(fetchDataSpy).toBeCalledWith('pendingRequests');
+    });
+  });
+
+
+  describe('filterRequired', () => {
+    it('should return a list of object data', () => {
+      const result = ExportData.filterRequired(pendingTripData, columnHeaders);
+      expect(result).toEqual(filteredData);
+    });
+  });
+
+  describe('formNewRequiredData', () => {
+    it('should return new formed data', async () => {
+      const result = await ExportData.formNewRequiredData(listOfDataObj, columnHeaders);
+      expect(result).toEqual(newFormedData);
+    });
+  });
+
+  describe('getColumnHeaders', () => {
+    it('should return a list of headers', async () => {
+      const result = await ExportData.getColumnHeaders(columns);
+      expect(result).toEqual(columnHeaders);
+    });
+  });
+
+  describe('formatHeaders', () => {
+    it('should return new data with capitalized headers', async () => {
+      const result = await ExportData.formatHeaders('head.name');
+      expect(result).toEqual('Lead');
     });
   });
 });
