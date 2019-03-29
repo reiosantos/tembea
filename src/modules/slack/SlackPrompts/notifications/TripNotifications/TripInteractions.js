@@ -1,10 +1,10 @@
 import moment from 'moment';
-import { SlackInteractiveMessage, DialogPrompts, slackEventNames } from '../../../RouteManagement/rootFile';
+import { SlackInteractiveMessage, DialogPrompts } from '../../../RouteManagement/rootFile';
 import { SlackAttachment, SlackButtonAction } from '../../../SlackModels/SlackMessageModels';
 import { SlackDialogTextarea, SlackDialog } from '../../../SlackModels/SlackDialogModels';
 import tripService from '../../../../../services/TripService';
 import TripCompletionJob from '../../../../../services/jobScheduler/jobs/TripCompletionJob';
-import slackEvents from '../../../events';
+import RateTripController from '../../../TripManagement/RateTripController';
 
 class TripInteractions {
   static tripCompleted(payload, respond, trip) {
@@ -41,10 +41,10 @@ class TripInteractions {
   }
 
   static async hasCompletedTrip(payload, respond) {
-    respond(new SlackInteractiveMessage('Noted...'));
     const { actions: [{ value }] } = payload;
     await tripService.updateRequest(value, { tripStatus: 'Completed' });
-    slackEvents.raise(slackEventNames.RATE_TRIP, payload, value);
+    const ratingMessage = await RateTripController.sendTripRatingMessage(value);
+    respond(ratingMessage);
   }
 
   static async hasNotCompletedTrip(payload, respond) {

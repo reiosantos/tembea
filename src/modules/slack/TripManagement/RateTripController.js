@@ -1,36 +1,33 @@
-import {
-  SlackDialog, SlackDialogText, SlackDialogError
-} from '../SlackModels/SlackDialogModels';
-import { DialogPrompts, SlackInteractiveMessage } from '../RouteManagement/rootFile';
+import { SlackInteractiveMessage } from '../RouteManagement/rootFile';
 import tripService from '../../../services/TripService';
+import { SlackAttachment, SlackButtonAction } from '../SlackModels/SlackMessageModels';
 
 class RateTripController {
-  static async sendTripRatingDialog(payload, tripId) {
-    const dialog = new SlackDialog(
-      'rate_trip', 'Rate this trip', 'Submit', false, tripId
+  static async sendTripRatingMessage(tripId) {
+    const attachment = new SlackAttachment();
+    const buttons = RateTripController.createRatingButtons(tripId);
+    attachment.addOptionalProps('rate_trip');
+    attachment.addFieldsOrActions('actions', buttons);
+    const message = new SlackInteractiveMessage(
+      '*Please rate this trip on a scale of `1 - 5` :star: *', [attachment]
     );
-    const textInput = new SlackDialogText(
-      'Rating', 'rating', '', false, 'Rating between 1 - 5 e.g. 4'
-    );
-    dialog.addElements([textInput]);
-    await DialogPrompts.sendDialog(dialog, payload);
+    return message;
+  }
+
+  static createRatingButtons(tripId) {
+    return [
+      new SlackButtonAction(1, '1 :disappointed:', tripId, 'danger'),
+      new SlackButtonAction(2, '2 :slightly_frowning_face:', tripId, 'danger'),
+      new SlackButtonAction(3, '3 :neutral_face:', tripId, 'default'),
+      new SlackButtonAction(4, '4 :simple_smile:', tripId),
+      new SlackButtonAction(5, '5 :star-struck:', tripId)
+    ];
   }
 
   static async rateTrip(payload, respond) {
-    const { submission: { rating }, state: tripId } = payload;
-    const errors = RateTripController.ratingFormValidator(rating);
-    if (errors.length > 0) return { errors };
-    await tripService.updateRequest(tripId, { rating });
+    const { actions: [{ name, value }] } = payload;
+    await tripService.updateRequest(value, { rating: name });
     respond(new SlackInteractiveMessage('Thank you for sharing your experience.'));
-  }
-
-  static ratingFormValidator(rating) {
-    const error = new SlackDialogError(
-      'rating', 'Enter a valid number between 1 and 5. See hint.'
-    );
-    const convertedRating = Number(rating);
-    const numberRating = Number.isInteger(convertedRating);
-    return (!numberRating || convertedRating < 1 || convertedRating > 5) ? [error] : [];
   }
 }
 

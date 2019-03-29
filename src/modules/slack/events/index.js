@@ -4,7 +4,6 @@ import { SlackEvents, slackEventNames } from './slackEvents';
 import OperationsNotifications from '../SlackPrompts/notifications/OperationsRouteRequest';
 import RouteNotifications from '../SlackPrompts/notifications/RouteNotifications';
 import JoinRouteNotifications from '../RouteManagement/JoinRoute/JoinRouteNotifications';
-import RateTripController from '../TripManagement/RateTripController';
 import TripNotifications from '../SlackPrompts/notifications/TripNotifications';
 
 const slackEvents = SlackEvents;
@@ -53,8 +52,5 @@ SlackEvents.handle(slackEventNames.OPS_FILLED_CAPACITY_ROUTE_REQUEST,
   
 SlackEvents.handle(slackEventNames.TRIP_COMPLETION,
   TripNotifications.sendCompletionNotification);
-
-SlackEvents.handle(slackEventNames.RATE_TRIP,
-  RateTripController.sendTripRatingDialog);
 
 export default slackEvents;
