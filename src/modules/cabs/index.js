@@ -4,7 +4,6 @@ import CabsController from './CabsController';
 
 const { TokenValidator, CabsValidator, GeneralValidator } = middlewares;
 
-
 const cabsRouter = Router();
 
 cabsRouter.use(

@@ -1,14 +1,15 @@
 import CabService from '../CabService';
 import models from '../../database/models';
-import { mockCabsData } from '../__mocks__';
-import { MAX_INT } from '../../helpers/constants';
+import cache from '../../cache';
+import RemoveDataValues from '../../helpers/removeDataValues';
+
+jest.mock('../../cache');
 
 const { Cab } = models;
 
 describe('CabService', () => {
   afterEach(() => {
     jest.resetAllMocks();
-    jest.restoreAllMocks();
   });
 
   describe('findOrCreate', () => {
@@ -41,24 +42,65 @@ describe('CabService', () => {
     });
   });
 
-  describe('getCabs', () => {
-    const { cabs } = mockCabsData;
-    beforeEach(() => {
-      jest
-        .spyOn(Cab, 'findAll')
-        .mockResolvedValue(cabs);
+  describe('getById', () => {
+    const strippedData = { driverName: 'Omari', regNumber: 'AR R3G NMB' };
+    it('should fetch cached Trip details', async () => {
+      cache.fetch.mockResolvedValue(strippedData);
+      const cabDetails = await CabService.getById(1);
+
+      expect(cache.fetch).toHaveBeenCalled();
+      expect(cabDetails).toEqual(strippedData);
     });
+    it('should return cab data successfully', async () => {
+      cache.fetch.mockResolvedValue(strippedData);
+      Cab.findByPk = jest.fn(() => strippedData);
+      RemoveDataValues.removeDataValues = jest.fn(() => strippedData);
+      const cabDetails = await CabService.getById(1);
+
+      expect(cabDetails).toEqual(strippedData);
+    });
+    it('should throw error if not in cache', async () => {
+      const expectedError = new Error('Could not return the requested trip');
+      try {
+        await CabService.getById(1);
+      } catch (e) {
+        expect(e).toEqual(expectedError);
+      }
+    });
+  });
+
+  describe('getCabs', () => {
     it('should return array of cabs from the db', async () => {
       const result = await CabService.getCabs();
 
-      const expectedResult = {
-        pageNo: 1,
-        itemsPerPage: MAX_INT,
-        cabs,
-        totalItems: 5,
-        totalPages: 1
+      expect(result.pageNo).toBe(1);
+      expect(result.totalItems).toBe(27);
+      expect(result.totalPages).toBe(1);
+    });
+    it('total items per page should be 2 when size provided is 2', async () => {
+      const pageable = {
+        page: 2,
+        size: 2
       };
-      expect(result).toEqual(expectedResult);
+      const result = await CabService.getCabs(pageable);
+
+      expect(result.pageNo).toBe(2);
+      expect(result.cabs.length).toBe(2);
+      expect(result.itemsPerPage).toBe(2);
+      expect(result.totalItems).toBe(27);
+      expect(result.totalPages).toBe(14);
+    });
+    it('pageNo should be 3 when the third page is requested', async () => {
+      const pageable = {
+        page: 3,
+        size: 2
+      };
+      const result = await CabService.getCabs(pageable);
+      expect(result.pageNo).toBe(3);
+      expect(result.cabs.length).toBe(2);
+      expect(result.itemsPerPage).toBe(2);
+      expect(result.totalItems).toBe(27);
+      expect(result.totalPages).toBe(14);
     });
   });
 });

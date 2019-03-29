@@ -34,20 +34,18 @@ class CabsController {
 
   static async getAllCabs(req, res) {
     try {
-      let { page: pageRequest, size } = req.query;
-      pageRequest = pageRequest || 1;
+      let { page, size } = req.query;
+      page = page || 1;
       size = size || defaultSize;
-      const pageable = { pageRequest, size };
       const {
         totalPages,
         cabs,
-        pageNo: page,
+        pageNo,
         totalItems: totalResults,
         itemsPerPage: pageSize
-      } = await CabService.getCabs(pageable);
+      } = await CabService.getCabs({ page, size });
 
-      const message = `${pageRequest} of ${totalPages} page(s).`;
-
+      const message = `${pageNo} of ${totalPages} page(s).`;
       const pageData = {
         pageMeta: {
           totalPages, page, totalResults, pageSize

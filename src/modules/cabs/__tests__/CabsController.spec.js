@@ -84,7 +84,7 @@ describe('CabsController', () => {
         .set(headers)
         .expect(200, (err, res) => {
           const { body } = res;
-          expect(body.message).toBe('2 of 3 page(s).');
+          expect(body.message).toBe('2 of 14 page(s).');
           expect(body).toHaveProperty('data');
           expect(body.data).toHaveProperty('pageMeta');
           expect(body.data).toHaveProperty('cabs');

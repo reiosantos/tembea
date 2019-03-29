@@ -83,10 +83,12 @@ export default class CabService {
    * );
    */
   static async getCabs(pageable = CabService.defaultPageable) {
+    let cabs = [];
     const { page, size } = pageable;
     const paginatedCabs = new SequelizePaginationHelper(Cab, null, size);
     const { data, pageMeta } = await paginatedCabs.getPageItems(page);
-    const cabs = data.map(CabService.serializeCab);
+    const { totalPages } = pageMeta;
+    if (page <= totalPages) { cabs = data.map(CabService.serializeCab); }
     return { cabs, ...pageMeta };
   }
 }
