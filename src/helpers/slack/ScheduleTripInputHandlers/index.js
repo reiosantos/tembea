@@ -24,7 +24,7 @@ const ScheduleTripInputHandlers = {
     const checkIfEmpty = validateDialogSubmission(payload);
     if (checkIfEmpty.length) return { errors: checkIfEmpty };
     if (payload.submission) {
-      Cache.save(payload.user.id, callbackId, payload.submission.reason);
+      await Cache.save(payload.user.id, callbackId, payload.submission.reason);
     }
 
     // check if user clicked for me or for someone
@@ -35,10 +35,10 @@ const ScheduleTripInputHandlers = {
       InteractivePrompts.sendRiderSelectList(payload, respond);
     }
   },
-  rider: (payload, respond, callbackId) => {
+  rider: async (payload, respond, callbackId) => {
     if (payload.actions[0].selected_options) {
       const rider = payload.actions[0].selected_options[0].value;
-      Cache.save(payload.user.id, callbackId, rider);
+      await Cache.save(payload.user.id, callbackId, rider);
     }
 
     InteractivePrompts.sendAddPassengersResponse(respond, 'false');
@@ -47,7 +47,7 @@ const ScheduleTripInputHandlers = {
     if (payload.actions[0].value || payload.actions[0].selected_options[0]) {
       const noOfPassengers = payload.actions[0].value
         ? payload.actions[0].value : payload.actions[0].selected_options[0].value;
-      Cache.save(payload.user.id, 'passengers', noOfPassengers);
+      await Cache.save(payload.user.id, 'passengers', noOfPassengers);
     }
 
     const { forSelf } = await Cache.fetch(payload.user.id);
@@ -55,10 +55,10 @@ const ScheduleTripInputHandlers = {
     return InteractivePrompts.sendListOfDepartments(props, forSelf);
   },
 
-  department: (payload, respond) => {
+  department: async (payload, respond) => {
     respond(new SlackInteractiveMessage('Noted...'));
     const departmentId = payload.actions[0].value;
-    Cache.save(payload.user.id, 'departmentId', departmentId);
+    await Cache.save(payload.user.id, 'departmentId', departmentId);
     DialogPrompts.sendTripDetailsForm(payload, 'regularTripForm',
       'schedule_trip_tripDestination', 'Pickup Details');
   },
@@ -71,7 +71,7 @@ const ScheduleTripInputHandlers = {
         return { errors };
       }
       if (submission.pickup !== 'Others') {
-        Cache.save(`${userId}_pickup`, 'pickupLocation', submission);
+        await Cache.save(`${userId}_pickup`, 'pickupLocation', submission);
         InteractivePrompts.sendSelectDestination(respond);
       }
     } catch (error) {

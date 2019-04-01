@@ -66,8 +66,8 @@ describe('ScheduleTripInputHandlers Tests', () => {
   });
 
   describe('Response to "rider" interaction', () => {
-    it('should respond with list of departments', () => {
-      ScheduleTripInputHandlers.rider(payload, responder, 'rider');
+    it('should respond with list of departments', async () => {
+      await ScheduleTripInputHandlers.rider(payload, responder, 'rider');
       expect(InteractivePrompts.sendAddPassengersResponse)
         .toHaveBeenCalledWith(responder, 'false');
     });
@@ -83,8 +83,8 @@ describe('ScheduleTripInputHandlers Tests', () => {
   });
 
   describe('Response to "department" interaction', () => {
-    it('should respond with trip details dialog form', () => {
-      ScheduleTripInputHandlers.department(payload, responder, 'department');
+    it('should respond with trip details dialog form', async () => {
+      await ScheduleTripInputHandlers.department(payload, responder, 'department');
       expect(responder).toHaveBeenCalledWith(responseMessage('Noted...'));
       expect(DialogPrompts.sendTripDetailsForm)
         .toHaveBeenCalledWith(payload, 'regularTripForm',
@@ -121,8 +121,8 @@ describe('ScheduleTripInputHandlers Tests', () => {
 
   describe('Response to "selectDestination" interaction', () => {
     const pickupPayload = createPickupPayload('dummyData');
-    it('should respond with destination details dialog form', () => {
-      ScheduleTripInputHandlers.selectDestination(pickupPayload, responder);
+    it('should respond with destination details dialog form', async () => {
+      await ScheduleTripInputHandlers.selectDestination(pickupPayload, responder);
       expect(DialogPrompts.sendTripDetailsForm)
         .toHaveBeenCalledWith(pickupPayload, 'tripDestinationLocationForm',
           'schedule_trip_locationTime', 'Destination Details');
@@ -142,11 +142,11 @@ describe('ScheduleTripInputHandlers Tests', () => {
     beforeEach(() => {
       Cache.fetch = jest.fn(() => pickup.submission);
     });
-  
+
     afterEach(() => {
       jest.resetAllMocks();
     });
-  
+
     it('should return errors if they exist', async () => {
       ScheduleTripController.validateTripDetailsForm = jest
         .fn(() => [{ label: 'label', name: 'name' }]);

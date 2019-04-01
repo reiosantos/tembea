@@ -214,18 +214,18 @@ describe('SlackInteractions', () => {
       DialogPrompts.sendTripDetailsForm = jest.fn((value1, value2) => ({ value1, value2 }));
     });
 
-    it('should test book new trip action', (done) => {
+    it('should test book new trip action', async (done) => {
       const payload = createPayload('true');
-      const result = SlackInteractions.bookNewTrip(payload, respond);
+      const result = await SlackInteractions.bookNewTrip(payload, respond);
       expect(result).toBe(undefined);
       expect(Cache.save).toHaveBeenCalled();
       expect(DialogPrompts.sendTripReasonForm).toHaveBeenCalledWith(payload);
       done();
     });
 
-    it('should test book new trip default action', (done) => {
+    it('should test book new trip default action', async (done) => {
       const payload = createPayload();
-      const result = SlackInteractions.bookNewTrip(payload, respond);
+      const result = await SlackInteractions.bookNewTrip(payload, respond);
       expect(result).toBe(undefined);
       expect(respond).toHaveBeenCalledWith(
         responseMessage('Thank you for using Tembea. See you again.')
@@ -613,20 +613,20 @@ describe('SlackInteractions', () => {
       Cache.save = jest.fn(() => { });
     });
 
-    it('should return thank you message', () => {
+    it('should return thank you message', async () => {
       const payload = createPayload('can', 'cancel');
-      SlackInteractions.bookTravelTripStart(payload, respond);
+      await SlackInteractions.bookTravelTripStart(payload, respond);
       expect(respond).toHaveBeenCalledWith(
         responseMessage('Thank you for using Tembea. See you again.')
       );
     });
 
-    it('should return thank you message', () => {
+    it('should return thank you message', async () => {
       const payload = createPayload('can', 'airport');
       const sendTripDetailsForm = jest.spyOn(DialogPrompts, 'sendTripDetailsForm');
       sendTripDetailsForm.mockImplementation((value1, value2) => ({ value1, value2 }));
 
-      SlackInteractions.bookTravelTripStart(payload, respond);
+      await SlackInteractions.bookTravelTripStart(payload, respond);
       expect(Cache.save).toHaveBeenCalled();
       expect(sendTripDetailsForm).toHaveBeenCalledWith(payload,
         'travelTripContactDetailsForm', 'travel_trip_contactDetails');

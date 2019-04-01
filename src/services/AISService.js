@@ -33,7 +33,7 @@ export class AISService {
       const aisData = await request.get(uri, options);
       const { values } = JSON.parse(aisData);
       ([result] = values);
-      cache.saveObject(key, result);
+      await cache.saveObject(key, result);
       return result;
     } catch (error) {
       throw new Error(`failed to fetch user details from AIS, reason: ${error.message}`);

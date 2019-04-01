@@ -89,19 +89,20 @@ export default class LocationHelpers {
     }
   }
 
-  static locationPrompt(locationData, respond, payload, stateLocation, trip) {
+  static async locationPrompt(locationData, respond, payload, stateLocation, trip) {
     const {
       address, latitude, longitude
     } = locationData;
-    Cache.save(payload.user.id, stateLocation, { address, latitude, longitude });
+    await Cache.save(payload.user.id, stateLocation, { address, latitude, longitude });
     LocationPrompts.sendMapsConfirmationResponse(respond, locationData, trip);
   }
 
-  static sendResponse(actionName, locationData, respond, payload) {
+  static async sendResponse(actionName, locationData, respond, payload) {
     if (actionName === 'pickupBtn') {
-      LocationHelpers.locationPrompt(locationData, respond, payload, 'pickUpAddress', 'pickup');
+      await LocationHelpers.locationPrompt(locationData,
+        respond, payload, 'pickUpAddress', 'pickup');
     } else {
-      LocationHelpers.locationPrompt(locationData,
+      await LocationHelpers.locationPrompt(locationData,
         respond, payload, 'destinationAddress', 'destination');
     }
   }

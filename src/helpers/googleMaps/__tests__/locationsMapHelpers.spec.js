@@ -182,7 +182,7 @@ describe('Tests for google maps suggestions', () => {
   });
 });
 
-describe('helper functions', () => {
+describe('helper functions', async () => {
   let respond;
   beforeEach(() => {
     respond = jest.fn();
@@ -202,10 +202,11 @@ describe('helper functions', () => {
   };
   const stateLocation = 'destinationAddress';
   const trip = 'travel_trip';
-  it('it should call sendMapsConfirmationResponse', () => {
-    Cache.save = jest.fn().mockRejectedValue({});
-    LocationPrompts.sendMapsConfirmationResponse = jest.fn().mockRejectedValue({});
-    LocationHelpers.locationPrompt(locationData, respond, payload, stateLocation, trip);
+
+  it('it should call sendMapsConfirmationResponse', async () => {
+    Cache.save = jest.fn().mockReturnValue({});
+    LocationPrompts.sendMapsConfirmationResponse = jest.fn().mockReturnValue({});
+    await LocationHelpers.locationPrompt(locationData, respond, payload, stateLocation, trip);
     expect(LocationPrompts.sendMapsConfirmationResponse).toBeCalled();
     expect(Cache.save).toBeCalled();
   });

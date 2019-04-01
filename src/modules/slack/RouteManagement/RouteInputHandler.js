@@ -73,7 +73,7 @@ const RouteInputHandlers = {
       // Convert the string to a URL by removing spaces and replacing with %20
       const staticMapUrl = RouteInputHandlerHelper.convertStringToUrl(staticMapString);
 
-      Cache.save(payload.user.id, 'homeAddress', { address, latitude, longitude });
+      await Cache.save(payload.user.id, 'homeAddress', { address, latitude, longitude });
 
       LocationPrompts
         .sendLocationConfirmationResponse(respond, staticMapUrl, address, locationGeometry);
@@ -101,7 +101,7 @@ const RouteInputHandlers = {
       const result = await maps.findNearestBusStops(location);
       const busStageList = GoogleMapsService.mapResultsToCoordinates(result);
 
-      Cache.save(payload.user.id, 'busStageList', busStageList);
+      await Cache.save(payload.user.id, 'busStageList', busStageList);
       respond(new SlackInteractiveMessage('Noted...'));
       await DialogPrompts.sendBusStopForm(payload, busStageList);
     } catch (e) {
@@ -151,7 +151,7 @@ const RouteInputHandlers = {
     const { user: { id: userId }, team: { id: teamId } } = payload;
     const [requester, cached] = await Promise.all([
       SlackHelpers.findOrCreateUserBySlackId(userId, teamId),
-      Cache.fetch(userId)
+      await Cache.fetch(userId)
     ]);
     const { locationInfo } = cached;
     const { submission } = payload;

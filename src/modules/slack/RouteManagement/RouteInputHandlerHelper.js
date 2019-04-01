@@ -67,7 +67,7 @@ export default class RouteInputHandlerHelper {
     const submissionValues = JSON.parse(value);
     const [depData, cachedData] = await Promise.all([
       RouteInputHandlerHelper.saveRouteRequestDependencies(userId, teamId, submissionValues),
-      Cache.fetch(userId)
+      await Cache.fetch(userId)
     ]);
     const { locationInfo } = cachedData;
     const dbData = RouteInputHandlerHelper.resolveRouteRequestDBData(locationInfo, depData);

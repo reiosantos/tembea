@@ -23,7 +23,7 @@ const travelTripHelper = {
       }
 
       const { user: { id }, submission } = payload;
-      Cache.save(id, 'contactDetails', submission);
+      await Cache.save(id, 'contactDetails', submission);
       const props = {
         payload,
         respond,
@@ -71,7 +71,7 @@ const travelTripHelper = {
       }
 
       const tripDetails = await createTravelTripDetails(payload, 'embassyVisitDateTime');
-      Cache.save(payload.user.id, 'tripDetails', tripDetails);
+      await Cache.save(payload.user.id, 'tripDetails', tripDetails);
       InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
     } catch (error) {
       bugsnagHelper.log(error);
@@ -123,7 +123,7 @@ const travelTripHelper = {
         new SlackInteractiveMessage('Thank you for using Tembea')
       );
     } else {
-      LocationMapHelpers.callDestinationSelection(payload, respond);
+      await LocationMapHelpers.callDestinationSelection(payload, respond);
     }
   },
 

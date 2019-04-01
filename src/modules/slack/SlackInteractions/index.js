@@ -62,13 +62,13 @@ class SlackInteractions {
     return new SlackInteractiveMessage('Thank you for using Tembea. See you again.');
   }
 
-  static bookNewTrip(payload, respond) {
+  static async bookNewTrip(payload, respond) {
     respond(new SlackInteractiveMessage('Noted...'));
     const action = payload.actions[0].value;
     switch (action) {
       case 'true':
       case 'false':
-        Cache.save(payload.user.id, 'forSelf', action);
+        await Cache.save(payload.user.id, 'forSelf', action);
         DialogPrompts.sendTripReasonForm(payload);
         break;
       default:
@@ -80,7 +80,7 @@ class SlackInteractions {
     return (payload.type === 'interactive_message' && payload.actions[0].value === 'cancel');
   }
 
-  static handleUserInputs(payload, respond) {
+  static async handleUserInputs(payload, respond) {
     const callbackId = payload.callback_id.split('_')[2];
     const scheduleTripHandler = ScheduleTripInputHandlers[callbackId];
     if (!(SlackInteractions.isCancelMessage(payload)) && scheduleTripHandler) {
@@ -261,7 +261,7 @@ class SlackInteractions {
     }
   }
 
-  static bookTravelTripStart(payload, respond) {
+  static async bookTravelTripStart(payload, respond) {
     const { user: { id }, actions } = payload;
     const { name } = actions[0];
     if (name === 'cancel') {
@@ -270,7 +270,7 @@ class SlackInteractions {
       );
       return;
     }
-    Cache.save(id, 'tripType', name);
+    await Cache.save(id, 'tripType', name);
     return DialogPrompts.sendTripDetailsForm(
       payload, 'travelTripContactDetailsForm', 'travel_trip_contactDetails'
     );

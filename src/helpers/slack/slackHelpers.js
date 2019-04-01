@@ -37,7 +37,7 @@ class SlackHelpers {
     }
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     const userInfo = await SlackHelpers.fetchUserInformationFromSlack(slackId, slackBotOauthToken);
-    Cache.save(key, 'slackInfo', userInfo);
+    await Cache.save(key, 'slackInfo', userInfo);
     return userInfo;
   }
 

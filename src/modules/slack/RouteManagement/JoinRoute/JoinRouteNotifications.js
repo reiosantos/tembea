@@ -37,7 +37,7 @@ class JoinRouteNotifications {
       RouteService.getRoute(id),
       SlackHelpers.findOrCreateUserBySlackId(slackId, teamId),
       SlackHelpers.findOrCreateUserBySlackId(managerID, teamId),
-      Cache.saveObject(`joinRouteRequestSubmission_${slackId}`, submission)
+      await Cache.saveObject(`joinRouteRequestSubmission_${slackId}`, submission)
     ]);
     return {
       manager,
