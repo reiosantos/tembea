@@ -8,6 +8,7 @@ import BugsnagHelper from '../../../../../../helpers/bugsnagHelper';
 import Services from '../../../../../../services/UserService';
 import LocationHelpers from '../../../../../../helpers/googleMaps/locationsMapHelpers';
 import LocationPrompts from '../../../../SlackPrompts/LocationPrompts';
+import Validators from '../../../../../../helpers/slack/UserInputValidator/Validators';
 
 jest.mock('../../../../events', () => ({
   slackEvents: jest.fn(() => ({
@@ -49,7 +50,9 @@ describe('travelTripHelper', () => {
       }
       return {};
     });
-    payload = { user: { id: 1 }, submission: {}, actions: [{ name: '', value: '' }] };
+    payload = {
+      user: { id: 1 }, submission: {}, actions: [{ name: '', value: '' }], team: { id: 'TEAMID1' }
+    };
   });
 
   afterEach(() => {
@@ -518,6 +521,74 @@ describe('travelTripHelper', () => {
       BugsnagHelper.log = jest.fn().mockReturnValue({});
       await travelTripHelper.detailsConfirmation(payload, respond);
       expect(BugsnagHelper.log).toHaveBeenCalled();
+    });
+  });
+
+ 
+  describe('tripNotesAddition', () => {
+    let respond;
+   
+    beforeEach(() => {
+      respond = jest.fn();
+    });
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should sendPreviewTripResponse to the user when input tripNotes', async () => {
+      const sendPreviewTripResponse = jest.spyOn(InteractivePrompts,
+        'sendPreviewTripResponse');
+
+      await travelTripHelper.tripNotesAddition(payload, respond);
+      expect(cache.fetch).toHaveBeenCalledTimes(1);
+      expect(sendPreviewTripResponse).toHaveBeenCalledTimes(1);
+    });
+
+    it('should send send tripNoteDialogForm ', async () => {
+      payload.actions[0].value = 'trip_note';
+
+      DialogPrompts.sendTripNotesDialogForm = jest.fn;
+
+      const sendTripNoteDetailsForm = jest.spyOn(DialogPrompts,
+        'sendTripNotesDialogForm');
+      await sendTripNoteDetailsForm.mockImplementationOnce(() => {});
+
+      await travelTripHelper.confirmation(payload, respond);
+
+      expect(cache.fetch).toBeCalled();
+      expect(DialogPrompts.sendTripNotesDialogForm).toBeCalled();
+    });
+
+    it('should call respond if there is tripNote value in cache', async () => {
+      const cacheReturn = { tripDetails: { tripNote: 'A note' } };
+
+      jest.spyOn(cache,
+        'fetch').mockResolvedValue(cacheReturn);
+
+      payload.actions[0].value = 'trip_note';
+      DialogPrompts.sendTripNotesDialogForm = jest.fn;
+      const sendTripNoteDetailsForm = jest.spyOn(DialogPrompts,
+        'sendTripNotesDialogForm');
+      await sendTripNoteDetailsForm.mockImplementationOnce(() => {});
+  
+      await travelTripHelper.confirmation(payload, respond);
+      
+      expect(respond).toBeCalled();
+      expect(DialogPrompts.sendTripNotesDialogForm).toBeCalled();
+    });
+
+    it('should throw validation errors in empty values in submission', async () => {
+      const payload1 = { submission: '     ', actions: [{ value: '' }], user: { id: 1 } };
+
+      Validators.validateDialogSubmission = jest.fn(() => []);
+
+      jest.spyOn(Validators, 'validateDialogSubmission')
+        .mockReturnValue(['errors']);
+
+      const errors = await travelTripHelper.tripNotesAddition(payload1, respond);
+    
+      expect(Validators.validateDialogSubmission).toBeCalled();
+      expect(errors.errors).toEqual(['errors']);
     });
   });
 });

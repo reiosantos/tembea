@@ -42,11 +42,12 @@ export class SlackDialogError {
 }
 
 export class SlackDialogTextarea extends SlackDialogElement {
-  constructor(label, name, placeholder, hint) {
+  constructor(label, name, placeholder, hint, value) {
     super(label, name);
     this.type = SlackActionTypes.textarea;
     this.hint = hint;
     this.placeholder = placeholder;
+    this.value = value;
   }
 }
 

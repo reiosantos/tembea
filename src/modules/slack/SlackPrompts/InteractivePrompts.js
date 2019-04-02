@@ -375,12 +375,15 @@ class InteractivePrompts {
 
     const actions = [
       new SlackButtonAction('confirmTripRequest', 'Confirm Trip Request', 'confirm'),
+      new SlackButtonAction('Add Trip Note', tripDetails.tripNote ? 'Update Trip Note'
+        : 'Add Trip Note', 'trip_note'),
       new SlackCancelButtonAction(
         'Cancel Trip Request',
         'cancel',
         'Are you sure you want to cancel this trip request',
         'cancel_request'
-      )
+      ),
+           
     ];
 
     attachment.addFieldsOrActions('actions', actions);
@@ -388,8 +391,7 @@ class InteractivePrompts {
     attachment.addOptionalProps('travel_trip_confirmation', 'fallback', undefined, 'default');
 
     const message = new SlackInteractiveMessage('*Trip request preview*', [
-      attachment
-    ]);
+      attachment]);
     respond(message);
   }
 

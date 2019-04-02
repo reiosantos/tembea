@@ -83,7 +83,7 @@ class ScheduleTripController {
     try {
       const {
         reason, dateTime, departmentId, destination, pickup,
-        othersPickup, othersDestination, passengers, tripType
+        othersPickup, othersDestination, passengers, tripType, tripNote
       } = tripRequestDetails;
       const { originId, destinationId } = await ScheduleTripController.getLocationIds(tripRequestDetails);
       const pickupName = `${pickup === 'Others' ? othersPickup : pickup}`;
@@ -101,7 +101,8 @@ class ScheduleTripController {
         originId,
         destinationId,
         noOfPassengers: passengers,
-        tripType
+        tripType,
+        tripNote
       };
     } catch (error) {
       bugsnagHelper.log(error);

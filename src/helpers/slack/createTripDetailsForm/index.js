@@ -123,7 +123,15 @@ const createTripDetailsForm = {
       appointmentDateTime,
       textarea
     ];
-  }
+  },
+  travelTripNoteForm: (state) => {
+    const textarea = new SlackDialogTextarea('Add Trip Note', 'tripNote',
+      'Add Trip Notes', 'Eg. I always travel in First Class', state || ' ');
+    return [
+      textarea
+    ];
+  },
+  
 };
 
 export default createTripDetailsForm;

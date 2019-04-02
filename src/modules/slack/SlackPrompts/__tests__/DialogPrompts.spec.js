@@ -163,4 +163,19 @@ describe('sendBusStopForm dialog', () => {
       expect(sendDialogTryCatch).toBeCalled();
     });
   });
+  describe('sendTripNotesDialogForm', () => {
+    it('should send trip notes form dialog', async (done) => {
+      const payload = { submission: {}, team: { id: 'TEAMID1' } };
+      await DialogPrompts.sendTripNotesDialogForm(payload);
+      expect(sendDialogTryCatch).toBeCalled();
+      done();
+    });
+  });
+  describe('getPayloadData', () => {
+    it('should return triggerId and teamId', () => {
+      const payload = { submission: {}, team: { id: 'TEAMID1' }, trigger_id: 'trigger' };
+      const returnData = DialogPrompts.getPayloadData(payload);
+      expect(returnData).toEqual({ teamId: 'TEAMID1', triggerId: 'trigger' });
+    });
+  });
 });

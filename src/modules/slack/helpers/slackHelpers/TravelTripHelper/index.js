@@ -13,6 +13,7 @@ import { LocationPrompts } from '../../../RouteManagement/rootFile';
 import TravelLocationHelper from './travelHelper';
 import GoogleMapsError from '../../../../../helpers/googleMaps/googleMapsError';
 import CleanData from '../../../../../helpers/cleanData';
+import Validators from '../../../../../helpers/slack/UserInputValidator/Validators';
 
 const travelTripHelper = {
   contactDetails: async (data, respond) => {
@@ -183,20 +184,36 @@ const travelTripHelper = {
       if (payload.actions[0].value === 'cancel') {
         return InteractivePrompts.sendCancelRequestResponse(respond);
       }
+      if (payload.actions[0].value === 'trip_note') {
+        const { tripDetails: { tripNote } } = await Cache.fetch(payload.user.id);
+        return tripNote ? (respond(new SlackInteractiveMessage('Noted ...')),
+        DialogPrompts.sendTripNotesDialogForm(payload, 'travelTripNoteForm',
+          'travel_trip_tripNotesAddition', 'Add Trip Notes', tripNote))
+          : (DialogPrompts.sendTripNotesDialogForm(payload, 'travelTripNoteForm',
+            'travel_trip_tripNotesAddition', 'Add Trip Notes', null));
+      }
       const { tripDetails } = await Cache.fetch(payload.user.id);
       const tripRequest = await ScheduleTripController.createTravelTripRequest(
-        payload, tripDetails
-      );
+        payload, tripDetails );
       InteractivePrompts.sendCompletionResponse(respond, tripRequest.id);
       SlackEvents.raise(
-        slackEventNames.NEW_TRAVEL_TRIP_REQUEST, tripRequest, payload, respond, 'travel'
-      );
+        slackEventNames.NEW_TRAVEL_TRIP_REQUEST, tripRequest, payload, respond, 'travel');
     } catch (error) {
       bugsnagHelper.log(error);
       respond(
         new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
       );
     }
+  },
+  tripNotesAddition: async (payload, respond) => {
+    const { user: { id }, submission: { tripNote } } = payload;
+    const { tripDetails } = await Cache.fetch(id);
+    const errors = [];
+    errors.push(...Validators.validateDialogSubmission(payload));
+    if (errors.length) return { errors };
+    tripDetails.tripNote = tripNote;
+    await Cache.save(id, 'tripDetails', tripDetails);
+    return InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
   }
 };
 

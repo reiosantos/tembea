@@ -297,18 +297,25 @@ class SlackNotifications {
   }
 
   static notificationFields(tripInformation) {
-    const pickup = tripInformation.origin.address;
-    const destination = tripInformation.destination.address;
-    const passenger = tripInformation.rider.name;
+    const {
+      origin: { address: pickup },
+      destination: { address: destination },
+      rider: { name: passenger },
+      createdAt,
+      departureTime,
+      reason,
+      tripNote
+    } = tripInformation;
     return [
       new SlackAttachmentField('Pickup Location', pickup, true),
       new SlackAttachmentField('Destination', destination, true),
       new SlackAttachmentField('Request Date',
-        Utils.formatDate(tripInformation.createdAt), true),
+        Utils.formatDate(createdAt), true),
       new SlackAttachmentField('Trip Date',
-        Utils.formatDate(tripInformation.departureTime), true),
-      new SlackAttachmentField('Reason', tripInformation.reason, true),
+        Utils.formatDate(departureTime), true),
+      new SlackAttachmentField('Reason', reason, true),
       new SlackAttachmentField('Passenger', passenger, true),
+      new SlackAttachmentField('Trip Notes', tripNote, true),
     ];
   }
 

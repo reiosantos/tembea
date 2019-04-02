@@ -79,6 +79,9 @@ module.exports = (sequelize, DataTypes) => {
     cabId: {
       type: DataTypes.INTEGER,
     },
+    tripNote: {
+      type: DataTypes.TEXT
+    },
     managerComment: {
       type: DataTypes.TEXT
     },

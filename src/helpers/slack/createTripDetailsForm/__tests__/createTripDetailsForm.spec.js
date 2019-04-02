@@ -74,4 +74,13 @@ describe('createTeamDetails create team details attachment', () => {
       expect(tripDetails[1] instanceof SlackDialogText).toBeTruthy();
     });
   });
+  describe('travelTripNoteForm', () => {
+    it('should return an array of length of 1', () => {
+      const tripDetails = createTripDetailsForm.travelTripNoteForm('value');
+      expect(tripDetails instanceof Array)
+        .toBeTruthy();
+      expect(tripDetails[0].value).toEqual('value');
+      expect(tripDetails.length).toEqual(1);
+    });
+  });
 });

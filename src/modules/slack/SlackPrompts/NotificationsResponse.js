@@ -49,7 +49,7 @@ class NotificationsResponse {
   ) {
     const {
       tripStatus, requester, pickup, departureDate, rider, destination,
-      department, noOfPassengers, tripType
+      department, noOfPassengers, tripType, tripNote
     } = responseData;
     const riderInfo = this.riderInfoResponse(rider, requester);
 
@@ -65,6 +65,7 @@ class NotificationsResponse {
       new SlackAttachmentField('Number of Passengers', noOfPassengers, true),
       new SlackAttachmentField('Trip Type', tripType, true),
       new SlackAttachmentField('Status', tripStatus, true),
+      new SlackAttachmentField('Trip Notes', !tripNote ? 'No Trip Notes' : tripNote, true),
     ];
     detailedAttachment.addFieldsOrActions('actions', actions);
     detailedAttachment.addFieldsOrActions('fields', fields);

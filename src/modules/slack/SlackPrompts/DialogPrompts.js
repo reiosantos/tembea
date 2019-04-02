@@ -11,11 +11,13 @@ import createDialogForm from '../../../helpers/slack/createDialogForm';
 import sendDialogTryCatch from '../../../helpers/sendDialogTryCatch';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 
+
 class DialogPrompts {
   static async sendTripDetailsForm(payload, formElementsFunction, callbackId, dialogTitle) {
-    const dialogForm = createDialogForm(payload, formElementsFunction, callbackId, dialogTitle);
+    const { teamId, triggerId } = DialogPrompts.getPayloadData(payload);
+    const dialogForm = createDialogForm(triggerId, formElementsFunction, callbackId, dialogTitle);
     const slackBotOauthToken = await
-    TeamDetailsService.getTeamDetailsBotOauthToken(payload.team.id);
+    TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 
@@ -222,6 +224,19 @@ class DialogPrompts {
     const { team: { id: teamId } } = payload;
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     await sendDialogTryCatch(dialogForm, slackBotOauthToken);
+  }
+
+  static async sendTripNotesDialogForm(payload, formElementsFunction, callbackId, dialogTitle, state) {
+    const { teamId, triggerId } = DialogPrompts.getPayloadData(payload);
+    const dialogForm = createDialogForm(triggerId, formElementsFunction, callbackId, dialogTitle, state);
+    const slackBotOauthToken = await
+    TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+    await sendDialogTryCatch(dialogForm, slackBotOauthToken, state);
+  }
+
+  static getPayloadData(payload) {
+    const { team: { id: teamId }, trigger_id: triggerId } = payload;
+    return { teamId, triggerId };
   }
 }
 export default DialogPrompts;

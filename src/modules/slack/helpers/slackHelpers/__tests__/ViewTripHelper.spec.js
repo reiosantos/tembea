@@ -75,7 +75,7 @@ describe('ViewTripHelper', () => {
     it('should create an attachment', () => {
       const result = ViewTripHelper.tripAttachmentFields(tripData, '', '', 'Africa/Lagos');
       expect(result).toBeInstanceOf(Array);
-      expect(result).toHaveLength(10);
+      expect(result).toHaveLength(11);
       expect(result[0].value).toBe('Villarosa Kempinski');
       expect(result[1].value).toBe('Bao Box Westlands');
     });

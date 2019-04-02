@@ -3,7 +3,8 @@ import { SlackAttachmentField } from '../../../SlackModels/SlackMessageModels';
 export default (tripDetails) => {
   const {
     rider, dateTime, tripType, pickup, destination, noOfPassengers,
-    riderPhoneNo, travelTeamPhoneNo, departmentName, flightNumber, requester
+    riderPhoneNo, travelTeamPhoneNo, departmentName, flightNumber, requester,
+    tripNote
   } = tripDetails;
 
   const timeFieldName = `${tripType === 'Airport Transfer' ? 'Flight' : 'Appointment'} Time`;
@@ -22,5 +23,6 @@ export default (tripDetails) => {
     new SlackAttachmentField(timeFieldName, travelDateTime, true),
     new SlackAttachmentField('Trip Type', tripType, true),
     new SlackAttachmentField('Flight Number', flightNumber, true),
+    new SlackAttachmentField('TripNotes', tripNote, true),
   ];
 };
