@@ -193,7 +193,7 @@ describe('Route Validator', () => {
   });
 
   describe('validate RouteId Parameter', () => {
-    it('should call RouteValidator.validateIdParam', () => {
+    it('should call RouteValidator.validateIdParam routeId', () => {
       const reqMock = {
         params: { routeId: 1 },
         route: { path: '/routes/:routeId' }
@@ -205,10 +205,8 @@ describe('Route Validator', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith('res', 1, 'routeId', nextMock);
     });
-  });
 
-  describe('validate RouteBatchId Parameter', () => {
-    it('should call RouteValidator.validateIdParam', () => {
+    it('should call RouteValidator.validateIdParam routeBatchId', () => {
       const reqMock = {
         params: { routeBatchId: 1 },
         route: { path: '/routes/:routeBatchId' }
@@ -219,6 +217,19 @@ describe('Route Validator', () => {
       RouteValidator.validateRouteIdParam(reqMock, 'res', nextMock);
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith('res', 1, 'routeBatchId', nextMock);
+    });
+
+    it('should call RouteValidator.validateIdParam userId', () => {
+      const reqMock = {
+        params: { userId: 1 },
+        route: { path: '/routes/fellows/:userId' }
+      };
+      const nextMock = jest.fn();
+      const spy = jest.spyOn(RouteValidator, 'validateIdParam');
+
+      RouteValidator.validateRouteIdParam(reqMock, 'res', nextMock);
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith('res', 1, 'userId', nextMock);
     });
   });
   describe('validate validateIdParam', () => {

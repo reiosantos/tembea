@@ -86,4 +86,17 @@ describe('/Users service', () => {
       done();
     });
   });
+
+  describe('updateUser', () => {
+    it('should update a user object', async () => {
+      const updateSpy = jest.spyOn(User, 'update').mockResolvedValue({});
+
+      const result = await UserService.updateUser(4, { routeBatchId: 2 });
+      expect(result).toEqual({});
+      expect(updateSpy).toBeCalledWith(
+        { routeBatchId: 2 },
+        { returning: true, where: { id: 4 } }
+      );
+    });
+  });
 });

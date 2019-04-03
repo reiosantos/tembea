@@ -62,16 +62,26 @@ describe('ScheduleTripController Tests', () => {
   });
 
   describe('validateTripDetailsForm', () => {
-    it('should return date validation errors if they exist', async () => {
+    const payload = { submission: { pickup: 'andela', destination: 'home', othersPickup: undefined } };
+
+    it('should return an empty array if no errors in submission for pickup', async () => {
       UserInputValidator.validateLocationEntries = jest.fn(() => []);
       UserInputValidator.validateDateAndTimeEntry = jest.fn(() => []);
-      const errors = await ScheduleTripController.validateTripDetailsForm('payload');
+      const errors = await ScheduleTripController.validateTripDetailsForm(payload, 'pickup');
       expect(errors.length).toEqual(0);
     });
+
+    it('should return an empty array if no errors in submission for destination', async () => {
+      UserInputValidator.validateLocationEntries = jest.fn(() => []);
+      UserInputValidator.validateDateAndTimeEntry = jest.fn(() => []);
+      const errors = await ScheduleTripController.validateTripDetailsForm(payload, 'destination');
+      expect(errors.length).toEqual(0);
+    });
+
     it('should throw an error', async () => {
       try {
         UserInputValidator.validateDateAndTimeEntry = rejectMock;
-        await ScheduleTripController.validateTripDetailsForm('payload');
+        await ScheduleTripController.validateTripDetailsForm(payload, 'pickup');
       } catch (e) {
         expect(e).toEqual(err);
       }

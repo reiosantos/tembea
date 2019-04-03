@@ -313,4 +313,30 @@ routesRouter.get(
   RoutesController.getOne
 );
 
+/**
+ * @swagger
+ * /routes/{routeBatchId}:
+ *  delete:
+ *    summary: delete specific route batch
+ *    tags:
+ *      - Routes
+ *    parameters:
+ *      - name: routeBatchId
+ *        in: path
+ *        required: true
+ *        description: id of route batch to be deleted
+ *        type: number
+ *    responses:
+ *      200:
+ *        description: fellow removed from route successfully
+ *      404:
+ *        description: fellow not found
+ */
+routesRouter.delete(
+  '/routes/fellows/:userId',
+  GeneralValidator.validateTeamUrlInRequestBody,
+  RouteValidator.validateRouteIdParam,
+  RoutesController.deleteFellowFromRoute
+);
+
 export default routesRouter;

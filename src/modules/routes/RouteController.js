@@ -8,12 +8,15 @@ import { RoutesHelper } from '../../helpers/googleMaps/googleMapsHelpers';
 import {
   GoogleMapsPlaceDetails,
   slackEventNames,
-  SlackEvents
+  SlackEvents,
+  SlackInteractiveMessage
 } from '../slack/RouteManagement/rootFile';
 import AddressService from '../../services/AddressService';
 import RouteRequestService from '../../services/RouteRequestService';
 import UserService from '../../services/UserService';
 import RouteHelper from '../../helpers/RouteHelper';
+import RouteNotifications from '../slack/SlackPrompts/notifications/RouteNotifications';
+import TeamDetailsService from '../../services/TeamDetailsService';
 
 class RoutesController {
   /**
@@ -279,6 +282,32 @@ class RoutesController {
         message = 'route batch deleted successfully';
         return Response.sendResponse(res, 200, true, message);
       }
+    } catch (error) {
+      BugSnagHelper.log(error);
+      return HttpError.sendErrorResponse(error, res);
+    }
+  }
+
+  static async deleteFellowFromRoute(req, res) {
+    try {
+      const { params: { userId }, body: { teamUrl } } = req;
+      let message = 'user doesn\'t belong to this route';
+      const { dataValues: { routeBatchId, slackId } } = await UserService.getUserById(userId);
+      if (routeBatchId && slackId) {
+        await UserService.updateUser(userId, { routeBatchId: null });
+        const { botToken: teamBotOauthToken } = await TeamDetailsService
+          .getTeamDetailsByTeamUrl(teamUrl);
+        const {
+          dataValues: { route: { dataValues: { name } } }
+        } = await RouteService.getRoute(routeBatchId);
+        const text = '*:information_source: Reach out to Ops department for any questions*';
+        const slackMessage = new SlackInteractiveMessage(
+          `*Hey <@${slackId}>, You've been removed from \`${name}\` route.* \n ${text}.`
+        );
+        await RouteNotifications.sendNotificationToRider(slackMessage, slackId, teamBotOauthToken);
+        message = 'fellow successfully removed from the route';
+      }
+      return Response.sendResponse(res, 200, true, message);
     } catch (error) {
       BugSnagHelper.log(error);
       return HttpError.sendErrorResponse(error, res);

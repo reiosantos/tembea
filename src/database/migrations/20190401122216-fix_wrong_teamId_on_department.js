@@ -10,5 +10,5 @@ module.exports = {
     return Promise.resolve();
   },
 
-  down: () => {}
+  down: () => Promise.resolve()
 };

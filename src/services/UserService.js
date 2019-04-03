@@ -163,6 +163,25 @@ class UserService {
     });
     return user;
   }
+
+  /**
+ * @static async updateUser
+ * @description this methods updates user details by user id
+ * @param {number} id
+ * @param {object} updateObject
+ * @returns user object
+ * @memberof DataHelper
+ */
+  static updateUser(id, updateObject) {
+    try {
+      return User.update(
+        { ...updateObject },
+        { returning: true, where: { id } }
+      );
+    } catch (error) {
+      HttpError.throwErrorIfNull(null, 'Error updating user details', 500);
+    }
+  }
 }
 
 export default UserService;

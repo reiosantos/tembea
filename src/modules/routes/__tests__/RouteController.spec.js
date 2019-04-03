@@ -6,13 +6,17 @@ import RoutesController from '../RouteController';
 import AddressService from '../../../services/AddressService';
 import LocationService from '../../../services/LocationService';
 import { RoutesHelper } from '../../../helpers/googleMaps/googleMapsHelpers';
-import { GoogleMapsPlaceDetails } from '../../slack/RouteManagement/rootFile';
+import { GoogleMapsPlaceDetails, SlackInteractiveMessage } from '../../slack/RouteManagement/rootFile';
 import HttpError from '../../../helpers/errorHandler';
 import RouteService from '../../../services/RouteService';
 import RouteRequestService from '../../../services/RouteRequestService';
 import { mockRouteRequestData, mockRouteBatchData } from '../../../services/__mocks__';
 import Response from '../../../helpers/responseHelper';
 import { SlackEvents } from '../../slack/events/slackEvents';
+import UserService from '../../../services/UserService';
+import TeamDetailsService from '../../../services/TeamDetailsService';
+import RouteNotifications from '../../slack/SlackPrompts/notifications/RouteNotifications';
+import BugsnagHelper from '../../../helpers/bugsnagHelper';
 
 const assertRouteInfo = (body) => {
   expect(body)
@@ -461,6 +465,87 @@ describe('RouteController unit test', () => {
       expect(responseMock).not.toHaveBeenCalled();
       expect(httpErrorResponseMock).toHaveBeenCalledTimes(1);
       expect(httpErrorResponseMock).toHaveBeenCalledWith(err, 'res');
+    });
+  });
+
+  describe('deleteFellowFromRoute', () => {
+    let userSpy;
+    let notificationSpy;
+    let res;
+    const req = {
+      params: { userId: 2 },
+      body: { teamUrl: 'andela-tembea.slack.com' }
+    };
+
+    beforeEach(() => {
+      userSpy = jest.spyOn(UserService, 'getUserById');
+      notificationSpy = jest.spyOn(RouteNotifications, 'sendNotificationToRider')
+        .mockImplementation(jest.fn());
+      res = {
+        status: jest.fn().mockReturnValue({ json: jest.fn() })
+      };
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should remove a fellow successfully from a route and send a notification', async () => {
+      jest.spyOn(UserService, 'updateUser').mockImplementation(jest.fn());
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({
+        botToken: 'token'
+      });
+      jest.spyOn(RouteService, 'getRoute').mockResolvedValue({
+        dataValues: { route: { dataValues: { name: 'home' } } }
+      });
+      userSpy.mockResolvedValue({
+        dataValues: { routeBatchId: 1, slackId: 'user' }
+      });
+      const message = new SlackInteractiveMessage(
+        '*Hey <@user>, You\'ve been removed from `home` route.* \n *:information_source: Reach out to Ops department for any questions*.'
+      );
+
+      await RoutesController.deleteFellowFromRoute(req, res);
+
+      expect(res.status).toBeCalledWith(200);
+      expect(res.status().json).toBeCalledWith({
+        success: true,
+        message: 'fellow successfully removed from the route',
+        undefined
+      });
+      expect(notificationSpy).toBeCalledWith(message, 'user', 'token');
+    });
+
+    it('should return a message if the user is not on a route', async () => {
+      userSpy.mockResolvedValue({
+        dataValues: { routeBatchId: null, slackId: 'user' }
+      });
+      await RoutesController.deleteFellowFromRoute(req, res);
+
+      expect(res.status).toBeCalledWith(200);
+      expect(res.status().json).toBeCalledWith({
+        success: true,
+        message: 'user doesn\'t belong to this route',
+        undefined
+      });
+      expect(notificationSpy).not.toBeCalled();
+    });
+
+    it('should throw an error if delete fails', async () => {
+      const error = new Error('Dummy Error');
+      userSpy.mockResolvedValue({
+        dataValues: { routeBatchId: 2, slackId: 'user' }
+      });
+      jest.spyOn(UserService, 'updateUser').mockRejectedValue(error);
+      const bugsnagSpy = jest.spyOn(BugsnagHelper, 'log')
+        .mockImplementation(jest.fn());
+      const httpErrorSpy = jest.spyOn(HttpError, 'sendErrorResponse')
+        .mockImplementation(jest.fn());
+
+      await RoutesController.deleteFellowFromRoute(req, res);
+
+      expect(bugsnagSpy).toBeCalledWith(error);
+      expect(httpErrorSpy).toBeCalledWith(error, res);
     });
   });
 });

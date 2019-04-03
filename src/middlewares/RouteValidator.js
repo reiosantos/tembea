@@ -18,7 +18,8 @@ class RouteValidator {
     const {
       params: {
         routeBatchId,
-        routeId
+        routeId,
+        userId
       },
       route: {
         path
@@ -26,6 +27,9 @@ class RouteValidator {
     } = req;
     if (path === '/routes/:routeBatchId') RouteValidator.validateIdParam(res, routeBatchId, 'routeBatchId', next);
     if (path === '/routes/:routeId') RouteValidator.validateIdParam(res, routeId, 'routeId', next);
+    if (path === '/routes/fellows/:userId') {
+      RouteValidator.validateIdParam(res, userId, 'userId', next);
+    }
   }
 
   static validateIdParam(res, id, name, next) {

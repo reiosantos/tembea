@@ -380,7 +380,7 @@ describe('RouteService', () => {
 
   describe('RouteService_deleteRouteBatch', () => {
     it('should should perform soft delete', async () => {
-      const routeBatchId = 1;
+      const routeBatchId = 1001;
       const spy = jest.spyOn(RouteBatch, 'destroy');
       const result = await RouteService.deleteRouteBatch(routeBatchId);
 
