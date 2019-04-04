@@ -3,7 +3,9 @@ import TokenValidator from '../../middlewares/TokenValidator';
 import RoutesController from './RouteController';
 import middlewares from '../../middlewares';
 
-const { GeneralValidator, RouteValidator, RouteRequestValidator } = middlewares;
+const {
+  GeneralValidator, RouteValidator, RouteRequestValidator, CleanRequestBody
+} = middlewares;
 const routesRouter = express.Router();
 
 routesRouter.use(
@@ -87,6 +89,7 @@ routesRouter.get(
  */
 routesRouter.post(
   '/routes',
+  CleanRequestBody.trimAllInputs,
   RouteValidator.verifyAllPropsExist,
   RouteValidator.verifyPropsValuesAreSetAndValid,
   RouteValidator.validateDestinationAddress,
@@ -150,6 +153,7 @@ routesRouter.post(
  */
 routesRouter.put(
   '/routes/:routeId',
+  CleanRequestBody.trimAllInputs,
   RouteValidator.validateRouteIdParam,
   GeneralValidator.validateTeamUrlInRequestBody,
   GeneralValidator.validateAllProvidedReqBody,
@@ -240,6 +244,7 @@ routesRouter.get('/routes/requests',
  */
 routesRouter.put(
   '/routes/requests/status/:requestId',
+  CleanRequestBody.trimAllInputs,
   RouteRequestValidator.validateRequestBody,
   RouteRequestValidator.validateParams,
   RouteRequestValidator.validateRouteStatus,
@@ -282,6 +287,7 @@ routesRouter.put(
  */
 routesRouter.delete(
   '/routes/:routeBatchId',
+  CleanRequestBody.trimAllInputs,
   GeneralValidator.validateTeamUrlInRequestBody,
   RouteValidator.validateRouteIdParam,
   RoutesController.deleteRouteBatch

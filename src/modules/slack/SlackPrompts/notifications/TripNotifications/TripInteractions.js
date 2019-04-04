@@ -5,9 +5,11 @@ import { SlackDialogTextarea, SlackDialog } from '../../../SlackModels/SlackDial
 import tripService from '../../../../../services/TripService';
 import TripCompletionJob from '../../../../../services/jobScheduler/jobs/TripCompletionJob';
 import RateTripController from '../../../TripManagement/RateTripController';
+import CleanData from '../../../../../helpers/cleanData';
 
 class TripInteractions {
-  static tripCompleted(payload, respond, trip) {
+  static tripCompleted(data, respond, trip) {
+    const payload = CleanData.trim(data);
     const { actions: [{ name }] } = payload;
 
     switch (name) {
@@ -29,7 +31,8 @@ class TripInteractions {
     }
   }
 
-  static async hasTakenTrip(payload, respond) {
+  static async hasTakenTrip(data, respond) {
+    const payload = CleanData.trim(data);
     const { actions: [{ value }] } = payload;
     await tripService.updateRequest(value, { tripStatus: 'InTransit' });
     const actions = [new SlackButtonAction('completed', 'Yes', value),
@@ -40,14 +43,16 @@ class TripInteractions {
     respond(new SlackInteractiveMessage('Did you complete the trip ?', [attachment]));
   }
 
-  static async hasCompletedTrip(payload, respond) {
+  static async hasCompletedTrip(data, respond) {
+    const payload = CleanData.trim(data);
     const { actions: [{ value }] } = payload;
     await tripService.updateRequest(value, { tripStatus: 'Completed' });
     const ratingMessage = await RateTripController.sendRatingMessage(value, 'rate_trip');
     respond(ratingMessage);
   }
 
-  static async hasNotCompletedTrip(payload, respond) {
+  static async hasNotCompletedTrip(data, respond) {
+    const payload = CleanData.trim(data);
     const { actions: [{ value }] } = payload;
     const trip = await tripService.getById(value);
     const newScheduleTime = moment(new Date()).add(1, 'hours').format();
@@ -55,7 +60,8 @@ class TripInteractions {
     respond(new SlackInteractiveMessage('Okay! We\'ll check later.'));
   }
 
-  static async hasNotTakenTrip(payload, respond) {
+  static async hasNotTakenTrip(data, respond) {
+    const payload = CleanData.trim(data);
     respond(new SlackInteractiveMessage('Noted...'));
     const { actions: [{ value }] } = payload;
     await tripService.updateRequest(value, { tripStatus: 'Cancelled' });
@@ -69,7 +75,8 @@ class TripInteractions {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
-  static async resonForNotTakingTrip(payload, respond) {
+  static async resonForNotTakingTrip(data, respond) {
+    const payload = CleanData.trim(data);
     const { submission } = payload;
     await tripService.updateRequest(payload.state, submission);
     respond(new SlackInteractiveMessage('Noted...'));

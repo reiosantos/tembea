@@ -12,10 +12,12 @@ import Services from '../../../../../services/UserService';
 import { LocationPrompts } from '../../../RouteManagement/rootFile';
 import TravelLocationHelper from './travelHelper';
 import GoogleMapsError from '../../../../../helpers/googleMaps/googleMapsError';
+import CleanData from '../../../../../helpers/cleanData';
 
 const travelTripHelper = {
-  contactDetails: async (payload, respond) => {
+  contactDetails: async (data, respond) => {
     try {
+      const payload = CleanData.trim(data);
       const errors = await ScheduleTripController.validateTravelContactDetailsForm(
         payload
       );
@@ -158,7 +160,7 @@ const travelTripHelper = {
       );
     }
   },
-  
+
   detailsConfirmation: async (payload, respond) => {
     try {
       const { user: { id } } = payload;
@@ -175,7 +177,7 @@ const travelTripHelper = {
       );
     }
   },
-  
+
   confirmation: async (payload, respond) => {
     try {
       if (payload.actions[0].value === 'cancel') {

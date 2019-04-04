@@ -18,9 +18,11 @@ import { SlackDialog, SlackDialogTextarea } from '../../SlackModels/SlackDialogM
 import BatchUseRecordService from '../../../../services/BatchUseRecordService';
 import RateTripController from '../../TripManagement/RateTripController';
 import Validators from '../../../../helpers/slack/UserInputValidator/Validators';
+import CleanData from '../../../../helpers/cleanData';
 
 class JoinRouteInteractions {
-  static async handleViewAvailableRoutes(payload, respond) {
+  static async handleViewAvailableRoutes(data, respond) {
+    const payload = CleanData.trim(data);
     const { type } = payload;
     if (type === 'interactive_message') {
       await JoinRouteInteractions.handleSendAvailableRoutesActions(payload, respond);
@@ -30,7 +32,8 @@ class JoinRouteInteractions {
     }
   }
 
-  static async sendAvailableRoutesMessage(payload, respond) {
+  static async sendAvailableRoutesMessage(data, respond) {
+    const payload = CleanData.trim(data);
     const page = getPageNumber(payload);
     const sort = SequelizePaginationHelper.deserializeSort(
       'name,asc,batch,asc'
@@ -51,7 +54,8 @@ class JoinRouteInteractions {
     respond(availableRoutesMessage);
   }
 
-  static async handleSendAvailableRoutesActions(payload, respond) {
+  static async handleSendAvailableRoutesActions(data, respond) {
+    const payload = CleanData.trim(data);
     const { name: actionName } = payload.actions[0];
     if (actionName === 'See Available Routes' || actionName.startsWith('page_')) {
       await JoinRouteInteractions.sendAvailableRoutesMessage(payload, respond);
@@ -60,7 +64,8 @@ class JoinRouteInteractions {
     triggerPage(payload, respond);
   }
 
-  static createWhereClause(payload) {
+  static createWhereClause(data) {
+    const payload = CleanData.trim(data);
     const { submission } = payload;
     const where = (submission && submission.search) ? {
       status: 'Active',
@@ -71,8 +76,9 @@ class JoinRouteInteractions {
     return where;
   }
 
-  static handleJoinRouteActions(payload, respond) {
+  static handleJoinRouteActions(data, respond) {
     try {
+      const payload = CleanData.trim(data);
       return handleActions(payload, respond, JoinRouteInputHandlers);
     } catch (error) {
       bugsnagHelper.log(error);

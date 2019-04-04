@@ -68,7 +68,7 @@ describe('/Departments create', () => {
       })
       .expect(400, {
         success: false,
-        messages: ['Please provide a valid department name.'],
+        messages: ['Please provide name.'],
       }, done);
   });
 

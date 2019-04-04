@@ -2,6 +2,7 @@ import { WebClient } from '@slack/client';
 import models from '../database/models';
 import HttpError from '../helpers/errorHandler';
 import TeamDetailsService from './TeamDetailsService';
+import CleanData from '../helpers/cleanData';
 
 const { User } = models;
 
@@ -93,7 +94,7 @@ class UserService {
       const {
         id,
         profile: { real_name, email } //eslint-disable-line
-      } = slackUserInfo.user;
+      } = CleanData.trim(slackUserInfo.user);
 
       const user = await User.create({
         slackId: id,

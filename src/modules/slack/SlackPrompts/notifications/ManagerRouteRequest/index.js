@@ -5,6 +5,7 @@ import { slackEventNames, SlackEvents } from '../../../events/slackEvents';
 import InteractivePrompts from '../../InteractivePrompts';
 import ManagerAttachmentHelper from './helper';
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
+import CleanData from '../../../../../helpers/cleanData';
 
 export default class ManagerNotifications {
   /**
@@ -46,7 +47,7 @@ export default class ManagerNotifications {
    */
   static async sendManagerDeclineMessageToFellow(data) {
     try {
-      const { routeRequestId, teamId } = data;
+      const { routeRequestId, teamId } = CleanData.trim(data);
       const {
         slackBotOauthToken, routeRequest
       } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
@@ -73,7 +74,7 @@ export default class ManagerNotifications {
    */
   static async sendManagerApproval(payload, respond, data) {
     try {
-      const { routeRequestId, teamId } = data;
+      const { routeRequestId, teamId } = CleanData.trim(data);
       const {
         slackBotOauthToken, routeRequest
       } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);

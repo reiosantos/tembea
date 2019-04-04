@@ -8,6 +8,7 @@ import RouteService from '../../../../services/RouteService';
 import JoinRouteRequestService from '../../../../services/JoinRouteRequestService';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import { convertIsoString } from '../ManagerController';
+import CleanData from '../../../../helpers/cleanData';
 
 class JoinRouteNotifications {
   static async sendFellowDetailsPreview(payload) {
@@ -56,7 +57,7 @@ class JoinRouteNotifications {
     const {
       user: { id: slackId },
       team: { id: teamId },
-    } = payload;
+    } = CleanData.trim(payload);
     const joinRoute = await JoinRouteRequestService.getJoinRouteRequest(joinRequestId);
     const attachment = JoinRouteHelpers.joinRouteAttachments(joinRoute);
     attachment.addOptionalProps('join_route_managerActions');

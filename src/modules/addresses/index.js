@@ -2,8 +2,14 @@ import express from 'express';
 import AddressController from './AddressController';
 import middlewares from '../../middlewares';
 
-const { GeneralValidator, AddressValidator, TokenValidator } = middlewares;
+const {
+  GeneralValidator, AddressValidator, TokenValidator, CleanRequestBody
+} = middlewares;
+
 const addressRouter = express.Router();
+const addressValidators = [CleanRequestBody.trimAllInputs,
+  AddressValidator.validateLocation,
+  AddressValidator.validateAddressInfo];
 
 addressRouter.use(
   '/addresses',
@@ -49,10 +55,9 @@ addressRouter.use(
  */
 addressRouter.post(
   '/addresses',
+  ...addressValidators,
   AddressValidator.validateAddressBody,
-  AddressValidator.validateAddressInfo,
   AddressValidator.validateaddress,
-  AddressValidator.validateLocation,
   AddressController.addNewAddress
 );
 
@@ -89,6 +94,7 @@ addressRouter.post(
  */
 addressRouter.put(
   '/addresses',
+  CleanRequestBody.trimAllInputs,
   AddressValidator.validateAddressUpdateBody,
   AddressValidator.validateAddressInfo,
   AddressValidator.validateUpdateaddress,

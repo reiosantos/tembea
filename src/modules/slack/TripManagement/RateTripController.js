@@ -3,6 +3,7 @@ import { SlackInteractiveMessage } from '../RouteManagement/rootFile';
 import tripService from '../../../services/TripService';
 import { SlackAttachment, SlackButtonAction } from '../SlackModels/SlackMessageModels';
 import BatchUseRecordService from '../../../services/BatchUseRecordService';
+import CleanData from '../../../helpers/cleanData';
 
 class RateTripController {
   static async sendRatingMessage(tripId, prop) {
@@ -26,7 +27,8 @@ class RateTripController {
     ];
   }
 
-  static async rate(payload, respond) {
+  static async rate(data, respond) {
+    const payload = CleanData.trim(data);
     const { actions: [{ name, value }], callback_id } = payload;
     if (callback_id === 'rate_trip') {
       await tripService.updateRequest(value, { rating: name });

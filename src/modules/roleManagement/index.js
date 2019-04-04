@@ -3,7 +3,7 @@ import RoleManagementController from './RoleManagementController';
 import middlewares from '../../middlewares';
 
 const roleManagementRouter = express.Router();
-const { TokenValidator, UserValidator } = middlewares;
+const { TokenValidator, UserValidator, CleanRequestBody } = middlewares;
 
 /**
  * @swagger
@@ -39,6 +39,7 @@ const { TokenValidator, UserValidator } = middlewares;
 roleManagementRouter.post(
   '/roles/user',
   TokenValidator.attachJwtSecretKey,
+  CleanRequestBody.trimAllInputs,
   TokenValidator.authenticateToken,
   UserValidator.validateEmailOrRoleName,
   TokenValidator.validateRole,
@@ -104,6 +105,7 @@ roleManagementRouter.get(
  */
 roleManagementRouter.post(
   '/roles',
+  CleanRequestBody.trimAllInputs,
   TokenValidator.attachJwtSecretKey,
   TokenValidator.authenticateToken,
   TokenValidator.validateRole,

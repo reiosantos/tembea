@@ -17,6 +17,7 @@ import AttachmentHelper from './notifications/AttachmentHelper';
 import Services from '../../../services/UserService';
 import tripService from '../../../services/TripService';
 import TripCompletion from '../../../services/jobScheduler/jobs/TripCompletionJob';
+import CleanData from '../../../helpers/cleanData';
 
 const web = new WebClientSingleton();
 
@@ -37,8 +38,9 @@ class SlackNotifications {
     });
   }
 
-  static async sendManagerTripRequestNotification(payload, tripInfo, respond, type = 'newTrip') {
+  static async sendManagerTripRequestNotification(data, tripInfo, respond, type = 'newTrip') {
     try {
+      const payload = CleanData.trim(data);
       const {
         id, departmentId, requestedById, riderId
       } = tripInfo;
@@ -87,15 +89,15 @@ class SlackNotifications {
     return SlackNotifications.createDirectMessage(imResponse, msg, attachments);
   }
 
-  static async sendOperationsTripRequestNotification(trip, payload, respond, type = 'regular') {
+  static async sendOperationsTripRequestNotification(trip, data, respond, type = 'regular') {
     try {
+      const payload = CleanData.trim(data);
       const tripInformation = trip;
       const teamDetails = await TeamDetailsService.getTeamDetails(payload.team.id);
       const { botToken: slackBotOauthToken, opsChannelId } = teamDetails;
       const checkTripType = type === 'regular';
       const { name } = await DepartmentService
         .getById(tripInformation.departmentId);
-      
       tripInformation.department = name;
       if (checkTripType) {
         SlackNotifications.sendRequesterApprovedNotification(
@@ -103,7 +105,6 @@ class SlackNotifications {
         );
       }
       tripInformation.pickup = tripInformation.origin;
-
       const opsRequestMessage = NotificationsResponse.getRequestMessageForOperationsChannel(
         tripInformation, payload, opsChannelId, type
       );
@@ -119,11 +120,12 @@ class SlackNotifications {
   }
 
   static async sendRequesterApprovedNotification(
-    responseData,
+    data,
     respond,
     slackBotOauthToken
   ) {
     try {
+      const responseData = CleanData.trim(data);
       const dept = await DepartmentService.getById(
         responseData.departmentId
       );
@@ -159,9 +161,10 @@ class SlackNotifications {
     return webhook.send(message);
   }
 
-  static async sendRequesterDeclinedNotification(tripInformation, respond,
+  static async sendRequesterDeclinedNotification(data, respond,
     slackBotOauthToken) {
     try {
+      const tripInformation = CleanData.trim(data);
       const [requester, decliner] = await Promise.all([
         SlackHelpers.findUserByIdOrSlackId(tripInformation.requestedById),
         SlackHelpers.findUserByIdOrSlackId(tripInformation.declinedById)

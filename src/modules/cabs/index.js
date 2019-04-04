@@ -2,7 +2,9 @@ import { Router } from 'express';
 import middlewares from '../../middlewares';
 import CabsController from './CabsController';
 
-const { TokenValidator, CabsValidator, GeneralValidator } = middlewares;
+const {
+  TokenValidator, CabsValidator, GeneralValidator, CleanRequestBody
+} = middlewares;
 
 const cabsRouter = Router();
 
@@ -52,6 +54,7 @@ cabsRouter.use(
 
 cabsRouter.post(
   '/cabs',
+  CleanRequestBody.trimAllInputs,
   CabsValidator.validateAllInputs,
   CabsController.createCab
 );

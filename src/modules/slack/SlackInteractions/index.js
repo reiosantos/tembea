@@ -23,9 +23,11 @@ import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import handleActions from './SlackInteractionsHelper';
 import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInteractions';
 import tripService from '../../../services/TripService';
+import CleanData from '../../../helpers/cleanData';
 
 class SlackInteractions {
-  static launch(payload, respond) {
+  static launch(data, respond) {
+    const payload = CleanData.trim(data);
     const action = payload.actions[0].value;
     switch (action) {
       case 'back_to_launch':
@@ -43,7 +45,8 @@ class SlackInteractions {
     }
   }
 
-  static welcomeMessage(payload, respond) {
+  static welcomeMessage(data, respond) {
+    const payload = CleanData.trim(data);
     const action = payload.actions[0].value;
     switch (action) {
       case 'book_new_trip':
@@ -62,7 +65,8 @@ class SlackInteractions {
     return new SlackInteractiveMessage('Thank you for using Tembea. See you again.');
   }
 
-  static async bookNewTrip(payload, respond) {
+  static async bookNewTrip(data, respond) {
+    const payload = CleanData.trim(data);
     respond(new SlackInteractiveMessage('Noted...'));
     const action = payload.actions[0].value;
     switch (action) {
@@ -76,11 +80,13 @@ class SlackInteractions {
     }
   }
 
-  static isCancelMessage(payload) {
+  static isCancelMessage(data) {
+    const payload = CleanData.trim(data);
     return (payload.type === 'interactive_message' && payload.actions[0].value === 'cancel');
   }
 
-  static async handleUserInputs(payload, respond) {
+  static async handleUserInputs(data, respond) {
+    const payload = CleanData.trim(data);
     const callbackId = payload.callback_id.split('_')[2];
     const scheduleTripHandler = ScheduleTripInputHandlers[callbackId];
     if (!(SlackInteractions.isCancelMessage(payload)) && scheduleTripHandler) {
@@ -92,7 +98,8 @@ class SlackInteractions {
     );
   }
 
-  static async handleItineraryActions(payload, respond) {
+  static async handleItineraryActions(data, respond) {
+    const payload = CleanData.trim(data);
     const { name, value } = payload.actions[0];
     let message;
     switch (name) {
@@ -111,7 +118,8 @@ class SlackInteractions {
     respond(message);
   }
 
-  static async handleReschedule(payload, respond) {
+  static async handleReschedule(data, respond) {
+    const payload = CleanData.trim(data);
     let { state } = payload;
     const {
       submission: {
@@ -131,7 +139,8 @@ class SlackInteractions {
     respond(message);
   }
 
-  static async handleManagerActions(payload, respond) {
+  static async handleManagerActions(data, respond) {
+    const payload = CleanData.trim(data);
     const { name, value } = payload.actions[0];
     const isCancelled = await SlackHelpers.handleCancellation(value);
 
@@ -148,7 +157,8 @@ class SlackInteractions {
     }
   }
 
-  static async handleTripDecline(payload, respond) {
+  static async handleTripDecline(data, respond) {
+    const payload = CleanData.trim(data);
     const {
       submission: { declineReason }
     } = payload;
@@ -168,23 +178,18 @@ class SlackInteractions {
     }
   }
 
-  static async handleManagerApprovalDetails(payload, respond) {
+  static async handleManagerApprovalDetails(data, respond) {
+    const payload = CleanData.trim(data);
     try {
       const { submission: { approveReason }, user, team: { id: teamId } } = payload;
       const state = payload.state.split(' ');
       const [timeStamp, channelId, tripId] = state;
-
       const errors = await ManageTripController.runValidation({ approveReason });
-      if (errors.length > 0) {
-        return { errors };
-      }
-
+      if (errors.length > 0) { return { errors }; }
       const hasApproved = await SlackHelpers.approveRequest(tripId, user.id, approveReason);
-
       if (hasApproved) {
         const trip = await tripService.getById(tripId);
         SlackEvents.raise(slackEventNames.TRIP_APPROVED, trip, payload, respond);
-
         const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
         InteractivePrompts.sendManagerDeclineOrApprovalCompletion(
           false, trip, timeStamp, channelId, slackBotOauthToken
@@ -200,7 +205,8 @@ class SlackInteractions {
     }
   }
 
-  static approveTripRequestByManager(payload, trip, respond) {
+  static approveTripRequestByManager(data, trip, respond) {
+    const payload = CleanData.trim(data);
     const { channel, actions } = payload;
 
     if (trip.isApproved) {
@@ -215,7 +221,8 @@ class SlackInteractions {
       'Approve', 'Approve', 'approveReason');
   }
 
-  static viewTripItineraryActions(payload, respond) {
+  static viewTripItineraryActions(data, respond) {
+    const payload = CleanData.trim(data);
     const value = payload.state || payload.actions[0].value;
     const errors = UserInputValidator.validateSkipToPage(payload);
     if (errors) return errors;
@@ -231,7 +238,8 @@ class SlackInteractions {
     }
   }
 
-  static sendCommentDialog(payload) {
+  static sendCommentDialog(data) {
+    const payload = CleanData.trim(data);
     const action = payload.actions[0].name;
     switch (action) {
       case ('confirmTrip'):
@@ -245,8 +253,9 @@ class SlackInteractions {
     }
   }
 
-  static async handleTripActions(payload, respond) {
+  static async handleTripActions(data, respond) {
     try {
+      const payload = CleanData.trim(data);
       const errors = TripActionsController.runCabValidation(payload);
       if (errors && errors.length > 0) {
         return { errors };
@@ -261,7 +270,8 @@ class SlackInteractions {
     }
   }
 
-  static async bookTravelTripStart(payload, respond) {
+  static async bookTravelTripStart(data, respond) {
+    const payload = CleanData.trim(data);
     const { user: { id }, actions } = payload;
     const { name } = actions[0];
     if (name === 'cancel') {
@@ -276,11 +286,13 @@ class SlackInteractions {
     );
   }
 
-  static handleTravelTripActions(payload, respond) {
+  static handleTravelTripActions(data, respond) {
+    const payload = CleanData.trim(data);
     return handleActions(payload, respond, travelTripHelper);
   }
 
-  static async startRouteActions(payload, respond) {
+  static async startRouteActions(data, respond) {
+    const payload = CleanData.trim(data);
     const action = payload.state || payload.actions[0].value;
     const errors = UserInputValidator.validateStartRouteSubmission(payload);
     if (errors) return errors;
@@ -297,8 +309,9 @@ class SlackInteractions {
     }
   }
 
-  static handleRouteActions(payload, respond) {
+  static handleRouteActions(data, respond) {
     try {
+      const payload = CleanData.trim(data);
       const callBackName = payload.callback_id.split('_')[2];
       const routeHandler = RouteInputHandlers[callBackName];
       if (routeHandler) {
@@ -317,14 +330,15 @@ class SlackInteractions {
     }
   }
 
-  static completeTripResponse(payload, respond) {
+  static completeTripResponse(data, respond) {
     try {
+      const payload = CleanData.trim(data);
       const { value } = payload.actions[0];
       InteractivePrompts.sendCompletionResponse(respond, value);
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Error:bangbang: : '
-      + 'We could not complete this process please try again.'));
+        + 'We could not complete this process please try again.'));
     }
   }
 }

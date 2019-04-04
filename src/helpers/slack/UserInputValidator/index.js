@@ -5,6 +5,7 @@ import TeamDetailsService from '../../../services/TeamDetailsService';
 import InputValidator from './InputValidator';
 import Validators from './Validators';
 import { getPageNumber } from '../../../modules/slack/TripManagement/TripItineraryController';
+import CleanData from '../../cleanData';
 
 class UserInputValidator {
   static async fetchUserInformationFromSlack(userId, slackBotOauthToken) {
@@ -39,21 +40,22 @@ class UserInputValidator {
     return errors;
   }
 
-  static validateTravelContactDetails(payload) {
+  static validateTravelContactDetails(data) {
+    const payload = CleanData.trim(data);
     const {
       submission: { noOfPassengers, riderPhoneNo, travelTeamPhoneNo }
     } = payload;
     const errors = [];
-    errors.push(...Validators.validateRegex('checkNumber', noOfPassengers.trim(), 'noOfPassengers'));
+    errors.push(...Validators.validateRegex('checkNumber', noOfPassengers, 'noOfPassengers'));
     errors.push(...InputValidator.checkNumberGreaterThanZero(
       noOfPassengers, 'noOfPassengers', 'number of passengers'
     ));
-    errors.push(...Validators.validateRegex('checkNumber', riderPhoneNo.trim(), 'riderPhoneNo'));
-    errors.push(...Validators.validateRegex('checkNumber', travelTeamPhoneNo.trim(), 'travelTeamPhoneNo'));
+    errors.push(...Validators.validateRegex('checkNumber', riderPhoneNo, 'riderPhoneNo'));
+    errors.push(...Validators.validateRegex('checkNumber', travelTeamPhoneNo, 'travelTeamPhoneNo'));
 
     errors.push(...Validators.checkMinLengthNumber(6, riderPhoneNo, 'riderPhoneNo'));
     errors.push(...Validators.checkMinLengthNumber(6, travelTeamPhoneNo, 'travelTeamPhoneNo'));
-    
+
     errors.push(...Validators.validateEmptyAndSpaces(noOfPassengers, 'noOfPassengers'));
     errors.push(...Validators.validateEmptyAndSpaces(riderPhoneNo, 'riderPhoneNo'));
     errors.push(...Validators.validateEmptyAndSpaces(travelTeamPhoneNo, 'travelTeamPhoneNo'));
@@ -191,13 +193,14 @@ class UserInputValidator {
     return errors;
   }
 
-  static validateApproveRoutesDetails(payload) {
+  static validateApproveRoutesDetails(data) {
+    const payload = CleanData.trim(data);
     const {
       routeName, routeCapacity, takeOffTime, regNumber
     } = payload.submission;
     const errors = [];
     errors.push(...Validators.validateRegex('checkWord', routeName, 'routeName'));
-    errors.push(...Validators.validateRegex('checkNumber', routeCapacity.trim(), 'routeCapacity'));
+    errors.push(...Validators.validateRegex('checkNumber', routeCapacity, 'routeCapacity'));
     errors.push(...Validators.checkTimeFormat(takeOffTime, 'takeOffTime'));
     errors.push(...Validators.validateRegex('checkNumberPlate', regNumber, 'regNumber'));
     return errors;
@@ -215,7 +218,7 @@ class UserInputValidator {
   }
 
   static validateEngagementForm(engagementFormData) {
-    const { nameOfPartner, workingHours } = engagementFormData;
+    const { nameOfPartner, workingHours } = CleanData.trim(engagementFormData);
     if (!Validators.isDateFormatValid(workingHours)) {
       return {
         errors: [
@@ -223,7 +226,7 @@ class UserInputValidator {
         ]
       };
     }
-    if (!nameOfPartner.trim()) {
+    if (!nameOfPartner) {
       return {
         errors: [
           new SlackDialogError('nameOfPartner', 'Please enter your partner\'s name')
