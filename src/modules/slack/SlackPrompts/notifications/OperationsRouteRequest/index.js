@@ -61,7 +61,7 @@ export default class OperationsNotifications {
   ) {
     const { engagement: { fellow } } = routeRequest;
     const title = 'Route Request Approved';
-    const message = ':white_check_mark: You have approved this route';
+    const message = ':white_check_mark: You have approved this route request';
     const attachments = OpsAttachmentHelper.getOperationCompleteAttachment(
       message, title, routeRequest, submission
     );
@@ -141,7 +141,7 @@ export default class OperationsNotifications {
     try {
       const { user: { id } } = payload;
       const title = 'Route Request Declined';
-      const message = `:x: <@${id}> has declined this route`;
+      const message = `:x: <@${id}> has declined this route request`;
       const attachments = ManagerAttachmentHelper.getManagerCompleteAttachment(
         message, title, routeRequest, '#ff0000'
       );

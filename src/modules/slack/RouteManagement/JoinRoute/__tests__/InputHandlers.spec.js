@@ -99,7 +99,7 @@ describe('JoinInputHandlers', () => {
         attachments: undefined,
         channel: undefined,
         response_type: 'ephemeral',
-        text: `Sorry it appear you are not on any engagement at the moment.
+        text: `Sorry! It appears you are not on any engagement at the moment.
         If you believe this is incorrect, contact Tembea Support.`,
         user: undefined
       });
@@ -160,7 +160,7 @@ describe('JoinInputHandlers', () => {
         attachments: undefined,
         channel: undefined,
         response_type: 'ephemeral',
-        text: `Sorry it appear you are not on any engagement at the moment.
+        text: `Sorry! It appears you are not on any engagement at the moment.
         If you believe this is incorrect, contact Tembea Support.`,
         user: undefined
       });

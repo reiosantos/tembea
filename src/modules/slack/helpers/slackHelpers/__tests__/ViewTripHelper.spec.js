@@ -56,7 +56,7 @@ describe('ViewTripHelper', () => {
       jest.spyOn(bugsnagHelper, 'log');
       const result = await ViewTripHelper.displayTripRequest(requestId, payload, respond);
       expect(bugsnagHelper.log).toHaveBeenCalled();
-      expect(result.text).toBe('Request unsuccessfully.:cry:');
+      expect(result.text).toBe('Request unsuccessful.:cry:');
       done();
     });
   });
@@ -64,7 +64,7 @@ describe('ViewTripHelper', () => {
   describe('tripAttachment', () => {
     it('should create an attachment', () => {
       const SlackId = 'ERER45';
-      const greeting = `Hey, <@${SlackId}> below is your trip request details :smiley:`;
+      const greeting = `Hey, <@${SlackId}> below are your trip request details :smiley:`;
       jest.spyOn(ViewTripHelper, 'tripAttachmentFields').mockReturnValue();
       const result = ViewTripHelper.tripAttachment(tripData, SlackId);
       expect(ViewTripHelper.tripAttachmentFields).toHaveBeenCalled();

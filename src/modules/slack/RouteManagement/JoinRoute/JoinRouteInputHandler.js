@@ -51,7 +51,7 @@ class JoinRouteInputHandlers {
   static joinRouteHandleRestrictions(user, route, engagement, respond) {
     if (!engagement) {
       respond(new SlackInteractiveMessage(
-        `Sorry it appear you are not on any engagement at the moment.
+        `Sorry! It appears you are not on any engagement at the moment.
         If you believe this is incorrect, contact Tembea Support.`
       ));
       return false;
@@ -75,7 +75,7 @@ class JoinRouteInputHandlers {
     const engagement = await getFellowEngagementDetails(payload.user.id, payload.team.id);
     if (!engagement) {
       respond(new SlackInteractiveMessage(
-        `Sorry it appear you are not on any engagement at the moment.
+        `Sorry! It appears you are not on any engagement at the moment.
         If you believe this is incorrect, contact Tembea Support.`
       ));
       return;

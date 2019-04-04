@@ -90,7 +90,7 @@ class LocationPrompts {
     );
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction(`confirm${trip}`, `Confirm ${trip} location`, locationGeometry)]);
-    
+
     let message;
     if (trip === 'pickup') {
       attachment.addOptionalProps(`${actionType}_destinationSelection`);
@@ -107,7 +107,7 @@ class LocationPrompts {
   }
 
   static sendLocationCoordinatesNotFound(respond) {
-    const title = 'Coordinates you entered do not point to any location on Google maps';
+    const title = 'The coordinates you entered do not point to any location on Google maps';
     const attachment = new SlackAttachment('', title);
 
     attachment.addFieldsOrActions('actions', [

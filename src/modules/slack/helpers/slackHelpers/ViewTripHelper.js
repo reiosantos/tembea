@@ -25,7 +25,7 @@ export default class ViewTripHelper {
       return message;
     } catch (error) {
       bugsnagHelper.log(error);
-      return new SlackInteractiveMessage('Request unsuccessfully.:cry:');
+      return new SlackInteractiveMessage('Request unsuccessful.:cry:');
     }
   }
 
@@ -66,7 +66,7 @@ export default class ViewTripHelper {
     attachment.addFieldsOrActions('fields', attachmentFields);
     attachment.addFieldsOrActions('actions', [done]);
     attachment.addOptionalProps('view_new_trip', 'Trip Information', '#3359DF');
-    const greeting = `Hey, <@${SlackId}> below is your trip request details :smiley:`;
+    const greeting = `Hey, <@${SlackId}> below are your trip request details :smiley:`;
     const message = new SlackInteractiveMessage(greeting, [attachment]);
     return message;
   }

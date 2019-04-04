@@ -113,7 +113,7 @@ class SlackNotifications {
       bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         'An error occurred while processing your request. '
-        + 'Please contact the administrator.', [], undefined, '#b52833'
+          + 'Please contact the administrator.', [], undefined, '#b52833'
       );
       respond(message);
     }
@@ -147,7 +147,7 @@ class SlackNotifications {
     } catch (error) {
       bugsnagHelper.log(error);
       respond(
-        new SlackInteractiveMessage('Oopps! We could not process this request.')
+        new SlackInteractiveMessage('Oops! We could not process this request.')
       );
     }
   }

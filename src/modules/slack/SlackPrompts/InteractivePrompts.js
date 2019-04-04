@@ -75,7 +75,7 @@ class InteractivePrompts {
       new SlackButtonAction('reschedule', 'Try Again', tripId)
     ]);
     attachments.addOptionalProps('itinerary_actions');
-    return new SlackInteractiveMessage('Oh! I was unable to save this trip', [
+    return new SlackInteractiveMessage('Sorry! I was unable to save this trip', [
       attachments
     ]);
   }
