@@ -60,6 +60,28 @@ class CabsController {
       HttpError.sendErrorResponse(error, res);
     }
   }
+
+  static async updateCabDetails(req, res) {
+    const { params: { id }, body } = req;
+    try {
+      const cab = await CabService.updateCab(id, body);
+  
+      if (cab.message) {
+        return res.status(404).send({
+          success: false,
+          message: cab.message
+        });
+      }
+      res.status(200).send({
+        success: true,
+        message: 'Cab details updated successfully',
+        data: cab
+      });
+    } catch (error) {
+      BugsnagHelper.log(error);
+      HttpError.sendErrorResponse(error, res);
+    }
+  }
 }
 
 export default CabsController;

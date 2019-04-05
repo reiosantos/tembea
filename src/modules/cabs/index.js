@@ -91,4 +91,54 @@ cabsRouter.get(
   CabsController.getAllCabs
 );
 
+/**
+ * @swagger
+ * /cabs/{id}:
+ *  put:
+ *    summary: update cab details
+ *    tags:
+ *      - Cabs
+ *    parameters:
+ *      - in : path
+ *        name: id
+ *        schema:
+ *          type: interger
+ *        required: true
+ *        description: ID of the cab to update
+ *      - name: body
+ *        in: body
+ *        required: true
+ *        type: string
+ *        schema:
+ *          type: object
+ *          properties:
+ *            driverName:
+ *              type: string
+ *            driverPhoneNo:
+ *              type: string
+ *            regNumber:
+ *              type: string
+ *            capacity:
+ *              type: string
+ *            model:
+ *              type: string
+ *            location:
+ *              type: string
+ *    responses:
+ *      200:
+ *        description: details of cab updated are returned
+ *      404:
+ *        cab not found
+ *      400:
+ *        Id should be a valid integer
+ *        inputErrors
+ */
+cabsRouter.put(
+  '/cabs/:id',
+  CleanRequestBody.trimAllInputs,
+  CabsValidator.validateCabUpdateBody,
+  CabsController.updateCabDetails
+);
+
+
 export default cabsRouter;

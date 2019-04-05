@@ -5,6 +5,7 @@ import RemoveDataValues from '../helpers/removeDataValues';
 import { MAX_INT as all } from '../helpers/constants';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 
+
 const { Cab } = models;
 const getCabKey = pk => `CabDetail_${pk}`;
 
@@ -90,5 +91,21 @@ export default class CabService {
     const { totalPages } = pageMeta;
     if (page <= totalPages) { cabs = data.map(CabService.serializeCab); }
     return { cabs, ...pageMeta };
+  }
+
+  static async updateCab(cabId, cabUpdateObject) {
+    try {
+      const cabDetails = await Cab.update({ ...cabUpdateObject },
+        {
+          returning: true,
+          where: { id: cabId }
+        });
+        
+      if (cabDetails[1].length === 0) return { message: 'Update Failed. Cab does not exist' };
+
+      return RemoveDataValues.removeDataValues(cabDetails[1][0]);
+    } catch (error) {
+      throw new Error('Could not update cab details');
+    }
   }
 }

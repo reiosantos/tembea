@@ -19,6 +19,9 @@ const incompleteReq = {
 };
 
 const invalidPhoneNoReq = {
+  params: {
+    id: 22
+  },
   body: {
     driverName: 'Ozokwor Abenaje',
     driverPhoneNo: '----5',
@@ -41,6 +44,9 @@ const invalidCapacityReq = {
 };
 
 const invalidLocationReq = {
+  params: {
+    id: 22
+  },
   body: {
     driverName: 'Ozokwor Abenaje',
     driverPhoneNo: '09488928334',
@@ -71,19 +77,47 @@ const errorMessages = {
   }
 };
 
-const invalidPhoneNoErr = {
+const invalidPhoneNoError = {
   message: { invalidInput: 'Use a valid phone number' }
 };
 
-const invalidCapacityErr = {
+const invalidCapacityError = {
   message: { invalidInput: 'Capacity should be a number and greater than zero' }
 };
 
-const invalidLocationErr = {
+const invalidLocationError = {
   message: { invalidInput: 'Location cannot include numbers' }
 };
 
-const emptyInputErr = {
+const emptyInputError = {
+  message: {
+    checkEmptyInputData: [
+      'Please provide a value for driverName.'
+    ]
+  }
+};
+const invalidParamsError = {
+  message: {
+    invalidParameter:
+    'Id should be a valid interger'
+  }
+};
+const noInputsError = {
+  success: false,
+  message: {
+    inputErrors: [
+      'Please provide driverName.',
+      'Please provide driverPhoneNo.',
+      'Please provide regNumber.',
+      'Please provide capacity.',
+      'Please provide model.',
+      'Please provide location.'
+    ]
+  }
+};
+
+const noValueErrors = {
+  success: false,
   message: {
     checkEmptyInputData: [
       'Please provide a value for driverName.'
@@ -91,8 +125,58 @@ const emptyInputErr = {
   }
 };
 
-export {
-  correctReq, incompleteReq, invalidPhoneNoReq, invalidCapacityReq,
-  emptySpacesReq, invalidLocationReq, errorMessages, invalidPhoneNoErr,
-  invalidCapacityErr, invalidLocationErr, emptyInputErr,
+const invalidReqParams = {
+  params: {
+    id: 'notInteger'
+  }
+};
+const emptyUpdateBody = {
+  params: { id: '33' },
+  body: { }
+};
+
+const emptyValueInBody = {
+  params: { id: '33' },
+  body: {
+    driverName: '',
+    location: 'location'
+  }
+};
+
+const updateBodyInvalidLocation = {
+  params: { id: '33' },
+  body: {
+    driverName: 'Muhwezi Deo',
+    location: '80'
+  }
+};
+
+const validUpdateBody = {
+  params: { id: '33' },
+  body: {
+    driverName: 'Muhwezi Deo'
+  }
+};
+
+
+export default {
+  correctReq,
+  incompleteReq,
+  invalidPhoneNoReq,
+  invalidCapacityReq,
+  emptySpacesReq,
+  invalidLocationReq,
+  errorMessages,
+  invalidPhoneNoError,
+  invalidCapacityError,
+  invalidLocationError,
+  emptyInputError,
+  invalidReqParams,
+  emptyUpdateBody,
+  invalidParamsError,
+  noInputsError,
+  emptyValueInBody,
+  noValueErrors,
+  updateBodyInvalidLocation,
+  validUpdateBody
 };

@@ -3,6 +3,7 @@ import models from '../../database/models';
 import cache from '../../cache';
 import RemoveDataValues from '../../helpers/removeDataValues';
 
+
 jest.mock('../../cache');
 
 const { Cab } = models;
@@ -101,6 +102,37 @@ describe('CabService', () => {
       expect(result.itemsPerPage).toBe(2);
       expect(result.totalItems).toBe(27);
       expect(result.totalPages).toBe(14);
+    });
+  });
+
+  describe('updateCab', () => {
+    const update = jest.spyOn(Cab, 'update');
+    it('should update cab details successfully', async () => {
+      const mockData = [1, [{ id: 1, driverName: 'Muhwezi Dee' }]];
+
+      update.mockReturnValue(mockData);
+
+      RemoveDataValues.removeDataValues = jest.fn();
+
+      await CabService.updateCab(1, { driverName: 'Muhwezi Dee' });
+      expect(update).toBeCalled();
+      expect(RemoveDataValues.removeDataValues).toBeCalled();
+      expect(RemoveDataValues.removeDataValues).toBeCalledWith({ driverName: 'Muhwezi Dee', id: 1 });
+    });
+
+    it('should return not found message if cab doesnot exist', async () => {
+      const mockData = [1, []];
+      update.mockReturnValue(mockData);
+      const result = await CabService.updateCab(1, { driverName: 'Muhwezi Dee' });
+      expect(result).toEqual({ message: 'Update Failed. Cab does not exist' });
+    });
+
+    it('should catch error in updating', async () => {
+      try {
+        await CabService.updateCab({});
+      } catch (error) {
+        expect(error.message).toEqual('Could not update cab details');
+      }
     });
   });
 });

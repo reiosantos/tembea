@@ -18,7 +18,12 @@ const overloadPayload = {
     + 'specimen book. It has survived not',
   location: 'Kampala'
 };
+const updateData = {
+  driverName: 'Deo Muhwezi'
+};
 
-const payloadData = { payload, overloadPayload };
+const payloadData = {
+  payload, overloadPayload, updateData
+};
 
 export default payloadData;

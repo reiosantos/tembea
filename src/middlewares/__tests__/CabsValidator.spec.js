@@ -1,15 +1,18 @@
 import CabsValidator from '../CabsValidator';
-import {
-  correctReq, incompleteReq, invalidPhoneNoReq, invalidCapacityReq,
-  emptySpacesReq, invalidLocationReq, errorMessages, invalidPhoneNoErr,
-  invalidCapacityErr, emptyInputErr, invalidLocationErr
-} from '../__mocks__/CabsValidatorMocks';
+import MockData from '../__mocks__/CabsValidatorMocks';
 import HttpError from '../../helpers/errorHandler';
 
 
 describe('CabsValidator', () => {
   let res;
   let next;
+  const {
+    correctReq, incompleteReq, invalidPhoneNoReq, invalidCapacityReq,
+    emptySpacesReq, invalidLocationReq, errorMessages, invalidPhoneNoError,
+    invalidCapacityError, invalidLocationError, emptyInputError, invalidReqParams,
+    emptyUpdateBody, invalidParamsError, noInputsError, emptyValueInBody,
+    noValueErrors, validUpdateBody
+  } = MockData;
   beforeEach(() => {
     res = {
       status: jest.fn(() => ({
@@ -40,31 +43,72 @@ describe('CabsValidator', () => {
     });
 
     it('should return invalid phone number', async () => {
-      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(invalidPhoneNoErr, res);
+      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(invalidPhoneNoError, res);
       const response = await CabsValidator.checkInputValuesValidity(invalidPhoneNoReq, res);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(response).toEqual(invalidPhoneNoErr);
+      expect(response).toEqual(invalidPhoneNoError);
     });
 
     it('should return capacity should be a number greater than zero', async () => {
-      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(invalidCapacityErr, res);
+      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(invalidCapacityError, res);
       const response = await CabsValidator.checkInputValuesValidity(invalidCapacityReq, res);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(response).toEqual(invalidCapacityErr);
+      expect(response).toEqual(invalidCapacityError);
     });
 
     it('should return Location cannot include numbers', async () => {
-      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(invalidLocationErr, res);
+      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(invalidLocationError, res);
       const response = await CabsValidator.checkInputValuesValidity(invalidLocationReq, res);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(response).toEqual(invalidLocationErr);
+      expect(response).toEqual(invalidLocationError);
     });
 
     it('should return empty inputs errors', async () => {
-      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(emptyInputErr, res);
+      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(emptyInputError, res);
       const response = await CabsValidator.validateAllInputs(emptySpacesReq, res, next);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(response).toEqual(emptyInputErr);
+      expect(response).toEqual(emptyInputError);
+    });
+  });
+  describe('validateCabUpdateBody', () => {
+    it('should validate Params', async () => {
+      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(invalidParamsError, res);
+      const response = await CabsValidator.validateCabUpdateBody(invalidReqParams, res, next);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
+      expect(response).toEqual(invalidParamsError);
+    });
+
+    it('should validate InPuts', async () => {
+      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(noInputsError, res);
+      const response = await CabsValidator.validateCabUpdateBody(emptyUpdateBody, res, next);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
+      expect(response).toEqual(noInputsError);
+    });
+
+    it('should check empty input data', async () => {
+      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(noValueErrors, res);
+      const response = await CabsValidator.validateCabUpdateBody(emptyValueInBody, res, next);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
+      expect(response).toEqual(noValueErrors);
+    });
+
+    it('should skip checkInputValidity if Phone, capacity and location are null', async () => {
+      jest.spyOn(HttpError, 'sendErrorResponse');
+      await CabsValidator.validateCabUpdateBody(validUpdateBody, res, next);
+      expect(next).toBeCalled();
+      expect(HttpError.sendErrorResponse).not.toBeCalled();
+    });
+
+    it('should validate validatePhoneLocationCapacity', () => {
+      const req = {
+        body: {
+          driverPhoneNo: 'invalid',
+          location: '123445',
+          capacity: 'invalid'
+        }
+      };
+      const response = CabsValidator.validatePhoneLocationCapacity(req);
+      expect(response).toEqual({ isValid: false, checkValidPhoneNo: false, isValidLocation: false });
     });
   });
 });

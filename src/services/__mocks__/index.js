@@ -224,7 +224,10 @@ export const mockCabsData = {
       model: 'prado',
       location: 'Nairobi'
     }
-  ]
+  ],
+  mockCabUpdateData: {
+    driverName: 'Muhwezi Deo'
+  }
 };
 
 export const routeData = {

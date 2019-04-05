@@ -3,6 +3,8 @@ import app from '../../../app';
 import Utils from '../../../utils';
 import models from '../../../database/models';
 import payloadData from '../__mocks__/cabsMocks';
+import CabService from '../../../services/CabService';
+import MockData from '../../../middlewares/__mocks__/CabsValidatorMocks';
 
 const { Cab } = models;
 
@@ -122,6 +124,72 @@ describe('CabsController', () => {
           },
           done
         );
+    });
+  });
+
+  describe('updateCabDetails', () => {
+    it('should fail to update if paramter is not a valid interger', (done) => {
+      request(app)
+        .put(`${apiURL}/udd`)
+        .send(payloadData.updateData)
+        .set(headers)
+        .expect(400, {
+          success: false,
+          message:
+            { invalidParameter: 'Id should be a valid integer' }
+        }, done);
+    });
+
+    it('should fail to update if no data is provided', (done) => {
+      const { noInputsError } = MockData;
+      request(app)
+        .put(`${apiURL}/1`)
+        .send({})
+        .set(headers)
+        .expect(400, noInputsError, done);
+    });
+
+    it('should update cab details successfully', (done) => {
+      request(app)
+        .put(`${apiURL}/1`)
+        .send(payloadData.updateData)
+        .set(headers)
+        .expect(200, (err, res) => {
+          expect(err).toBe(null);
+          const { body, status } = res;
+          expect(body.data.driverName).toEqual(payloadData.updateData.driverName);
+          expect(status).toEqual(200);
+          done();
+        });
+    });
+
+    it('should return 404 if cab not found', (done) => {
+      request(app)
+        .put(`${apiURL}/200`)
+        .send(payloadData.updateData)
+        .set(headers)
+        .expect(404, (err, res) => {
+          expect(err).toBe(null);
+          const { body, status } = res;
+          expect(body).toEqual({ success: false, message: 'Update Failed. Cab does not exist' });
+          expect(status).toEqual(404);
+          done();
+        });
+    });
+    it('should handle internal server error', (done) => {
+      jest.spyOn(CabService, 'updateCab')
+        .mockRejectedValue(new Error('dummy error'));
+      request(app)
+        .put(`${apiURL}/1`)
+        .send(payloadData.updateData)
+        .set(headers)
+        .expect(500, (err, res) => {
+          const { body } = res;
+          expect(body).toHaveProperty('message');
+          expect(body).toHaveProperty('success');
+          expect(body).toEqual({ message: 'dummy error', success: false });
+          done();
+        });
     });
   });
 });
