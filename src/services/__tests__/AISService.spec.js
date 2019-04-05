@@ -5,7 +5,7 @@ import cache from '../../cache';
 describe('AISService', () => {
   const mockUser = {
     id: '-FAKeid_',
-    email: 'test.user@test.com',
+    email: 'test.user@andela.com',
     first_name: 'Test',
     last_name: 'User',
     name: 'Test User'
@@ -23,7 +23,7 @@ describe('AISService', () => {
   });
   it('should get user details', async () => {
     jest.spyOn(request, 'get').mockResolvedValueOnce(JSON.stringify(mockAISData));
-    const result = await aisService.getUserDetails('test.user@test.com');
+    const result = await aisService.getUserDetails('test.user@andela.com');
     expect(result).toEqual(mockUser);
   });
 
@@ -32,7 +32,7 @@ describe('AISService', () => {
     jest.spyOn(request, 'get').mockResolvedValueOnce(JSON.stringify(mockAISData));
     jest.spyOn(cache, 'saveObject').mockResolvedValue({});
 
-    await aisService.getUserDetails('test.user@test.com');
+    await aisService.getUserDetails('test.user@andela.com');
     expect(cache.fetch).toBeCalledTimes(1);
     expect(request.get).toBeCalledTimes(0);
   });

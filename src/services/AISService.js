@@ -1,5 +1,6 @@
 import request from 'request-promise-native';
 import cache from '../cache';
+import BugsnagHelper from '../helpers/bugsnagHelper';
 
 export class AISService {
   constructor(apiKey, baseUrl) {
@@ -27,6 +28,7 @@ export class AISService {
       headers: this.headers
     };
     try {
+      if (email.indexOf('andela.com') === -1) return {};
       const key = `AIS_DATA_${email.split('@')[0]}`;
       let result = await cache.fetch(key);
       if (result) return result;
@@ -36,7 +38,8 @@ export class AISService {
       await cache.saveObject(key, result);
       return result;
     } catch (error) {
-      throw new Error(`failed to fetch user details from AIS, reason: ${error.message}`);
+      BugsnagHelper.log(`failed to fetch user details from AIS, reason: ${error.message}`);
+      return {};
     }
   }
 }

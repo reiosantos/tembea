@@ -39,7 +39,6 @@ const routes = (app) => {
   app.use('/docs/v1', swaggerUi.serve, swaggerUi.setup(apiSpec, apiDocsOptions));
   app.use(apiPrefix, exportsRouter);
   app.use(apiPrefix, fellowsRouter);
-  
   return app;
 };
 

@@ -1,9 +1,13 @@
 import BatchUseRecordService from '../../services/BatchUseRecordService';
 import HttpError from '../../helpers/errorHandler';
-import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
-import BugsnagHelper from '../../helpers/bugsnagHelper';
+import {
+  DEFAULT_SIZE as defaultSize
+} from '../../helpers/constants';
+import UserService from '../../services/UserService';
+import bugsnagHelper from '../../helpers/bugsnagHelper';
+import aisService from '../../services/AISService';
 
-class FellowsController {
+class FellowController {
   static async getFellowRouteActivity(req, res) {
     try {
       let { page, size } = req.query;
@@ -23,9 +27,62 @@ class FellowsController {
           ...fellowRouteActivity
         });
     } catch (error) {
-      BugsnagHelper.log(error);
+      bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
     }
   }
+
+  /**
+   * @description Gets all Fellow details
+   * @param  {object} req The http request object
+   * @param  {object} res The http response object
+   * @returns {object} The http response object
+   */
+  static async getAllFellows(req, res) {
+    const size = req.query.size || 100;
+    const page = req.query.page || 1;
+    try {
+      const data = await UserService.getPagedFellowsOnRoute(size, page);
+      if (data.data.length < 1) {
+        return res.json({
+          success: true,
+          fellows: data
+        });
+      }
+
+      const fellowData = await Promise.all(data.data.map(
+        fellow => FellowController.mergeFellowData(fellow.id, fellow.email)
+      ));
+      return res.json({
+        success: true,
+        fellows: fellowData,
+        pageMeta: data.pageMeta
+      });
+    } catch (error) {
+      bugsnagHelper.log(error);
+      HttpError.sendErrorResponse(error, res);
+    }
+  }
+
+  static async mergeFellowData(id, email) {
+    const [user, ais] = await Promise.all(
+      [
+        BatchUseRecordService.getUserRouteRecord(id),
+        aisService.getUserDetails(email)
+      ]
+    );
+    const {
+      name,
+      picture,
+      placement
+    } = ais;
+    const finalUserData = {
+      name,
+      picture,
+      placement,
+      ...user
+    };
+    return finalUserData;
+  }
 }
-export default FellowsController;
+export default FellowController;

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import middlewares from '../../middlewares';
-import FellowsController from './FellowsController';
+import FellowController from './FellowsController';
+
 
 const { TokenValidator, GeneralValidator } = middlewares;
 
@@ -10,9 +11,13 @@ fellowsRouter.use('/fellowActivity',
   TokenValidator.attachJwtSecretKey,
   TokenValidator.authenticateToken);
 
+fellowsRouter.use('/fellows',
+  TokenValidator.attachJwtSecretKey,
+  TokenValidator.authenticateToken);
+
 /**
  * @swagger
- * /trips:
+ * /fellowsActivity:
  *  get:
  *    summary: fetch a fellow's route activity
  *    tags:
@@ -42,7 +47,33 @@ fellowsRouter.get(
   '/fellowActivity',
   GeneralValidator.validateQueryParams,
   GeneralValidator.validateFellowId,
-  FellowsController.getFellowRouteActivity
+  FellowController.getFellowRouteActivity
 );
+
+/**
+ * @swagger
+ * /fellows:
+ *  get:
+ *    summary: fetch all fellows on routes
+ *    tags:
+ *      - Fellow on Routes
+ *    parameters:
+ *      - name: page
+ *        in: query
+ *        required: false
+ *        description: page number (defaults to **1**)
+ *        type: number
+ *      - name: size
+ *        in: query
+ *        required: false
+ *        description: number of items per page
+ *        type: number
+ *    responses:
+ *      200:
+ *        description: an array of data objects containing details of fellows on routes
+ */
+fellowsRouter.get('/fellows',
+  GeneralValidator.validateQueryParams,
+  FellowController.getAllFellows);
 
 export default fellowsRouter;

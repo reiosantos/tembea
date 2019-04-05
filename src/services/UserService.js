@@ -1,8 +1,10 @@
 import { WebClient } from '@slack/client';
+import Sequalize from 'sequelize';
 import models from '../database/models';
 import HttpError from '../helpers/errorHandler';
 import TeamDetailsService from './TeamDetailsService';
 import CleanData from '../helpers/cleanData';
+import RemoveDataValues from '../helpers/removeDataValues';
 
 const { User } = models;
 
@@ -130,6 +132,31 @@ class UserService {
       offset: (size * (page - 1)),
       order: [['id', 'DESC']]
     });
+  }
+
+  static async getPagedFellowsOnRoute(size, page) {
+    const { Op } = Sequalize;
+    const results = await User.findAndCountAll({
+      limit: size,
+      offset: (size * (page - 1)),
+      where: {
+        email: {
+          [Op.iLike]: '%andela.com'
+        },
+        routeBatchId: {
+          [Op.ne]: null
+        }
+      },
+    });
+    return {
+      data: results.rows.map(x => RemoveDataValues.removeDataValues(x)),
+      pageMeta: {
+        totalPages: Math.ceil(results.count / size),
+        currentPage: page,
+        limit: size,
+        totalItems: results.count
+      }
+    };
   }
 
   static async getUserById(id) {

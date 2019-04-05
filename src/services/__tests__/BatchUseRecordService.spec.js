@@ -50,6 +50,26 @@ describe('BatchUseRecordService', () => {
       expect(itemsPerPage).toEqual(4294967295);
     });
   });
+  describe('getUserRouteRecord', () => {
+    beforeEach(() => {
+      jest.resetAllMocks();
+      jest.restoreAllMocks();
+    });
+    it('should get all route user record', async () => {
+      const {
+        userId, totalTrips, tripsTaken
+      } = await BatchUseRecordService.getUserRouteRecord(1);
+      expect({
+        userId,
+        totalTrips,
+        tripsTaken
+      }).toEqual({
+        userId: 1,
+        totalTrips: 0,
+        tripsTaken: 0
+      });
+    });
+  });
 
   describe('updateBatchUseRecord', () => {
     it('should updateBatchUseRecord', async () => {

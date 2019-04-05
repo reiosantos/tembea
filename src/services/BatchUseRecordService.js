@@ -64,6 +64,20 @@ class BatchUseRecordService {
     return pagenatedData;
   }
 
+  static async getUserRouteRecord(id) {
+    const totalTrips = await BatchUseRecord.count({
+      where: {
+        userId: id
+      }
+    });
+    const tripsTaken = await BatchUseRecord.count({
+      where: {
+        userId: id, userAttendStatus: 'Confirmed'
+      }
+    });
+    return { userId: id, totalTrips, tripsTaken };
+  }
+
   static async updateBatchUseRecord(recordId, updateObject) {
     const result = await BatchUseRecord.update({ ...updateObject },
       { returning: true, where: { id: recordId } });

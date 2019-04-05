@@ -99,4 +99,15 @@ describe('/Users service', () => {
       );
     });
   });
+  describe('getPagedFellowsOnRoute', () => {
+    beforeEach(() => {
+      jest.resetAllMocks();
+      jest.restoreAllMocks();
+    });
+
+    it('should get getPagedFellowsOnRoute', async () => {
+      const data = await UserService.getPagedFellowsOnRoute(1, 1);
+      expect(data.data).toBeDefined();
+    });
+  });
 });
