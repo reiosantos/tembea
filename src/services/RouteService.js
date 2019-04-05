@@ -170,7 +170,7 @@ class RouteService {
    *  { page:1, size:10, sort:['id','desc'] }
    * );
    */
-  static async getRoutes(pageable = RouteService.defaultPageable, where = null) {
+  static async getRoutes(pageable = RouteService.defaultPageable, where = {}) {
     const { page, size, sort } = pageable;
     let order;
     if (sort) {
@@ -306,7 +306,7 @@ class RouteService {
    * @private
    */
   static updateDefaultInclude(where) {
-    if (!(where && where.name)) {
+    if (where && where.name === null) {
       return RouteService.defaultInclude;
     }
     return [RouteService.defaultInclude[0],
@@ -315,7 +315,7 @@ class RouteService {
         as: 'route',
         include: ['destination'],
         where: {
-          name: { [Op.like]: `%${where.name}%` }
+          name: { [Op.iLike]: `%${where.name}%` }
         }
       }];
   }

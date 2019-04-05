@@ -28,29 +28,28 @@ class RoutesController {
    */
   static async getRoutes(req, res) {
     try {
-      let { page, size, sort } = req.query;
+      let {
+        page, size, sort, name, status
+      } = req.query;
       page = page || 1;
       size = size || defaultSize;
-      sort = SequelizePaginationHelper.deserializeSort(
-        sort || 'name,asc,id,asc'
-      );
+      status = status || 'Active';
+      name = name || null;
+
+      sort = SequelizePaginationHelper.deserializeSort(sort || 'name,asc,id,asc');
       const pageable = { page, size, sort };
-      const {
-        totalPages, routes, pageNo, totalItems, itemsPerPage
-      } = await RouteService.getRoutes(
-        pageable
-      );
+      const where = { name, status };
+      const { ...result } = await RouteService.getRoutes(pageable, where);
 
-      const message = `${pageNo} of ${totalPages} page(s).`;
-
+      const message = `${result.pageNo} of ${result.totalPages} page(s).`;
       const pageData = {
         pageMeta: {
-          totalPages,
-          page: pageNo,
-          totalResults: totalItems,
-          pageSize: itemsPerPage
+          totalPages: result.totalPages,
+          page: result.pageNo,
+          totalResults: result.totalItems,
+          pageSize: result.itemsPerPage
         },
-        routes
+        routes: result.routes
       };
       return Response.sendResponse(res, 200, true, message, pageData);
     } catch (error) {
