@@ -14,6 +14,7 @@ import Cache from '../../../../cache';
 import Validators from '../../UserInputValidator/Validators';
 import LocationHelpers from '../../../googleMaps/locationsMapHelpers';
 import UserInputValidator from '../../UserInputValidator';
+import TripHelper from '../../../TripHelper';
 
 jest.mock('../../../../modules/slack/events/', () => ({
   slackEvents: jest.fn(() => ({
@@ -148,6 +149,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
         },
         tripDetails: {}
       });
+      jest.spyOn(TripHelper, 'updateTripData').mockResolvedValue({});
     });
     afterEach(() => {
       jest.resetAllMocks();
@@ -157,7 +159,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
       const result = jest.spyOn(InteractivePrompts, 'sendSelectDestination');
       await ScheduleTripInputHandlers.tripPickup(pickupPayload, responder);
       expect(result)
-        .toHaveBeenCalled();
+        .toHaveBeenCalledWith(responder);
     });
     it('should respond with pickup details dialog form', async () => {
       pickupPayload.submission.pickup = 'Others';
@@ -213,15 +215,19 @@ describe('ScheduleTripInputHandlers Tests', () => {
         department: {
           value: 'dummy'
         },
-        tripDetails: {}
+        tripDetails: {
+          pickup: 'dummy',
+          othersPickup: null,
+        }
       });
       ScheduleTripController.validateTripDetailsForm = jest
         .fn(() => []);
+      jest.spyOn(TripHelper, 'getDestinationCoordinates').mockResolvedValue({});
     });
     afterEach(() => {
       jest.resetAllMocks();
     });
-    it('should respond with preview summary of trip details', async () => {
+    it('should respond with preview summary of trip details - confirmDestination', async () => {
       await ScheduleTripInputHandlers.confirmDestination(destinationPayload, responder);
       expect(InteractivePrompts.sendScheduleTripResponse)
         .toHaveBeenCalled();
@@ -269,7 +275,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
       jest.resetAllMocks();
     });
 
-    it('should respond with preview summary of trip details', async () => {
+    it('should respond with preview summary of trip details - detailsConfirmation', async () => {
       await ScheduleTripInputHandlers.detailsConfirmation(destinationPayload, responder);
       expect(InteractivePrompts.sendScheduleTripResponse)
         .toHaveBeenCalled();

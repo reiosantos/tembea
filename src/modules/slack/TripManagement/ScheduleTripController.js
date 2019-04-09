@@ -63,27 +63,39 @@ class ScheduleTripController {
     }
   }
 
+  static async getIdFromLocationInfo(lat, lng, place, othersPlace) {
+    let result;
+    const unknownPlace = place === 'Others';
+    const address = unknownPlace ? othersPlace : place;
+    if (lat && lng) {
+      result = await AddressService
+        .findOrCreateAddress(address, { longitude: lng, latitude: lat });
+      return result;
+    }
+    result = await AddressService.findOrCreateAddress(address);
+    return result;
+  }
+
   static async getLocationIds(tripRequestDetails) {
     const {
-      destination, pickup, othersPickup, othersDestination
+      destination, pickup, othersPickup, othersDestination, pickupLat, pickupLong,
+      destinationCoords, destinationLat, destinationLong, pickupId
     } = tripRequestDetails;
-
-    const knownPickup = pickup === 'Others';
-    const knownDestination = destination === 'Others';
-
-    const pickupAddress = knownPickup ? othersPickup : pickup;
-    const destinationAddress = knownDestination ? othersDestination : destination;
-
-    const { id: originId } = await AddressService.findOrCreateAddress(pickupAddress);
-    const { id: destinationId } = await AddressService.findOrCreateAddress(destinationAddress);
+    if (pickupId && destinationCoords) {
+      return { originId: pickupId, destinationId: destinationCoords.id };
+    }
+    const { id: originId } = await ScheduleTripController
+      .getIdFromLocationInfo(pickupLat, pickupLong, pickup, othersPickup);
+    const { id: destinationId } = await ScheduleTripController
+      .getIdFromLocationInfo(destinationLat, destinationLong, destination, othersDestination);
     return { originId, destinationId };
   }
 
   static async createRequestObject(tripRequestDetails, requester, timezone) {
     try {
       const {
-        reason, dateTime, departmentId, destination, pickup,
-        othersPickup, othersDestination, passengers, tripType, tripNote
+        reason, dateTime, departmentId, destination, pickup, tripNote,
+        othersPickup, othersDestination, passengers, tripType, distance
       } = tripRequestDetails;
       const { originId, destinationId } = await ScheduleTripController.getLocationIds(tripRequestDetails);
       const pickupName = `${pickup === 'Others' ? othersPickup : pickup}`;
@@ -102,7 +114,8 @@ class ScheduleTripController {
         destinationId,
         noOfPassengers: passengers,
         tripType,
-        tripNote
+        tripNote,
+        distance
       };
     } catch (error) {
       bugsnagHelper.log(error);

@@ -25,6 +25,9 @@ class GoogleMapsDistanceMatrix {
         'https://maps.googleapis.com/maps/api/distancematrix/json',
         { params }
       );
+      if (response.data.status === 'REQUEST_DENIED') {
+        return { distanceInKm: 'unknown', distanceInMetres: 'unknown' };
+      }
       const element = response.data.rows[0].elements[0];
       if (element.status === 'ZERO_RESULTS') {
         return null;

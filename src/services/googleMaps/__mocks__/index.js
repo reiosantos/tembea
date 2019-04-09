@@ -8,3 +8,9 @@ export const calculateDistanceMock = {
     }]
   }
 };
+
+export const noGoogleKeysMock = {
+  data: {
+    status: 'REQUEST_DENIED',
+  }
+};

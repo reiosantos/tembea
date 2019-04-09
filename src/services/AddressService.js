@@ -4,6 +4,7 @@ import HttpError from '../helpers/errorHandler';
 import bugsnagHelper from '../helpers/bugsnagHelper';
 
 import LocationService from './LocationService';
+import RemoveDataValues from '../helpers/removeDataValues';
 
 const { Address, Location } = models;
 
@@ -77,11 +78,13 @@ class AddressService {
           locationId: location.id
         }
       });
+      const { _options: { isNewRecord } } = addressData;
       const newAddressData = {
         id: addressData.dataValues.id,
         address: addressData.dataValues.address,
         longitude: location.longitude,
-        latitude: location.latitude
+        latitude: location.latitude,
+        isNewAddress: isNewRecord
       };
       return newAddressData;
     } catch (error) {
@@ -134,6 +137,24 @@ class AddressService {
       order: [['id', 'DESC']],
       include: [{ model: Location, as: 'location' }]
     });
+  }
+
+  /**
+   * @description Get's coordinates records from db using address
+   * @param  {string} address The address of the location
+   * @returns {object} An array of addresses
+   */
+  static async findCoordinatesByAddress(address) {
+    const addressCoords = await Address.findOne({
+      where: {
+        address: { [Op.iLike]: `${address}%` }
+      },
+      include: [{
+        model: Location,
+        as: 'location'
+      }]
+    });
+    return RemoveDataValues.removeDataValues(addressCoords);
   }
 }
 

@@ -186,15 +186,18 @@ const travelTripHelper = {
       }
       if (payload.actions[0].value === 'trip_note') {
         const { tripDetails: { tripNote } } = await Cache.fetch(payload.user.id);
-        respond(new SlackInteractiveMessage('Noted ...'))
-        return  DialogPrompts.sendTripNotesDialogForm(payload, 'travelTripNoteForm', 'travel_trip_tripNotesAddition', 'Add Trip Notes', tripNote || null);}
+        respond(new SlackInteractiveMessage('Noted ...'));
+        return DialogPrompts.sendTripNotesDialogForm(payload, 'travelTripNoteForm', 'travel_trip_tripNotesAddition', 'Add Trip Notes', tripNote || null);
+      }
 
       const { tripDetails } = await Cache.fetch(payload.user.id);
       const tripRequest = await ScheduleTripController.createTravelTripRequest(
-        payload, tripDetails );
+        payload, tripDetails
+      );
       InteractivePrompts.sendCompletionResponse(respond, tripRequest.id);
       SlackEvents.raise(
-        slackEventNames.NEW_TRAVEL_TRIP_REQUEST, tripRequest, payload, respond, 'travel');
+        slackEventNames.NEW_TRAVEL_TRIP_REQUEST, tripRequest, payload, respond, 'travel'
+      );
     } catch (error) {
       bugsnagHelper.log(error);
       respond(

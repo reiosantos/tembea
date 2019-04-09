@@ -50,6 +50,9 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.INTEGER,
     },
+    distance: {
+      type: DataTypes.STRING,
+    },
     cost: {
       type: DataTypes.DECIMAL,
     },

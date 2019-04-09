@@ -119,7 +119,8 @@ const ScheduleTripInputHandlers = {
       payloadCopy.submission.othersPickup = tripDetails.othersPickup;
       const errors = await ScheduleTripController.validateTripDetailsForm(payloadCopy, 'destination');
       if (errors.length) return { errors };
-
+      tripDetails.destinationCoords = await TripHelper.getDestinationCoordinates(destination);
+      
       tripData = UserInputValidator.getScheduleTripDetails(tripDetails);
       await Cache.save(userId, 'tripDetails', tripDetails);
       if (destination !== 'Others') return InteractivePrompts.sendScheduleTripResponse(tripData, respond);

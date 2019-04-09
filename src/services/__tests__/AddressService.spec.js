@@ -25,16 +25,20 @@ describe('AddressService', () => {
         dataValues: {
           id: 123,
           address: 'gsg45',
-        }
+        },
+        _options: { isNewRecord: true }
       };
       jest.spyOn(LocationService, 'createLocation')
         .mockResolvedValue(mockLocationModel);
       jest.spyOn(Address, 'findOrCreate')
         .mockResolvedValue([mockAddressModel]);
+      const newRecord = {
+        isNewAddress: true
+      };
       const result = await AddressService.createNewAddress(1.0, -1.0, 'Address');
       expect(LocationService.createLocation).toHaveBeenCalledWith(1.0, -1.0);
       expect(Address.findOrCreate).toHaveBeenCalledTimes(1);
-      expect(result).toEqual({ ...mockAddressModel.dataValues, ...mockLocationModel });
+      expect(result).toEqual({ ...mockAddressModel.dataValues, ...newRecord, ...mockLocationModel });
     });
     it('should raise error when having invalid parameters', async () => {
       const mockAddressModel = { dataValues: {} };
@@ -157,5 +161,35 @@ describe('AddressService', () => {
       expect(result.longitude).toBeUndefined();
       expect(LocationService.createLocation).toBeCalledTimes(0);
     });
+  });
+});
+
+describe('findCoordinatesByAddress', () => {
+  beforeEach(() => {
+    const addressCoords = {
+      dataValues: {
+        address: 'dummy',
+        id: 1,
+        location: {
+          dataValues: {
+            id: 1,
+            longitude: 1.2222,
+            latitude: 34.4444,
+          }
+        }
+      },
+    };
+    jest.spyOn(Address, 'findOne').mockResolvedValue(addressCoords);
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('should get location when address is requested', async () => {
+    const result = await AddressService.findCoordinatesByAddress('dummy');
+    expect(result.address).toEqual('dummy');
+    expect(result.location.latitude).toEqual(34.4444);
+    expect(result.id).toBeDefined();
   });
 });

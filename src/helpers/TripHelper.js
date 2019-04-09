@@ -1,4 +1,5 @@
 import Cache from '../cache';
+import AddressService from '../services/AddressService';
 
 export default class TripHelper {
   static cleanDateQueryParam(query, field) {
@@ -34,6 +35,13 @@ export default class TripHelper {
   static async updateTripData(userId, name, pickup, othersPickup, dateTime,
     tripType = 'Regular Trip') {
     const userTripData = await Cache.fetch(userId);
+    const pickupCoords = pickup !== 'Others'
+      ? await AddressService.findCoordinatesByAddress(pickup) : null;
+    if (pickupCoords) {
+      userTripData.pickupId = pickupCoords.id;
+      userTripData.pickupLat = pickupCoords.location.latitude;
+      userTripData.pickupLong = pickupCoords.location.longitude;
+    }
     userTripData.id = userId;
     userTripData.name = name;
     userTripData.pickup = pickup;
@@ -42,5 +50,11 @@ export default class TripHelper {
     userTripData.departmentId = userTripData.department.value;
     userTripData.tripType = tripType;
     await Cache.save(userId, 'tripDetails', userTripData);
+  }
+
+  static async getDestinationCoordinates(destination) {
+    const destinationCoords = destination !== 'Others'
+      ? await AddressService.findCoordinatesByAddress(destination) : null;
+    return destinationCoords;
   }
 }

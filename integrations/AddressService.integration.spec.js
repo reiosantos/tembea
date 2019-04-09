@@ -38,4 +38,12 @@ describe('AddressService', () => {
       expect(LocationService.createLocation).toBeCalledTimes(0);
     });
   });
+
+  describe('findCoordinatesByAddress', () => {
+    it('should get address but no location', async () => {
+      const result = await AddressService.findCoordinatesByAddress('dummy');
+      expect(result.address).toEqual('dummy');
+      expect(result.locationId).toBeNull();
+    });
+  });
 });

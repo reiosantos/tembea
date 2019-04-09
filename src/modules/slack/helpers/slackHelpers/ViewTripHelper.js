@@ -32,7 +32,7 @@ export default class ViewTripHelper {
   static tripAttachmentFields(tripRequest, passSlackId, slackId, timezone) {
     const {
       noOfPassengers, reason, tripStatus, origin, destination,
-      departureTime, tripType, createdAt, tripNote
+      departureTime, tripType, createdAt, tripNote, distance
     } = tripRequest;
 
     const requestedOn = moment(createdAt).tz(timezone)
@@ -47,6 +47,8 @@ export default class ViewTripHelper {
     const passengerField = new SlackAttachmentField('*Passenger*', `<@${passSlackId}>`, true);
     const requestedByField = new SlackAttachmentField('*Requested By*', `<@${slackId}>`, true);
     const statusField = new SlackAttachmentField('*Trip Status*', tripStatus, true);
+    const distanceField = (typeof distance === 'string' && distance !== 'unknown')
+      && new SlackAttachmentField('*Distance*', distance, true);
     const noOfPassengersField = new SlackAttachmentField('*No Of Passengers*', noOfPassengers, true);
     const reasonField = new SlackAttachmentField('*Reason*', reason, true);
     const requestDateField = new SlackAttachmentField('*Request Date*', requestedOn, true);
@@ -54,7 +56,7 @@ export default class ViewTripHelper {
     const tripTypeField = new SlackAttachmentField('*Trip Type*', tripType, true);
     const tripNoteField = new SlackAttachmentField('*Trip Notes*', tripNote, true);
     return [fromField, toField, requestedByField, passengerField, noOfPassengersField,
-      reasonField, requestDateField, departureField, statusField, tripTypeField, tripNoteField];
+      reasonField, requestDateField, departureField, distanceField, statusField, tripTypeField, tripNoteField];
   }
 
   static tripAttachment(tripRequest, SlackId, passSlackId, timezone = 'Africa/Nairobi') {
