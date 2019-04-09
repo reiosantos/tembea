@@ -17,7 +17,7 @@ describe('Super Admin test', () => {
     RoleFindOrCreateMock.mockResolvedValue(['Basic']);
 
     await StartUpHelper.ensureSuperAdminExists();
-    expect(UserFindOrCreateMock).toHaveBeenCalledTimes(1);
+    expect(UserFindOrCreateMock).toHaveBeenCalledTimes(2);
     expect(RoleFindOrCreateMock).toHaveBeenCalledTimes(1);
   });
 
@@ -45,7 +45,7 @@ describe('Super Admin test', () => {
     } catch (error) {
       expect(error).toEqual(mockErr);
     }
-    expect(UserFindOrCreateMock).toHaveBeenCalledTimes(1);
+    expect(UserFindOrCreateMock).toHaveBeenCalledTimes(2);
     expect(RoleFindOrCreateMock).toHaveBeenCalledTimes(0);
   });
 });

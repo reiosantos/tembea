@@ -13,19 +13,25 @@ class StartUpHelper {
     const email = process.env.SUPER_ADMIN_EMAIL;
     const slackId = process.env.SUPER_ADMIN_SLACK_ID;
     const userName = StartUpHelper.getUserNameFromEmail(email);
+    const {
+      APPRENTICESHIP_SUPER_ADMIN_EMAIL: email2,
+      APPRENTICESHIP_SUPER_ADMIN_SLACK_ID: slackId2
+    } = process.env;
 
     try {
-      const [user] = await User.findOrCreate({
-        where: {
-          email
-        },
-        defaults: {
-          slackId,
-          name: userName
-        }
+      const user1Promise = User.findOrCreate({
+        where: { email },
+        defaults: { slackId, name: userName }
       });
+
+      const user2Promise = User.findOrCreate({
+        where: { email: email2 },
+        defaults: { slackId: slackId2, name: StartUpHelper.getUserNameFromEmail(email2) }
+      });
+
+      const [[user], [user2]] = await Promise.all([user1Promise, user2Promise]);
       const [role] = await RoleService.createOrFindRole('Super Admin');
-      await user.addRoles(role);
+      await Promise.all([user.addRoles(role), user2.addRoles(role)]);
       return;
     } catch (error) {
       bugsnagHelper.log(error);
