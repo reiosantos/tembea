@@ -119,7 +119,7 @@ const ScheduleTripInputHandlers = {
       payloadCopy.submission.othersPickup = tripDetails.othersPickup;
       const errors = await ScheduleTripController.validateTripDetailsForm(payloadCopy, 'destination');
       if (errors.length) return { errors };
-      
+
       tripData = UserInputValidator.getScheduleTripDetails(tripDetails);
       await Cache.save(userId, 'tripDetails', tripDetails);
       if (destination !== 'Others') return InteractivePrompts.sendScheduleTripResponse(tripData, respond);
@@ -158,7 +158,6 @@ const ScheduleTripInputHandlers = {
     try {
       const { user: { id: userId } } = payload;
       const { tripDetails } = await Cache.fetch(userId);
-      respond(new SlackInteractiveMessage('Noted...'));
       await ScheduleTripController.createTripRequest(payload, respond, tripDetails);
       await Cache.delete(userId);
     } catch (error) {

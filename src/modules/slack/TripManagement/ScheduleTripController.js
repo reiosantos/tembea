@@ -67,10 +67,15 @@ class ScheduleTripController {
     const {
       destination, pickup, othersPickup, othersDestination
     } = tripRequestDetails;
-    const pickupAddress = pickup === 'Others' ? othersPickup : pickup;
-    const destinationAddress = destination === 'Others' ? othersDestination : destination;
-    const originId = await this.createLocation(pickupAddress, 23, 24);
-    const destinationId = await this.createLocation(destinationAddress, 15, 30);
+
+    const knownPickup = pickup === 'Others';
+    const knownDestination = destination === 'Others';
+
+    const pickupAddress = knownPickup ? othersPickup : pickup;
+    const destinationAddress = knownDestination ? othersDestination : destination;
+
+    const { id: originId } = await AddressService.findOrCreateAddress(pickupAddress);
+    const { id: destinationId } = await AddressService.findOrCreateAddress(destinationAddress);
     return { originId, destinationId };
   }
 
@@ -147,18 +152,6 @@ class ScheduleTripController {
       const tripData = { ...tripRequest, tripDetailId: id };
       const trip = await TripService.createRequest(tripData);
       return tripService.getById(trip.id, true);
-    } catch (error) {
-      bugsnagHelper.log(error);
-      throw error;
-    }
-  }
-
-  static async createLocation(address, longitude, latitude) {
-    try {
-      const addressData = await AddressService.createNewAddress(
-        longitude, latitude, address
-      );
-      return addressData.id;
     } catch (error) {
       bugsnagHelper.log(error);
       throw error;

@@ -33,6 +33,31 @@ class AddressService {
     if (location) return location.address;
   }
 
+  static async findOrCreateAddress(address, location) {
+    let theLocation = {};
+    if (location) {
+      theLocation = await LocationService.createLocation(
+        location.longitude, location.latitude
+      );
+    }
+
+    const [addressData] = await Address.findOrCreate({
+      where: {
+        address: { [Op.iLike]: `${address}%` }
+      },
+      defaults: {
+        address,
+        locationId: theLocation.id
+      }
+    });
+
+    return {
+      ...addressData.dataValues,
+      longitude: theLocation.longitude,
+      latitude: theLocation.latitude
+    };
+  }
+
   /**
    * @description Saves the new address and location record
    * @param  {number} longitude The longitude of the location

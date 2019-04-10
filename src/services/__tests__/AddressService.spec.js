@@ -18,7 +18,6 @@ describe('AddressService', () => {
   describe('createNewAddress', () => {
     it('should create new address', async () => {
       const mockLocationModel = {
-        
         longitude: 5677,
         latitude: 908998
       };
@@ -106,6 +105,57 @@ describe('AddressService', () => {
       const result = await AddressService.getAddressesFromDB('');
       expect(result)
         .toEqual(value);
+    });
+  });
+
+  describe('findOrCreateAddress', () => {
+    beforeEach(() => {
+      jest.spyOn(Address, 'findOrCreate').mockImplementation((value) => {
+        const id = Math.ceil(Math.random() * 100);
+        const newAddress = {
+          dataValues: { ...value.defaults, id }
+        };
+        return [newAddress];
+      });
+
+      jest.spyOn(LocationService, 'createLocation').mockImplementation((long, lat) => ({
+        id: Math.ceil(Math.random() * 100),
+        longitude: long,
+        latitude: lat
+      }));
+    });
+
+    afterEach(() => {
+      jest.resetAllMocks();
+    });
+
+    it('should create a new address with supplied location', async () => {
+      const testAddress = {
+        address: 'Andela, Nairobi',
+        location: {
+          longitude: 100,
+          latitude: 180
+        }
+      };
+
+      const result = await AddressService.findOrCreateAddress(
+        testAddress.address, testAddress.location
+      );
+
+      expect(result.longitude).toEqual(100);
+      expect(result.latitude).toEqual(180);
+      expect(result.id).toBeDefined();
+    });
+
+    it('should not create location when location is not provided', async () => {
+      const testAddress = {
+        address: 'Andela, Nairobi',
+      };
+      const result = await AddressService.findOrCreateAddress(testAddress.address);
+
+      expect(result.id).toBeDefined();
+      expect(result.longitude).toBeUndefined();
+      expect(LocationService.createLocation).toBeCalledTimes(0);
     });
   });
 });
