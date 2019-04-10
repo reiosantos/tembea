@@ -157,9 +157,10 @@ const ScheduleTripInputHandlers = {
   confirmation: async (payload, respond) => {
     try {
       const { user: { id: userId } } = payload;
-      const tripData = await Cache.fetch(userId);
+      const { tripDetails } = await Cache.fetch(userId);
       respond(new SlackInteractiveMessage('Noted...'));
-      await ScheduleTripController.createTripRequest(payload, respond, tripData);
+      await ScheduleTripController.createTripRequest(payload, respond, tripDetails);
+      await Cache.delete(userId);
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
