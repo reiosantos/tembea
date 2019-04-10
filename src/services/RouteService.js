@@ -178,7 +178,7 @@ class RouteService {
       order = [...convert];
     }
     let filter;
-    if (where) {
+    if (where && where.status) {
       filter = { where: { status: where.status } };
     }
     const paginatedRoutes = new SequelizePaginationHelper(RouteBatch, filter, size);
@@ -306,18 +306,18 @@ class RouteService {
    * @private
    */
   static updateDefaultInclude(where) {
-    if (where && where.name === null) {
-      return RouteService.defaultInclude;
+    if (where && where.name) {
+      return [RouteService.defaultInclude[0],
+        {
+          model: Route,
+          as: 'route',
+          include: ['destination'],
+          where: {
+            name: { [Op.iLike]: `%${where.name}%` }
+          }
+        }];
     }
-    return [RouteService.defaultInclude[0],
-      {
-        model: Route,
-        as: 'route',
-        include: ['destination'],
-        where: {
-          name: { [Op.iLike]: `%${where.name}%` }
-        }
-      }];
+    return RouteService.defaultInclude;
   }
 }
 
