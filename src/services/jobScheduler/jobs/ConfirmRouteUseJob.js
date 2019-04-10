@@ -17,14 +17,31 @@ class ConfirmRouteUseJob {
 
   static async autoStartRouteJob() {
     const rule = new scheduler.RecurrenceRule();
-    rule.minute = 1;
-    scheduler.scheduleJob(rule, async () => {
+    rule.dayOfWeek = [new scheduler.Range(1, 5)];
+    if (process.env.NODE_ENV === 'production') {
+      rule.minute = 1;
+    } else {
+      rule.second = 1;
+    }
+    const timeFromServerStart = moment(new Date(), 'MM/DD/YYYY HH:mm', 'Africa/Nairobi')
+      .add({ hours: 0, minutes: 0, seconds: 10 }).format();
+    scheduler.scheduleJob('start', timeFromServerStart, async () => {
       ConfirmRouteUseJob.scheduleAllRoutes();
+      scheduler.scheduleJob('daily job', rule, async () => {
+        Object.keys(scheduler.scheduledJobs).map((res) => {
+          if (res.includes('batch job')) {
+            const job = scheduler.scheduledJobs[res];
+            scheduler.cancelJob(job);
+          }
+          return '';
+        });
+        ConfirmRouteUseJob.scheduleAllRoutes();
+      });
     });
   }
 
   static async scheduleAllRoutes() {
-    const { routes } = await RouteService.getRoutes();
+    const { routes } = await RouteService.getRoutes(RouteService.defaultPageable, { status: 'Active' });
     routes.map(async (routeBatch) => {
       await ConfirmRouteUseJob.scheduleBatchStartJob(routeBatch);
     });
@@ -34,7 +51,7 @@ class ConfirmRouteUseJob {
     const res = await RouteUseRecordService.createRouteUseRecord(routeBatch.id);
     if (res) {
       const time = ConfirmRouteUseJob.getTodayTime(routeBatch.takeOff);
-      scheduler.scheduleJob(time, async () => {
+      scheduler.scheduleJob(`batch job ${routeBatch.id}${new Date().getMilliseconds().toString()}`, time, async () => {
         const { data } = await BatchUseRecordService.getBatchUseRecord(undefined, { batchRecordId: res.id });
         data.map(async (batchUseRecord) => {
           ConfirmRouteUseJob.confirmRouteBatchUseNotification(batchUseRecord);
@@ -45,8 +62,12 @@ class ConfirmRouteUseJob {
 
   static getTodayTime(time) {
     const date = moment(new Date(), 'MM/DD/YYYY').format('MM/DD/YYYY');
+    let timeAdded = { hours: 0, minutes: 0, seconds: 10 };
+    if (process.env.NODE_ENV === 'production') {
+      timeAdded = { hours: 2, minutes: 0, seconds: 10 };
+    }
     return moment(`${date} ${time}`, 'MM/DD/YYYY HH:mm', 'Africa/Nairobi')
-      .add({ hours: 2, minutes: 0, seconds: 0 }).format();
+      .add(timeAdded).format();
   }
 }
 
