@@ -9,8 +9,11 @@ class CabsValidator {
     if (inputErrors.length > 0) {
       return HttpError.sendErrorResponse({ message: { inputErrors } }, res);
     }
+    const { capacity } = req.body;
+    const modifiedBodyData = { ...req.body };
+    modifiedBodyData.capacity = (typeof capacity === 'number') ? `${capacity}` : capacity;
     const checkEmptyInputData = GeneralValidator.validateEmptyReqBodyProp(
-      req.body, 'driverName', 'driverPhoneNo', 'regNumber', 'capacity', 'model', 'location'
+      modifiedBodyData, 'driverName', 'driverPhoneNo', 'regNumber', 'capacity', 'model', 'location'
     );
     if (checkEmptyInputData.length > 0) {
       return HttpError.sendErrorResponse({ message: { checkEmptyInputData } }, res);

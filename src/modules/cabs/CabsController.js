@@ -13,17 +13,19 @@ class CabsController {
           driverName, driverPhoneNo, regNumber, capacity, model, location
         }
       } = req;
-      const { _options: { isNewRecord } } = await CabService.findOrCreateCab(
+      const { _options: { isNewRecord }, dataValues } = await CabService.findOrCreateCab(
         driverName, driverPhoneNo, regNumber, capacity, model, location
       );
       if (isNewRecord) {
         return res.status(201).json({
           success: true,
-          message: 'You have successfully created a cab'
+          message: 'You have successfully created a cab',
+          cab: dataValues
         });
       }
       const recordConflictError = {
-        message: 'Cab registration or drivers number already exists'
+        message: 'Cab registration or drivers number already exists',
+        statusCode: 409
       };
       HttpError.sendErrorResponse(recordConflictError, res);
     } catch (e) {
