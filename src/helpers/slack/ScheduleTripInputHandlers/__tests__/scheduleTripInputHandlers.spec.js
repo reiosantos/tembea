@@ -316,7 +316,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
       });
       ScheduleTripController.validateTripDetailsForm = jest.fn(() => []);
       await ScheduleTripInputHandlers.confirmation(destinationPayload, responder);
-      expect(responder).toHaveBeenCalledTimes(2);
+      expect(responder).toHaveBeenCalledTimes(1);
     });
   });
   describe('Response to "suggestions" dialog', () => {

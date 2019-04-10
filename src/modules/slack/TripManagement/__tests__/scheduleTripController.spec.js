@@ -8,7 +8,6 @@ import {
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import SlackEvents from '../../events';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
-import AddressService from '../../../../services/AddressService';
 import TripDetailsService from '../../../../services/TripDetailsService';
 import tripService, { TripService } from '../../../../services/TripService';
 
@@ -81,31 +80,6 @@ describe('Test PassedStatus Method', () => {
 });
 
 describe('ScheduleTripController Tests', () => {
-  describe('createLocation', () => {
-    const longitude = 23;
-    const latitude = 25;
-    const address = '13, Androse Road';
-
-    it('should persist details of a location', async () => {
-      AddressService.createNewAddress = jest.fn(() => (
-        { id: 5, longitude: 23, latitude: 25 }
-      ));
-      const location = await ScheduleTripController
-        .createLocation(address, longitude, latitude);
-      expect(location).toEqual(5);
-    });
-
-    it('should throw an error', async () => {
-      try {
-        AddressService.createNewAddress = rejectMock;
-        await ScheduleTripController
-          .createLocation(address, longitude, latitude);
-      } catch (e) {
-        expect(e).toEqual(err);
-      }
-    });
-  });
-
   describe('validateTripDetailsForm', () => {
     const payload = createPayload();
 
@@ -153,7 +127,7 @@ describe('ScheduleTripController Tests', () => {
       ScheduleTripController.createLocation = jest.fn(() => 2);
       const payload = createPayload();
       const locationIds = await ScheduleTripController.getLocationIds(payload.submission);
-      expect(locationIds).toEqual({ originId: 2, destinationId: 2 });
+      expect(locationIds).toEqual({ originId: expect.any(Number), destinationId: expect.any(Number) });
     });
     it('should return originId and destinationId for "Others"', async () => {
       ScheduleTripController.createLocation = jest.fn(() => 2);
@@ -162,7 +136,7 @@ describe('ScheduleTripController Tests', () => {
       tripData.destination = 'Others';
 
       const locationIds = await ScheduleTripController.getLocationIds(tripData);
-      expect(locationIds).toEqual({ originId: 2, destinationId: 2 });
+      expect(locationIds).toEqual({ originId: expect.any(Number), destinationId: expect.any(Number) });
     });
   });
 
