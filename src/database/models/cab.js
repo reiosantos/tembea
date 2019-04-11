@@ -24,7 +24,10 @@ module.exports = (sequelize, DataTypes) => {
     location: {
       type: DataTypes.STRING,
     }
-  }, {});
+  }, {
+    paranoid: true,
+    timestamps: true
+  });
   Cab.associate = () => {
   };
   return Cab;

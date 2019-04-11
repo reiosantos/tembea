@@ -81,6 +81,18 @@ class CabsValidator {
     CabsValidator.checkInputValuesValidity(req, res);
     next();
   }
+
+  static validateDeleteCabIdParam(req, res, next) {
+    const { params: { id } } = req;
+    if (!GeneralValidator.validateNumber(id)) {
+      const invalidInput = {
+        message: 'Please provide a positive integer value',
+        statusCode: 400
+      };
+      return HttpError.sendErrorResponse(invalidInput, res);
+    }
+    return next();
+  }
 }
 
 export default CabsValidator;

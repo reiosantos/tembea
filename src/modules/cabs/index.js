@@ -141,4 +141,30 @@ cabsRouter.put(
 );
 
 
+/**
+ * @swagger
+ * /cabs/{id}:
+ *  delete:
+ *    summary: delete a specific cab
+ *    tags:
+ *      - Cabs
+ *    parameters:
+ *      - name: id
+ *        in: path
+ *        required: true
+ *        description: id of cab to be deleted
+ *        type: number
+ *    responses:
+ *      200:
+ *        description: Cab successfully deleted
+ *      404:
+ *        description: Cab does not exist
+ */
+
+cabsRouter.delete(
+  '/cabs/:id',
+  CabsValidator.validateDeleteCabIdParam,
+  CabsController.deleteCab
+);
+
 export default cabsRouter;

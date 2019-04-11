@@ -82,6 +82,29 @@ class CabsController {
       HttpError.sendErrorResponse(error, res);
     }
   }
+  
+  static async deleteCab(req, res) {
+    try {
+      const { params: { id } } = req;
+      const dbResponse = await CabService.deleteCab(id);
+      if (dbResponse > 0) {
+        const message = 'Cab successfully deleted';
+        return Response.sendResponse(res, 200, true, message);
+      }
+      const doesNotExist = {
+        message: 'Cab does not exist',
+        statusCode: 404
+      };
+      HttpError.sendErrorResponse(doesNotExist, res);
+    } catch (e) {
+      BugsnagHelper.log(e);
+      const serverError = {
+        message: 'Server Error. Could not complete the request',
+        statusCode: 500
+      };
+      HttpError.sendErrorResponse(serverError, res);
+    }
+  }
 }
 
 export default CabsController;

@@ -5,6 +5,7 @@ import models from '../../../database/models';
 import payloadData from '../__mocks__/cabsMocks';
 import CabService from '../../../services/CabService';
 import MockData from '../../../middlewares/__mocks__/CabsValidatorMocks';
+import CabsController from '../CabsController';
 
 const { Cab } = models;
 
@@ -33,7 +34,7 @@ describe('CabsController', () => {
   describe('createCab', () => {
     it('should return success true', (done) => {
       request(app)
-        .post('/api/v1/cabs')
+        .post(apiURL)
         .send(payloadData.payload)
         .set(headers)
         .expect(201, (err, res) => {
@@ -61,7 +62,7 @@ describe('CabsController', () => {
 
     it('should return success false if there is a conflict', (done) => {
       request(app)
-        .post('/api/v1/cabs')
+        .post(apiURL)
         .send(payloadData.payload)
         .set(headers)
         .expect(409, {
@@ -72,7 +73,7 @@ describe('CabsController', () => {
 
     it('should catch any server error', (done) => {
       request(app)
-        .post('/api/v1/cabs')
+        .post(apiURL)
         .send(payloadData.overloadPayload)
         .set(headers)
         .expect(500, {
@@ -190,6 +191,110 @@ describe('CabsController', () => {
           expect(body).toEqual({ message: 'dummy error', success: false });
           done();
         });
+    });
+  });
+
+  describe('deleteCab', () => {
+    beforeAll(async () => {
+      await Cab.bulkCreate([{
+        id: 40,
+        driverName: 'Mabishi',
+        driverPhoneNo: '07327899928',
+        regNumber: 'KCA 3453',
+        model: 'Audi',
+        capacity: 3,
+        location: 'Zùrich'
+      }]);
+    });
+    
+    it('should delete a cab successfully', (done) => {
+      request(app)
+        .delete(`${apiURL}/40`)
+        .set(headers)
+        .expect(200, {
+          success: true,
+          message: 'Cab successfully deleted'
+        }, done);
+    });
+
+    it('should return an error when a cab does not exist', (done) => {
+      request(app)
+        .delete(`${apiURL}/89`)
+        .set(headers)
+        .expect(404, {
+          success: false,
+          message: 'Cab does not exist'
+        }, done);
+    });
+
+    it('should return a server error when something goes wrong', (done) => {
+      CabService.deleteCab = jest.fn(() => {
+        throw Error();
+      });
+      request(app)
+        .delete(`${apiURL}/89`)
+        .set(headers)
+        .expect(500, {
+          success: false,
+          message: 'Server Error. Could not complete the request'
+        }, done);
+    });
+  });
+
+  describe('deleteCab', () => {
+    let req;
+    let res;
+    beforeEach(() => {
+      req = {
+        params: {
+          id: 1
+        }
+      };
+      res = {
+        status: jest.fn(() => ({
+          json: jest.fn(() => {})
+        })).mockReturnValue({ json: jest.fn() })
+      };
+    });
+    it('should delete a cab successfully', async (done) => {
+      CabService.deleteCab = jest.fn(() => 1);
+
+      await CabsController.deleteCab(req, res);
+      expect(res.status).toHaveBeenCalledTimes(1);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.status().json).toHaveBeenCalledWith({
+        success: true,
+        message: 'Cab successfully deleted'
+      });
+      done();
+    });
+
+    it('should return cab does not exist', async (done) => {
+      CabService.deleteCab = jest.fn(() => 0);
+
+      await CabsController.deleteCab(req, res);
+      expect(res.status).toHaveBeenCalledTimes(1);
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.status().json).toHaveBeenCalledWith({
+        success: false,
+        message: 'Cab does not exist'
+      });
+      done();
+    });
+
+    it('should return server error', async (done) => {
+      CabService.deleteCab = jest.fn(() => {
+        throw Error();
+      });
+
+      await CabsController.deleteCab(req, res);
+      expect(res.status).toHaveBeenCalledTimes(1);
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.status().json).toHaveBeenCalledWith({
+        success: false,
+        message: 'Server Error. Could not complete the request'
+      });
+      done();
     });
   });
 });

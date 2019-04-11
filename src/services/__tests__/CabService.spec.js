@@ -117,7 +117,9 @@ describe('CabService', () => {
       await CabService.updateCab(1, { driverName: 'Muhwezi Dee' });
       expect(update).toBeCalled();
       expect(RemoveDataValues.removeDataValues).toBeCalled();
-      expect(RemoveDataValues.removeDataValues).toBeCalledWith({ driverName: 'Muhwezi Dee', id: 1 });
+      expect(RemoveDataValues.removeDataValues).toBeCalledWith(
+        { driverName: 'Muhwezi Dee', id: 1 }
+      );
     });
 
     it('should return not found message if cab doesnot exist', async () => {
@@ -133,6 +135,22 @@ describe('CabService', () => {
       } catch (error) {
         expect(error.message).toEqual('Could not update cab details');
       }
+    });
+  });
+
+  describe('deleteCab', () => {
+    it('should delete a cab successfully', async () => {
+      Cab.destroy = jest.fn(() => 1);
+
+      const result = await CabService.deleteCab(1);
+      expect(result).toEqual(1);
+    });
+
+    it('should return zero for unexisting data', async () => {
+      Cab.destroy = jest.fn(() => 0);
+
+      const result = await CabService.deleteCab(1);
+      expect(result).toEqual(0);
     });
   });
 });

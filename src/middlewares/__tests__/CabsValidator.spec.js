@@ -11,7 +11,7 @@ describe('CabsValidator', () => {
     emptySpacesReq, invalidLocationReq, errorMessages, invalidPhoneNoError,
     invalidCapacityError, invalidLocationError, emptyInputError, invalidReqParams,
     emptyUpdateBody, invalidParamsError, noInputsError, emptyValueInBody,
-    noValueErrors, validUpdateBody
+    noValueErrors, validUpdateBody, invalidInput
   } = MockData;
   beforeEach(() => {
     res = {
@@ -109,6 +109,32 @@ describe('CabsValidator', () => {
       };
       const response = CabsValidator.validatePhoneLocationCapacity(req);
       expect(response).toEqual({ isValid: false, checkValidPhoneNo: false, isValidLocation: false });
+    });
+  });
+
+  describe('validateDeleteCabIdParam', () => {
+    it('should return invalid cab id if number not used', async () => {
+      const req = {
+        params: {
+          id: 'string'
+        }
+      };
+      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(invalidInput, res);
+      const result = await CabsValidator.validateDeleteCabIdParam(req, res, next);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(invalidInput);
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should return next', () => {
+      const req = {
+        params: {
+          id: 7
+        }
+      };
+      CabsValidator.validateDeleteCabIdParam(req, res, next);
+      expect(HttpError.sendErrorResponse).not.toHaveBeenCalled();
+      expect(next).toHaveBeenCalled();
     });
   });
 });

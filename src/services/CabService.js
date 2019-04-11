@@ -108,4 +108,11 @@ export default class CabService {
       throw new Error('Could not update cab details');
     }
   }
+  
+  static async deleteCab(cabId) {
+    const responseData = await Cab.destroy({
+      where: { id: cabId }
+    });
+    return responseData;
+  }
 }

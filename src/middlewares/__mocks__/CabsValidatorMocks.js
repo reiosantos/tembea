@@ -158,6 +158,11 @@ const validUpdateBody = {
   }
 };
 
+const invalidInput = {
+  message: 'Please provide a positive integer value',
+  statusCode: 400
+};
+
 
 export default {
   correctReq,
@@ -178,5 +183,6 @@ export default {
   emptyValueInBody,
   noValueErrors,
   updateBodyInvalidLocation,
-  validUpdateBody
+  validUpdateBody,
+  invalidInput
 };
