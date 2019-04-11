@@ -48,7 +48,7 @@ class NotificationsResponse {
     channelId, responseData, color, actions, callbackId
   ) {
     const {
-      tripStatus, requester, pickup, departureDate, rider, destination,
+      tripStatus, requester, pickup, departureTime, rider, destination,
       department, noOfPassengers, tripType, tripNote
     } = responseData;
     const riderInfo = this.riderInfoResponse(rider, requester);
@@ -61,7 +61,7 @@ class NotificationsResponse {
       new SlackAttachmentField('Department', department, true),
       new SlackAttachmentField('Pickup Location', pickup.address, true),
       new SlackAttachmentField('Destination', destination.address, true),
-      new SlackAttachmentField('Pick-Up Time', Utils.formatDate(departureDate), true),
+      new SlackAttachmentField('Pick-Up Time', Utils.formatDate(departureTime), true),
       new SlackAttachmentField('Number of Passengers', noOfPassengers, true),
       new SlackAttachmentField('Trip Type', tripType, true),
       new SlackAttachmentField('Status', tripStatus, true),
@@ -80,7 +80,8 @@ class NotificationsResponse {
     channelId, responseData, color, actions, callbackId, payload
   ) {
     const {
-      tripStatus, requester, pickup, departureDate, rider, destination, managerComment, department
+      tripStatus, requester, pickup, departureTime,
+      rider, destination, managerComment, department
     } = responseData;
     
     const riderInfo = this.riderInfoResponse(rider, requester);
@@ -93,7 +94,7 @@ class NotificationsResponse {
       new SlackAttachmentField('Department', `<@${department}>`, true),
       new SlackAttachmentField('Pickup Location', pickup.address, true),
       new SlackAttachmentField('Destination', destination.address, true),
-      new SlackAttachmentField('Departure', Utils.formatDate(departureDate), true),
+      new SlackAttachmentField('Departure', Utils.formatDate(departureTime), true),
       new SlackAttachmentField('Status', tripStatus, true),
       new SlackAttachmentField('Manager Comment', managerComment)
     ];
@@ -110,7 +111,8 @@ class NotificationsResponse {
 
   static async responseForRequester(data, slackChannelId) {
     const {
-      department, pickup, destination, requestDate, departureDate, tripStatus, managerComment
+      department, pickup, destination, createdAt: requestDate,
+      departureTime, tripStatus, managerComment
     } = data;
 
     const detailedAttachment = new SlackAttachment(
@@ -120,7 +122,7 @@ class NotificationsResponse {
 
     const attachments = NotificationsResponse.getRequesterAttachment(
       department, data, slackChannelId, pickup, destination,
-      requestDate, departureDate, tripStatus, managerComment
+      requestDate, departureTime, tripStatus, managerComment
     );
     attachments.unshift(detailedAttachment);
 
