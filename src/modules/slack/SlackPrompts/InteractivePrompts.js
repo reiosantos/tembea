@@ -55,7 +55,7 @@ class InteractivePrompts {
   static sendRescheduleCompletion(trip) {
     const attachments = new SlackAttachment();
     attachments.addFieldsOrActions('actions', [
-      new SlackButtonAction('view', 'View', 'view'),
+      new SlackButtonAction('view', 'View', trip.id),
       new SlackButtonAction('reschedule', 'Reschedule ', trip.id),
       new SlackCancelButtonAction(
         'Cancel Trip', trip.id,

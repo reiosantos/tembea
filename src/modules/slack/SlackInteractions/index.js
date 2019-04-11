@@ -115,7 +115,7 @@ class SlackInteractions {
       default:
         message = SlackInteractions.goodByeMessage();
     }
-    respond(message);
+    if (message) respond(message);
   }
 
   static async handleReschedule(data, respond) {
