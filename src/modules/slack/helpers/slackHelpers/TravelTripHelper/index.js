@@ -186,12 +186,9 @@ const travelTripHelper = {
       }
       if (payload.actions[0].value === 'trip_note') {
         const { tripDetails: { tripNote } } = await Cache.fetch(payload.user.id);
-        return tripNote ? (respond(new SlackInteractiveMessage('Noted ...')),
-        DialogPrompts.sendTripNotesDialogForm(payload, 'travelTripNoteForm',
-          'travel_trip_tripNotesAddition', 'Add Trip Notes', tripNote))
-          : (DialogPrompts.sendTripNotesDialogForm(payload, 'travelTripNoteForm',
-            'travel_trip_tripNotesAddition', 'Add Trip Notes', null));
-      }
+        respond(new SlackInteractiveMessage('Noted ...'))
+        return  DialogPrompts.sendTripNotesDialogForm(payload, 'travelTripNoteForm', 'travel_trip_tripNotesAddition', 'Add Trip Notes', tripNote || null);}
+
       const { tripDetails } = await Cache.fetch(payload.user.id);
       const tripRequest = await ScheduleTripController.createTravelTripRequest(
         payload, tripDetails );
