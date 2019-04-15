@@ -60,7 +60,8 @@ describe('fellow-controller', () => {
       expect(res.json).toHaveBeenCalledTimes(1);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
-        fellows
+        fellows: [],
+        pageMeta: fellows.pageMeta
       });
     });
     it('returns data if fellows on route', async () => {

@@ -44,9 +44,11 @@ class FellowController {
     try {
       const data = await UserService.getPagedFellowsOnRoute(size, page);
       if (data.data.length < 1) {
+        const { data: fellows, pageMeta } = data;
         return res.json({
           success: true,
-          fellows: data
+          fellows,
+          pageMeta
         });
       }
 
