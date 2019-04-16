@@ -50,7 +50,7 @@ export default class CabService {
       await cache.saveObject(getCabKey(pk), data);
       return data;
     } catch (error) {
-      throw new Error('Could not return the requested trip');
+      throw new Error('Could not return the requested cab');
     }
   }
 
@@ -66,7 +66,7 @@ export default class CabService {
     let cabInfo = {};
     if (cabDetails) {
       const {
-        id, createdAt, updatedAt, ...details
+        createdAt, updatedAt, ...details
       } = cabDetails;
       cabInfo = details;
     }

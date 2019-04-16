@@ -60,7 +60,7 @@ describe('CabService', () => {
       expect(cabDetails).toEqual(strippedData);
     });
     it('should throw error if not in cache', async () => {
-      const expectedError = new Error('Could not return the requested trip');
+      const expectedError = new Error('Could not return the requested cab');
       try {
         await CabService.getById(1);
       } catch (e) {
