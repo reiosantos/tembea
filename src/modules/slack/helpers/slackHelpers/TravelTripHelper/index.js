@@ -150,6 +150,9 @@ const travelTripHelper = {
       const { user: { id } } = payload;
       const { tripDetails } = await Cache.fetch(id);
       const { submission: { destination, othersDestination } } = payload;
+      errors.push(...Validators.checkOriginAnDestination(tripDetails.pickup,
+        destination, 'pickup', 'destination'));
+      if (errors.length > 0) return { errors };
       tripDetails.destination = destination;
       tripDetails.othersDestination = othersDestination;
       await Cache.save(payload.user.id, 'tripDetails', tripDetails);
