@@ -28,5 +28,5 @@ module.exports = {
     updatedAt: '2018-11-09'
   },
   ]),
-  down: queryInterface => queryInterface.bulkDelete('Addresses')
+  down: () => Promise.resolve()
 };

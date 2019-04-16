@@ -33,5 +33,5 @@ module.exports = {
     updatedAt: '2019-01-22 22:59:25.006000'
   },
   ]),
-  down: queryInterface => queryInterface.bulkDelete('Locations')
+  down: () => Promise.resolve()
 };
