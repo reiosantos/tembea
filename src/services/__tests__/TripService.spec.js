@@ -56,6 +56,13 @@ describe('TripService', () => {
     expect(response.tripType).toEqual('Embassy Visit');
   });
 
+  it('should return currentDay when it is passed', () => {
+    const currentDay = 'This day';
+    const filterParams = { currentDay };
+    const response = TripService.sequelizeWhereClauseOption(filterParams);
+    expect(response).toHaveProperty('departureTime');
+  });
+
   describe('TripService_getTrips', () => {
     beforeEach(() => {
       jest.spyOn(TripRequest, 'findAll').mockResolvedValue([{}]);

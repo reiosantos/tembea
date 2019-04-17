@@ -21,14 +21,24 @@ export class TripService {
 
   static sequelizeWhereClauseOption(filterParams) {
     const {
-      status: tripStatus, department: departmentName, departureTime, requestedOn, type: tripType
+      departureTime, requestedOn, currentDay,
+      status: tripStatus, department: departmentName,
+      type: tripType
     } = filterParams;
     let where = {};
 
     if (tripStatus) where = { tripStatus };
     if (departmentName) where = { ...where, departmentName };
     if (tripType) where = { ...where, tripType };
-
+    if (currentDay) {
+      where = {
+        ...where,
+        departureTime: {
+          [Op.gte]:
+          moment(moment(), 'YYYY-MM-DD').toDate()
+        }
+      };
+    }
     let dateFilters = TripService.getDateFilters('departureTime', departureTime || {});
     where = { ...where, ...dateFilters };
     dateFilters = TripService.getDateFilters('TripRequest.createdAt', requestedOn || {});
