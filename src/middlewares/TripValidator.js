@@ -69,9 +69,12 @@ class TripValidator {
   static validateGetTripsParam(req, res, next) {
     const errors = [];
     const { query: { status } } = req;
-    const acceptedStatus = ['Confirmed', 'Pending', 'Approved'];
+    const acceptedStatus = ['Confirmed', 'Pending', 'Approved', 'Completed',
+      'DeclinedByManager', 'DeclinedByOps', 'InTransit', 'Cancelled'];
     if (status && !acceptedStatus.includes(status)) {
-      errors.push('status can either \'Approved\', \'Confirmed\' or \'Pending\'.');
+      errors.push('Status can be either \'Approved\','
+          + ' \'Confirmed\' , \'Pending\',  \' Completed\','
+          + ' \'DeclinedByManager\', \'DeclinedByOps\', \'InTransit\' or \'Cancelled\'');
     }
     const departureTime = TripHelper.cleanDateQueryParam(req.query, 'departureTime');
     const requestedOn = TripHelper.cleanDateQueryParam(req.query, 'requestedOn');

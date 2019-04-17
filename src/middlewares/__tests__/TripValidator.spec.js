@@ -258,7 +258,8 @@ describe('validate query params', () => {
       TripValidator.validateGetTripsParam(req, res, next);
       expect(statusMock).toHaveBeenCalledWith(400);
       validationErrorResponse.data = {
-        errors: ['status can either \'Approved\', \'Confirmed\' or \'Pending\'.']
+        errors: ['Status can be either \'Approved\', \'Confirmed\' , \'Pending\',  \' Completed\', '
+        + '\'DeclinedByManager\', \'DeclinedByOps\', \'InTransit\' or \'Cancelled\'']
       };
       expect(jsonMock).toHaveBeenCalledWith(validationErrorResponse);
       expect(next).not.toHaveBeenCalled();
