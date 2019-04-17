@@ -25,7 +25,7 @@ describe('TripNotifications', () => {
     );
     jest.spyOn(SlackNotifications, 'createDirectMessage').mockReturnValue({
       channelId: 'TCPCFU4RF',
-      text: 'Hi! @kica Did you take this trip ?',
+      text: 'Hi! @kica Did you take this trip?',
       attachment: ['trip_completion', new SlackAttachmentField(
         'Reason', trip.reason, true
       )]

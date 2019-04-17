@@ -18,6 +18,9 @@ class TripCompletionJob {
   }
 
   static calculateNotificationPrompTime(departureTime, defaultPromptTime) {
+    if (process.env.NODE_ENV === 'development') {
+      return moment(new Date(departureTime)).add(defaultPromptTime, 'seconds').format();
+    }
     return moment(new Date(departureTime)).add(defaultPromptTime, 'hours').format();
   }
 

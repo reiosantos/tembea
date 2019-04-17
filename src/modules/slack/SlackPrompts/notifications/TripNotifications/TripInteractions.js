@@ -1,6 +1,5 @@
 import moment from 'moment';
 import { SlackInteractiveMessage, DialogPrompts } from '../../../RouteManagement/rootFile';
-import { SlackAttachment, SlackButtonAction } from '../../../SlackModels/SlackMessageModels';
 import { SlackDialogTextarea, SlackDialog } from '../../../SlackModels/SlackDialogModels';
 import tripService from '../../../../../services/TripService';
 import TripCompletionJob from '../../../../../services/jobScheduler/jobs/TripCompletionJob';
@@ -13,17 +12,14 @@ class TripInteractions {
     const { actions: [{ name }] } = payload;
 
     switch (name) {
-      case 'taken':
-        TripInteractions.hasTakenTrip(payload, respond, trip);
+      case 'trip_taken':
+        TripInteractions.hasCompletedTrip(payload, respond, trip);
         break;
       case 'not_taken':
         TripInteractions.hasNotTakenTrip(payload, respond);
         break;
-      case 'completed':
-        TripInteractions.hasCompletedTrip(payload, respond);
-        break;
-      case 'not_completed':
-        TripInteractions.hasNotCompletedTrip(payload, respond);
+      case 'still_on_trip':
+        TripInteractions.isOnTrip(payload, respond);
         break;
 
       default:
@@ -31,16 +27,15 @@ class TripInteractions {
     }
   }
 
-  static async hasTakenTrip(data, respond) {
+  static async isOnTrip(data, respond) {
     const payload = CleanData.trim(data);
     const { actions: [{ value }] } = payload;
     await tripService.updateRequest(value, { tripStatus: 'InTransit' });
-    const actions = [new SlackButtonAction('completed', 'Yes', value),
-      new SlackButtonAction('not_completed', 'No', value, 'danger')];
-    const attachment = new SlackAttachment('', '', '', '', '');
-    attachment.addFieldsOrActions('actions', actions);
-    attachment.addOptionalProps('trip_completion');
-    respond(new SlackInteractiveMessage('Did you complete the trip ?', [attachment]));
+    const trip = await tripService.getById(value);
+    const scheduleSpan = process.env.NODE_ENV === 'development' ? 'minutes' : 'hours';
+    const newScheduleTime = moment(new Date()).add(1, scheduleSpan).format();
+    TripCompletionJob.createScheduleForATrip(trip, newScheduleTime, 0);
+    respond(new SlackInteractiveMessage('Okay! We\'ll check later.'));
   }
 
   static async hasCompletedTrip(data, respond) {
@@ -51,18 +46,8 @@ class TripInteractions {
     respond(ratingMessage);
   }
 
-  static async hasNotCompletedTrip(data, respond) {
+  static async hasNotTakenTrip(data) {
     const payload = CleanData.trim(data);
-    const { actions: [{ value }] } = payload;
-    const trip = await tripService.getById(value);
-    const newScheduleTime = moment(new Date()).add(1, 'hours').format();
-    TripCompletionJob.createScheduleForATrip(trip, newScheduleTime, 0);
-    respond(new SlackInteractiveMessage('Okay! We\'ll check later.'));
-  }
-
-  static async hasNotTakenTrip(data, respond) {
-    const payload = CleanData.trim(data);
-    respond(new SlackInteractiveMessage('Noted...'));
     const { actions: [{ value }] } = payload;
     await tripService.updateRequest(value, { tripStatus: 'Cancelled' });
     const dialog = new SlackDialog(

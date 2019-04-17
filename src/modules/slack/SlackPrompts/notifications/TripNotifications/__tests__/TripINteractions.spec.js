@@ -1,4 +1,3 @@
-import moment from 'moment';
 import TripInteractions from '../TripInteractions';
 import tripService from '../../../../../../services/TripService';
 import * as SlackModels from '../../../../SlackModels/SlackMessageModels';
@@ -10,15 +9,23 @@ describe('TripInteractions', () => {
     afterEach(() => {
       jest.restoreAllMocks();
     });
-    it('should call TripInteractions.hasTakenTrip', async () => {
-      jest.spyOn(TripInteractions, 'hasTakenTrip').mockReturnValue({});
+    it('should call TripInteractions.isOnTrip', async () => {
+      jest.spyOn(TripInteractions, 'isOnTrip').mockReturnValue({});
       const payload = {
         actions: [{
-          name: 'taken'
+          name: 'still_on_trip'
         }]
       };
       TripInteractions.tripCompleted(payload, {}, {});
-      expect(TripInteractions.hasTakenTrip).toBeCalledTimes(1);
+      expect(TripInteractions.isOnTrip).toBeCalledTimes(1);
+    });
+    it('should break if no action', async () => {
+      const payload = {
+        actions: [{
+          name: 'still_on_trip33'
+        }]
+      };
+      TripInteractions.tripCompleted(payload, {}, {});
     });
     it('should call TripInteractions.hasNotTakenTrip', async () => {
       jest.spyOn(TripInteractions, 'hasNotTakenTrip').mockReturnValue({});
@@ -34,21 +41,11 @@ describe('TripInteractions', () => {
       jest.spyOn(TripInteractions, 'hasCompletedTrip').mockReturnValue({});
       const payload = {
         actions: [{
-          name: 'completed'
+          name: 'trip_taken'
         }]
       };
       TripInteractions.tripCompleted(payload, {}, {});
       expect(TripInteractions.hasCompletedTrip).toBeCalledTimes(1);
-    });
-    it('should call TripInteractions.hasNotCompletedTrip', async () => {
-      jest.spyOn(TripInteractions, 'hasNotCompletedTrip').mockReturnValue({});
-      const payload = {
-        actions: [{
-          name: 'not_completed'
-        }]
-      };
-      TripInteractions.tripCompleted(payload, {}, {});
-      expect(TripInteractions.hasNotCompletedTrip).toBeCalledTimes(1);
     });
   });
   describe('TripInteractions_hasTakenTrip', () => {
@@ -59,13 +56,16 @@ describe('TripInteractions', () => {
       async () => {
         const payload = {
           actions: [{
-            value: 3
+            value: 3,
+            name: 'still_on_trip'
           }]
         };
+      
         const respond = jest.fn(() => {});
         jest.spyOn(tripService, 'updateRequest').mockResolvedValue({});
         jest.spyOn(SlackModels, 'SlackInteractiveMessage').mockReturnValue({});
-        await TripInteractions.hasTakenTrip(payload, respond);
+        jest.spyOn(TripCompletionJob, 'createScheduleForATrip').mockReturnValue({});
+        await TripInteractions.isOnTrip(payload, respond);
         expect(tripService.updateRequest).toBeCalledTimes(1);
       });
   });
@@ -89,38 +89,7 @@ describe('TripInteractions', () => {
         expect(respond).toBeCalled();
       });
   });
-  describe('TripInteractions_hasNotCompletedTrip', () => {
-    afterEach(() => {
-      jest.restoreAllMocks();
-    });
-    it('should return an interactive message if trip has not been completed',
-      async () => {
-        const payload = { actions: [{ value: 2 }] };
-        const trip = {
-          id: 4,
-          name: 'Dojo to London',
-          rider: {
-            id: 2,
-            name: 'Kica',
-            slackId: 'TPR4CRF'
-          }
-        };
-        const newScheduleTime = moment(new Date()).add(1, 'hours').format();
 
-        const respond = jest.fn(() => {});
-        jest.spyOn(tripService, 'getById').mockResolvedValue(trip);
-        jest.spyOn(TripCompletionJob, 'createScheduleForATrip').mockReturnValue({});
-        jest.spyOn(SlackModels, 'SlackInteractiveMessage').mockReturnValue({});
-        await TripInteractions.hasNotCompletedTrip(payload, respond);
-
-        expect(tripService.getById).toBeCalledTimes(1);
-        expect(tripService.getById).toBeCalledWith(2);
-        expect(TripCompletionJob.createScheduleForATrip).toBeCalledWith(
-          trip, newScheduleTime, 0
-        );
-        expect(respond).toBeCalled();
-      });
-  });
   describe('TripInteractions_hasNotTakenTrip', () => {
     afterEach(() => {
       jest.restoreAllMocks();
@@ -133,7 +102,6 @@ describe('TripInteractions', () => {
       jest.spyOn(DialogPrompts, 'sendDialog').mockResolvedValue({});
       await TripInteractions.hasNotTakenTrip(payload, respond);
 
-      expect(respond).toBeCalled();
       expect(tripService.updateRequest).toBeCalledTimes(1);
       expect(tripService.updateRequest).toBeCalledWith(6, { tripStatus: 'Cancelled' });
     });
