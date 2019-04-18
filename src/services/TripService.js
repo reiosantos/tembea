@@ -121,7 +121,7 @@ export class TripService {
       requester, origin, destination, rider, department, approver, confirmer, decliner, ...tripInfo
     } = trip;
     const {
-      id, name, tripStatus: status, departureTime, arrivalTime, createdAt, tripType: type, noOfPassenger
+      id, name, tripStatus: status, departureTime, arrivalTime, createdAt, tripType: type, noOfPassenger, rating
     } = tripInfo;
     return {
       id,
@@ -140,7 +140,8 @@ export class TripService {
       rider: TripService.serializeUser(rider),
       requester: TripService.serializeUser(requester),
       approvedBy: TripService.serializeUser(approver) || {},
-      confirmedBy: TripService.serializeUser(confirmer) || {}
+      confirmedBy: TripService.serializeUser(confirmer) || {},
+      rating
     };
   }
 

@@ -153,6 +153,7 @@ describe('TripService', () => {
       expect(response).toHaveProperty('status');
       expect(response).toHaveProperty('arrivalTime');
       expect(response).toHaveProperty('type');
+      expect(response).toHaveProperty('rating');
       expect(response).toHaveProperty('passenger');
       expect(response).toHaveProperty('departureTime');
       expect(response).toHaveProperty('requestedOn');
