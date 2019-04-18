@@ -29,13 +29,12 @@ class RoutesController {
   static async getRoutes(req, res) {
     try {
       let {
-        page, size, sort, name, status
+        page, size, sort, name
       } = req.query;
       page = page || 1;
       size = size || defaultSize;
-      status = status || 'Active';
       name = name || null;
-
+      const { status } = req.query;
       sort = SequelizePaginationHelper.deserializeSort(sort || 'name,asc,id,asc');
       const pageable = { page, size, sort };
       const where = { name, status };
