@@ -19,6 +19,8 @@ jest.mock('@slack/client', () => ({
   }))
 }));
 
+const respond = jest.fn();
+
 describe('Dialog prompts test', () => {
   afterEach(() => {
     jest.resetAllMocks();
@@ -140,7 +142,7 @@ describe('Dialog prompts test', () => {
 
   it('should test sendSearchPage function', async (done) => {
     const payload = { actions: [{ name: 'search' }], team: { id: 'TEAMID1' } };
-    await DialogPrompts.sendSearchPage(payload, 'view_available_routes');
+    await DialogPrompts.sendSearchPage(payload, 'view_available_routes', 'tembea-route', respond);
     expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
   });

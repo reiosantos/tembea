@@ -10,6 +10,7 @@ import dateDialogHelper from '../../../helpers/dateHelper';
 import createDialogForm from '../../../helpers/slack/createDialogForm';
 import sendDialogTryCatch from '../../../helpers/sendDialogTryCatch';
 import TeamDetailsService from '../../../services/TeamDetailsService';
+import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 
 
 class DialogPrompts {
@@ -151,7 +152,8 @@ class DialogPrompts {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
-  static async sendSearchPage(payload, value, callbackId) {
+  static async sendSearchPage(payload, value, callbackId, respond) {
+    respond(new SlackInteractiveMessage('Noted ...'));
     const dialog = new SlackDialog(callbackId,
       'Search', 'Submit', false, value);
     

@@ -19,7 +19,7 @@ describe('RoutesHelpers', () => {
     it('should display a message when there are is no available routes', () => {
       const res = RoutesHelpers.toAvailableRoutesAttachment([], 2, 5);
       const { attachments: [SlackInteractiveMessage] } = res;
-      expect(SlackInteractiveMessage.text).toEqual('Sorry! No route is available at the moment.');
+      expect(SlackInteractiveMessage.text).toEqual('Sorry, route not available at the moment :disappointed:');
     });
 
     it('should render attachment if their is available route with pagination attachment', () => {

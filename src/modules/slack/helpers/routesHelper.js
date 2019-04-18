@@ -10,7 +10,7 @@ import {
 } from '../SlackModels/SlackMessageModels';
 
 class RoutesHelpers {
-  static toAvailableRoutesAttachment(allAvailableRoutes, currentPage, totalPages) {
+  static toAvailableRoutesAttachment(allAvailableRoutes, currentPage, totalPages, isSearch = false) {
     const attachments = [];
     if (allAvailableRoutes.length) {
       allAvailableRoutes.forEach((route) => {
@@ -18,7 +18,7 @@ class RoutesHelpers {
       });
     } else {
       attachments.push(new SlackInteractiveMessage(
-        'Sorry! No route is available at the moment.'
+        'Sorry, route not available at the moment :disappointed:'
       ));
     }
 
@@ -30,6 +30,10 @@ class RoutesHelpers {
 
     const navButtonsAttachment = createNavButtons('back_to_launch', 'back_to_routes_launch');
     const searchButtonAttachment = createSearchButton('tembea_route', 'view_available_routes');
+    const allRoutesButtonAttachment = isSearch && new SlackButtonAction(
+      'See Available Routes', 'See All Available Routes', 'view_available_routes', '#FFCCAA'
+    );
+    searchButtonAttachment.addFieldsOrActions('actions', [allRoutesButtonAttachment]);
     attachments.push(searchButtonAttachment);
     return new SlackInteractiveMessage(
       '*All Available Routes:slightly_smiling_face:*', [...attachments, navButtonsAttachment]

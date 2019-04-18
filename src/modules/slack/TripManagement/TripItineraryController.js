@@ -33,7 +33,7 @@ export const triggerPage = (payload, respond) => {
     return DialogPrompts.sendSkipPage(payload, requestType, callbackId);
   }
   if (payload.actions && payload.actions[0].name === 'search') {
-    return DialogPrompts.sendSearchPage(payload, requestType, callbackId);
+    return DialogPrompts.sendSearchPage(payload, requestType, callbackId, respond);
   }
 };
 

@@ -40,6 +40,7 @@ class JoinRouteInteractions {
     );
     const pageable = { page, sort, size: SLACK_DEFAULT_SIZE };
     const where = JoinRouteInteractions.createWhereClause(payload);
+    const isSearch = data.type === 'dialog_submission' && data.submission.search;
 
     const {
       routes: availableRoutes,
@@ -49,7 +50,8 @@ class JoinRouteInteractions {
     const availableRoutesMessage = RoutesHelpers.toAvailableRoutesAttachment(
       availableRoutes,
       currentPage,
-      totalPages
+      totalPages,
+      isSearch
     );
     respond(availableRoutesMessage);
   }
