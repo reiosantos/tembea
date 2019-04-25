@@ -9,6 +9,7 @@ import TripValidator from './TripValidator';
 import CabsValidator from './CabsValidator';
 import CleanRequestBody from './CleanRequestBody';
 import CountryValidator from './CountryValidator';
+import HomebaseValidator from './HomebaseValidator';
 
 const middleware = {
   UserValidator,
@@ -21,7 +22,8 @@ const middleware = {
   TripValidator,
   CabsValidator,
   CleanRequestBody,
-  CountryValidator
+  CountryValidator,
+  HomebaseValidator
 };
 
 export default middleware;

@@ -12,17 +12,16 @@ describe('Countries controller', () => {
     validToken = Utils.generateToken('30m', { userInfo: { rules: ['admin'] } });
 
     const { name } = mockCountry;
-    await Country.destroy({ where: {} });
+    await Country.destroy({ truncate: true, cascade: true });
     await Country.create({
       name
     });
     afterEach(async (done) => {
       jest.restoreAllMocks();
-      jest.restoreAllMocks();
       done();
     });
     afterAll(async (done) => {
-      await Country.destroy({ where: {} });
+      await Country.destroy({ truncate: true, cascade: true });
       done();
     });
   });

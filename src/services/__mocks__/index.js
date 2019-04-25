@@ -317,3 +317,48 @@ export const mockCountryError = {
   status: 404,
   message: 'Country not found'
 };
+
+export const mockNewHomebase = {
+  dataValues: [{
+    id: 1,
+    name: 'Nairobi',
+    countryId: 1,
+    createdAt: '2019-04-01T12:07:13.002Z',
+    updatedAt: '2019-04-01T12:07:13.002Z',
+    deletedAt: null
+  }],
+  _options: {
+    isNewRecord: true
+  }
+};
+
+export const mockCreatedHomebase = {
+  homebase: [{
+    id: 1,
+    name: 'Nairobi',
+    countryId: 1,
+    createdAt: '2019-04-01T12:07:13.002Z',
+    updatedAt: '2019-04-01T12:07:13.002Z',
+    deletedAt: null
+  }],
+  isNewHomebase: true
+};
+
+export const mockCountry = {
+  id: 1,
+  name: 'Kenya',
+  status: 'Active',
+  createdAt: '2019-04-01T12:07:13.002Z',
+  updatedAt: '2019-04-01T12:07:13.002Z'
+};
+
+export const mockExistingHomebase = {
+  homebase: {
+    id: 1,
+    name: 'Nairobi',
+    countryId: 1,
+    createdAt: '2019-04-01T12:07:13.002Z',
+    updatedAt: '2019-04-01T12:07:13.002Z'
+  },
+  isNewHomeBase: false
+};

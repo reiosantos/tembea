@@ -15,6 +15,7 @@ import exportsRouter from './exports';
 import cabsRouter from './cabs';
 import countryRouter from './countries';
 import fellowsRouter from './fellows';
+import homebaseRouter from './homebases';
 
 const apiPrefix = '/api/v1';
 const apiDocsOptions = {
@@ -39,6 +40,7 @@ const routes = (app) => {
   app.use('/docs/v1', swaggerUi.serve, swaggerUi.setup(apiSpec, apiDocsOptions));
   app.use(apiPrefix, exportsRouter);
   app.use(apiPrefix, fellowsRouter);
+  app.use(apiPrefix, homebaseRouter);
   return app;
 };
 
