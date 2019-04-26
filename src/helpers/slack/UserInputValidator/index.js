@@ -261,6 +261,7 @@ class UserInputValidator {
     const userTripData = {
       ...tripData
     };
+
     const {
       destination, pickup, othersDestination, othersPickup
     } = userTripData;
@@ -272,11 +273,9 @@ class UserInputValidator {
         userTripData[type] = userTripData[key].address;
         userTripData[`${type}Lat`] = userTripData[key].latitude;
         userTripData[`${type}Long`] = userTripData[key].longitude;
-        delete userTripData[key];
       }
       return true;
     });
-    delete userTripData.tripDetails;
     return userTripData;
   }
 }

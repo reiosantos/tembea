@@ -112,7 +112,7 @@ const ScheduleTripInputHandlers = {
     try {
       const payloadCopy = { ...payload };
       const { submission: { destination, othersDestination }, user: { id: userId } } = payload;
-      const { tripDetails } = await Cache.fetch(userId);
+      const tripDetails = await Cache.fetch(userId);
       tripDetails.destination = destination;
       tripDetails.othersDestination = othersDestination;
       payloadCopy.submission.pickup = tripDetails.pickup;
@@ -122,7 +122,7 @@ const ScheduleTripInputHandlers = {
       tripDetails.destinationCoords = await TripHelper.getDestinationCoordinates(destination);
       
       tripData = UserInputValidator.getScheduleTripDetails(tripDetails);
-      await Cache.save(userId, 'tripDetails', tripDetails);
+      await Cache.saveObject(userId, tripDetails);
       if (destination !== 'Others') return InteractivePrompts.sendScheduleTripResponse(tripData, respond);
       const verifiable = await LocationHelpers.locationVerify(payload.submission, 'destination', 'schedule_trip');
       respond(verifiable);
@@ -138,15 +138,14 @@ const ScheduleTripInputHandlers = {
   detailsConfirmation: async (payload, respond) => {
     try {
       const { user: { id: userId } } = payload;
-      const userTripData = await Cache.fetch(userId);
-      const tripData = UserInputValidator.getScheduleTripDetails(userTripData);
-
+      const tripDetails = await Cache.fetch(userId);
+      const tripData = UserInputValidator.getScheduleTripDetails(tripDetails);
       if (tripData.pickup === tripData.destination) {
         respond(new SlackInteractiveMessage('Pickup and Destination cannot be the same...'));
         return await DialogPrompts.sendTripDetailsForm(payload, 'tripDestinationLocationForm',
           'schedule_trip_confirmDestination', 'Destination Details');
       }
-      await Cache.save(userId, 'tripDetails', tripData);
+      await Cache.saveObject(userId, tripData);
 
       return InteractivePrompts.sendScheduleTripResponse(tripData, respond);
     } catch (error) {

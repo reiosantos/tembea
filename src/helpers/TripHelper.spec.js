@@ -61,17 +61,17 @@ describe('TripHelper for Schedule Trip', () => {
       }
       return null;
     });
-    jest.spyOn(Cache, 'save').mockResolvedValue({});
+    jest.spyOn(Cache, 'saveObject').mockResolvedValue({});
     jest.spyOn(Cache, 'fetch').mockResolvedValue(userTripData);
   });
   afterEach(() => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
   });
-  it('should update the trip data and save in cache - "updateTripData"', async () => {
+  it('should update the trip data and save in cache - updateTripData', async () => {
     const result = await TripHelper
       .updateTripData('1', 'dummy', 'pickup', 'othersPickup', '2018-10-10');
-    expect(Cache.save).toHaveBeenCalledWith('1', 'tripDetails', userTripData);
+    expect(Cache.saveObject).toHaveBeenCalledWith('1', userTripData);
     expect(result).toBeUndefined();
   });
   it('should return coordinates for preset destination - "getDestinationCoordinates"', async () => {

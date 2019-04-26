@@ -141,7 +141,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
   describe('Response to "tripPickup" interaction', () => {
     const pickupPayload = createPickupPayload('dummyData');
     beforeEach(() => {
-      jest.spyOn(Cache, 'save');
+      jest.spyOn(Cache, 'saveObject');
       jest.spyOn(Cache, 'fetch').mockResolvedValue({
         id: '1',
         department: {
@@ -209,7 +209,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
     const tripDetails = createTripDetails();
 
     beforeEach(() => {
-      jest.spyOn(Cache, 'save');
+      jest.spyOn(Cache, 'saveObject');
       jest.spyOn(Cache, 'fetch').mockResolvedValue({
         id: '1',
         department: {
@@ -260,7 +260,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
     const destinationPayload = createDestinationPayload('dummyData');
     const tripDetails = createTripData();
     beforeEach(() => {
-      jest.spyOn(Cache, 'save');
+      jest.spyOn(Cache, 'saveObject');
       jest.spyOn(Cache, 'fetch').mockResolvedValue({
         id: '1',
         department: {

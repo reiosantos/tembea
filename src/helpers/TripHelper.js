@@ -49,7 +49,7 @@ export default class TripHelper {
     userTripData.dateTime = dateTime;
     userTripData.departmentId = userTripData.department.value;
     userTripData.tripType = tripType;
-    await Cache.save(userId, 'tripDetails', userTripData);
+    await Cache.saveObject(userId, userTripData);
   }
 
   static async getDestinationCoordinates(destination) {
