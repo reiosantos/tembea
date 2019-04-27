@@ -331,6 +331,8 @@ describe('checkNumberPlate', () => {
       driverName: 'Valid User',
       driverPhoneNo: '1234567890',
       regNumber: 'LND 419 smn',
+      model: 'ferrari',
+      capacity: '7'
     }
   };
   it('valid', async () => {

@@ -66,13 +66,15 @@ describe('Dialog prompts test', () => {
 
   it('should test sendOperationsApprovalDialog function', async (done) => {
     await DialogPrompts.sendOperationsApprovalDialog({
-      actions: ['value', ''],
+      actions: [{
+        value: JSON.stringify({ confirmationComment: 'comment' })
+      }, ''],
       trigger_id: 'trigger',
       channel: {
         id: 'XXXXXXXX'
       },
       team: { id: 'TEAMID1' }
-    });
+    }, respond);
 
     expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
@@ -143,6 +145,16 @@ describe('Dialog prompts test', () => {
   it('should test sendSearchPage function', async (done) => {
     const payload = { actions: [{ name: 'search' }], team: { id: 'TEAMID1' } };
     await DialogPrompts.sendSearchPage(payload, 'view_available_routes', 'tembea-route', respond);
+    expect(sendDialogTryCatch).toBeCalledTimes(1);
+    done();
+  });
+  it('should send select cab dialog', async (done) => {
+    await DialogPrompts.sendSelectCabDialog({
+      actions: [{ value: 7 }],
+      message_ts: '3703484984.4849',
+      channel: { id: 84 },
+      team: { id: 9 }
+    });
     expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
   });

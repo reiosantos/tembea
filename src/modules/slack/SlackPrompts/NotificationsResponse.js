@@ -17,7 +17,7 @@ class NotificationsResponse {
       new SlackButtonAction('declineRequest', 'Decline', id, 'danger')
     ];
     return NotificationsResponse.responseForOperations(
-      data, actions, channelId, 'operations_approval', payload, tripType
+      data, actions, channelId, 'trips_cab_selection', payload, tripType
     );
   }
 

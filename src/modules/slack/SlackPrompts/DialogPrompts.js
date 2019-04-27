@@ -11,7 +11,8 @@ import createDialogForm from '../../../helpers/slack/createDialogForm';
 import sendDialogTryCatch from '../../../helpers/sendDialogTryCatch';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
-
+import CabService from '../../../services/CabService';
+import CabsHelper from '../helpers/slackHelpers/CabsHelper';
 
 class DialogPrompts {
   static async sendTripDetailsForm(payload, formElementsFunction, callbackId, dialogTitle) {
@@ -73,11 +74,45 @@ class DialogPrompts {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
-  static async sendOperationsApprovalDialog(payload) {
-    const { value } = payload.actions[0];
-    const state = { tripId: value, timeStamp: payload.message_ts, channel: payload.channel.id };
-    const dialog = new SlackDialog('operations_reason_dialog',
+  static async sendSelectCabDialog(payload) {
+    const { cabs } = await CabService.getCabs();
+    const {
+      actions: [{ value: tripId }], message_ts: timeStamp,
+      channel: { id: channel }
+    } = payload;
+    const cabData = CabsHelper.toCabLabelValuePairs(cabs);
+    const state = { tripId, timeStamp, channel };
+    const dialog = new SlackDialog('trips_cab_selection',
       'Confirm Trip Request', 'Submit', false, JSON.stringify(state));
+    dialog.addElements([
+      new SlackDialogSelectElementWithOptions('Select A Cab',
+        'cab', [{
+          label: 'Create New Cab',
+          value: 'Create New Cab'
+        }, ...cabData]),
+      new SlackDialogTextarea(
+        'Justification',
+        'confirmationComment',
+        'Reason why',
+        'Enter reason for approving trip',
+      )
+    ]);
+    await DialogPrompts.sendDialog(dialog, payload);
+  }
+
+  static async sendOperationsApprovalDialog(payload, respond) {
+    const { value } = payload.actions[0];
+    const { confirmationComment } = JSON.parse(value);
+    let dialog = new SlackDialog('operations_reason_dialog',
+      'Confirm Trip Request', 'Submit', false, value);
+    dialog = DialogPrompts.addCabElementsToDialog(dialog, confirmationComment);
+    respond(
+      new SlackInteractiveMessage('Noted ...')
+    );
+    await DialogPrompts.sendDialog(dialog, payload);
+  }
+
+  static addCabElementsToDialog(dialog, confirmationComment) {
     dialog.addElements([
       new SlackDialogText('Driver\'s name', 'driverName', 'Enter driver\'s name'),
       new SlackDialogText('Driver\'s contact', 'driverPhoneNo', 'Enter driver\'s contact'),
@@ -86,14 +121,25 @@ class DialogPrompts {
         'regNumber',
         'Enter the Cab\'s registration number'
       ),
+      new SlackDialogText(
+        'Cab Model',
+        'model',
+        'Enter the Cab\'s model name'
+      ),
+      new SlackDialogText(
+        'Cab Capacity',
+        'capacity',
+        'Enter the Cab\'s capacity'
+      ),
       new SlackDialogTextarea(
         'Justification',
         'confirmationComment',
         'Reason why',
         'Enter reason for approving trip',
+        confirmationComment
       ),
     ]);
-    await DialogPrompts.sendDialog(dialog, payload);
+    return dialog;
   }
 
   static async sendOperationsNewRouteApprovalDialog(payload, state) {

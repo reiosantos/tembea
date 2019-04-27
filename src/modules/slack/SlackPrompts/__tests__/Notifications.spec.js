@@ -392,6 +392,7 @@ describe('SlackNotifications', () => {
       jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue(
         { message: 'mockMessageToSlack' }
       );
+      jest.spyOn(tripService, 'getById').mockResolvedValue();
 
       const res = await SlackNotifications.sendManagerTripRequestNotification(
         payload, tripInfo, () => {}

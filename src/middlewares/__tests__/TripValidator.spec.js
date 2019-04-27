@@ -16,6 +16,8 @@ describe('Trip Validator', () => {
         driverPhoneNo: '0777777777',
         driverName: 'nnn',
         regNumber: 'lmnbv',
+        capacity: '8',
+        model: 'ferrari',
         comment: 'ns',
         slackUrl: 'sokoolworkspace.slack.com',
         userEmail: 'paul.soko@andela.com'

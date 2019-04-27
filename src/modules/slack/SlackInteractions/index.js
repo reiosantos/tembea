@@ -24,6 +24,7 @@ import handleActions from './SlackInteractionsHelper';
 import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInteractions';
 import tripService from '../../../services/TripService';
 import CleanData from '../../../helpers/cleanData';
+import TripCabController from '../TripManagement/TripCabController';
 
 class SlackInteractions {
   static launch(data, respond) {
@@ -238,12 +239,12 @@ class SlackInteractions {
     }
   }
 
-  static sendCommentDialog(data) {
+  static sendCommentDialog(data, respond) {
     const payload = CleanData.trim(data);
     const action = payload.actions[0].name;
     switch (action) {
       case ('confirmTrip'):
-        DialogPrompts.sendOperationsApprovalDialog(payload);
+        DialogPrompts.sendOperationsApprovalDialog(payload, respond);
         break;
       case ('declineRequest'):
         DialogPrompts.sendOperationsDeclineDialog(payload);
@@ -256,7 +257,9 @@ class SlackInteractions {
   static async handleTripActions(data, respond) {
     try {
       const payload = CleanData.trim(data);
-      const errors = TripActionsController.runCabValidation(payload);
+      const { callback_id: callbackId } = payload;
+      const errors = (callbackId === 'operations_reason_dialog')
+        ? TripActionsController.runCabValidation(payload) : [];
       if (errors && errors.length > 0) {
         return { errors };
       }
@@ -268,6 +271,13 @@ class SlackInteractions {
         new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
       );
     }
+  }
+
+
+  static async handleSelectCabActions(data, respond) {
+    if (data.actions && data.actions[0].name === 'confirmTrip') await DialogPrompts.sendSelectCabDialog(data);
+    if (data.actions && data.actions[0].name === 'declineRequest') await DialogPrompts.sendOperationsDeclineDialog(data);
+    if (data.type === 'dialog_submission') await TripCabController.handleSelectCabDialogSubmission(data, respond);
   }
 
   static async bookTravelTripStart(data, respond) {

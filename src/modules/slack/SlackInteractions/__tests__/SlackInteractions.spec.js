@@ -22,6 +22,7 @@ import ManagerActionsHelper from '../../helpers/slackHelpers/ManagerActionsHelpe
 import ViewTripHelper from '../../helpers/slackHelpers/ViewTripHelper';
 import JoinRouteInteractions from '../../RouteManagement/JoinRoute/JoinRouteInteractions';
 import tripService from '../../../../services/TripService';
+import TripCabController from '../../TripManagement/TripCabController';
 
 describe('SlackInteractions', () => {
   let payload1;
@@ -423,9 +424,11 @@ describe('SlackInteractions', () => {
   });
 
   describe('Send comment dialog', () => {
+    let respond;
     beforeEach(() => {
       DialogPrompts.sendOperationsApprovalDialog = jest.fn();
       DialogPrompts.sendOperationsDeclineDialog = jest.fn();
+      respond = jest.fn();
     });
 
     afterEach(() => {
@@ -433,8 +436,8 @@ describe('SlackInteractions', () => {
     });
     it('should handle confirm trip', () => {
       const payload = { actions: [{ name: 'confirmTrip' }] };
-      SlackInteractions.sendCommentDialog(payload);
-      expect(DialogPrompts.sendOperationsApprovalDialog).toBeCalledWith(payload);
+      SlackInteractions.sendCommentDialog(payload, respond);
+      expect(DialogPrompts.sendOperationsApprovalDialog).toBeCalledWith(payload, respond);
     });
 
     it('should handle confirm trip', () => {
@@ -453,9 +456,11 @@ describe('SlackInteractions', () => {
   describe('Handle trip actions', () => {
     let response;
     let payload;
+    let respond;
 
     beforeEach(() => {
       payload = {
+        callback_id: 'operations_reason_dialog',
         submission:
           {
             confirmationComment: 'yes',
@@ -469,6 +474,7 @@ describe('SlackInteractions', () => {
       DialogPrompts.sendOperationsDeclineDialog = jest.fn();
       TripActionsController.changeTripStatus = jest.fn(() => {});
       TripActionsController.runCabValidation = jest.fn(() => []);
+      respond = jest.fn();
     });
 
     afterEach(() => {
@@ -478,8 +484,8 @@ describe('SlackInteractions', () => {
 
     it('should handle confirm trip', () => {
       payload.actions = [{ name: 'confirmTrip' }];
-      SlackInteractions.sendCommentDialog(payload);
-      expect(DialogPrompts.sendOperationsApprovalDialog).toBeCalledWith(payload);
+      SlackInteractions.sendCommentDialog(payload, respond);
+      expect(DialogPrompts.sendOperationsApprovalDialog).toBeCalledWith(payload, respond);
     });
 
     it('should handle confirm trip', () => {
@@ -733,6 +739,41 @@ describe('SlackInteractions', () => {
         expect(BugsnagHelper.log).toHaveBeenCalled();
         expect(respond1.mock.calls[0][0].text).toEqual('Error:bangbang: : '
         + 'We could not complete this process please try again.');
+      });
+    });
+
+    describe('handleSelectCabAction', async () => {
+      it('should call selectCabDialog with payload data for confirmTrip acitons', () => {
+        const data = {
+          actions: [
+            {
+              name: 'confirmTrip'
+            }
+          ]
+        };
+        const sendSelectCabDialogSpy = jest.spyOn(DialogPrompts, 'sendSelectCabDialog').mockResolvedValue({});
+        SlackInteractions.handleSelectCabActions(data, respond);
+        expect(sendSelectCabDialogSpy).toHaveBeenCalled();
+      });
+      it('should handle decline request action', () => {
+        const data = {
+          actions: [
+            {
+              name: 'declineRequest'
+            }
+          ]
+        };
+        const sendOperationsDeclineDialogSpy = jest.spyOn(DialogPrompts, 'sendOperationsDeclineDialog').mockResolvedValue({});
+        SlackInteractions.handleSelectCabActions(data, respond);
+        expect(sendOperationsDeclineDialogSpy).toHaveBeenCalled();
+      });
+      it('should handle select cab dialog submission', async () => {
+        const data = {
+          type: 'dialog_submission'
+        };
+        const cabDialogSubmissionSpy = jest.spyOn(TripCabController, 'handleSelectCabDialogSubmission').mockResolvedValue({});
+        await SlackInteractions.handleSelectCabActions(data, respond);
+        expect(cabDialogSubmissionSpy).toHaveBeenCalled();
       });
     });
   });

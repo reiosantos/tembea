@@ -178,11 +178,16 @@ class UserInputValidator {
   }
 
   static validateCabDetails(payload) {
-    const { driverName, driverPhoneNo, regNumber } = payload.submission;
+    const {
+      driverName, driverPhoneNo,
+      regNumber, model, capacity
+    } = payload.submission;
     const errors = [];
     errors.push(...Validators.validateRegex('checkUsername', driverName, 'driverName'));
     errors.push(...Validators.validateRegex('checkPhoneNumber', driverPhoneNo, 'driverPhoneNo'));
     errors.push(...Validators.validateRegex('checkNumberPlate', regNumber, 'regNumber'));
+    errors.push(...Validators.validateRegex('checkWord', model, 'model'));
+    errors.push(...Validators.validateRegex('checkNumber', capacity, 'capacity'));
     return errors;
   }
 

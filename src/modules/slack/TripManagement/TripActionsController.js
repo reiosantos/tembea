@@ -48,7 +48,8 @@ class TripActionsController {
   static async changeTripStatusToConfirmed(opsUserId, payload, slackBotOauthToken) {
     const {
       submission: {
-        confirmationComment, driverName, driverPhoneNo, regNumber
+        confirmationComment, driverName,
+        driverPhoneNo, regNumber, model, capacity
       },
       team: { id: teamId },
       user: { id: userId },
@@ -57,7 +58,7 @@ class TripActionsController {
 
     const { tripId, timeStamp, channel } = JSON.parse(payloadState);
 
-    const cab = await CabService.findOrCreateCab(driverName, driverPhoneNo, regNumber);
+    const cab = await CabService.findOrCreateCab(driverName, driverPhoneNo, regNumber, capacity, model);
 
     const trip = await tripService.updateRequest(tripId, {
       tripStatus: 'Confirmed',

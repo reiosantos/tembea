@@ -186,7 +186,9 @@ describe('TripActionController operations approve tests', () => {
         confirmationComment: 'derick has it',
         driverName: 'derick',
         driverPhoneNo: '0700000000',
-        regNumber: 'KAA666Q'
+        regNumber: 'KAA666Q',
+        capacity: '1',
+        model: 'ferrari'
       },
       state: '{ "tripId": "3" }'
     };
