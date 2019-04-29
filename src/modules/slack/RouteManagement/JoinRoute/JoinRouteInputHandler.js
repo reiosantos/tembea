@@ -61,7 +61,7 @@ class JoinRouteInputHandlers {
 
     if (hasJoinAnyRoute.length || user.routeBatchId) {
       respond(new SlackInteractiveMessage(
-        'You Are ready on a route. Cannot join another'
+        'You are already on a route. Cannot join another'
       ));
       return false;
     }

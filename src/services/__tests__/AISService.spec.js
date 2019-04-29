@@ -24,7 +24,12 @@ describe('AISService', () => {
   it('should get user details', async () => {
     jest.spyOn(request, 'get').mockResolvedValueOnce(JSON.stringify(mockAISData));
     const result = await aisService.getUserDetails('test.user@andela.com');
-    expect(result).toEqual(mockUser);
+    expect(result).toHaveProperty('placement');
+    expect(result).toHaveProperty('id');
+    expect(result).toHaveProperty('email');
+    expect(result).toHaveProperty('first_name');
+    expect(result).toHaveProperty('last_name');
+    expect(result).toHaveProperty('name');
   });
 
   it('should fetch from cache if it data is there', async () => {
