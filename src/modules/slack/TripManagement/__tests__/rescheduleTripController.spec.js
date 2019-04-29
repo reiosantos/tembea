@@ -3,6 +3,7 @@ import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import SlackEvents from '../../events';
 import tripService from '../../../../services/TripService';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
+import { updatedValue } from '../../../trips/__tests__/__mocks__';
 
 
 jest.mock('../../../../utils/WebClientSingleton');
@@ -70,17 +71,15 @@ describe('RescheduleTripController', () => {
     jest.spyOn(SlackHelpers, 'getUserInfoFromSlack')
       .mockResolvedValue({ tz: 'Africa/Lagos' });
 
-    InteractivePrompts.sendRescheduleCompletion = jest.fn(() => {});
+    jest.spyOn(InteractivePrompts, 'sendRescheduleCompletion');
     const payload = { id: 1, user: { id: 'AAAAAA' }, team: { id: 'AAAAAA' } };
     const respond = jest.fn();
     SlackEvents.raise = jest.fn();
-    tripService.getById = jest.fn(() => ({
-      save: jest.fn()
-    }));
+    jest.spyOn(tripService, 'getById').mockResolvedValue(...updatedValue[1]);
 
     await RescheduleTripController.rescheduleTrip(3, '12/12/2018 22:00', payload, respond);
 
-    expect(InteractivePrompts.sendRescheduleCompletion.mock.calls.length).toBe(1);
+    expect(InteractivePrompts.sendRescheduleCompletion).toHaveBeenCalled();
   });
 
   it('should send trip error', async () => {

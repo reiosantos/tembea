@@ -197,7 +197,7 @@ const travelTripHelper = {
       const tripRequest = await ScheduleTripController.createTravelTripRequest(
         payload, tripDetails
       );
-      InteractivePrompts.sendCompletionResponse(respond, tripRequest.id);
+      InteractivePrompts.sendCompletionResponse(respond, tripRequest.id, tripDetails.rider);
       SlackEvents.raise(
         slackEventNames.NEW_TRAVEL_TRIP_REQUEST, tripRequest, payload, respond, 'travel'
       );

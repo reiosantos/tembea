@@ -51,7 +51,7 @@ class RescheduleTripController {
         const newTrip = await tripService.updateRequest(tripId, { departureTime });
         const requestType = 'reschedule';
         SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, newTrip, respond, requestType);
-        return InteractivePrompts.sendRescheduleCompletion(newTrip);
+        return InteractivePrompts.sendRescheduleCompletion(newTrip, trip.rider.slackId);
       }
 
       return InteractivePrompts.sendTripError();

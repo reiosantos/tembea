@@ -61,7 +61,7 @@ describe('Interactive Prompts test', () => {
 
   it('should create view open trips response', (done) => {
     const respond = jest.fn(value => value);
-    const result = InteractivePrompts.sendCompletionResponse(respond, 1);
+    const result = InteractivePrompts.sendCompletionResponse(respond, 1, 'UH1RT223');
     expect(result).toBe(undefined);
     expect(respond).toHaveBeenCalledWith(sendCompletionResponseMock);
 
@@ -317,7 +317,7 @@ describe('LocationPrompts', () => {
 
       const selectedActions = new SlackSelectAction('pickupBtn',
         'Pick Up location', predictedLocations);
-        
+
       const buttonAction = new SlackButtonAction('no', 'Location not listed', 'no');
       const staticMapUrl = 'https://staticMap';
 

@@ -150,7 +150,9 @@ class ScheduleTripController {
     try {
       const tripRequest = await ScheduleTripController.createRequest(payload, tripRequestDetails);
       const trip = await TripService.createRequest(tripRequest);
-      InteractivePrompts.sendCompletionResponse(respond, trip.id);
+      const { forSelf } = tripRequestDetails;
+      const riderSlackId = `${forSelf === 'true' ? tripRequestDetails.id : tripRequestDetails.rider}`;
+      InteractivePrompts.sendCompletionResponse(respond, trip.id, riderSlackId);
       SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, trip, respond);
       return true;
     } catch (error) {

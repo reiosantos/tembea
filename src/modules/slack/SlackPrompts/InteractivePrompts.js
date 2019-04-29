@@ -32,7 +32,7 @@ class InteractivePrompts {
     respond(message);
   }
 
-  static sendCompletionResponse(respond, requestId) {
+  static sendCompletionResponse(respond, requestId, riderId) {
     const attachment = new SlackAttachment();
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('view', 'View', requestId),
@@ -46,13 +46,13 @@ class InteractivePrompts {
 
     attachment.addOptionalProps('itinerary_actions');
     const message = new SlackInteractiveMessage(
-      'Success! Your request has been submitted.',
+      `Success! Trip request for <@${riderId}> has been submitted.`,
       [attachment]
     );
     respond(message);
   }
 
-  static sendRescheduleCompletion(trip) {
+  static sendRescheduleCompletion(trip, riderId) {
     const attachments = new SlackAttachment();
     attachments.addFieldsOrActions('actions', [
       new SlackButtonAction('view', 'View', trip.id),
@@ -65,7 +65,7 @@ class InteractivePrompts {
     ]);
     attachments.addOptionalProps('itinerary_actions');
     return new SlackInteractiveMessage(
-      'Success! Your request has been submitted.', [attachments]
+      `Success! Trip request for <@${riderId}> has been submitted.`, [attachments]
     );
   }
 
@@ -383,7 +383,7 @@ class InteractivePrompts {
         'Are you sure you want to cancel this trip request',
         'cancel_request'
       ),
-           
+
     ];
 
     attachment.addFieldsOrActions('actions', actions);

@@ -118,7 +118,7 @@ export const sendCompletionResponseMock = {
   }],
   channel: undefined,
   response_type: 'ephemeral',
-  text: 'Success! Your request has been submitted.',
+  text: 'Success! Trip request for <@UH1RT223> has been submitted.',
   user: undefined,
   as_user: false
 };
