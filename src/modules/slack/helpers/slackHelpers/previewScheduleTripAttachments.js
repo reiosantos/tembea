@@ -37,24 +37,9 @@ export default class PreviewScheduleTrip {
     ];
   }
 
-  static stripDestinationCoords(destinationCoords) {
-    let lat;
-    let lng;
-    if (destinationCoords.location) {
-      const { location: { longitude, latitude } } = destinationCoords;
-      lat = latitude;
-      lng = longitude;
-      return { lat, lng };
-    }
-    lat = destinationCoords.destinationLat;
-    lng = destinationCoords.destinationLong;
-    return { lat, lng };
-  }
-
-  static async getDistance(pickupLat, pickupLong, destCoords) {
-    const { lat, lng } = PreviewScheduleTrip.stripDestinationCoords(destCoords);
+  static async getDistance(pickupLat, pickupLong, destLat, destLong) {
     const origins = `${pickupLat}, ${pickupLong}`;
-    const destinations = `${lat}, ${lng}`;
+    const destinations = `${destLat}, ${destLong}`;
     const {
       distanceInKm
     } = await GoogleMapsDistanceMatrix
@@ -65,26 +50,21 @@ export default class PreviewScheduleTrip {
   static async saveDistance(tripDetails, distance) {
     const tripData = { ...tripDetails };
     tripData.distance = distance;
-    await Cache.save(tripDetails.id, 'tripDetails', tripData);
+    await Cache.saveObject(tripDetails.id, tripData);
   }
 
-  static async previewScheduleTripForKnownLocations(pickupLat, pickupLong, destinationCoords,
-    { userDetails, tripData }) {
-    const distance = await PreviewScheduleTrip
-      .getDistance(pickupLat, pickupLong, destinationCoords);
-    const result = [...PreviewScheduleTrip.returnPreview(userDetails)];
-    if (typeof distance === 'string' && distance !== 'unknown') {
-      result.push(new SlackAttachmentField('Driving Distance', distance, true));
+  static previewDistance(distance, result) {
+    if (distance && distance !== 'unknown') {
+      result.push(new SlackAttachmentField('Distance', distance, true));
+      return result;
     }
-    await PreviewScheduleTrip.saveDistance(tripData, distance);
     return result;
   }
 
   static async previewScheduleTripAttachments(tripDetails) {
     const {
       pickup, destination, pickupLat, destinationLat, passengers, department, forSelf,
-      dateTime, reason, rider, name, pickupLong, destinationLong, destinationCoords,
-      othersDestination
+      dateTime, reason, rider, name, pickupLong, destinationLong,
     } = tripDetails;
     const tripData = { ...tripDetails };
     const userName = PreviewScheduleTrip.formatName(name);
@@ -92,18 +72,13 @@ export default class PreviewScheduleTrip {
     const userDetails = {
       passengerName, passengers, userName, pickup, destination, dateTime, department, reason
     };
-    if (!othersDestination) {
-      return PreviewScheduleTrip
-        .previewScheduleTripForKnownLocations(pickupLat, pickupLong, destinationCoords,
-          { userDetails, tripData });
-    }
     if (pickupLat && destinationLat) {
       const distance = await PreviewScheduleTrip
-        .getDistance(pickupLat, pickupLong, { destinationLat, destinationLong });
+        .getDistance(pickupLat, pickupLong, destinationLat, destinationLong);
       const result = [...PreviewScheduleTrip.returnPreview(userDetails)];
-      result.push(new SlackAttachmentField('Distance', distance, true));
+      const previewData = PreviewScheduleTrip.previewDistance(distance, result);
       await PreviewScheduleTrip.saveDistance(tripData, distance);
-      return result;
+      return previewData;
     }
     return PreviewScheduleTrip.returnPreview(userDetails);
   }

@@ -34,7 +34,8 @@ export default class TripHelper {
 
   static async updateTripData(userId, name, pickup, othersPickup, dateTime,
     tripType = 'Regular Trip') {
-    const userTripData = await Cache.fetch(userId);
+    const userTripDetails = await Cache.fetch(userId);
+    const userTripData = { ...userTripDetails };
     const pickupCoords = pickup !== 'Others'
       ? await AddressService.findCoordinatesByAddress(pickup) : null;
     if (pickupCoords) {
@@ -47,14 +48,22 @@ export default class TripHelper {
     userTripData.pickup = pickup;
     userTripData.othersPickup = othersPickup;
     userTripData.dateTime = dateTime;
-    userTripData.departmentId = userTripData.department.value;
+    userTripData.departmentId = userTripDetails.department.value;
     userTripData.tripType = tripType;
-    await Cache.saveObject(userId, userTripData);
+    return userTripData;
   }
 
-  static async getDestinationCoordinates(destination) {
+  static async getDestinationCoordinates(destination, tripData) {
     const destinationCoords = destination !== 'Others'
       ? await AddressService.findCoordinatesByAddress(destination) : null;
-    return destinationCoords;
+    if (destinationCoords) {
+      const { location: { longitude, latitude, id } } = destinationCoords;
+      const tripDetails = { ...tripData };
+      tripDetails.destinationLat = latitude;
+      tripDetails.destinationLong = longitude;
+      tripDetails.destinationId = id;
+      return tripDetails;
+    }
+    return tripData;
   }
 }

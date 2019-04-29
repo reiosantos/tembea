@@ -97,12 +97,6 @@ export const createTripData = () => ({
     latitude: -1.2197531,
     longitude: 36.88588850000001,
   },
-  destinationCoords: {
-    location: {
-      longitude: 1.22222,
-      latitude: 36.444444,
-    }
-  }
 });
 
 

@@ -8,11 +8,9 @@ describe('PreviewScheduleTripAttachments', () => {
     jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId')
       .mockResolvedValue({ name: 'dummyData' });
     jest.spyOn(PreviewScheduleTrip, 'getDistance')
-      .mockImplementation((plat, plng, desCoords) => {
-        if (desCoords.location && plat && plng) return '5km';
-        if (desCoords.destinationLat && plat && plng) return '5km';
-        if (typeof desCoords !== 'object') return null;
-        return null;
+      .mockImplementation((plat, plng, desLat, desLng) => {
+        if (desLat && desLng && plat && plng) return '5km';
+        return 'unknown';
       });
   });
 
@@ -54,27 +52,6 @@ describe('PreviewScheduleTripAttachments', () => {
       const result = await PreviewScheduleTrip.previewScheduleTripAttachments(tripDetails);
       expect(result.length).toBe(8);
     });
-
-  it('should preview a user schedule trip if location is not confirmed on map', async () => {
-    const tripDetails3 = createTripData();
-    tripDetails.forSelf = 'true';
-    const userDetails = {
-      passengerName: 'dummy',
-      passengers: '1',
-      userName: 'dummy6',
-      pickup: 'pickup',
-      destination: 'destination',
-      dateTime: '12:00',
-      department: 'tdd',
-      reason: 'dd'
-    };
-    delete tripDetails3.othersDestination;
-    const { pickupLat, pickupLong, destinationCoords } = tripDetails3;
-    const result = await PreviewScheduleTrip
-      .previewScheduleTripForKnownLocations(pickupLat, pickupLong, destinationCoords,
-        { userDetails, tripData: tripDetails3 });
-    expect(result.length).toBe(9);
-  });
 
   it('should not preview distance if distance is "unknown"', async () => {
     tripDetails.forSelf = 'true';

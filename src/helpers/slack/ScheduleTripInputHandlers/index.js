@@ -80,7 +80,9 @@ const ScheduleTripInputHandlers = {
     try {
       const errors = await ScheduleTripController.validateTripDetailsForm(payload, 'pickup');
       if (errors.length) return { errors };
-      await TripHelper.updateTripData(userId, name, pickup, othersPickup, dateTime, 'Regular Trip');
+      const tripData = await TripHelper
+        .updateTripData(userId, name, pickup, othersPickup, dateTime, 'Regular Trip');
+      await Cache.saveObject(userId, tripData);
       if (pickup !== 'Others') {
         return InteractivePrompts.sendSelectDestination(respond);
       }
@@ -119,10 +121,10 @@ const ScheduleTripInputHandlers = {
       payloadCopy.submission.othersPickup = tripDetails.othersPickup;
       const errors = await ScheduleTripController.validateTripDetailsForm(payloadCopy, 'destination');
       if (errors.length) return { errors };
-      tripDetails.destinationCoords = await TripHelper.getDestinationCoordinates(destination);
+      const updatedTripData = await TripHelper.getDestinationCoordinates(destination, tripDetails);
       
-      tripData = UserInputValidator.getScheduleTripDetails(tripDetails);
-      await Cache.saveObject(userId, tripDetails);
+      tripData = UserInputValidator.getScheduleTripDetails(updatedTripData);
+      await Cache.saveObject(userId, tripData);
       if (destination !== 'Others') return InteractivePrompts.sendScheduleTripResponse(tripData, respond);
       const verifiable = await LocationHelpers.locationVerify(payload.submission, 'destination', 'schedule_trip');
       respond(verifiable);
@@ -157,7 +159,7 @@ const ScheduleTripInputHandlers = {
   confirmation: async (payload, respond) => {
     try {
       const { user: { id: userId } } = payload;
-      const { tripDetails } = await Cache.fetch(userId);
+      const tripDetails = await Cache.fetch(userId);
       await ScheduleTripController.createTripRequest(payload, respond, tripDetails);
       await Cache.delete(userId);
     } catch (error) {

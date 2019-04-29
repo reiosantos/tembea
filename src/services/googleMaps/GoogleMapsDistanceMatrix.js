@@ -30,7 +30,7 @@ class GoogleMapsDistanceMatrix {
       }
       const element = response.data.rows[0].elements[0];
       if (element.status === 'ZERO_RESULTS') {
-        return null;
+        return { distanceInKm: null, distanceInMetres: null };
       }
       const {
         distance: { text: distanceInKm, value: distanceInMetres }

@@ -1,6 +1,8 @@
 import TripHelper from './TripHelper';
 import Cache from '../cache';
 import AddressService from '../services/AddressService';
+import { tripRequestDetails } from
+  '../modules/slack/SlackInteractions/__mocks__/SlackInteractions.mock';
 
 describe('TripHelper', () => {
   it('should validate ', () => {
@@ -43,10 +45,6 @@ describe('TripHelper for Schedule Trip', () => {
   const userTripData = {
     department: { value: '1' }
   };
-  const userTripData2 = {
-    department: { value: '1' }
-  };
-
   const location = {
     location: {
       id: 2,
@@ -71,25 +69,40 @@ describe('TripHelper for Schedule Trip', () => {
   it('should update the trip data and save in cache - updateTripData', async () => {
     const result = await TripHelper
       .updateTripData('1', 'dummy', 'pickup', 'othersPickup', '2018-10-10');
-    expect(Cache.saveObject).toHaveBeenCalledWith('1', userTripData);
-    expect(result).toBeUndefined();
-  });
-  it('should return coordinates for preset destination - "getDestinationCoordinates"', async () => {
-    const result = await TripHelper
-      .getDestinationCoordinates('dummy');
-    expect(result).toHaveProperty('location');
-    expect(result).toBe(location);
-  });
-  it('should not save pickup coords if "Others" is selected  - "updateTripData"', async () => {
-    jest.spyOn(Cache, 'fetch').mockResolvedValue(userTripData2);
-    await TripHelper
-      .updateTripData('1', 'dummy', 'Others', 'othersPickup', '2018-10-10');
-    expect(userTripData2.pickupId).toBeUndefined();
+    expect(result.pickupLat).toBe(56.5555);
+    expect(result.pickupLong).toBe(1.2222);
   });
 
-  it('should return null for other destination  - "getDestinationCoordinates"', async () => {
+  it('should return coordinates for preset destination - "getDestinationCoordinates"', async () => {
+    const tripDetails = tripRequestDetails();
     const result = await TripHelper
-      .getDestinationCoordinates('Others');
-    expect(result).toBe(null);
+      .getDestinationCoordinates('dummy', tripDetails);
+    expect(result).toHaveProperty('destinationLat');
+    expect(result).toHaveProperty('destinationLong');
+    expect(result.destinationLat).toBe(56.5555);
+  });
+
+  it('should not save pickup coords if "Others" is selected  - "updateTripData"', async () => {
+    const tripDetail = {
+      pickup: 'Others',
+      othersPickup: 'others_pickup',
+      date_time: '10/10/2018 22:00',
+      department: {
+        value: 1
+      }
+    };
+    jest.spyOn(Cache, 'fetch').mockResolvedValue(tripDetail);
+    const result = await TripHelper
+      .updateTripData('1', 'dummy', 'Others', 'othersPickup', '2018-10-10');
+    expect(result.departmentId).toEqual(1);
+    expect(result.tripType).toEqual('Regular Trip');
+    expect(result.pickupId).toBeUndefined();
+  });
+
+  it('should return tripDetail without destinationLat  - "getDestinationCoordinates"', async () => {
+    const tripDetails = tripRequestDetails();
+    const result = await TripHelper
+      .getDestinationCoordinates('Others', tripDetails);
+    expect(result.destinationLat).toBeUndefined();
   });
 });
