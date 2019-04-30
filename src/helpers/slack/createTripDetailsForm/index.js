@@ -3,7 +3,7 @@ import {
   SlackDialogSelectElementWithOptions,
   SlackDialogElementWithDataSource, SlackDialogTextarea
 } from '../../../modules/slack/SlackModels/SlackDialogModels';
-import { pickupLocations, destinations } from '../../../utils/data';
+import { pickupLocations, destinations, extraTravelOptions } from '../../../utils/data';
 
 export const toLabelValuePairs = arr => arr.map(val => ({
   label: val,
@@ -14,6 +14,9 @@ const addressHint = 'e.g: Jomo Kenyatta Airport';
 
 const dateHint = `Enter date in Day/Month/Year format,
     leave a space and enter time in Hour:Minutes format. e.g 22/12/2019 22:00`;
+
+const travelPickupLocations = [...pickupLocations, ...extraTravelOptions];
+const travelDestinations = [...destinations, ...extraTravelOptions];
 
 const createTripDetailsForm = {
   regularTripForm: () => {
@@ -78,7 +81,7 @@ const createTripDetailsForm = {
     );
 
     const pickupField = new SlackDialogSelectElementWithOptions('Pickup location',
-      'pickup', toLabelValuePairs(pickupLocations));
+      'pickup', toLabelValuePairs(travelPickupLocations));
 
     const pickupFieldOther = new SlackDialogText(
       'Other Pickup location', 'othersPickup', 'Enter pickup location', true, addressHint
@@ -92,7 +95,7 @@ const createTripDetailsForm = {
   },
   travelDestinationForm: () => {
     const destinationField = new SlackDialogSelectElementWithOptions('Destination',
-      'destination', toLabelValuePairs(destinations));
+      'destination', toLabelValuePairs(travelDestinations));
 
     const destinationFieldOther = new SlackDialogText(
       'Other Destination', 'othersDestination', 'Enter destination', true, addressHint
@@ -131,7 +134,7 @@ const createTripDetailsForm = {
       textarea
     ];
   },
-  
+
 };
 
 export default createTripDetailsForm;

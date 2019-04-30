@@ -16,6 +16,8 @@ export const destinations = [
   'Others'
 ];
 
+export const extraTravelOptions = ['To Be Decided'];
+
 export const expectedCreateRouteObject = [
   'capacity', 'destination', 'routeName', 'takeOffTime', 'vehicle'
 ];
