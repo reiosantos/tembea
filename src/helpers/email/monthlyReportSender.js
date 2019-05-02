@@ -1,4 +1,6 @@
-import schedule from 'node-schedule';
+import fs from 'fs';
+import os from 'os';
+import { join } from 'path';
 import EmailService from '../../services/EmailService';
 import ReportGeneratorService from '../../services/report/ReportGeneratorService';
 import DepartmentService from '../../services/DepartmentService';
@@ -30,34 +32,53 @@ class MonthlyReportSender {
     return template;
   }
 
-  async sendMail(teamId) {
-    const receivers = await MonthlyReportSender.getAddresses(teamId);
-
-    if (receivers && receivers.length > 0) {
-      const summary = await ReportGeneratorService.getOverallTripsSummary();
-      const subject = 'Monthly Report for trips taken by Andelans';
-      const mainReceiver = receivers[1] || receivers[0];
-
-      const html = await this.getTemplate({
-        name: mainReceiver.name,
-        month: summary.month,
-        increased: Number.parseFloat(summary.percentageChange) > 0,
-        departments: MonthlyReportSender.departmentToArray(summary.departments),
-        summary
+  static async processAttachments(attachments) {
+    const files = await Promise.all(attachments.map(async (element) => {
+      const fileName = join(os.tmpdir(), element.filename);
+      const writeStream = fs.createWriteStream(fileName);
+      const readStream = Utils.writableToReadableStream(element.content);
+      readStream.pipe(writeStream);
+      const promise = await new Promise((resolve, reject) => {
+        readStream.on('end', () => {
+          readStream.close();
+          resolve(fileName);
+        });
+        readStream.on('error', reject);
       });
+      return promise;
+    }));
+    return files;
+  }
 
-      const fileAttachment = await MonthlyReportSender.getEmailReportAttachment();
-
-      const attachments = [{
-        filename: `${summary.month} Report.xlsx`.replace(/[, ]/g, '_'),
-        content: Utils.writableToReadableStream(fileAttachment),
-      }];
-      const copyReceiverEmail = receivers[1] ? receivers[1].email : '';
-      const mailOptions = this.emailService.createEmailOptions(
-        mainReceiver.email, [copyReceiverEmail], subject, html, attachments
-      );
-      this.emailService.sendMail(mailOptions);
+  async sendMail() {
+    const summary = await ReportGeneratorService.getOverallTripsSummary();
+    const html = await this.getTemplate({
+      name: 'Kenya Travel Team',
+      month: summary.month,
+      increased: Number.parseFloat(summary.percentageChange) > 0,
+      departments: MonthlyReportSender.departmentToArray(summary.departments),
+      summary
+    });
+    const attachments = [{
+      filename: `${summary.month} Report.xlsx`.replace(/[, ]/g, '_'),
+      content: Utils.writableToReadableStream(await MonthlyReportSender.getEmailReportAttachment()),
+    }];
+    const files = await MonthlyReportSender.processAttachments(attachments);
+    if (process.env.TEMBEA_MAIL_ADDRESS && process.env.KENYA_TRAVEL_TEAM_EMAIL) {
+      await this.emailService.sendMail({
+        from: `TEMBEA <${process.env.TEMBEA_MAIL_ADDRESS}>`,
+        to: process.env.KENYA_TRAVEL_TEAM_EMAIL,
+        subject: 'Monthly Report for trips taken by Andelans',
+        attachment: files,
+        html
+      });
+    } else {
+      BugsnagHelper.log('Either TEMBEA_MAIL_ADDRESS or '
+        + 'KENYA_TRAVEL_TEAM_EMAIL has not been set in the .env ');
     }
+    try {
+      files.forEach((file) => { fs.unlinkSync(file); });
+    } catch (err) { return err; }
   }
 
   /**
@@ -108,14 +129,6 @@ class MonthlyReportSender {
       name: value,
       ...departments[value]
     }));
-  }
-
-  /**
-  * Scheduling a recurring execution of a method
-  */
-  static scheduleReporting(hbs) {
-    const scheduleHandler = new MonthlyReportSender(hbs);
-    schedule.scheduleJob('0 0 1 2 * *', scheduleHandler.send);
   }
 }
 

@@ -107,13 +107,13 @@ class GenerateExcelBook {
         record.id,
         Utils.formatDate(record.createdAt),
         Utils.formatDate(record.departureTime),
-        record['origin.address'],
-        record['destination.address'],
-        record['requester.name'],
-        record['department.name'],
-        record['rider.name'],
-        record['approver.name'],
-        record['confirmer.name']
+        (record.origin) ? record.origin.address : '',
+        (record.destination) ? record.destination.address : '',
+        record.requester ? record.requester.name : '',
+        record.department ? record.department.name : '',
+        record.rider ? record.rider.name : '',
+        record.approver ? record.approver.name : '',
+        record.confirmer ? record.confirmer.name : ''
       ];
       GenerateExcelBook.populateSheetRowData(sheet, data, startColumn, currentRow);
       currentRow += 1;

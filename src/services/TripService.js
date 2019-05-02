@@ -41,7 +41,7 @@ export class TripService {
     }
     let dateFilters = TripService.getDateFilters('departureTime', departureTime || {});
     where = { ...where, ...dateFilters };
-    dateFilters = TripService.getDateFilters('TripRequest.createdAt', requestedOn || {});
+    dateFilters = TripService.getDateFilters('createdAt', requestedOn || {});
     where = { ...where, ...dateFilters };
     return where;
   }
@@ -228,7 +228,7 @@ export class TripService {
         order: [...order.order]
       }
     );
-    return trips;
+    return RemoveDataValues.removeDataValues(trips);
   }
 
   async updateRequest(tripId, updateObject) {

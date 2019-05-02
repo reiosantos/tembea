@@ -1,25 +1,18 @@
 /* eslint-disable max-len */
-import models from '../../database/models';
+import moment from 'moment';
 import Utils from '../../utils';
-import tripService from '../TripService';
+import tripService, { TripService } from '../TripService';
 
-const { sequelize } = models;
 
 class GenerateReportData {
-  static prepareWhereClause(numberOfMonthsBack) {
-    return `
-    "tripStatus" = ANY(ARRAY['DeclinedByOps', 'DeclinedByManager', 'Completed']::"enum_TripRequests_tripStatus"[]) AND
-    (DATE_TRUNC('month', NOW() - INTERVAL '${numberOfMonthsBack} months') = DATE_TRUNC('month', TO_DATE("TripRequest"."departureTime", 'YYYY-MM-DD HH24:MI:SS'))) AND
-    (DATE_TRUNC('month', NOW()) > DATE_TRUNC('month', "TripRequest"."createdAt")) AND
-    (DATE_TRUNC('month', NOW() - INTERVAL '${numberOfMonthsBack} months') >= DATE_TRUNC('month', "TripRequest"."createdAt"))
-    `;
-  }
-
-  static getReportData(numberOfMonthsBack) {
-    const qString = GenerateReportData.prepareWhereClause(numberOfMonthsBack);
-
+  static async getReportData(numberOfMonthsBack) {
+    const monthsBackDate = moment(new Date()).subtract({ months: numberOfMonthsBack }).format('YYYY-MM-DD');
+    const dateFilters = {
+      requestedOn: { after: monthsBackDate }
+    };
+    const where = TripService.sequelizeWhereClauseOption({ ...dateFilters });
     return tripService.getAll(
-      { where: sequelize.literal(qString) },
+      { where },
       { order: [['createdAt', 'DESC'], ['updatedAt', 'DESC']] }
     );
   }

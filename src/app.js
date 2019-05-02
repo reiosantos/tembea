@@ -5,7 +5,6 @@ import cors from 'cors';
 import morgan from 'morgan';
 import expressValidator from 'express-validator';
 import BugsnagHelper from './helpers/bugsnagHelper';
-import MonthlyReportSender from './helpers/email/monthlyReportSender';
 import modules from './modules';
 import SlackBodyParserFilter from './helpers/slackBodyParserFilter';
 import './modules/slack/events/index';
@@ -37,7 +36,7 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.set('views', path.join(__dirname, 'views'));
 
-const hbs = hbsConfig(app);
+export const hbs = hbsConfig(app);
 app.engine('html', hbs.engine);
 app.set('view engine', 'html');
 
@@ -54,7 +53,6 @@ StartUpHelper.ensureSuperAdminExists();
 StartUpHelper.flushStaleCache();
 StartUpHelper.addDefaultAddresses();
 
-MonthlyReportSender.scheduleReporting(hbs);
 
 /* This handles any errors that Express catches,
    it should come last in the pipeline */

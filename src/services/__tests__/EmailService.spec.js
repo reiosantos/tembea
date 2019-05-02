@@ -1,33 +1,32 @@
 import EmailService from '../EmailService';
 
-jest.mock('nodemailer', () => ({
-  createTransport: jest.fn(() => ({
-    sendMail: () => {}
-  }))
-}));
-
 describe('EmailService Module', () => {
-  it('should create a mailer transport', () => {
-    const mail = new EmailService();
-    expect(mail).toHaveProperty('transporter');
-    expect(mail.transporter).toBeInstanceOf(Object);
-    expect(mail.transporter.sendMail).toBeInstanceOf(Function);
+  let mail = new EmailService();
+
+  beforeEach(() => {
+    mail = new EmailService();
   });
 
-  it('should createEmailOptions', () => {
-    const mail = new EmailService();
-    const options = mail.createEmailOptions('receiver', 'cc', 'subject',
-      'message', ['attachments']);
 
-    expect(options).toBeInstanceOf(Object);
-    expect(options).toEqual({
-      from: mail.hostAddress,
-      to: 'receiver',
-      cc: 'cc',
-      subject: 'subject',
-      html: 'message',
-      attachments: ['attachments']
-    });
-    expect(mail.sendMail(options)).toBeUndefined();
+  it('should initialize mail client', () => {
+    mail = new EmailService();
+    expect(mail.client).toBeDefined();
+    expect(mail.client.apiKey).toBeDefined();
+    expect(mail.client.domain).toBeDefined();
+  });
+
+  it('should send email', async () => {
+    const mailOptions = { from: 'tembea@andela.com', to: 'opsteam@andela.com' };
+    const res = await mail.sendMail(mailOptions);
+    expect(mail.client).toBeDefined();
+    expect(res.message).toEqual('Queued. Thank you.');
+  });
+
+  it('should not send email', async () => {
+    mail.client = null;
+    const mailOptions = { from: '', to: '' };
+    const res = await mail.sendMail(mailOptions);
+    expect(mail.client).toBeDefined();
+    expect(res).toEqual('failed');
   });
 });

@@ -1,4 +1,5 @@
-import schedule from 'node-schedule';
+import fs from 'fs';
+import os from 'os';
 import DepartmentService from '../../../services/DepartmentService';
 import MonthlyReportSender from '../monthlyReportSender';
 import TeamDetailsService from '../../../services/TeamDetailsService';
@@ -56,14 +57,6 @@ describe('MonthlyReportSender', () => {
     jest.restoreAllMocks();
   });
 
-  describe('scheduleReporting', () => {
-    it('should invoke the schedule.scheduleJob function', () => {
-      jest.spyOn(schedule, 'scheduleJob').mockResolvedValue();
-
-      MonthlyReportSender.scheduleReporting(hbsMock);
-      expect(schedule.scheduleJob).toHaveBeenCalledTimes(1);
-    });
-  });
 
   describe('send', () => {
     afterEach(() => {
@@ -108,13 +101,23 @@ describe('MonthlyReportSender', () => {
     });
 
     it('should send mail to expected people', async (done) => {
-      const testTeamId = 2;
-      const mailSpy = jest.spyOn(testReporter.emailService, 'sendMail').mockResolvedValue();
+      jest.spyOn(testReporter.emailService, 'sendMail').mockImplementation();
 
-      await testReporter.sendMail(testTeamId);
+      jest.spyOn(ReportGeneratorService, 'getOverallTripsSummary')
+        .mockImplementation(() => ({ month: '', departments: '', percentageChange: 20 }));
+      jest.spyOn(MonthlyReportSender, 'getEmailReportAttachment').mockImplementation(() => (new Promise(resolve => resolve(''))));
+      jest.spyOn(MonthlyReportSender, 'processAttachments').mockImplementation(() => (new Promise(resolve => resolve([{}]))));
+      jest.spyOn(Utils, 'writableToReadableStream').mockImplementation(() => [{}]);
+      
+      
+      jest.spyOn(fs, 'unlinkSync').mockImplementation(() => ['']);
+
+      await testReporter.sendMail();
 
       expect(ReportGeneratorService.getOverallTripsSummary).toHaveBeenCalled();
-      expect(mailSpy).toHaveBeenCalled();
+      expect(MonthlyReportSender.processAttachments).toHaveBeenCalled();
+      expect(MonthlyReportSender.processAttachments).toHaveBeenCalled();
+      expect(MonthlyReportSender.getEmailReportAttachment).toHaveBeenCalled();
       done();
     });
   });
@@ -141,6 +144,24 @@ describe('MonthlyReportSender', () => {
 
       const include = template.includes(testToken);
       expect(include).toBeTruthy();
+    });
+  });
+
+  describe('processAttachments', () => {
+    it('should processAttachments', async () => {
+      jest.spyOn(fs, 'createWriteStream').mockImplementation();
+      jest.spyOn(os, 'tmpdir').mockImplementation(() => '');
+      jest.spyOn(Utils, 'writableToReadableStream')
+        .mockImplementation(() => ({
+          pipe: jest.fn(),
+          close: jest.fn(),
+          on: ((end, fn) => {
+            fn();
+          })
+        }));
+      const attachments = [{ filename: '', content: jest.fn() }];
+      MonthlyReportSender.processAttachments(attachments);
+      expect(Utils.writableToReadableStream).toBeCalled();
     });
   });
 });

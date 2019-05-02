@@ -1,53 +1,35 @@
-import nodemailer from 'nodemailer';
+import mailgun from 'mailgun-js';
+import BugsnagHelper from '../helpers/bugsnagHelper';
 
 class EmailService {
   constructor() {
-    this.mailAuth = {
-      user: process.env.TEMBEA_MAIL_USER,
-      pass: process.env.TEMBEA_MAIL_PASSWORD
-    };
-    this.mailService = process.env.TEMBEA_MAIL_SERVICE;
-    this.hostAddress = process.env.TEMBEA_MAIL_ADDRESS;
+    const apiKey = process.env.MAILGUN_API_KEY;
+    const domain = process.env.MAILGUN_DOMAIN;
 
-    this.transporter = this.createMailTransport();
-  }
-
-  createMailTransport() {
-    return nodemailer.createTransport({
-      service: this.mailService,
-      auth: this.mailAuth
-    });
+    if (apiKey && domain) {
+      const options = {
+        apiKey: process.env.MAILGUN_API_KEY,
+        domain: process.env.MAILGUN_DOMAIN
+      };
+      this.client = mailgun(options);
+    } else {
+      BugsnagHelper.log('Either MAILGUN_API_KEY or '
+        + 'MAILGUN_DOMAIN has not been set in the .env ');
+    }
   }
 
   /**
-   * ATTACHMENT OPTIONS
-   * ------------------
-   * filename - filename to be reported as the name of the attached file. Use of unicode is allowed.
-   * content - String, Buffer or a Stream contents for the attachment
-   * href – an URL to the file (data uris are allowed as well)
-   *
-   * Example of passing attachments [{first attachment}, {second attachment}]
-   *
-   * @param receiver
-   * @param cc
-   * @param subject
-   * @param html
-   * @param attachments
-   * @returns {{from: *, to: *, cc: Array, subject: *, html: *, attachments: Array}}
-   */
-  createEmailOptions(receiver, cc, subject, html, attachments) {
-    return {
-      from: this.hostAddress,
-      to: receiver,
-      cc,
-      subject,
-      html,
-      attachments
-    };
-  }
-
-  sendMail(mailOptions, callbackFunction) {
-    return this.transporter.sendMail(mailOptions, callbackFunction);
+ *
+ * @param mailOptions  {sender, receiver, subject, html, attachment }
+ * sender and receiver are emails
+ * attachment can be an array ['pathToFile1', 'pathToFile2']
+ */
+  async sendMail(mailOptions) {
+    if (this.client) {
+      const res = await this.client.messages().send(mailOptions);
+      return res;
+    }
+    return new Promise(resolve => resolve('failed'));
   }
 }
 
