@@ -408,4 +408,14 @@ describe('RouteService', () => {
       expect(result[1].where).toHaveProperty('name');
     });
   });
+  describe('Route Ratings', () => {
+    it('should execute query ', async () => {
+      const mockData = [[]];
+      const querySpy = jest.spyOn(sequelize, 'query');
+      querySpy.mockReturnValue(mockData);
+      const results = await RouteService.RouteRatings();
+      expect(querySpy).toBeCalled();
+      expect(results).toEqual(mockData);
+    });
+  });
 });

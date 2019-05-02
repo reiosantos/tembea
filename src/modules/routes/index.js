@@ -49,6 +49,34 @@ routesRouter.get(
 
 /**
  * @swagger
+ * /routes/ratings:
+ *  get:
+ *    summary: get all ratings for route batches
+ *    tags:
+ *      - Routes
+ *    parameters:
+ *      - name: from
+ *        in: path
+ *        required: false
+ *        type: date
+ *        description: start date to filter by
+ *      - name: to
+ *        in: path
+ *        required: false
+ *        type: date
+ *        description: end date to filter by
+ *    responses:
+ *      200:
+ *        description: response object with all ratings for a routes and associated batch
+ */
+
+routesRouter.get(
+  '/routes/ratings',
+  RoutesUsageController.getRouteRatings
+);
+
+/**
+ * @swagger
  * /routes:
  *  post:
  *    summary: create routes

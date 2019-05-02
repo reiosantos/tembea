@@ -1,4 +1,5 @@
 import { Op } from 'sequelize';
+import moment from 'moment';
 import models from '../database/models';
 import Cache from '../cache';
 import { MAX_INT as all } from '../helpers/constants';
@@ -8,8 +9,9 @@ import UserService from './UserService';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import CabService from './CabService';
 
+
 const {
-  Route, RouteBatch, Cab, Address, User, sequelize
+  Route, RouteBatch, Cab, Address, User, sequelize,
 } = models;
 
 class RouteService {
@@ -318,6 +320,26 @@ class RouteService {
         }];
     }
     return RouteService.defaultInclude;
+  }
+
+  static async RouteRatings(from, to) {
+    const previousMonthStart = moment().subtract(1, 'months').date(1).format('YYYY-MM-DD');
+    const previousMonthEnd = moment().subtract(1, 'months').endOf('month')
+      .format('YYYY-MM-DD');
+    let query = `
+      SELECT BUR.id AS "BatchUseRecordID", BUR.rating, RUR.id AS "RouteRecordID",
+      RB.id As "RouteBatchID", RB.batch As "RouteBatchName", R.name As "Route", R.id As "RouteID",
+      RUR."batchUseDate" FROM "BatchUseRecords" AS BUR
+      INNER JOIN "RouteUseRecords" AS RUR ON BUR."batchRecordId" = RUR.id
+      INNER JOIN "RouteBatches" AS RB ON RUR."batchId" = RB.id
+      INNER JOIN "Routes" AS R ON RB."routeId" = R.id
+      WHERE BUR.rating IS NOT NULL 
+      `;
+    const filterByDate = ` AND RUR."batchUseDate" >= '${from || previousMonthStart}' 
+    AND RUR."batchUseDate" <= '${to || previousMonthEnd}'`;
+    query += filterByDate;
+    const results = await sequelize.query(query);
+    return results;
   }
 }
 

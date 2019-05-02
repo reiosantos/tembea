@@ -23,6 +23,7 @@ import RouteHelper from '../../../helpers/RouteHelper';
 import {
   batchRecords, successMessage, returnedObject, percentages
 } from '../__mocks__/routeMock';
+import { MockRatings, RatingAverages } from '../__mocks__/mockData';
 
 const assertRouteInfo = (body) => {
   expect(body)
@@ -451,12 +452,60 @@ describe('RoutesController', () => {
       usageServiceSpy.mockRejectedValue(error);
       jest.spyOn(BugsnagHelper, 'log');
       jest.spyOn(HttpError, 'sendErrorResponse');
-
       await RoutesUsageController.getRouteUsage(req, res);
       expect(BugsnagHelper.log).toBeCalled();
       expect(BugsnagHelper.log).toBeCalledWith(error);
       expect(HttpError.sendErrorResponse).toBeCalled();
       expect(HttpError.sendErrorResponse).toBeCalledWith(error, res);
+    });
+  });
+  describe('Route Ratings Controller', () => {
+    let res;
+    let req;
+    beforeEach(() => {
+      res = {
+        status: jest.fn(() => ({
+          json: jest.fn(() => {})
+        })).mockReturnValue({ json: jest.fn() })
+      };
+      req = {
+        query: { from: '2019-10-11', to: '2019-11-22' }
+      };
+    });
+    it('should return ratings', async () => {
+      jest.spyOn(Response, 'sendResponse');
+      const ratingsSpy = jest.spyOn(RouteService, 'RouteRatings');
+      ratingsSpy.mockReturnValue(MockRatings);
+      await RoutesUsageController.getRouteRatings(req, res);
+      expect(Response.sendResponse).toBeCalled();
+      expect(Response.sendResponse).toBeCalledWith(res, 200, true, 'Ratings Fetched Successfully', RatingAverages);
+    });
+
+    it('should catch error on get ratings fail', async () => {
+      const error = 'Something Went Wrong';
+      const ratingsSpy = jest.spyOn(RouteService, 'RouteRatings');
+      ratingsSpy.mockRejectedValue(error);
+      jest.spyOn(BugsnagHelper, 'log');
+      jest.spyOn(HttpError, 'sendErrorResponse');
+      await RoutesUsageController.getRouteRatings(req, res);
+      expect(BugsnagHelper.log).toBeCalled();
+      expect(BugsnagHelper.log).toBeCalledWith(error);
+      expect(HttpError.sendErrorResponse).toBeCalled();
+      expect(HttpError.sendErrorResponse).toBeCalledWith(error, res);
+    });
+
+    it('should get all ratings from end point', async () => {
+      request(app)
+        .get('/api/v1/routes/ratings/')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', validToken)
+        .expect(200, (err, resp) => {
+          const { status, body } = resp;
+          expect(status).toEqual(200);
+          expect(body).toHaveProperty('success');
+          expect(body).toHaveProperty('message');
+          expect(body).toHaveProperty('data');
+        });
     });
   });
 });
