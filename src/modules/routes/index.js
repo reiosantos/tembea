@@ -1,6 +1,7 @@
 import express from 'express';
 import TokenValidator from '../../middlewares/TokenValidator';
 import RoutesController from './RouteController';
+import RoutesUsageController from './RouteUsageController';
 import middlewares from '../../middlewares';
 
 const {
@@ -343,6 +344,33 @@ routesRouter.delete(
   GeneralValidator.validateTeamUrlInRequestBody,
   RouteValidator.validateRouteIdParam,
   RoutesController.deleteFellowFromRoute
+);
+
+/**
+ * @swagger
+ * /routes/status/usage:
+ *  get:
+ *    summary: Get the most and least used route batches
+ *    tags:
+ *      - Routes Usage
+ *    parameters:
+ *      - name: from
+ *        in: path
+ *        required: false
+ *        description: the start date of the range you want to get records for. e.g 2019-05-08
+ *        type: date
+ *      - name: to
+ *        in: path
+ *        required: false
+ *        description: the end date of the range you want to get records for e.g 2019-05-08
+ *        type: date
+ *    responses:
+ *      200:
+ *        description: Percentage Usage Generated
+ */
+routesRouter.get(
+  '/routes/status/usage',
+  RoutesUsageController.getRouteUsage
 );
 
 export default routesRouter;

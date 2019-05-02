@@ -17,6 +17,56 @@ class RouteHelper {
     }, '');
   }
 
+  static findPercentageUsage(record, allUsageRecords, dormantRouteBatches) {
+    const usageRecords = Object.values(record);
+    const confirmedRecords = usageRecords.filter(
+      confirmed => confirmed.userAttendStatus === 'Confirmed'
+    );
+    const batchUsage = {};
+    const { RouteBatchName, Route } = record[0];
+    batchUsage.Route = Route;
+    batchUsage.RouteBatch = RouteBatchName;
+    batchUsage.users = usageRecords.length;
+    if (!confirmedRecords.length) {
+      batchUsage.percentageUsage = 0;
+      dormantRouteBatches.push(batchUsage);
+      return dormantRouteBatches;
+    }
+    const percentageUsage = (confirmedRecords.length / usageRecords.length) * 100;
+    batchUsage.percentageUsage = Math.round(percentageUsage);
+    allUsageRecords.push(batchUsage);
+    return allUsageRecords;
+  }
+
+  static findMaxOrMin(arrayList, status) {
+    const emptyRecord = {
+      Route: 'N/A',
+      RouteBatch: '',
+      users: 0,
+      percentageUsage: 0
+    };
+    return arrayList.reduce((prev, current) => {
+      if (status === 'max') {
+        return (prev.percentageUsage === current.percentageUsage)
+          ? RouteHelper.reducerHelper(prev, current, 'users', 'max')
+          : RouteHelper.reducerHelper(prev, current, 'percentageUsage', 'max');
+      }
+      if (arrayList.length === 1) {
+        return emptyRecord;
+      }
+      return (prev.percentageUsage === current.percentageUsage)
+        ? RouteHelper.reducerHelper(prev, current, 'users', 'min')
+        : RouteHelper.reducerHelper(prev, current, 'percentageUsage', 'min');
+    }, { emptyRecord });
+  }
+
+  static reducerHelper(prev, current, attribute, status) {
+    if (status === 'min') {
+      return prev[attribute] < current[attribute] ? prev : current;
+    }
+    return prev[attribute] > current[attribute] ? prev : current;
+  }
+
   static verifyPropValues(createRouteRequest) {
     const errors = [];
     const {

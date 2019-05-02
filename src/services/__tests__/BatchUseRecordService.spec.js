@@ -140,4 +140,14 @@ describe('BatchUseRecordService', () => {
       expect(response).toHaveProperty('routeUseRecord');
     });
   });
+  describe('BatchUseRecordService_getRoutesUsage', () => {
+    it('should fetch all routes and batch records', async () => {
+      const mockData = [];
+      const sequelizeSpy = jest.spyOn(models.sequelize, 'query');
+      sequelizeSpy.mockReturnValue(mockData);
+      const results = await BatchUseRecordService.getRoutesUsage();
+      expect(sequelizeSpy).toBeCalled();
+      expect(results).toEqual(mockData);
+    });
+  });
 });

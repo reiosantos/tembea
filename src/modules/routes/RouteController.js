@@ -314,5 +314,4 @@ class RoutesController {
     }
   }
 }
-
 export default RoutesController;

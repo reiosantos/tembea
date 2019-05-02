@@ -51,6 +51,71 @@ const routeDetails = {
   created: false
 };
 
+const returnNullPercentage = [{
+  Route: 'Twila Centers', RouteBatch: 'B', percentageUsage: 0, users: 1
+}];
+const record = [{
+  BatchUseRecordID: 3,
+  userAttendStatus: 'NotConfirmed',
+  RouteRecordID: 2,
+  RouteBatchID: 1003,
+  RouteBatchName: 'B',
+  Route: 'Twila Centers',
+  RouteID: 1006,
+  batchUseDate: '2019-05-07'
+}];
+const returnedPercentage = [{
+  Route: 'Twila Centers', RouteBatch: 'B', percentageUsage: 100, users: 1
+}];
+const confirmedRecord = [{
+  BatchUseRecordID: 3,
+  userAttendStatus: 'Confirmed',
+  RouteRecordID: 2,
+  RouteBatchID: 1003,
+  RouteBatchName: 'B',
+  Route: 'Twila Centers',
+  RouteID: 1006,
+  batchUseDate: '2019-05-07'
+}];
+
+const percentagesList = [{
+  Route: 'Twila Centers',
+  RouteBatch: 'A',
+  users: 7,
+  percentageUsage: 14
+},
+{
+  Route: 'Twila Center',
+  RouteBatch: 'B',
+  users: 5,
+  percentageUsage: 20
+}];
+const singlePercentageArray = [{
+  Route: 'Twila Centers',
+  RouteBatch: 'A',
+  users: 7,
+  percentageUsage: 14
+}];
+const returnedMaxObj = {
+  Route: 'Twila Center',
+  RouteBatch: 'B',
+  users: 5,
+  percentageUsage: 20
+};
+const returnedMinObj = {
+  Route: 'Twila Centers',
+  RouteBatch: 'A',
+  users: 7,
+  percentageUsage: 14
+};
+const emptyRecord = {
+  Route: 'N/A',
+  RouteBatch: '',
+  percentageUsage: 0,
+  users: 0
+};
+
 export {
-  routeBatch, batch, routeDetails
+  routeBatch, batch, routeDetails, returnNullPercentage, record, returnedPercentage, confirmedRecord
+  , percentagesList, singlePercentageArray, returnedMaxObj, returnedMinObj, emptyRecord
 };

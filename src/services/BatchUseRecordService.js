@@ -4,10 +4,32 @@ import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import RemoveDataValues from '../helpers/removeDataValues';
 
 const {
-  BatchUseRecord, RouteUseRecord, RouteBatch, Route
+  BatchUseRecord, RouteUseRecord, RouteBatch, Route, sequelize
 } = models;
 
 class BatchUseRecordService {
+  static async getRoutesUsage(from, to) {
+    let query = `SELECT BUR.id AS "BatchUseRecordID", BUR."userAttendStatus", RUR.id AS "RouteRecordID", RB.id As "RouteBatchID",
+     
+    RB.batch As "RouteBatchName", R.name As "Route", R.id As "RouteID", RUR."batchUseDate"
+
+    FROM "BatchUseRecords" AS BUR 
+
+    INNER JOIN "RouteUseRecords" AS RUR ON BUR."batchRecordId" = RUR.id
+
+    INNER JOIN "RouteBatches" AS RB ON RUR."batchId" = RB.id
+
+    INNER JOIN "Routes" AS R ON RB."routeId" = R.id `;
+    
+    const filterByDate = `WHERE RUR."batchUseDate" >= '${from}' AND RUR."batchUseDate" <= '${to}'`;
+    if (from && to) {
+      query += filterByDate;
+    }
+    const results = await sequelize.query(query);
+    return results;
+  }
+
+
   static get defaultPageable() {
     return {
       page: 1, size: all, sort: SequelizePaginationHelper.deserializeSort('id,asc')

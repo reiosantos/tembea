@@ -3,6 +3,7 @@ import faker from 'faker';
 import app from '../../../app';
 import Utils from '../../../utils';
 import RoutesController from '../RouteController';
+import RoutesUsageController from '../RouteUsageController';
 import AddressService from '../../../services/AddressService';
 import LocationService from '../../../services/LocationService';
 import { RoutesHelper } from '../../../helpers/googleMaps/googleMapsHelpers';
@@ -17,6 +18,11 @@ import UserService from '../../../services/UserService';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import RouteNotifications from '../../slack/SlackPrompts/notifications/RouteNotifications';
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
+import BatchUseRecordService from '../../../services/BatchUseRecordService';
+import RouteHelper from '../../../helpers/RouteHelper';
+import {
+  batchRecords, successMessage, returnedObject, percentages
+} from '../__mocks__/routeMock';
 
 const assertRouteInfo = (body) => {
   expect(body)
@@ -69,14 +75,14 @@ describe('RoutesController', () => {
       };
       res = {
         status: jest.fn(() => ({
-          json: jest.fn(() => {})
+          json: jest.fn(() => { })
         })).mockReturnValue({ json: jest.fn() })
       };
     });
     it('should delete a routeBatch', async (done) => {
       RouteService.getRouteBatchByPk = jest.fn(() => mockRouteBatchData);
       RouteService.deleteRouteBatch = jest.fn(() => 1);
-      SlackEvents.raise = jest.fn(() => {});
+      SlackEvents.raise = jest.fn(() => { });
 
       await RoutesController.deleteRouteBatch(req, res);
       expect(res.status).toHaveBeenCalledTimes(1);
@@ -109,7 +115,7 @@ describe('RoutesController', () => {
       req = {};
       res = {
         status: jest.fn(() => ({
-          json: jest.fn(() => {})
+          json: jest.fn(() => { })
         })).mockReturnValue({ json: jest.fn() })
       };
     });
@@ -409,6 +415,48 @@ describe('RoutesController', () => {
         expect(error.statusCode).toEqual(400);
         expect(error.message).toEqual('Invalid Coordinates');
       }
+    });
+  });
+
+  describe('RouteController_getRouteUsage', () => {
+    let req;
+    let res;
+    let usageServiceSpy;
+    beforeEach(() => {
+      req = {
+        query: {
+          from: '2019-05-05', to: '2019-05-06'
+        }
+      };
+      res = {
+        status: jest.fn(() => ({
+          json: jest.fn(() => { })
+        })).mockReturnValue({ json: jest.fn() })
+      };
+      usageServiceSpy = jest.spyOn(BatchUseRecordService, 'getRoutesUsage');
+    });
+    it('Should return the most and least used routes', async () => {
+      const percentageSpy = jest.spyOn(RouteHelper, 'findPercentageUsage');
+      usageServiceSpy.mockResolvedValue(batchRecords);
+      percentageSpy.mockReturnValue(percentages);
+      jest.spyOn(Response, 'sendResponse');
+      await RoutesUsageController.getRouteUsage(req, res);
+      expect(RouteHelper.findPercentageUsage).toHaveBeenCalled();
+      expect(Response.sendResponse).toHaveBeenCalled();
+      expect(Response.sendResponse).toBeCalledWith(res, 200, true, successMessage, returnedObject);
+    });
+
+    it('Should catch errors', async () => {
+      const error = new Error('Something went wrong');
+      usageServiceSpy.mockRejectedValue(error);
+      jest.spyOn(BugsnagHelper, 'log');
+      jest.spyOn(HttpError, 'sendErrorResponse');
+
+      await RoutesUsageController.getRouteUsage(req, res);
+      expect(BugsnagHelper.log).toBeCalled();
+      expect(BugsnagHelper.log).toBeCalledWith(error);
+      expect(HttpError.sendErrorResponse).toBeCalled();
+      expect(HttpError.sendErrorResponse).toBeCalledWith(error, res);
     });
   });
 });

@@ -1,7 +1,11 @@
 import RouteHelper from '../RouteHelper';
 import RouteService from '../../services/RouteService';
 import CabService from '../../services/CabService';
-import { routeBatch, batch, routeDetails } from '../__mocks__/routeMock';
+import {
+  routeBatch, batch, routeDetails, returnNullPercentage, record,
+  confirmedRecord, returnedPercentage, percentagesList,
+  singlePercentageArray, returnedMaxObj, returnedMinObj, emptyRecord
+} from '../__mocks__/routeMock';
 
 describe('Route Helpers', () => {
   describe('checkTimeFormat', () => {
@@ -47,7 +51,7 @@ describe('Route Helpers', () => {
       expect(result[0]).toEqual(false);
     });
   });
-  
+
   describe('checkThatRouteNameExists', () => {
     it('should return array containing results for the check', async () => {
       jest.spyOn(RouteService, 'getRouteByName').mockResolvedValue({ id: 2, });
@@ -90,7 +94,7 @@ describe('Route Helpers', () => {
       jest.spyOn(RouteService, 'createRoute').mockReturnValue(routeDetails);
       jest.spyOn(RouteService, 'updateBatchLabel').mockReturnValue('B');
       jest.spyOn(RouteService, 'createBatch').mockReturnValue(batch);
-      
+
 
       const result = await RouteHelper.getNewBatchDetails(routeBatch);
       expect(result.batch).toBe('B');
@@ -106,6 +110,26 @@ describe('Route Helpers', () => {
       expect(result).toEqual({
         batch: 'A', capacity: 4, status: 'Active', takeOff: '03:00'
       });
+    });
+  });
+  describe('findPercentageUsage, findMaxOrMin', () => {
+    it('should calculate and return dormant routes', () => {
+      const result = RouteHelper.findPercentageUsage(record, [], []);
+      expect(result).toEqual(returnNullPercentage);
+    });
+    it('should calculate and return percentages', () => {
+      const result = RouteHelper.findPercentageUsage(confirmedRecord, [], []);
+      expect(result).toEqual(returnedPercentage);
+    });
+    it('should check the most used and least used route', () => {
+      const resultMax = RouteHelper.findMaxOrMin(percentagesList, 'max');
+      const resultMin = RouteHelper.findMaxOrMin(percentagesList, 'min');
+      const resultNull = RouteHelper.findMaxOrMin([], 'min');
+      const resultSingleRecord = RouteHelper.findMaxOrMin(singlePercentageArray, 'min');
+      expect(resultMax).toEqual(returnedMaxObj);
+      expect(resultMin).toEqual(returnedMinObj);
+      expect(resultSingleRecord).toEqual(emptyRecord);
+      expect(resultNull).toEqual({ emptyRecord });
     });
   });
 });
