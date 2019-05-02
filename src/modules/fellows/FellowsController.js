@@ -41,8 +41,9 @@ class FellowController {
   static async getAllFellows(req, res) {
     const size = req.query.size || 100;
     const page = req.query.page || 1;
+    const { query: { onRoute } } = req;
     try {
-      const data = await UserService.getPagedFellowsOnRoute(size, page);
+      const data = await UserService.getPagedFellowsOnOrOffRoute(onRoute, size, page);
       if (data.data.length < 1) {
         const { data: fellows, pageMeta } = data;
         return res.json({

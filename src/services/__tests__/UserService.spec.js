@@ -99,15 +99,26 @@ describe('/Users service', () => {
       );
     });
   });
-  describe('getPagedFellowsOnRoute', () => {
+  describe('getPagedFellowsOnOrOffRoute', () => {
     beforeEach(() => {
       jest.resetAllMocks();
       jest.restoreAllMocks();
     });
 
-    it('should get getPagedFellowsOnRoute', async () => {
-      const data = await UserService.getPagedFellowsOnRoute(1, 1);
+    it('should get fellows not on route', async () => {
+      const data = await UserService.getPagedFellowsOnOrOffRoute(false, 1, 1);
       expect(data.data).toBeDefined();
+      expect(data.data).toBeInstanceOf(Array);
+      expect(data.pageMeta).toBeDefined();
+      expect(data.pageMeta).toBeInstanceOf(Object);
+    });
+
+    it('should get fellows on route', async () => {
+      const data = await UserService.getPagedFellowsOnOrOffRoute(true, 1, 1);
+      expect(data.data).toBeDefined();
+      expect(data.data).toBeInstanceOf(Array);
+      expect(data.pageMeta).toBeDefined();
+      expect(data.pageMeta).toBeInstanceOf(Object);
     });
   });
 });

@@ -134,18 +134,18 @@ class UserService {
     });
   }
 
-  static async getPagedFellowsOnRoute(size, page) {
+  static async getPagedFellowsOnOrOffRoute(onRoute, size, page) {
     const { Op } = Sequalize;
+    const routeBatchCriteria = onRoute ? { [Op.eq]: null } : { [Op.ne]: null };
     const results = await User.findAndCountAll({
       limit: size,
       offset: (size * (page - 1)),
       where: {
         email: {
-          [Op.iLike]: '%andela.com'
+          [Op.iLike]: '%andela.com',
+          [Op.notILike]: '%apprenticeship@andela.com'
         },
-        routeBatchId: {
-          [Op.ne]: null
-        }
+        routeBatchId: routeBatchCriteria
       },
     });
     return {

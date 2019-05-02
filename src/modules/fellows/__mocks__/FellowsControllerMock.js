@@ -52,6 +52,27 @@ export const fellowMockData = {
     totalItems: 5
   }
 };
+
+export const fellowMockData2 = {
+  data:
+       [{
+         id: 4,
+         name: 'Fabisch Apeli',
+         slackId: 'UE0M46P3K',
+         phoneNo: null,
+         email: 'fabish.apeli@andela.com',
+         defaultDestinationId: null,
+         routeBatchId: null,
+         createdAt: 2018 - 11 - 27,
+         updatedAt: 2018 - 11 - 27
+       }],
+  pageMeta: {
+    totalPages: 5,
+    currentPage: 1,
+    limit: 1,
+    totalItems: 5
+  }
+};
 export const fellows = {
   data: [],
   pageMeta: {

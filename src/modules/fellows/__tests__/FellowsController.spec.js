@@ -8,7 +8,8 @@ import {
   fellows,
   userMock,
   aisMock,
-  finalUserDataMock
+  finalUserDataMock,
+  fellowMockData2
 } from '../__mocks__/FellowsControllerMock';
 import {
   bugsnagHelper
@@ -45,7 +46,7 @@ describe('fellow-controller', () => {
           size: 'meshack'
         }
       };
-      jest.spyOn(UserService, 'getPagedFellowsOnRoute').mockImplementation(() => {
+      jest.spyOn(UserService, 'getPagedFellowsOnOrOffRoute').mockImplementation(() => {
         throw new Error('no size');
       });
       const spy = jest.spyOn(bugsnagHelper, 'log').mockImplementation(jest.fn());
@@ -54,7 +55,7 @@ describe('fellow-controller', () => {
       expect(spy).toBeCalledWith(new Error('no size'));
     });
     it('returns empty data response if no fellows', async () => {
-      jest.spyOn(UserService, 'getPagedFellowsOnRoute').mockResolvedValue(fellows);
+      jest.spyOn(UserService, 'getPagedFellowsOnOrOffRoute').mockResolvedValue(fellows);
 
       await FellowController.getAllFellows(req, res);
       expect(res.json).toHaveBeenCalledTimes(1);
@@ -66,7 +67,16 @@ describe('fellow-controller', () => {
     });
     it('returns data if fellows on route', async () => {
       jest.spyOn(FellowController, 'mergeFellowData').mockResolvedValue(finalUserDataMock);
-      jest.spyOn(UserService, 'getPagedFellowsOnRoute').mockResolvedValue(fellowMockData);
+      jest.spyOn(UserService, 'getPagedFellowsOnOrOffRoute').mockResolvedValue(fellowMockData);
+
+      await FellowController.getAllFellows(req, res);
+      expect(res.json).toHaveBeenCalledTimes(1);
+      expect(res.json.mock.calls[0][0].fellows).toEqual([finalUserDataMock]);
+    });
+
+    it('returns data of fellows not on route', async () => {
+      jest.spyOn(FellowController, 'mergeFellowData').mockResolvedValue(finalUserDataMock);
+      jest.spyOn(UserService, 'getPagedFellowsOnOrOffRoute').mockResolvedValue(fellowMockData2);
 
       await FellowController.getAllFellows(req, res);
       expect(res.json).toHaveBeenCalledTimes(1);

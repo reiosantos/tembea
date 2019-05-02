@@ -87,10 +87,10 @@ class BatchUseRecordService {
   static serializeUser(user) {
     if (!user) return {};
     const {
-      id, name, slackId, email
+      id, name, slackId, email, routeBatchId
     } = user;
     return {
-      id, name, slackId, email
+      id, name, slackId, email, routeBatchId
     };
   }
 
