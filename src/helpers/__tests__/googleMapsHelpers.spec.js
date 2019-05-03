@@ -44,7 +44,7 @@ describe('getDojoCoordinateFromDb', () => {
     try {
       await RoutesHelper.getDojoCoordinateFromDb();
     } catch (err) {
-      expect(err).toEqual(new Error('Cannot find the location The Dojo in the database'));
+      expect(err).toEqual(new Error('Cannot find The Dojo location in the database'));
     }
   });
   it('should get the location of dojo from the database', async () => {

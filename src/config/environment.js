@@ -7,7 +7,8 @@ const env = {
   DATABASE_DIALECT: process.env.DATABASE_DIALECT,
   BUGSNAG_API_KEY: process.env.BUGSNAG_API_KEY,
   NODE_ENV: process.env.NODE_ENV || 'production',
-  REDIS_URL: process.env.REDIS_URL || 'no-redis'
+  REDIS_URL: process.env.REDIS_URL || 'no-redis',
+  THE_DOJO_ADDRESS: process.env.THE_DOJO_ADDRESS || 'Andela Nairobi'
 };
 
 module.exports = envExists(env);

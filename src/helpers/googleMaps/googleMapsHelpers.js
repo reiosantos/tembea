@@ -3,6 +3,7 @@ import bugsnagHelper from '../bugsnagHelper';
 import GoogleMapsDistanceMatrix from '../../services/googleMaps/GoogleMapsDistanceMatrix';
 import GoogleMapsReverseGeocode from '../../services/googleMaps/GoogleMapsReverseGeocode';
 import AddressService from '../../services/AddressService';
+import env from '../../config/environment';
 
 export class Marker {
   /**
@@ -49,10 +50,11 @@ export class RoutesHelper {
   }
 
   static async getDojoCoordinateFromDb() {
+    const { THE_DOJO_ADDRESS } = env;
     // Get the Dojos location from service
-    const theDojo = await AddressService.findAddress('the dojo');
+    const theDojo = await AddressService.findAddress(THE_DOJO_ADDRESS);
     if (!theDojo) {
-      throw new Error('Cannot find the location The Dojo in the database');
+      throw new Error('Cannot find The Dojo location in the database');
     }
     return theDojo;
   }
