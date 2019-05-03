@@ -185,11 +185,4 @@ describe('sendBusStopForm dialog', () => {
       done();
     });
   });
-  describe('getPayloadData', () => {
-    it('should return triggerId and teamId', () => {
-      const payload = { submission: {}, team: { id: 'TEAMID1' }, trigger_id: 'trigger' };
-      const returnData = DialogPrompts.getPayloadData(payload);
-      expect(returnData).toEqual({ teamId: 'TEAMID1', triggerId: 'trigger' });
-    });
-  });
 });

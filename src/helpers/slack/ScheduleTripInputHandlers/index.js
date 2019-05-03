@@ -11,6 +11,7 @@ import Validators from '../UserInputValidator/Validators';
 import UserInputValidator from '../UserInputValidator';
 import GoogleMapsError from '../../googleMaps/googleMapsError';
 import TripHelper from '../../TripHelper';
+import UpdateSlackMessageHelper from '../updatePastMessageHelper';
 
 export const createDepartmentPayloadObject = (payload, respond, forSelf = 'true') => {
   const navButtonCallbackId = forSelf === 'true' ? 'schedule_trip_reason' : 'schedule_trip_rider';
@@ -25,6 +26,9 @@ export const createDepartmentPayloadObject = (payload, respond, forSelf = 'true'
 
 const ScheduleTripInputHandlers = {
   reason: async (payload, respond, callbackId) => {
+    const data = { text: 'Noted...' };
+    await UpdateSlackMessageHelper.updateMessage(payload, data);
+
     const checkIfEmpty = Validators.validateDialogSubmission(payload);
     if (checkIfEmpty.length) {
       return {
@@ -65,8 +69,7 @@ const ScheduleTripInputHandlers = {
     return InteractivePrompts.sendListOfDepartments(props, forSelf);
   },
 
-  department: async (payload, respond) => {
-    respond(new SlackInteractiveMessage('Noted...'));
+  department: async (payload) => {
     const department = payload.actions[0];
     await Cache.save(payload.user.id, 'department', department);
     DialogPrompts.sendTripDetailsForm(payload, 'regularTripForm',
@@ -74,6 +77,8 @@ const ScheduleTripInputHandlers = {
   },
 
   tripPickup: async (payload, respond) => {
+    const data = { text: 'Noted...' };
+    await UpdateSlackMessageHelper.updateMessage(payload, data);
     const {
       submission: { pickup, othersPickup, dateTime }, user: { id: userId, name }
     } = payload;
@@ -100,7 +105,6 @@ const ScheduleTripInputHandlers = {
 
   destinationSelection: async (payload, respond) => {
     try {
-      respond(new SlackInteractiveMessage('Noted...'));
       return await DialogPrompts.sendTripDetailsForm(payload, 'tripDestinationLocationForm',
         'schedule_trip_confirmDestination', 'Destination Details');
     } catch (error) {
@@ -110,6 +114,8 @@ const ScheduleTripInputHandlers = {
   },
 
   confirmDestination: async (payload, respond) => {
+    const data = { text: 'Noted...' };
+    await UpdateSlackMessageHelper.updateMessage(payload, data);
     let tripData;
     try {
       const payloadCopy = { ...payload };

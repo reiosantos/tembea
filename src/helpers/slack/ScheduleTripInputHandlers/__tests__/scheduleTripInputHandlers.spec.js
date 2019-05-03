@@ -6,7 +6,7 @@ import DialogPrompts from '../../../../modules/slack/SlackPrompts/DialogPrompts'
 import ScheduleTripController
   from '../../../../modules/slack/TripManagement/ScheduleTripController';
 import {
-  responseMessage, createTripPayload, respondMock,
+  createTripPayload, respondMock,
   createPickupPayload, createDestinationPayload,
   createTripData, createTripDetails
 } from '../../../../modules/slack/SlackInteractions/__mocks__/SlackInteractions.mock';
@@ -15,6 +15,7 @@ import Validators from '../../UserInputValidator/Validators';
 import LocationHelpers from '../../../googleMaps/locationsMapHelpers';
 import UserInputValidator from '../../UserInputValidator';
 import TripHelper from '../../../TripHelper';
+import UpdateSlackMessageHelper from '../../updatePastMessageHelper';
 
 jest.mock('../../../../modules/slack/events/', () => ({
   slackEvents: jest.fn(() => ({
@@ -65,9 +66,11 @@ describe('ScheduleTripInputHandlers Tests', () => {
 
   describe('Response to "reason" dialog', () => {
     it('should respond with list of departments', async () => {
+      jest.spyOn(UpdateSlackMessageHelper, 'updateMessage').mockReturnValue({});
       await ScheduleTripInputHandlers.reason(payload, responder);
       expect(InteractivePrompts.sendAddPassengersResponse)
         .toHaveBeenCalledWith(responder);
+      expect(UpdateSlackMessageHelper.updateMessage).toBeCalledTimes(1);
     });
 
     it('should respond with list of users', async () => {
@@ -131,7 +134,6 @@ describe('ScheduleTripInputHandlers Tests', () => {
   describe('Response to "department" interaction', () => {
     it('should respond with trip details dialog form', async () => {
       await ScheduleTripInputHandlers.department(payload, responder, 'department');
-      expect(responder).toHaveBeenCalledWith(responseMessage('Noted...'));
       expect(DialogPrompts.sendTripDetailsForm)
         .toHaveBeenCalledWith(payload, 'regularTripForm',
           'schedule_trip_tripPickup', 'Pickup Details');
@@ -155,11 +157,13 @@ describe('ScheduleTripInputHandlers Tests', () => {
       jest.resetAllMocks();
     });
     it('should respond with interactive prompt', async () => {
+      jest.spyOn(UpdateSlackMessageHelper, 'updateMessage').mockReturnValue({});
       jest.spyOn(ScheduleTripController, 'validateTripDetailsForm').mockResolvedValue([]);
       const result = jest.spyOn(InteractivePrompts, 'sendSelectDestination');
       await ScheduleTripInputHandlers.tripPickup(pickupPayload, responder);
       expect(result)
         .toHaveBeenCalledWith(responder);
+      expect(UpdateSlackMessageHelper.updateMessage).toBeCalledTimes(1);
     });
     it('should respond with pickup details dialog form', async () => {
       pickupPayload.submission.pickup = 'Others';
@@ -200,7 +204,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
         throw new Error();
       });
       await ScheduleTripInputHandlers.destinationSelection(pickupPayload, responder);
-      expect(responder).toHaveBeenCalledTimes(2);
+      expect(responder).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -228,9 +232,11 @@ describe('ScheduleTripInputHandlers Tests', () => {
       jest.resetAllMocks();
     });
     it('should respond with preview summary of trip details - confirmDestination', async () => {
+      jest.spyOn(UpdateSlackMessageHelper, 'updateMessage').mockReturnValue({});
       await ScheduleTripInputHandlers.confirmDestination(destinationPayload, responder);
       expect(InteractivePrompts.sendScheduleTripResponse)
         .toHaveBeenCalled();
+      expect(UpdateSlackMessageHelper.updateMessage).toBeCalledTimes(1);
     });
 
     it('should respond with Google static map destination details', async () => {

@@ -68,7 +68,6 @@ class SlackInteractions {
 
   static async bookNewTrip(data, respond) {
     const payload = CleanData.trim(data);
-    respond(new SlackInteractiveMessage('Noted...'));
     const action = payload.actions[0].value;
     switch (action) {
       case 'true':

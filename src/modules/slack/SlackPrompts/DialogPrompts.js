@@ -16,8 +16,8 @@ import CabsHelper from '../helpers/slackHelpers/CabsHelper';
 
 class DialogPrompts {
   static async sendTripDetailsForm(payload, formElementsFunction, callbackId, dialogTitle) {
-    const { teamId, triggerId } = DialogPrompts.getPayloadData(payload);
-    const dialogForm = createDialogForm(triggerId, formElementsFunction, callbackId, dialogTitle);
+    const { team: { id: teamId } } = payload;
+    const dialogForm = createDialogForm(payload, formElementsFunction, callbackId, dialogTitle);
     const slackBotOauthToken = await
     TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     await sendDialogTryCatch(dialogForm, slackBotOauthToken);
@@ -37,7 +37,7 @@ class DialogPrompts {
 
   static async sendTripReasonForm(payload) {
     const dialog = new SlackDialog('schedule_trip_reason',
-      'Reason for booking trip', 'Submit');
+      'Reason for booking trip', 'Submit', '', JSON.stringify(payload));
     const textarea = new SlackDialogTextarea('Reason', 'reason',
       'Enter reason for booking the trip');
 
@@ -275,16 +275,11 @@ class DialogPrompts {
   }
 
   static async sendTripNotesDialogForm(payload, formElementsFunction, callbackId, dialogTitle, state) {
-    const { teamId, triggerId } = DialogPrompts.getPayloadData(payload);
-    const dialogForm = createDialogForm(triggerId, formElementsFunction, callbackId, dialogTitle, state);
+    const { team: { id: teamId } } = payload;
+    const dialogForm = createDialogForm(payload, formElementsFunction, callbackId, dialogTitle, state);
     const slackBotOauthToken = await
     TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     await sendDialogTryCatch(dialogForm, slackBotOauthToken, state);
-  }
-
-  static getPayloadData(payload) {
-    const { team: { id: teamId }, trigger_id: triggerId } = payload;
-    return { teamId, triggerId };
   }
 }
 export default DialogPrompts;
