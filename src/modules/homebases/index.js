@@ -1,10 +1,9 @@
 import express from 'express';
 import HomebaseController from './HomebaseController';
 import middlewares from '../../middlewares';
-import HomebaseValidator from '../../middlewares/HomebaseValidator';
 
 const {
-  TokenValidator
+  TokenValidator, GeneralValidator, HomebaseValidator
 } = middlewares;
 const homebaseRouter = express.Router();
 
@@ -46,6 +45,37 @@ homebaseRouter.post(
   HomebaseValidator.validateNames,
   HomebaseValidator.validateCountryExists,
   HomebaseController.addHomeBase
+);
+
+/**
+ * @swagger
+ * /homebases:
+ *  get:
+ *    summary: get all homebases
+ *    tags:
+ *      - Homebases
+ *    parameters:
+ *      - name: page
+ *        in: query
+ *        required: false
+ *        description: page number
+ *        type: number
+ *      - name: size
+ *        in: query
+ *        required: false
+ *        description: number of items per page
+ *        type: number
+ *    responses:
+ *      200:
+ *        description: success response object containing all found homebases
+ *      404:
+ *        description: no homebases found on the database
+ */
+homebaseRouter.get(
+  '/homebases',
+  GeneralValidator.validateQueryParams,
+  HomebaseValidator.validatePassedQueryParams,
+  HomebaseController.getHomebases
 );
 
 

@@ -42,7 +42,7 @@ describe('HomebaseValidator', () => {
 
   describe('test validateNames', () => {
     it('test with invalid names', () => {
-      errors = ['Please provide a valid string value for the field: \'countryName\' '];
+      errors = ['Please provide a valid string value for the field/param: \'countryName\' '];
       const invalidReq = {
         body: {
           countryName: 'Kenya1',
@@ -78,6 +78,20 @@ describe('HomebaseValidator', () => {
       countryExistSpy.mockResolvedValue(null);
       await HomebaseValidator.validateCountryExists(req, res, next);
       expect(Response.sendResponse).toHaveBeenCalledWith(res, 404, false, message);
+    });
+  });
+
+  describe('test validatePassedQueryParams', () => {
+    const invalidReq = {
+      query: {
+        name: 'nairob1',
+      }
+    };
+    const errorMsg = ['Please provide a valid string value for the field/param: \'name\' '];
+    it('test with invalid query params', () => {
+      HomebaseValidator.validatePassedQueryParams(invalidReq, res, next);
+      expect(validatePropsSpy).toHaveBeenCalledWith(invalidReq.query, 'country', 'name');
+      expect(checkLengthSpy).toHaveBeenCalledWith(errorMsg, res, next);
     });
   });
 });

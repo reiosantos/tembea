@@ -4,7 +4,8 @@ import HomeBaseController from '../HomebaseController';
 import HomebaseService from '../../../services/HomebaseService';
 import CountryService from '../../../services/CountryService';
 import {
-  mockCountry, mockCreatedHomebase, mockExistingHomebase
+  mockCountry, mockCreatedHomebase, mockExistingHomebase,
+  mockHomebaseResponse, mockGetHomebaseResponse
 } from '../../../services/__mocks__';
 
 
@@ -66,6 +67,63 @@ describe('Test HomebaseController', () => {
       await HomeBaseController.addHomeBase(req, res);
       expect(bugsnagHelper.log).toHaveBeenCalledWith(err);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledWith(err, res);
+    });
+  });
+
+  describe('test getHomebases', () => {
+    const newReq = {
+      query: {
+        page: 1, size: 5
+      }
+    };
+    const { query: { page, size } } = newReq;
+    const pageable = { page, size };
+    let getHomebaseSpy;
+    beforeEach(() => {
+      jest.spyOn(HomebaseService, 'getWhereClause');
+      getHomebaseSpy = jest.spyOn(HomebaseService, 'getHomebases');
+    });
+
+    it('returns a single homebase', async () => {
+      const where = {};
+      getHomebaseSpy.mockResolvedValue(mockGetHomebaseResponse);
+      await HomeBaseController.getHomebases(newReq, res);
+      expect(HomebaseService.getWhereClause).toHaveBeenCalledWith(newReq.query);
+      expect(HomebaseService.getHomebases).toHaveBeenCalledWith(pageable, where);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        message: '1 of 1 page(s).',
+        homebase: mockGetHomebaseResponse.homebases
+      });
+    });
+
+    it('returns multiple homebases', async () => {
+      const where = {};
+      const pageMeta = {
+        totalPages: 1,
+        page: 1,
+        totalResults: 2,
+        pageSize: 10
+      };
+      getHomebaseSpy.mockResolvedValue(mockHomebaseResponse);
+      await HomeBaseController.getHomebases(newReq, res);
+      expect(HomebaseService.getWhereClause).toHaveBeenCalledWith(newReq.query);
+      expect(HomebaseService.getHomebases).toHaveBeenCalledWith(pageable, where);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        message: '1 of 1 page(s).',
+        pageMeta,
+        homebases: mockHomebaseResponse.homebases
+      });
+    });
+
+    it('should send HTTP errors', async () => {
+      getHomebaseSpy.mockRejectedValueOnce('an error');
+      await HomeBaseController.getHomebases(newReq, res);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalled();
+      expect(bugsnagHelper.log).toHaveBeenCalled();
     });
   });
 });

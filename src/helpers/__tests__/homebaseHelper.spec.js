@@ -16,7 +16,7 @@ describe('test HomebaseHelper', () => {
   });
 
   it('test validateProps', () => {
-    errors = ['Please provide a valid string value for the field: \'homebaseName\' '];
+    errors = ['Please provide a valid string value for the field/param: \'homebaseName\' '];
     const invalidReq = {
       body: {
         countryName: 'Kenya',
@@ -31,7 +31,7 @@ describe('test HomebaseHelper', () => {
   });
 
   it('test with empty props', () => {
-    errors = ['Invalid or empty key/value pair. Please provide a valid key: \'countryName\' and value for the key.'];
+    errors = ['Invalid or empty key/value pair. Provide a valid key: \'countryName\' and value for the key.'];
     const invalidReq = {
       body: {
         homebaseName: 'Nairobi'

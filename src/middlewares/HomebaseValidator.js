@@ -34,6 +34,19 @@ class HomebaseValidator {
     const messages = HomebaseHelper.validateProps(req.body, 'countryName', 'homebaseName');
     DepartmentValidator.checkLengthOfMessageArray(messages, res, next);
   }
+
+  /**
+   * @description This middleware checks that passed query params are valid
+   * @param  {object} req The HTTP request sent
+   * @param  {object} res The HTTP response object
+   * @param  {function} next The next middleware
+   * @return {any} The next middleware or the http response
+   */
+  static validatePassedQueryParams(req, res, next) {
+    const messages = HomebaseHelper.validateProps(req.query,
+      'country', 'name');
+    DepartmentValidator.checkLengthOfMessageArray(messages, res, next);
+  }
 }
 
 export default HomebaseValidator;

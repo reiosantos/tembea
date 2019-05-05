@@ -387,7 +387,6 @@ export const mockExistingHomebase = {
   isNewHomeBase: false
 };
 
-
 export const mockGetCabsData = {
   pageMeta: {
     totalPages: 1,
@@ -480,4 +479,41 @@ export const mockExistingProvider = {
 export const mockUser = {
   id: 1,
   name: 'Allan Mogusu'
+};
+
+export const mockHomebaseResponse = {
+  totalPages: 1,
+  homebases: [{
+    id: 1,
+    homebaseName: 'Nairobi',
+    country: 'Kenya',
+    createdAt: '2019-05-05T10:57:31.476Z',
+    updatedAt: '2019-05-05T10:57:31.476Z'
+  },
+  {
+    id: 2,
+    homebaseName: 'Kampala',
+    country: 'Uganda',
+    createdAt: '2019-05-05T10:57:31.476Z',
+    updatedAt: '2019-05-05T10:57:31.476Z'
+  }
+  ],
+  pageNo: 1,
+  totalItems: 2,
+  itemsPerPage: 10
+};
+
+export const mockGetHomebaseResponse = {
+  totalPages: 1,
+  homebases: [{
+    id: 1,
+    homebaseName: 'Nairobi',
+    country: 'Kenya',
+    createdAt: '2019-05-05T10:57:31.476Z',
+    updatedAt: '2019-05-05T10:57:31.476Z'
+  }
+  ],
+  pageNo: 1,
+  totalItems: 1,
+  itemsPerPage: 10
 };

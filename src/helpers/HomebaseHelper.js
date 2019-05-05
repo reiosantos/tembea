@@ -12,13 +12,12 @@ class HomebaseHelper {
     const messages = [];
     props.forEach((prop) => {
       if (!GeneralValidator.isEmpty(body[prop])
-                && !CountryHelper.validateString(body[prop])) {
-        messages.push(`Please provide a valid string value for the field: '${prop}' `);
+                && !CountryHelper.validateString(body[prop].trim())) {
+        messages.push(`Please provide a valid string value for the field/param: '${prop}' `);
       }
-      if (!body[prop] && prop !== 'country' && prop !== 'homebase') {
+      if (!body[prop] && prop !== 'country' && prop !== 'name') {
         messages.push(
-          // eslint-disable-next-line max-len
-          `Invalid or empty key/value pair. Please provide a valid key: '${prop}' and value for the key.`
+          `Invalid or empty key/value pair. Provide a valid key: '${prop}' and value for the key.`
         );
       }
     });
