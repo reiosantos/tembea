@@ -5,6 +5,7 @@ import RoutesHelpers from '../../../helpers/routesHelper';
 import JoinRouteInputHandlers from '../JoinRouteInputHandler';
 import mockPayload from '../../__mocks__/payload.mock';
 import BatchUseRecordService from '../../../../../services/BatchUseRecordService';
+import ConfirmRouteUseJob from '../../../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 
 describe('Test JointRouteInteractions', () => {
   const res = jest.fn();
@@ -150,6 +151,36 @@ describe('Test JointRouteInteractions', () => {
       await JoinRouteInteractions.handleRouteBatchConfirmUse(payload, respond);
       expect(BatchUseRecordService.updateBatchUseRecord).toBeCalledTimes(1);
       expect(JoinRouteInteractions.hasNotTakenTrip).toBeCalledTimes(1);
+    });
+    
+    it('should test still on trip route button', async () => {
+      const payload = {
+        actions: [{
+          name: 'still_on_trip',
+          value: '211'
+        }],
+        team: {
+          id: 343
+        }
+      };
+      jest.spyOn(BatchUseRecordService, 'updateBatchUseRecord');
+      await JoinRouteInteractions.handleRouteBatchConfirmUse(payload, respond);
+      expect(BatchUseRecordService.updateBatchUseRecord).toBeCalledTimes(1);
+    });
+    it('should add 30 minutes on production', async () => {
+      jest.spyOn(ConfirmRouteUseJob, 'notificationScheduler');
+      process.env.NODE_ENV = 'production';
+      const payload = {
+        actions: [{
+          name: 'still_on_trip',
+          value: '211'
+        }],
+        team: {
+          id: 343
+        }
+      };
+      await JoinRouteInteractions.handleRouteBatchConfirmUse(payload, respond);
+      expect(ConfirmRouteUseJob.notificationScheduler).toHaveBeenCalled();
     });
   });
 

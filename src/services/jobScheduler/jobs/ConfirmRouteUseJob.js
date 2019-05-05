@@ -41,7 +41,11 @@ class ConfirmRouteUseJob {
   }
 
   static async scheduleAllRoutes() {
-    const { routes } = await RouteService.getRoutes(RouteService.defaultPageable, { status: 'Active' });
+    const {
+      routes
+    } = await RouteService.getRoutes(RouteService.defaultPageable, {
+      status: 'Active'
+    });
     routes.map(async (routeBatch) => {
       await ConfirmRouteUseJob.scheduleBatchStartJob(routeBatch);
     });
@@ -51,13 +55,25 @@ class ConfirmRouteUseJob {
     const res = await RouteUseRecordService.createRouteUseRecord(routeBatch.id);
     if (res) {
       const time = ConfirmRouteUseJob.getTodayTime(routeBatch.takeOff);
-      scheduler.scheduleJob(`batch job ${routeBatch.id}${new Date().getMilliseconds().toString()}`, time, async () => {
-        const { data } = await BatchUseRecordService.getBatchUseRecord(undefined, { batchRecordId: res.id });
-        data.map(async (batchUseRecord) => {
-          ConfirmRouteUseJob.confirmRouteBatchUseNotification(batchUseRecord);
-        });
-      });
+      ConfirmRouteUseJob.notificationScheduler(res.id, time);
     }
+  }
+
+  static notificationScheduler(batchRecordId, time) {
+    scheduler.scheduleJob(
+      `batch job ${batchRecordId}${new Date().getMilliseconds().toString()}`,
+      time,
+      async () => {
+        const {
+          data
+        } = await BatchUseRecordService.getBatchUseRecord(undefined, {
+          batchRecordId
+        });
+        data.map(async (batchUseRecord) => {
+          await ConfirmRouteUseJob.confirmRouteBatchUseNotification(batchUseRecord);
+        });
+      }
+    );
   }
 
   static getTodayTime(time) {

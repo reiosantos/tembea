@@ -1,3 +1,4 @@
+import moment from 'moment';
 import handleActions from '../../SlackInteractions/SlackInteractionsHelper';
 import {
   getPageNumber,
@@ -19,6 +20,8 @@ import BatchUseRecordService from '../../../../services/BatchUseRecordService';
 import RateTripController from '../../TripManagement/RateTripController';
 import Validators from '../../../../helpers/slack/UserInputValidator/Validators';
 import CleanData from '../../../../helpers/cleanData';
+import ConfirmRouteUseJob from '../../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
+import env from '../../../../config/environment';
 
 class JoinRouteInteractions {
   static async handleViewAvailableRoutes(data, respond) {
@@ -107,17 +110,25 @@ class JoinRouteInteractions {
 
   static async handleRouteBatchConfirmUse(payload, respond) {
     try {
-      const { actions: [{ name: buttonName, value: batchUseRecordId }] } = payload;
+      const { actions: [{ name: buttonName }] } = payload;
+      const { batchRecordId, id: batchUseRecordId } = JSON.parse(payload.actions[0].value);
       if (buttonName === 'taken') {
-        await BatchUseRecordService
-          .updateBatchUseRecord(batchUseRecordId, { userAttendStatus: 'Confirmed', reasonForSkip: '' });
+        await BatchUseRecordService.updateBatchUseRecord(batchUseRecordId, { userAttendStatus: 'Confirmed', reasonForSkip: '' });
         const ratingMessage = await RateTripController.sendRatingMessage(batchUseRecordId, 'rate_route');
         respond(ratingMessage);
       }
       if (buttonName === 'not_taken') {
         await BatchUseRecordService.updateBatchUseRecord(batchUseRecordId, { userAttendStatus: 'Skip' });
         await JoinRouteInteractions.hasNotTakenTrip(payload, respond);
-        return new SlackInteractiveMessage('Noted');
+      }
+      if (buttonName === 'still_on_trip') {
+        await BatchUseRecordService.updateBatchUseRecord(batchUseRecordId, {
+          userAttendStatus: 'Pending'
+        });
+        const extensionTime = env.NODE_ENV.includes('production') ? { hours: 0, minutes: 30, seconds: 0 } : { hours: 0, minutes: 0, seconds: 10 };
+        const rescheduleTime = moment(new Date()).add(extensionTime).format();
+        ConfirmRouteUseJob.notificationScheduler(batchRecordId, rescheduleTime);
+        return new SlackInteractiveMessage('Noted... We will get back to you soon');
       }
     } catch (error) {
       bugsnagHelper.log(error);

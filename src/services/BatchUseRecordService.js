@@ -38,7 +38,10 @@ class BatchUseRecordService {
 
   static async createBatchUseRecord(batchRecord, users) {
     users.map(async (user) => {
-      const { data: existingUser } = await BatchUseRecordService.getBatchUseRecord(undefined, { userId: user.id });
+      const { data: existingUser } = await BatchUseRecordService.getBatchUseRecord(
+        undefined,
+        { userId: user.id, batchRecordId: batchRecord.id }
+      );
       if (existingUser.length > 0) {
         return;
       }
@@ -51,7 +54,6 @@ class BatchUseRecordService {
 
     return true;
   }
-
 
   static async getBatchUseRecord(pageable = BatchUseRecordService.defaultPageable, where = null) {
     const { page, size } = pageable;
@@ -77,8 +79,6 @@ class BatchUseRecordService {
         }]
     };
     const pagenatedData = await paginatedRoutes.getPageItems(page);
-
-
     const { data, pageMeta } = pagenatedData;
     const newData = data.map(BatchUseRecordService.serializeBatchRecord);
     pagenatedData.data = newData;

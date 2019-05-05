@@ -68,11 +68,12 @@ class RouteNotifications {
   static async sendRouteUseConfirmationNotificationToRider(batchUseRecord) {
     try {
       const slackBotOauthToken = process.env.SLACK_BOT_OAUTH_TOKEN;
-      const channelID = await SlackNotifications.getDMChannelId(
-        batchUseRecord.user.slackId, slackBotOauthToken
-      );
-      const actions = [new SlackButtonAction('taken', 'Yes', batchUseRecord.id),
-        new SlackButtonAction('not_taken', 'No', batchUseRecord.id, 'danger')];
+      const channelID = await SlackNotifications.getDMChannelId(batchUseRecord.user.slackId, slackBotOauthToken);
+      const batchUseRecordString = JSON.stringify(batchUseRecord);
+      const actions = [
+        new SlackButtonAction('taken', 'Yes', batchUseRecordString),
+        new SlackButtonAction('still_on_trip', 'Still on trip', batchUseRecordString),
+        new SlackButtonAction('not_taken', 'No', batchUseRecordString, 'danger')];
       const attachment = new SlackAttachment('', '', '', '', '');
       const routeBatch = RemoveDataValues.removeDataValues(await RouteService.getRouteBatchByPk(batchUseRecord.routeUseRecord.batch.batchId));
       const fields = [
@@ -80,15 +81,11 @@ class RouteNotifications {
         new SlackAttachmentField('Took Off At', routeBatch.takeOff, true),
         new SlackAttachmentField('Cab Reg No', routeBatch.cabDetails.regNumber, true),
         new SlackAttachmentField('Driver Name', routeBatch.cabDetails.driverName, true),
-        new SlackAttachmentField('Driver Phone Number', routeBatch.cabDetails.driverPhoneNo, true),
-      ];
-
+        new SlackAttachmentField('Driver Phone Number', routeBatch.cabDetails.driverPhoneNo, true)];
       attachment.addFieldsOrActions('actions', actions);
       attachment.addFieldsOrActions('fields', fields);
       attachment.addOptionalProps('confirm_route_use');
-
-      const message = SlackNotifications.createDirectMessage(channelID,
-        `Hi! <@${batchUseRecord.user.slackId}> Did you take the trip for route ${routeBatch.route.name}?`, attachment);
+      const message = SlackNotifications.createDirectMessage(channelID, `Hi! <@${batchUseRecord.user.slackId}> Did you take the trip for route ${routeBatch.route.name}?`, attachment);
       return SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (error) {
       bugsnagHelper.log(error);

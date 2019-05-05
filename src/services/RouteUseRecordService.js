@@ -17,14 +17,16 @@ class RouteUseRecordService {
   }
 
   static async createRouteUseRecord(batchId) {
-    const date = moment(new Date()).format('YYYY-MM-DD');
+    const date = moment(new Date()).add({ hours: 48, minutes: 0, seconds: 0 }).format('YYYY-MM-DD');
     const route = await RouteService.getRoute(batchId);
     const riders = RemoveDataValues.removeDataValues(RemoveDataValues.removeDataValues(route).riders);
     const { data } = await RouteUseRecordService.getRouteUseRecords(undefined, { batchUseDate: date, batchId });
 
     if (data.length) {
-      await BatchUseRecordService.createBatchUseRecord(data[0], riders);
-      await RouteUseRecordService.updateUsageStatistics(data[0].id);
+      data.forEach(async (record) => {
+        await BatchUseRecordService.createBatchUseRecord(record, riders);
+        await RouteUseRecordService.updateUsageStatistics(record.id);
+      });
       return data[0];
     }
     const result = await RouteUseRecord.create({
