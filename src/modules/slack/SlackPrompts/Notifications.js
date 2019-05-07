@@ -6,7 +6,8 @@ import {
   SlackAttachment,
   SlackAttachmentField,
   SlackButtonAction,
-  SlackInteractiveMessage
+  SlackInteractiveMessage,
+  SlackCancelButtonAction
 } from '../SlackModels/SlackMessageModels';
 import NotificationsResponse from './NotificationsResponse';
 import TeamDetailsService from '../../../services/TeamDetailsService';
@@ -93,8 +94,7 @@ class SlackNotifications {
     try {
       const payload = CleanData.trim(data);
       const tripInformation = trip;
-      const teamDetails = await TeamDetailsService.getTeamDetails(payload.team.id);
-      const { botToken: slackBotOauthToken, opsChannelId } = teamDetails;
+      const { botToken: slackBotOauthToken, opsChannelId } = await TeamDetailsService.getTeamDetails(payload.team.id);
       const checkTripType = type === 'regular';
       const { name } = await DepartmentService
         .getById(tripInformation.departmentId);
@@ -282,6 +282,78 @@ class SlackNotifications {
     if (confirmedOrDeclined === 'Confirmed') {
       TripCompletion.createScheduleForATrip(tripInformation);
     }
+  }
+
+  static async sendRiderlocationConfirmNotification(payload) {
+    const {
+      location, teamID, userID, rider
+    } = payload;
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamID);
+    const label = `Travel ${location} Location Confirmation`;
+    const attachment = new SlackAttachment(label, '', '', '', '', 'default', 'warning');
+    const actions = [
+      new SlackButtonAction('riderLocationBtn', `Submit ${location}`, `${location}_riderLocation`),
+      new SlackCancelButtonAction(
+        'Cancel Travel Request',
+        'cancel',
+        'Are you sure you want to cancel this travel request',
+        'cancel_request'
+      )
+    ];
+    attachment.addFieldsOrActions('actions', actions);
+    attachment.addOptionalProps('travel_trip_riderLocationConfirmation',
+      'fallback', undefined, 'default');
+    const channelId = await SlackNotifications.getDMChannelId(rider, slackBotOauthToken);
+    const letterMessage = `You are hereby Requested by <@${userID}> to provide `
+    + `your ${location} location`;
+    SlackNotifications.sendNotifications(channelId, attachment, letterMessage, slackBotOauthToken);
+  }
+
+  static async sendOperationsRiderlocationConfirmation(payload, respond) {
+    const {
+      riderID, teamID, confirmedLocation, waitingRequester, location
+    } = payload;
+    try {
+      const {
+        botToken: slackBotOauthToken,
+        opsChannelId
+      } = await TeamDetailsService.getTeamDetails(teamID);
+      SlackNotifications.OperationsRiderlocationConfirmationMessage({
+        waitingRequester, riderID, location, confirmedLocation, opsChannelId, slackBotOauthToken
+      });
+    } catch (error) {
+      bugsnagHelper.log(error);
+      const message = new SlackInteractiveMessage(
+        'An error occurred while processing your request. '
+          + 'Please contact the administrator.', [], undefined, '#b52833'
+      );
+      respond(message);
+    }
+  }
+
+  static OperationsRiderlocationConfirmationMessage(messageData) {
+    const {
+      waitingRequester, riderID, location, confirmedLocation, opsChannelId, slackBotOauthToken
+    } = messageData;
+    const attachment = new SlackAttachment(
+      `Hello <@${waitingRequester}> :smiley:, <@${riderID}>`
+      + ` just confirmed the ${location} location`,
+      `The entered ${location} location is ${confirmedLocation}`,
+      '', '', '', 'default', 'warning'
+    );
+    const actions = [
+      new SlackButtonAction('allConfirmed', `Confirm ${location}`, 'locationConfrimed'),
+      new SlackCancelButtonAction(
+        'Cancel Travel Request', 'cancel',
+        'Are you sure you want to cancel this travel request', 'cancel_request'
+      )
+    ];
+    attachment.addFieldsOrActions('actions', actions);
+    attachment.addOptionalProps('travel_trip_detailsConfirmation',
+      'fallback', undefined, 'default');
+    const letterMessage = `Tembea travel ${location} confirmation`;
+    SlackNotifications.sendNotifications(opsChannelId,
+      attachment, letterMessage, slackBotOauthToken);
   }
 
   static notificationActions(tripInformation) {

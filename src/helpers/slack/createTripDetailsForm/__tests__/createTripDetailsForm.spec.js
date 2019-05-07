@@ -83,4 +83,13 @@ describe('createTeamDetails create team details attachment', () => {
       expect(tripDetails.length).toEqual(1);
     });
   });
+  
+  describe('riderLocationConfirmationForm', () => {
+    it('one element in the array', () => {
+      const tripDetails = createTripDetailsForm.riderLocationConfirmationForm();
+      expect(tripDetails instanceof Array)
+        .toBeTruthy();
+      expect(tripDetails.length).toEqual(1);
+    });
+  });
 });

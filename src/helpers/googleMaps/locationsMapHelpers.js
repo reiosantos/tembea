@@ -154,4 +154,18 @@ export default class LocationHelpers {
       bugsnagHelper.log(error);
     }
   }
+
+  static async callRiderLocationConfirmation(payload, respond, location) {
+    try {
+      return DialogPrompts.sendTripDetailsForm(
+        payload, 'riderLocationConfirmationForm',
+        'travel_trip_OpsLocationConfirmation', `Confirm ${location}`
+      );
+    } catch (error) {
+      respond(
+        new SlackInteractiveMessage('We could not process that request. Please try again')
+      );
+      bugsnagHelper.log(error);
+    }
+  }
 }

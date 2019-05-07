@@ -13,6 +13,7 @@ import { mockRouteRequestData } from '../../../../services/__mocks__/index';
 import Services from '../../../../services/UserService';
 import tripService from '../../../../services/TripService';
 import responseMock from '../__mocks__/NotificationResponseMock';
+import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 
 
 const tripInitial = {
@@ -693,6 +694,56 @@ describe('SlackNotifications', () => {
       expect(SlackNotifications.sendOperationsNotificationFields)
         .toHaveBeenCalledWith(mockRouteRequestData);
       expect(SlackNotifications.sendNotifications).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('sendRiderlocationConfirmNotification', () => {
+    it('Should send request to rider', async () => {
+      const sendNotifications = jest.spyOn(SlackNotifications, 'sendNotifications');
+      await SlackNotifications.sendRiderlocationConfirmNotification({
+        location: 'location',
+        teamID: 'teamID',
+        userID: 1,
+        rider: 1
+      });
+      expect(sendNotifications).toHaveBeenCalled();
+    });
+  });
+
+  describe('sendOperationsRiderlocationConfirmation', () => {
+    it('Should send confrimation to Ops', async () => {
+      const sendNotifications = jest.spyOn(SlackNotifications, 'sendNotifications');
+      const getTeamDetails = jest.spyOn(TeamDetailsService, 'getTeamDetails').mockResolvedValue({
+        botToken: { slackBotOauthToken: 'yahaha' },
+        opsChannelId: 'qwertyuoi'
+      });
+      await SlackNotifications.sendOperationsRiderlocationConfirmation({
+        riderID: 1,
+        teamID: 'rtyui',
+        confirmedLocation: 'Nairobi',
+        waitingRequester: 1,
+        location: 'Pickup'
+      });
+      expect(getTeamDetails).toHaveBeenCalled();
+      expect(sendNotifications).toHaveBeenCalled();
+    });
+
+    it('Should call respond and bugsnug', async () => {
+      const respond = jest.fn();
+      bugsnagHelper.log = jest.fn().mockReturnValue({});
+
+      SlackNotifications.sendNotification = jest.fn().mockImplementation(() => {
+        throw new Error('Dummy error');
+      });
+      await SlackNotifications.sendOperationsRiderlocationConfirmation({
+        riderID: 1,
+        teamID: 'rtyui',
+        confirmedLocation: 'Nairobi',
+        waitingRequester: 1,
+        location: 'Pickup'
+      }, respond);
+      expect(bugsnagHelper.log).toHaveBeenCalled();
+      expect(respond).toHaveBeenCalled();
     });
   });
 });

@@ -10,6 +10,7 @@ import GoogleMapsPlaceDetails from '../../../services/googleMaps/GoogleMapsPlace
 import bugsnagHelper from '../../bugsnagHelper';
 import Cache from '../../../cache';
 import LocationHelpers from '../locationsMapHelpers';
+import DialogPrompts from '../../../modules/slack/SlackPrompts/DialogPrompts';
 
 jest.mock('../../../utils/WebClientSingleton.js');
 jest.mock('../../../modules/slack/events/index.js');
@@ -197,5 +198,25 @@ describe('helper functions', async () => {
     await LocationHelpers.locationPrompt(locationData, respond, payload, stateLocation, trip);
     expect(LocationPrompts.sendMapsConfirmationResponse).toBeCalled();
     expect(Cache.save).toBeCalled();
+  });
+
+  describe('callRiderLocationConfirmation', () => {
+    it('Should call sendTripDetailsForm', async () => {
+      const sendTripDetailsForm = jest.spyOn(DialogPrompts,
+        'sendTripDetailsForm').mockImplementation(() => Promise.resolve());
+      await LocationHelpers.callRiderLocationConfirmation(payload, respond, 'Pickup');
+
+      expect(sendTripDetailsForm).toHaveBeenCalledWith(payload, 'riderLocationConfirmationForm',
+        'travel_trip_OpsLocationConfirmation', 'Confirm Pickup');
+    });
+    it('should rspond and call bugsnug of error caught', async () => {
+      DialogPrompts.sendTripDetailsForm = jest.fn().mockImplementation(() => {
+        throw new Error('Dummy error');
+      });
+      bugsnagHelper.log = jest.fn().mockReturnValue({});
+      await LocationHelpers.callRiderLocationConfirmation(payload, respond, 'Pickup');
+      expect(respond).toHaveBeenCalled();
+      expect(bugsnagHelper.log).toHaveBeenCalled();
+    });
   });
 });

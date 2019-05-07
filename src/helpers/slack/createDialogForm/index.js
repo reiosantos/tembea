@@ -3,7 +3,12 @@ import {
   SlackDialog, SlackDialogModel
 } from '../../../modules/slack/SlackModels/SlackDialogModels';
 
-export default (payload, formElementsFunctionName, callbackId, dialogTitle = 'Trip Details', state = null) => {
+export default (
+  payload,
+  formElementsFunctionName,
+  callbackId,
+  dialogTitle = 'Trip Details', state = null
+) => {
   const stateValue = state === null ? JSON.stringify(payload) : null;
   const dialog = new SlackDialog(callbackId, dialogTitle, 'Submit', ' ', stateValue);
   const formElements = createTripDetailsForm[formElementsFunctionName](state);

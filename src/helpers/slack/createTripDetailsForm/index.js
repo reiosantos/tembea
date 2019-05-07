@@ -134,7 +134,14 @@ const createTripDetailsForm = {
       textarea
     ];
   },
-
+  riderLocationConfirmationForm: () => {
+    const confirmedLocation = new SlackDialogText(
+      'Riders location', 'confirmedLocation', 'Enter location', false, 'e.g Mirema Nairobi'
+    );
+    return [
+      confirmedLocation
+    ];
+  }
 };
 
 export default createTripDetailsForm;

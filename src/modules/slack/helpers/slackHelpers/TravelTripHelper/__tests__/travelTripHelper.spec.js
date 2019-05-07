@@ -1,4 +1,5 @@
 import travelTripHelper from '../index';
+import travelFunctions from '../travelHelper';
 import cache from '../../../../../../cache';
 import ScheduleTripController from '../../../../TripManagement/ScheduleTripController';
 import InteractivePrompts from '../../../../SlackPrompts/InteractivePrompts';
@@ -28,7 +29,6 @@ jest.mock('../../../../events/slackEvents', () => ({
     DECLINED_TRIP_REQUEST: 'declined_trip_request'
   })
 }));
-
 
 describe('travelTripHelper', () => {
   let payload;
@@ -475,6 +475,43 @@ describe('travelTripHelper', () => {
       expect(SlackEvents.raise).toHaveBeenCalled();
     });
 
+    it('should test confirmation when "To Be Decided" is passed', async () => {
+      payload.user.id = 1;
+      cache.fetch = jest.fn((id) => {
+        if (id === 1) {
+          return {
+            tripType: 'Airport Transfer',
+            departmentId: '',
+            departmentName: '',
+            contactDetails: '',
+            tripDetails: {
+              pickup: 'To Be Decided',
+              destination: 'Langata',
+              rider: 'QW345UY'
+            }
+          };
+        }
+        return {};
+      });
+      
+      const validatePickupDestination = jest.spyOn(travelFunctions,
+        'validatePickupDestination').mockImplementation(() => Promise.resolve());
+      createTravelTripRequest.mockImplementationOnce(() => ({ newPayload: 'newPayload', id: 1 }));
+      
+      await travelTripHelper.confirmation(payload, respond);
+      expect(cache.fetch).toHaveBeenCalledTimes(1);
+      expect(cache.save).toHaveBeenCalledTimes(1);
+      expect(validatePickupDestination).toHaveBeenCalledWith(
+        {
+          pickup: 'To Be Decided',
+          destination: 'Langata',
+          teamID: 'TEAMID1',
+          userID: 1,
+          rider: 'QW345UY'
+        }, respond
+      );
+    });
+
     it('should test confirmation error handling', async () => {
       payload.user.id = 1;
       const log = jest.spyOn(BugsnagHelper, 'log');
@@ -524,7 +561,6 @@ describe('travelTripHelper', () => {
     });
   });
 
- 
   describe('tripNotesAddition', () => {
     let respond;
    
