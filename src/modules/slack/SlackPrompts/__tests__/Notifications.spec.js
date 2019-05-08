@@ -15,6 +15,7 @@ import tripService from '../../../../services/TripService';
 import responseMock from '../__mocks__/NotificationResponseMock';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import { SlackAttachment, OpsSlackAttachment } from '../__mocks__/NotificationsMocks.mock';
+import Cache from '../../../../cache';
 
 
 const tripInitial = {
@@ -83,6 +84,8 @@ jest.mock('../../../../services/TeamDetailsService', () => ({
 describe('SlackNotifications', () => {
   beforeEach(() => {
     const mockUser = { slackId: 3 };
+    const result = ['12/2/2019', '12/12/2020', 'Mastercard'];
+    jest.spyOn(Cache, 'fetch').mockResolvedValue(result);
     jest.spyOn(DepartmentService, 'getById').mockResolvedValue(mockUser);
     jest.spyOn(DepartmentService, 'getHeadByDeptId').mockResolvedValue(mockUser);
     jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockResolvedValue(mockUser);

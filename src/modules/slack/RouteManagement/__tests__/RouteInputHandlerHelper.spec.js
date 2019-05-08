@@ -17,7 +17,7 @@ describe('RouteInputHandlerHelper', () => {
           engagement, manager, fellowBusStop, fellowHomeAddress
         }
       } = dummyMockData;
-      jest.spyOn(Cache, 'fetch').mockResolvedValue(destinationInfo);
+      jest.spyOn(Cache, 'fetch').mockResolvedValueOnce(destinationInfo);
       jest.spyOn(PartnerService, 'findOrCreatePartner').mockResolvedValue([]);
       jest.spyOn(PartnerService, 'findOrCreateEngagement').mockResolvedValue(engagement);
       jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId').mockResolvedValue(manager);
@@ -34,11 +34,13 @@ describe('RouteInputHandlerHelper', () => {
       const submissionValues = {
         submission: { manager: managerSlackId, nameOfPartner: partnerName, workingHours }
       };
+      jest.spyOn(Cache, 'fetch').mockResolvedValueOnce(['12/01/2018', '12/12/2020', 'Safaricom']);
       await RouteInputHandlerHelper.saveRouteRequestDependencies(userId, teamId, submissionValues);
       expect(PartnerService.findOrCreateEngagement).toBeCalled();
       expect(PartnerService.findOrCreatePartner).toBeCalled();
     });
     it('Should return an object with the user Info', async () => {
+      jest.spyOn(Cache, 'fetch').mockResolvedValueOnce(['12/01/2018', '12/12/2020', 'Safaricom']);
       const {
         partnerInfo: {
           userId, teamId, managerSlackId, partnerName, workingHours

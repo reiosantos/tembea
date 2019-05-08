@@ -11,6 +11,7 @@ import DateDialogHelper from '../../../helpers/dateHelper';
 import AttachmentHelper from '../SlackPrompts/notifications/ManagerRouteRequest/helper';
 import ManagerFormValidator from '../../../helpers/slack/UserInputValidator/managerFormValidator';
 import { getAction } from './rootFile';
+import cache from '../../../cache';
 
 export const convertIsoString = (engagementDate) => {
   let { startDate, endDate } = engagementDate;
@@ -81,9 +82,9 @@ const handlers = {
         routeRequestId
       }
     };
-    DialogPrompts.sendEngagementInfoDialogToManager(
-      payload, 'manager_route_approvedRequestPreview', JSON.stringify(state)
-    );
+    await DialogPrompts.sendReasonDialog(payload,
+      'manager_route_approvedRequestPreview',
+      JSON.stringify(state), 'Approve Route Request', 'approve', 'approvalReason', 'route');
   },
   declinedRequest: async (payload) => {
     const { submission: { declineReason }, team: { id: teamId } } = payload;
@@ -113,22 +114,16 @@ const handlers = {
     );
   },
   approvedRequestPreview: async (payload) => {
-    const { submission: { startDate, endDate }, team: { id: teamId } } = payload;
-    const sanitizedSD = DateDialogHelper.changeDateTimeFormat(startDate);
-    const sanitizedED = DateDialogHelper.changeDateTimeFormat(endDate);
-    const errors = ManagerFormValidator.validateEngagementDate(sanitizedSD, sanitizedED);
-    if (errors.length > 0) {
-      return { errors };
-    }
+    const { submission: { approvalReason }, team: { id: teamId } } = payload;
     const { approve } = JSON.parse(payload.state);
+
     const { timeStamp, channelId, routeRequestId } = approve;
     const {
       slackBotOauthToken, routeRequest
     } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
-    const previewAttachment = AttachmentHelper.managerPreviewAttachment(
-      routeRequest, { approve, startDate, endDate }
+    const previewAttachment = await AttachmentHelper.managerPreviewAttachment(
+      routeRequest, { approve, approvalReason }
     );
-
     await InteractivePrompts.messageUpdate(
       channelId,
       '',
@@ -137,31 +132,22 @@ const handlers = {
       slackBotOauthToken
     );
   },
-  approvedRequestEdit: async (payload) => {
-    const { actions } = payload;
-    const [{ value }] = actions;
-    const { startDate, endDate, approve } = JSON.parse(value);
-    const state = { approve };
-    DialogPrompts.sendEngagementInfoDialogToManager(
-      payload, 'manager_route_approvedRequestPreview', JSON.stringify(state), {
-        startDate,
-        endDate
-      }
-    );
-  },
   approvedRequestSubmit: async (payload, respond) => {
-    const { actions, team: { id: teamId } } = payload;
+    const { actions, team: { id: teamId }, user: { id: slackId } } = payload;
     const [{ value: state }] = actions;
-    const { approve, ...engagementDate } = JSON.parse(state);
+    const { approve } = JSON.parse(state);
     const { timeStamp, channelId, routeRequestId } = approve;
-    const { startDate, endDate } = convertIsoString(engagementDate);
-
+    const result = cache.fetch(`userDetails${slackId}`);
+    const dateObject = {
+      startDate: result[0],
+      endDate: result[1]
+    };
     const {
       slackBotOauthToken, routeRequest
     } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
 
     const { engagement } = routeRequest;
-    await PartnerService.updateEngagement(engagement.id, { startDate, endDate });
+    await PartnerService.updateEngagement(engagement.id, dateObject);
     const updatedRequest = await RouteRequestService.updateRouteRequest(routeRequest.id, {
       status: 'Confirmed',
     });

@@ -13,11 +13,17 @@ import CleanData from '../../../../helpers/cleanData';
 class JoinRouteNotifications {
   static async sendFellowDetailsPreview(payload) {
     const { user: { id: slackId }, submission, team: { id: teamId } } = payload;
+    const result = await Cache.fetch(`userDetails${slackId}`);
+    const engagementObject = {
+      startDate: result[0],
+      endDate: result[1],
+      partnerName: result[2]
+    };
     const { routeId } = JSON.parse(payload.state);
     const tempJoinRoute = await JoinRouteNotifications.generateJoinRouteFromSubmission(
-      submission, routeId, slackId, teamId
+      submission, routeId, slackId, teamId, engagementObject
     );
-    const attachment = JoinRouteHelpers.joinRouteAttachments(tempJoinRoute);
+    const attachment = await JoinRouteHelpers.joinRouteAttachments(tempJoinRoute);
     const confirmButton = new SlackButtonAction(
       'submitJoinRoute', 'Confirm details', payload.state
     );
@@ -29,11 +35,14 @@ class JoinRouteNotifications {
     );
   }
 
-  static async generateJoinRouteFromSubmission(submission, id, slackId, teamId) {
+  static async generateJoinRouteFromSubmission(submission, id, slackId, teamId, engagement) {
     const {
-      manager: managerID, partnerName, workHours, ...engagementDate
+      manager: managerID, workHours
     } = submission;
-    const { startDate, endDate } = convertIsoString(engagementDate);
+    const engagementDates = {
+      startDate: engagement.startDate, endDate: engagement.endDate
+    };
+    const { startDate, endDate } = convertIsoString(engagementDates);
     const [routeBatch, fellow, manager] = await Promise.all([
       RouteService.getRoute(id),
       SlackHelpers.findOrCreateUserBySlackId(slackId, teamId),
@@ -45,7 +54,7 @@ class JoinRouteNotifications {
       routeBatch,
       engagement: {
         fellow,
-        partner: { name: partnerName },
+        partner: { name: engagement.partnerName },
         workHours,
         startDate,
         endDate
@@ -59,7 +68,7 @@ class JoinRouteNotifications {
       team: { id: teamId },
     } = CleanData.trim(payload);
     const joinRoute = await JoinRouteRequestService.getJoinRouteRequest(joinRequestId);
-    const attachment = JoinRouteHelpers.joinRouteAttachments(joinRoute);
+    const attachment = await JoinRouteHelpers.joinRouteAttachments(joinRoute);
     attachment.addOptionalProps('join_route_managerActions');
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     const successOpsChannel = process.env.SUCCESS_OPS_CHANNEL;
@@ -77,11 +86,16 @@ class JoinRouteNotifications {
     const {
       ...joinRouteRequestSubmission
     } = await Cache.fetch(`joinRouteRequestSubmission_${requesterSlackId}`);
-
+    const result = await Cache.fetch(`userDetails${requesterSlackId}`);
+    const dateObject = {
+      startDate: result[0],
+      endDate: result[1],
+      partnerName: result[2]
+    };
     const tempJoinRoute = await JoinRouteNotifications.generateJoinRouteFromSubmission(
-      joinRouteRequestSubmission, routeId, requesterSlackId, teamId
+      joinRouteRequestSubmission, routeId, requesterSlackId, teamId, dateObject
     );
-    const attachments = JoinRouteHelpers.joinRouteAttachments(tempJoinRoute);
+    const attachments = await JoinRouteHelpers.joinRouteAttachments(tempJoinRoute);
 
     const text = `Hey, <@${requesterSlackId}> tried to join a route that's already filled up.`;
     const teamDetails = await TeamDetailsService.getTeamDetails(teamId);

@@ -106,7 +106,7 @@ class UserInputValidator {
     }
     return errors;
   }
-  
+
   static validatePickupDestinationLocationEntries(payload, typeOfDialogBox) {
     if (typeOfDialogBox === 'pickup') {
       const { submission: { pickup, othersPickup } } = payload;
@@ -221,18 +221,11 @@ class UserInputValidator {
   }
 
   static validateEngagementForm(engagementFormData) {
-    const { nameOfPartner, workingHours } = CleanData.trim(engagementFormData);
+    const { workingHours } = CleanData.trim(engagementFormData);
     if (!Validators.isDateFormatValid(workingHours)) {
       return {
         errors: [
           new SlackDialogError('workingHours', 'Invalid date')
-        ]
-      };
-    }
-    if (!nameOfPartner) {
-      return {
-        errors: [
-          new SlackDialogError('nameOfPartner', 'Please enter your partner\'s name')
         ]
       };
     }

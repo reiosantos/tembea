@@ -476,7 +476,7 @@ class SlackNotifications {
     return notifications;
   }
 
-  static sendOperationsNotificationFields(routeRequest) {
+  static async sendOperationsNotificationFields(routeRequest) {
     const { routeImageUrl, id: routeRequestId, manager } = routeRequest;
     const acceptButton = new SlackButtonAction('approve', 'Approve', routeRequestId);
     const declineButton = new SlackButtonAction('decline', 'Decline', routeRequestId,
@@ -486,7 +486,7 @@ class SlackNotifications {
     const routeAttachmentFields = AttachmentHelper.routeAttachmentFields(
       routeRequest
     );
-    const engagementAttachmentFields = AttachmentHelper.engagementAttachmentFields(
+    const engagementAttachmentFields = await AttachmentHelper.engagementAttachmentFields(
       routeRequest
     );
     const attachments = [
@@ -511,7 +511,7 @@ class SlackNotifications {
         fellow: { slackId: fellow }
       }
     } = routeRequestDetails;
-    const messageAttachment = SlackNotifications.sendOperationsNotificationFields(
+    const messageAttachment = await SlackNotifications.sendOperationsNotificationFields(
       routeRequestDetails
     );
     const teamDetails = await TeamDetailsService.getTeamDetails(teamId);

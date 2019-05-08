@@ -1,5 +1,6 @@
 import { PreviewPrompts } from '../../RouteManagement/rootFile';
 import { SlackAttachment } from '../../SlackModels/SlackMessageModels';
+import Cache from '../../../../cache';
 
 describe('RouteInputHandlerHelper', () => {
   const data = {
@@ -15,12 +16,13 @@ describe('RouteInputHandlerHelper', () => {
   };
   const addFieldActionsSpy = jest.spyOn(SlackAttachment.prototype, 'addFieldsOrActions');
   const addOptionalProps = jest.spyOn(SlackAttachment.prototype, 'addOptionalProps');
-
+  const result = ['12/01/2019', '12/12/2022', 'Safaricom'];
+  jest.spyOn(Cache, 'fetch').mockResolvedValue(result);
   afterEach(() => {
     jest.resetAllMocks();
   });
 
-  it('sendPartnerInfoPreview', () => {
+  it('sendPartnerInfoPreview', async () => {
     const payload = {
       submission: {
         manager: 'manager',
@@ -29,7 +31,7 @@ describe('RouteInputHandlerHelper', () => {
       }
     };
     const previewData = { ...data };
-    PreviewPrompts.sendPartnerInfoPreview(payload, previewData, 'fellow');
+    await PreviewPrompts.sendPartnerInfoPreview(payload, previewData, 'fellow');
     expect(addFieldActionsSpy).toBeCalledTimes(2);
     expect(addOptionalProps).toBeCalledTimes(1);
   });

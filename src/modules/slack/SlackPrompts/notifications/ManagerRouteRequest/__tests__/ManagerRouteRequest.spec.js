@@ -6,6 +6,7 @@ import SlackNotifications from '../../../Notifications';
 import bugsnagHelper from '../../../../../../helpers/bugsnagHelper';
 import { slackEventNames, SlackEvents } from '../../../../events/slackEvents';
 import InteractivePrompts from '../../../InteractivePrompts';
+import Cache from '../../../../../../cache';
 
 const testErrorHandle = (fnHandle, ...args) => async () => {
   const sendNotification = jest.spyOn(SlackNotifications, 'sendNotification');
@@ -21,6 +22,8 @@ describe('Manager Route Request Notification Tests', () => {
   const data = { routeRequestId: mockRouteRequestData.id, teamId: 'AAAAAA' };
 
   beforeEach(() => {
+    const result = ['12/01/2019', '12/12/2020', 'Airtel'];
+    jest.spyOn(Cache, 'fetch').mockResolvedValue(result);
     routeRequestData = { ...mockRouteRequestData, status: 'Confirmed' };
     respond = jest.fn();
     jest.spyOn(SlackNotifications, 'sendNotification')

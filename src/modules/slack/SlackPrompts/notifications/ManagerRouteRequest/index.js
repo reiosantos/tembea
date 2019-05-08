@@ -25,7 +25,7 @@ export default class ManagerNotifications {
       const channelID = await SlackNotifications.getDMChannelId(
         manager.slackId, slackBotOauthToken
       );
-      const attachments = ManagerAttachmentHelper.getManagerMessageAttachment(routeRequest);
+      const attachments = await ManagerAttachmentHelper.getManagerMessageAttachment(routeRequest);
       const message = SlackNotifications.createDirectMessage(
         channelID,
         `Hey, <@${fellow.slackId}> just requested to create a new route. :smiley:`,
@@ -55,7 +55,7 @@ export default class ManagerNotifications {
       const channelID = await SlackNotifications.getDMChannelId(
         fellow.slackId, slackBotOauthToken
       );
-      const message = ManagerAttachmentHelper.getManagerApproveOrDeclineAttachment(
+      const message = await ManagerAttachmentHelper.getManagerApproveOrDeclineAttachment(
         routeRequest, channelID
       );
       return SlackNotifications.sendNotification(message, slackBotOauthToken);
@@ -111,7 +111,7 @@ export default class ManagerNotifications {
         title, message, text, color
       } = ManagerAttachmentHelper.completeManagerActionLabels(routeRequest);
       if (!title) return;
-      const attachments = ManagerAttachmentHelper.getManagerCompleteAttachment(
+      const attachments = await ManagerAttachmentHelper.getManagerCompleteAttachment(
         message, title, routeRequest, color
       );
       await InteractivePrompts.messageUpdate(

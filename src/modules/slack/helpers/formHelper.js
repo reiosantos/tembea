@@ -1,5 +1,6 @@
 import AisService from '../../../services/AISService';
 import slackService from '../../../helpers/slack/slackHelpers';
+import cache from '../../../cache';
 
 export function dateProcessor(date) {
   const [year, month, days] = date.split('-');
@@ -74,6 +75,7 @@ export class FormHandler {
 }
 
 export async function getFellowEngagementDetails(userId, teamId) {
+  const getFellowKey = userSlackId => `userDetails${userSlackId}`;
   const userReturnData = await slackService.getUserInfoFromSlack(userId,
     teamId);
   const { profile: { email } } = userReturnData;
@@ -87,6 +89,7 @@ export async function getFellowEngagementDetails(userId, teamId) {
     form.getEndDate(),
     form.getPartnerStatus()
   ]);
+  await cache.saveObject(getFellowKey(userId), [startDate, endDate, partnerStatus]);
   return { startDate, endDate, partnerStatus };
 }
 

@@ -20,6 +20,7 @@ import dummyMockData from './dummyMockData';
 
 import { SlackInteractiveMessage } from '../../SlackModels/SlackMessageModels';
 import { SlackEvents, slackEventNames } from '../../events/slackEvents';
+import formHelper from '../../helpers/formHelper';
 
 jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../events/index.js');
@@ -364,6 +365,12 @@ describe('RouteInputHandler Tests', () => {
     const { partnerInfo: { userId, teamId }, locationInfo, partnerInfo } = dummyMockData;
     beforeEach(() => {
       jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId').mockResolvedValue(partnerInfo);
+      jest.spyOn(SlackHelpers, 'getUserInfoFromSlack').mockResolvedValue({
+        profile: { email: 'john@andela.com' }
+      });
+      jest.spyOn(formHelper, 'getFellowEngagementDetails').mockResolvedValue({
+        startDate: '12/01/2019', endDate: '12/12/2022', partnerStatus: 'Safaricom'
+      });
       jest.spyOn(Cache, 'fetch').mockResolvedValue({ locationInfo });
       jest.spyOn(PreviewPrompts, 'sendPartnerInfoPreview').mockResolvedValue();
     });
@@ -372,16 +379,6 @@ describe('RouteInputHandler Tests', () => {
       const payload = { user: { id: userId }, team: { id: teamId }, submission };
       await RouteInputHandlers.handlePreviewPartnerInfo(payload, respond);
       expect(PreviewPrompts.sendPartnerInfoPreview).toBeCalled();
-    });
-
-    it('should return an error when the user do not input their partner name', async () => {
-      const submission = { nameOfPartner: '', workingHours: '20:30 - 02:30' };
-      const payload = { user: { id: userId }, team: { id: teamId }, submission };
-      const res = await RouteInputHandlers.handlePreviewPartnerInfo(payload, respond);
-      const { errors: [SlackDialogError] } = res;
-      const { name, error } = SlackDialogError;
-      expect(name).toEqual('nameOfPartner');
-      expect(error).toEqual("Please enter your partner's name");
     });
     it('should return an error when user enter invalid date', async () => {
       const submission = { nameOfPartner: '', workingHours: '20:30 - hello' };

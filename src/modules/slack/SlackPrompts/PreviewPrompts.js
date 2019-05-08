@@ -9,13 +9,13 @@ import {
 import AttachmentHelper from './notifications/AttachmentHelper';
 
 class PreviewPrompts {
-  static sendPartnerInfoPreview(payload, result, fellow) {
+  static async sendPartnerInfoPreview(payload, result, fellow) {
     const routeRequest = PreviewPrompts.generateRouteModelFromCacheDate(
       result, { ...payload.submission, fellow }
     );
     const { routeImageUrl } = routeRequest;
     const attachment = new SlackAttachment('', '', '', '', routeImageUrl);
-    const engagementAttachment = AttachmentHelper.engagementAttachmentFields(routeRequest);
+    const engagementAttachment = await AttachmentHelper.engagementAttachmentFields(routeRequest);
     const manager = new SlackAttachmentField('Manager', `<@${routeRequest.manager.slackId}>`);
     engagementAttachment.splice(2, 0, manager);
     const addressDetailAttachment = AttachmentHelper.routeAttachmentFields(routeRequest);

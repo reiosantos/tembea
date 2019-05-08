@@ -14,15 +14,13 @@ import JoinRouteInteractions from '../JoinRouteInteractions';
 import * as formHelper from '../../../helpers/formHelper';
 import UserService from '../../../../../services/UserService';
 import PartnerService from '../../../../../services/PartnerService';
+import Cache from '../../../../../cache';
 
 const error = new SlackInteractiveMessage('Unsuccessful request. Kindly Try again');
 describe('JoinInputHandlers', () => {
   const respond = jest.fn();
   const submission = {
-    partnerName: 'partner',
-    workHours: '18:00-00:00',
-    startDate: '12/12/2019',
-    endDate: '12/12/2020'
+    workHours: '18:00-00:00'
   };
 
   const engagement = {
@@ -177,6 +175,9 @@ describe('JoinInputHandlers', () => {
     };
     beforeEach(() => {
       jest.spyOn(JoinRouteNotifications, 'sendFellowDetailsPreview');
+      jest.spyOn(Cache, 'fetch').mockResolvedValue(
+        ['12/01/2019', '12/12/2022', 'Safaricom']
+      );
     });
     afterEach(() => {
       jest.resetAllMocks();
@@ -191,9 +192,9 @@ describe('JoinInputHandlers', () => {
       expect(respond).toBeCalledWith('preview attachment');
     });
     it('should not call respond() if submission data from payload has errors', async () => {
-      const invalidData = { ...data, submission: { ...data.submission, partnerName: '   ' } };
+      const invalidData = { ...data, submission: { workHours: 'an invalid string' } };
       const result = await JoinRouteInputHandlers.fellowDetails(invalidData, respond);
-      expect(respond).not.toBeCalled();
+      expect(respond).not.toHaveBeenCalled();
       expect(result).toHaveProperty('errors');
     });
     it('should handle validation error', async () => {
@@ -333,11 +334,8 @@ describe('JoinRouteInteractions', () => {
 
   it('should call appropriate input handler from callback_id', async () => {
     const spy = jest.spyOn(FormValidators, 'validateFellowDetailsForm');
-    const detailsPreviewSpy = jest.spyOn(JoinRouteNotifications, 'sendFellowDetailsPreview')
-      .mockImplementationOnce(() => ({}));
     const result = await JoinRouteInteractions.handleJoinRouteActions(payload, respond);
     expect(spy).toBeCalledWith(payload);
-    expect(detailsPreviewSpy).toBeCalled();
     expect(result).toBe(undefined);
   });
   describe('JoinRouteInteractivePrompts', () => {

@@ -1,10 +1,9 @@
-
 import RouteRequestService from '../../../../../services/RouteRequestService';
 import { mockRouteRequestData } from '../../../../../services/__mocks__';
 import OperationsNotifications from '../../../SlackPrompts/notifications/OperationsRouteRequest';
 import OperationsHelper from '../OperationsHelper';
 import CabService from '../../../../../services/CabService';
-
+import cache from '../../../../../cache';
 
 describe('operations approve request', () => {
   let payload;
@@ -16,6 +15,7 @@ describe('operations approve request', () => {
   let channelId;
 
   beforeAll(() => {
+    jest.spyOn(cache, 'fetch').mockResolvedValue(['12/01/2019', '12/12/2019', 'Saf']);
     getRouteRequestAndToken = jest.spyOn(RouteRequestService, 'getRouteRequestAndToken');
     updateRouteRequest = jest.spyOn(RouteRequestService, 'updateRouteRequest');
     completeOperationsApprovedAction = jest.spyOn(
@@ -54,7 +54,7 @@ describe('operations approve request', () => {
     jest.restoreAllMocks();
   });
 
-  it('get cab details if number plate is selected from dropdown', async (done) => {
+  it('get cab details if number plate is selected from dropdown', async () => {
     getRouteRequestAndToken.mockResolvedValue(
       { routeRequest: { ...mockRouteRequestData }, slackBotOauthToken: 'dfdf' }
     );
@@ -67,7 +67,6 @@ describe('operations approve request', () => {
     expect(RouteRequestService.updateRouteRequest).toHaveBeenCalled();
     expect(OperationsHelper.getCabSubmissionDetails).toHaveBeenCalled();
     completeOperationsApprovedAction.mockReturnValue('Token');
-    done();
   });
   it('get cab details if a new cab is created', async (done) => {
     payload.callback_id = 'operations_reason_dialog_route';

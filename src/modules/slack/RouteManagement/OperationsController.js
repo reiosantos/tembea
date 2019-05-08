@@ -87,7 +87,7 @@ const handlers = {
     const payload = CleanData.trim(data);
     const { actions, channel: { id: channelId }, original_message: { ts: timeStamp } } = payload;
     const [{ value: routeRequestId }] = actions;
-    
+
     const { botToken, routeRequest, routeRequest: { status } } = await RouteRequestService
       .getRouteRequestAndToken(routeRequestId, payload.team.id);
 
@@ -95,7 +95,7 @@ const handlers = {
     const approved = status === 'Approved';
 
     if (approved || declined) {
-      OperationsNotifications.updateOpsStatusNotificationMessage(payload, routeRequest, botToken);
+      await OperationsNotifications.updateOpsStatusNotificationMessage(payload, routeRequest, botToken);
       return;
     }
     const state = {
@@ -118,7 +118,7 @@ const handlers = {
         respond(result);
         return;
       }
-      OperationsHelper.sendOpsData(payload);
+      await OperationsHelper.sendOpsData(payload);
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));

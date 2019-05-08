@@ -16,8 +16,9 @@ export default class RouteInputHandlerHelper {
       busStop: { longitude: busStopLng, latitude: busStopLat, address: busStopAddress },
       homeAddress: { longitude: homeLng, latitude: homeLat, address: homeAdd },
     } = await Cache.fetch(userId);
+    const [,, partnerName] = await Cache.fetch(`userDetails${userId}`);
     const {
-      submission: { manager: managerSlackId, nameOfPartner: partnerName, workingHours }
+      submission: { manager: managerSlackId, workingHours }
     } = submissionValues;
 
     const [partner, manager, requester, fellowBusStop, fellowHomeAddress] = await Promise.all([

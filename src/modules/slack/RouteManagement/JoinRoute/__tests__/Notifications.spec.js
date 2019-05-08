@@ -12,9 +12,11 @@ import JoinRouteRequestService from '../../../../../services/JoinRouteRequestSer
 describe('JoinRouteNotifications', () => {
   let addPropsSpy;
   beforeEach(() => {
+    const engagementData = ['12/01/2018', '12/12/2022', 'Safaricom'];
+    jest.spyOn(Cache, 'fetch').mockResolvedValue(engagementData);
     const slackAttachment = new SlackAttachment();
     jest.spyOn(JoinRouteHelpers, 'joinRouteAttachments')
-      .mockReturnValue(slackAttachment);
+      .mockResolvedValue(slackAttachment);
     addPropsSpy = jest.spyOn(slackAttachment, 'addOptionalProps');
   });
   afterEach(() => {
@@ -66,10 +68,10 @@ describe('JoinRouteNotifications', () => {
     let joinRouteRequestSubmission;
     beforeEach(() => {
       joinRouteRequestSubmission = {
-        partnerName: '', workHours: '', startDate: '', endDate: ''
+        workHours: ''
       };
       jest.spyOn(Cache, 'fetch')
-        .mockResolvedValue({ joinRouteRequestSubmission });
+        .mockResolvedValueOnce({ joinRouteRequestSubmission });
       jest.spyOn(JoinRouteNotifications, 'generateJoinRouteFromSubmission')
         .mockResolvedValue('tempJoinRoute');
       jest.spyOn(JoinRouteHelpers, 'joinRouteAttachments')
@@ -104,9 +106,7 @@ describe('JoinRouteNotifications', () => {
     let joinRouteRequestSubmission;
     let submission;
     beforeEach(() => {
-      submission = {
-        partnerName: 'AAAAAA', workHours: 'BB:CC', startDate: '11/11/2019', endDate: '12/12/2019'
-      };
+      submission = { workHours: 'BB:CC' };
       joinRouteRequestSubmission = submission;
       jest.spyOn(Cache, 'saveObject')
         .mockResolvedValue({ joinRouteRequestSubmission });
@@ -116,8 +116,13 @@ describe('JoinRouteNotifications', () => {
         .mockReturnValue({});
     });
     it('should send full capacity notification to ops', async () => {
+      const engagementObject = {
+        startDate: '12/01/2019',
+        endDate: '12/07/2020',
+        partnerName: 'Safaricom'
+      };
       const result = await JoinRouteNotifications.generateJoinRouteFromSubmission(
-        submission, 'routeId', 'slackId', 'teamId'
+        submission, 'routeId', 'slackId', 'teamId', engagementObject
       );
       expect(Cache.saveObject).toHaveBeenCalled();
       expect(RouteService.getRoute)

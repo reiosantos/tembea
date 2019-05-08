@@ -54,7 +54,7 @@ class DialogPrompts {
 
     const commentElement = new SlackDialogTextarea('Reason',
       submissionName,
-      `Why do you want to ${submitButtonText} this ${tripOrRoute}`);
+      `Why do you want to ${submitButtonText} this ${tripOrRoute}?`);
     dialog.addElements([commentElement]);
     await DialogPrompts.sendDialog(dialog, payload);
   }
@@ -227,11 +227,6 @@ class DialogPrompts {
 
   static async sendNewRouteForm(payload) {
     const selectManager = new SlackDialogElementWithDataSource('Select Manager', 'manager');
-    const partnerName = new SlackDialogText(
-      'Partner Name', 'nameOfPartner',
-      'Enter Partner Name', false, 'e.g John Mike LTD'
-    );
-
     const workingHours = new SlackDialogText(
       'Working Hours', 'workingHours',
       'Enter Working Hours', false, 'Hint: (From - To) hh:mm - hh:mm. e.g 20:30 - 02:30'
@@ -241,7 +236,7 @@ class DialogPrompts {
       'new_route_handlePreviewPartnerInfo', 'Engagement Information', 'Submit', true
     );
 
-    dialog.addElements([selectManager, partnerName, workingHours]);
+    dialog.addElements([selectManager, workingHours]);
 
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
     const { team: { id: teamId } } = payload;

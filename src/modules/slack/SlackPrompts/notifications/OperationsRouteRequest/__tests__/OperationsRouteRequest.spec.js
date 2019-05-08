@@ -7,6 +7,7 @@ import RouteRequestService from '../../../../../../services/RouteRequestService'
 import TeamDetailsService from '../../../../../../services/TeamDetailsService';
 import OpsAttachmentHelper from '../helper';
 import AttachmentHelper from '../../ManagerRouteRequest/helper';
+import Cache from '../../../../../../cache';
 
 describe('OperationsNotifications', () => {
   const submission = {
@@ -18,6 +19,9 @@ describe('OperationsNotifications', () => {
   const botToken = 'XXXXXX';
   let requestData;
   beforeEach(() => {
+    jest.spyOn(Cache, 'fetch').mockResolvedValue(
+      ['12/01/2019', '12/12/2022', 'Safaricom']
+    );
     jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue({});
     jest.spyOn(OpsAttachmentHelper, 'getFellowApproveAttachment');
     jest.spyOn(OpsAttachmentHelper, 'getManagerApproveAttachment');
@@ -54,37 +58,39 @@ describe('OperationsNotifications', () => {
   });
 
   describe('sendOpsApprovedMessageToFellow', () => {
-    requestData = {
-      ...mockRouteRequestData,
-      status: 'Approved',
-    };
-    it('should send  ops approve notification to fellow', async (done) => {
+    beforeEach(() => {
+      requestData = {
+        ...mockRouteRequestData,
+        status: 'Approved',
+      };
+    });
+    it('should send  ops approve notification to fellow', async () => {
       await OperationsNotifications.sendOpsApproveMessageToFellow(
         requestData, botToken, submission
       );
       expect(SlackNotifications.getDMChannelId).toHaveBeenCalledTimes(1);
       expect(OpsAttachmentHelper.getFellowApproveAttachment).toHaveBeenCalledTimes(1);
       expect(SlackNotifications.sendNotification).toHaveBeenCalled();
-
-      done();
     });
 
     it('should catch errors', async (done) => {
-      SlackNotifications.getDMChannelId
-        .mockRejectedValue(new Error('Fail'));
+      jest.spyOn(OpsAttachmentHelper, 'getFellowApproveAttachment')
+        .mockRejectedValue('an error');
       await OperationsNotifications.sendOpsApproveMessageToFellow(
         requestData, botToken, submission
       );
-      expect(bugsnagHelper.log.mock.calls[0][0].message).toEqual('Fail');
+      expect(bugsnagHelper.log).toHaveBeenCalled();
       done();
     });
   });
 
   describe('sendOpsApprovedMessageToManager', () => {
-    requestData = {
-      ...mockRouteRequestData,
-      status: 'Approved',
-    };
+    beforeEach(() => {
+      requestData = {
+        ...mockRouteRequestData,
+        status: 'Approved',
+      };
+    });
     it('should send ops approve notification to manager', async (done) => {
       await OperationsNotifications.sendOpsApproveMessageToManager(
         requestData, botToken, submission
@@ -128,12 +134,14 @@ describe('OperationsNotifications', () => {
   describe('sendOpsDeclineMessageToFellow', () => {
     it('should send ops decline notification to fellow', async (done) => {
       // should change to ops comment
-      requestData = {
-        ...mockRouteRequestData,
-        status: 'Declined',
-        opsComment: 'no route'
+      beforeEach(() => {
+        requestData = {
+          ...mockRouteRequestData,
+          status: 'Declined',
+          opsComment: 'no route'
 
-      };
+        };
+      });
       RouteRequestService.getRouteRequest.mockResolvedValue(requestData);
       await OperationsNotifications.sendOpsDeclineMessageToFellow(data, 'TEMBEA');
       expect(RouteRequestService.getRouteRequest).toHaveBeenCalled();
@@ -175,6 +183,9 @@ describe('OperationsNotifications', () => {
           id: 1
         }
       };
+      jest.spyOn(Cache, 'fetch').mockResolvedValue(
+        ['12/01/2019', '12/12/2022', 'Safaricom']
+      );
       await OperationsNotifications.completeOperationsDeclineAction(
         requestData, channelId, data.teamId, data.routeRequestId, timestamp, botToken,
         payload

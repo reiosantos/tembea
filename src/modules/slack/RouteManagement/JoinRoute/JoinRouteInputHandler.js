@@ -87,7 +87,7 @@ class JoinRouteInputHandlers {
 
   static async fellowDetails(payload, respond) {
     try {
-      const errors = FormValidators.validateFellowDetailsForm(payload);
+      const errors = await FormValidators.validateFellowDetailsForm(payload);
       if (errors.length > 0) {
         return { errors };
       }

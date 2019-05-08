@@ -11,6 +11,7 @@ import { SlackEvents } from '../../events/slackEvents';
 import { SlackDialogError } from '../../SlackModels/SlackDialogModels';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import PartnerService from '../../../../services/PartnerService';
+import Cache from '../../../../cache';
 
 describe('Manager Route controller', () => {
   const dummyFunction = () => ({});
@@ -19,6 +20,8 @@ describe('Manager Route controller', () => {
     respond = jest.fn();
     jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken')
       .mockReturnValue('token');
+    const engagementData = ['12/01/2018', '12/12/2022', 'Safaricom'];
+    jest.spyOn(Cache, 'fetch').mockResolvedValue(engagementData);
   });
   afterEach(() => {
     jest.resetAllMocks();
@@ -44,6 +47,7 @@ describe('Manager Route controller', () => {
         actions: [{ name: 'action', value: 'routeRequestId' }],
         channel: { id: 1 },
         team: { id: 1 },
+        user: { id: 1 },
         original_message: { ts: 'timestamp' }
       };
       ({ channel: { id: channelId }, original_message: { ts: timeStamp } } = payload);
@@ -86,16 +90,25 @@ describe('Manager Route controller', () => {
     describe('approve', () => {
       beforeEach(() => {
         payload = {
-          ...payload,
-          callback_id: 'manager_route_approve',
+          submission: {
+            declineReason: 'QQQQQQ',
+            startDate: '31/01/2019',
+            endDate: '20/02/2019'
+          },
+          actions: [{ name: 'action', value: 'routeRequestId' }],
+          channel: { id: 1 },
+          team: { id: 1 },
+          user: { id: 1 },
+          original_message: { ts: 'timestamp' },
+          callback_id: 'manager_route_approve'
         };
-        jest.spyOn(DialogPrompts, 'sendEngagementInfoDialogToManager')
+        jest.spyOn(DialogPrompts, 'sendReasonDialog')
           .mockImplementation(() => ({}));
       });
       it('should launch engagement information dialog', async () => {
         getRouteRequest.mockReturnValue(mockRouteRequestData);
         await ManagerController.handleManagerActions(payload, respond);
-        expect(DialogPrompts.sendEngagementInfoDialogToManager).toHaveBeenCalledTimes(1);
+        expect(DialogPrompts.sendReasonDialog).toHaveBeenCalledTimes(1);
       });
       it('should not launch decline dialog prompt, request has been approved or declined',
         async () => {
@@ -179,38 +192,6 @@ describe('Manager Route controller', () => {
       it('should display a preview of the approval', async () => {
         await ManagerController.handleManagerActions(payload, respond);
         expect(InteractivePrompts.messageUpdate).toHaveBeenCalled();
-      });
-      it('should not display preview when invalid start or end date is provided',
-        async () => {
-          const submission = {
-            ...payload.submission,
-            startDate: '31/02/2019'
-          };
-          payload = { ...payload, submission };
-          const result = await ManagerController.handleManagerActions(payload, respond);
-          expect(result.errors[0]).toBeInstanceOf(SlackDialogError);
-        });
-    });
-    describe('edit approval', () => {
-      it('should be able to edit engagement start or end date', async () => {
-        const value = JSON.stringify({
-          approve,
-          ...payload.submission
-        });
-        payload = {
-          ...payload,
-          actions: [{ value, name: 'approvedRequestEdit' }],
-          callback_id: 'manager_route_btnActions',
-        };
-        const sendEngagementInfoDialogToManager = jest.spyOn(
-          DialogPrompts, 'sendEngagementInfoDialogToManager'
-        );
-        sendEngagementInfoDialogToManager.mockReturnValue();
-        await ManagerController.handleManagerActions(payload, respond);
-        expect(sendEngagementInfoDialogToManager).toHaveBeenCalled();
-        const { startDate, endDate } = payload.submission;
-        expect(sendEngagementInfoDialogToManager.mock.calls[0][3])
-          .toEqual({ startDate, endDate });
       });
     });
     describe('submit manager approval', () => {

@@ -3,6 +3,7 @@ import ManagerFormValidator from
   '../../../../helpers/slack/UserInputValidator/managerFormValidator';
 import DateDialogHelper, { validateTime } from '../../../../helpers/dateHelper';
 import { SlackDialogError } from '../../SlackModels/SlackDialogModels';
+import cache from '../../../../cache';
 
 class FormValidators {
   static validateWorkHours(workHours) {
@@ -29,11 +30,15 @@ class FormValidators {
     return errors;
   }
 
-  static validateFellowDetailsForm({
+  static async validateFellowDetailsForm({
     submission: {
-      partnerName, workHours, startDate, endDate
+      workHours
+    },
+    user: {
+      id
     }
   }) {
+    const [startDate, endDate, partnerName] = await cache.fetch(`userDetails${id}`);
     const start = DateDialogHelper.changeDateTimeFormat(startDate);
     const end = DateDialogHelper.changeDateTimeFormat(endDate);
     const errors = [];

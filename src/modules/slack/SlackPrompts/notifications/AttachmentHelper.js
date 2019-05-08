@@ -1,6 +1,8 @@
 import moment from 'moment';
 import { SlackAttachment, SlackAttachmentField } from '../../SlackModels/SlackMessageModels';
 import Utils from '../../../../utils/index';
+import Cache from '../../../../cache';
+import { convertIsoString } from '../../RouteManagement/ManagerController';
 
 export default class AttachmentHelper {
   static getStatusLabels(status, statusText = 'Confirmed') {
@@ -74,22 +76,23 @@ export default class AttachmentHelper {
     ];
   }
 
-  static engagementAttachment(routeRequest) {
+  static async engagementAttachment(routeRequest) {
     const attachments = new SlackAttachment('Engagement Information');
-    const engagementFields = AttachmentHelper.engagementAttachmentFields(routeRequest);
+    const engagementFields = await AttachmentHelper.engagementAttachmentFields(routeRequest);
     attachments.addFieldsOrActions('fields', engagementFields);
     return attachments;
   }
 
-  static engagementAttachmentFields(routeRequest) {
+  static async engagementAttachmentFields(routeRequest) {
     const {
-      partnerName, fellow, startDate, endDate, workHours
+      fellow, workHours
     } = AttachmentHelper.destructEngagementDetails(routeRequest);
-    const { email, name } = fellow;
+    const { email, name, slackId } = fellow;
+    const [start, end, partner] = await Cache.fetch(`userDetails${slackId}`);
     const fellowName = Utils.getNameFromEmail(email) || name;
     const nameField = new SlackAttachmentField('Fellows Name', fellowName, true);
-    const partnerField = new SlackAttachmentField('Partner', partnerName, true);
-    const engagementDateFields = (AttachmentHelper.engagementDateFields(startDate, endDate));
+    const partnerField = new SlackAttachmentField('Partner', partner, true);
+    const engagementDateFields = (AttachmentHelper.engagementDateFields(start, end));
     const { from, to } = Utils.formatWorkHours(workHours);
     const workHourLabelField = new SlackAttachmentField('Work Hours', null, false);
     const fromField = new SlackAttachmentField('_From_', from, true);
@@ -108,10 +111,16 @@ export default class AttachmentHelper {
    */
   static engagementDateFields(startDate, endDate) {
     let fields = [];
+    let result;
+    if (startDate.charAt(2) === '/') {
+      result = this.formatStartAndEndDates(startDate, endDate);
+    }
     if (startDate && endDate) {
-      const sdDate = moment(startDate);
-      const edDate = moment(endDate);
-      const format = 'Do, MMMM YYYY';
+      const sdDate = result
+        ? moment(new Date(result.startDate)) : moment(new Date(startDate));
+      const edDate = result
+        ? moment(new Date(result.endDate)) : moment(new Date(endDate));
+      const format = 'Do MMMM YYYY';
       const edFormatted = edDate.format(format);
       const sdFormatted = sdDate.format(format);
       fields = [
@@ -121,6 +130,14 @@ export default class AttachmentHelper {
       ];
     }
     return fields;
+  }
+
+  static formatStartAndEndDates(startDate, endDate) {
+    const engagementDates = {
+      startDate,
+      endDate
+    };
+    return convertIsoString(engagementDates);
   }
 
   static destructEngagementDetails(routeRequest) {

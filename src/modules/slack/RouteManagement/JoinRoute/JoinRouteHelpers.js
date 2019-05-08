@@ -19,10 +19,11 @@ class JoinRouteHelpers {
   static async saveJoinRouteRequest(payload, routeBatchId) {
     const { user: { id: slackId }, team: { id: teamId } } = payload;
     const {
-      manager: managerSlackId, partnerName, workHours, ...engagementDate
+      manager: managerSlackId, workHours
     } = await Cache.fetch(`joinRouteRequestSubmission_${slackId}`);
-
-    const { startDate, endDate } = convertIsoString(engagementDate);
+    const [start, end, partnerName] = await Cache.fetch(`userDetails${slackId}`);
+    const engagementDates = { startDate: start, endDate: end };
+    const { startDate, endDate } = convertIsoString(engagementDates);
     const [partner, fellow, manager, routeBatch] = await Promise.all([
       PartnerService.findOrCreatePartner(partnerName),
       SlackHelpers.findOrCreateUserBySlackId(slackId, teamId),
@@ -63,11 +64,11 @@ class JoinRouteHelpers {
     };
   }
 
-  static engagementFields(joinRequest) {
+  static async engagementFields(joinRequest) {
     const { manager: { slackId, email, name } } = joinRequest;
     const managerName = Utils.getNameFromEmail(email) || name;
     const managerField = new SlackAttachmentField('Line Manager', `${managerName} (<@${slackId}>)`);
-    const fields = AttachmentHelper.engagementAttachmentFields(joinRequest);
+    const fields = await AttachmentHelper.engagementAttachmentFields(joinRequest);
     fields.splice(2, 0, managerField);
     return fields;
   }
@@ -85,12 +86,12 @@ class JoinRouteHelpers {
     ];
   }
 
-  static joinRouteAttachments(joinRoute) {
+  static async joinRouteAttachments(joinRoute) {
     const { routeBatch, routeBatch: { route: { imageUrl } } } = joinRoute;
     const attachment = new SlackAttachment(undefined, undefined,
       undefined, undefined, imageUrl);
-    const fellowFields = JoinRouteHelpers.engagementFields(joinRoute);
-    const routeBatchFields = JoinRouteHelpers.routeFields(routeBatch);
+    const fellowFields = await JoinRouteHelpers.engagementFields(joinRoute);
+    const routeBatchFields = await JoinRouteHelpers.routeFields(routeBatch);
     const separator = '---------------------';
     const attachments = [
       new SlackAttachmentField(`${separator}${separator}${separator}`, null, false),

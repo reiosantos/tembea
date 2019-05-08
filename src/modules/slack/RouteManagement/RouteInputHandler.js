@@ -21,6 +21,7 @@ import {
 } from './rootFile';
 import RouteInputHandlerHelper from './RouteInputHandlerHelper';
 import LocationMapHelper from '../../../helpers/googleMaps/locationsMapHelpers';
+import { getFellowEngagementDetails } from '../helpers/formHelper';
 
 const RouteInputHandlers = {
   home: async (payload, respond) => {
@@ -150,7 +151,8 @@ const RouteInputHandlers = {
     const { user: { id: userId }, team: { id: teamId } } = payload;
     const [requester, cached] = await Promise.all([
       SlackHelpers.findOrCreateUserBySlackId(userId, teamId),
-      await Cache.fetch(userId)
+      await Cache.fetch(userId),
+      await getFellowEngagementDetails(userId, teamId)
     ]);
     const { locationInfo } = cached;
     const { submission } = payload;
@@ -159,7 +161,7 @@ const RouteInputHandlers = {
     if (errors) return errors;
 
     if (locationInfo) {
-      const message = PreviewPrompts.sendPartnerInfoPreview(payload, locationInfo, requester);
+      const message = await PreviewPrompts.sendPartnerInfoPreview(payload, locationInfo, requester);
       respond(message);
     }
   },

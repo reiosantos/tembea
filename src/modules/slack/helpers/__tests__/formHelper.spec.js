@@ -3,6 +3,7 @@ import AisService from '../../../../services/AISService';
 import {
   getFellowEngagementDetails, FormHandler, dateProcessor, dateFaker
 } from '../formHelper';
+import cache from '../../../../cache';
 
 describe('it should return fellows data as expected', () => {
   let oldFellowData = null;
@@ -26,6 +27,7 @@ describe('it should return fellows data as expected', () => {
     newFellowData = jest.spyOn(slackService, 'getUserInfoFromSlack').mockResolvedValue(data);
     maxAISData = jest.spyOn(AisService, 'getUserDetails').mockResolvedValue(fullUserData);
     minAISData = jest.spyOn(AisService, 'getUserDetails').mockResolvedValue(missingUserData);
+    jest.spyOn(cache, 'saveObject');
   });
 
   afterEach(() => {
@@ -109,6 +111,16 @@ describe('it should return fellows data as expected', () => {
       expect(newFellowData).toBeCalledWith(200, 1000);
       expect(maxAISData).toBeCalledWith('testmail@test.com');
       expect(minAISData).toBeCalledWith('testmail@test.com');
+    });
+
+    it('should cache fellow data from AIS', async () => {
+      FormHandler.prototype.getStartDate = jest.fn().mockReturnValue('12/01/2015');
+      FormHandler.prototype.getEndDate = jest.fn().mockReturnValue('12/07/2019');
+      FormHandler.prototype.getPartnerStatus = jest.fn().mockReturnValue('Safaricom');
+      FormHandler.prototype.isFellowOnEngagement = jest.fn().mockReturnValue(true);
+      await getFellowEngagementDetails(userId, teamId);
+      const resultArray = ['12/01/2015', '12/07/2019', 'Safaricom'];
+      expect(cache.saveObject).toHaveBeenCalledWith('userDetails200', resultArray);
     });
   });
 });

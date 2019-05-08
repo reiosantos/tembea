@@ -62,7 +62,7 @@ export default class OperationsNotifications {
     const { engagement: { fellow } } = routeRequest;
     const title = 'Route Request Approved';
     const message = ':white_check_mark: You have approved this route request';
-    const attachments = OpsAttachmentHelper.getOperationCompleteAttachment(
+    const attachments = await OpsAttachmentHelper.getOperationCompleteAttachment(
       message, title, routeRequest, submission
     );
     InteractivePrompts.messageUpdate(
@@ -96,7 +96,7 @@ export default class OperationsNotifications {
       const channelID = await SlackNotifications.getDMChannelId(
         routeRequest.manager.slackId, slackBotOauthToken
       );
-      const message = OpsAttachmentHelper.getManagerApproveAttachment(
+      const message = await OpsAttachmentHelper.getManagerApproveAttachment(
         routeRequest, channelID, submission
       );
       return await SlackNotifications.sendNotification(message, slackBotOauthToken);
@@ -126,7 +126,7 @@ export default class OperationsNotifications {
       const channelID = await SlackNotifications.getDMChannelId(
         fellow.slackId, slackBotOauthToken
       );
-      const message = OpsAttachmentHelper.getFellowApproveAttachment(
+      const message = await OpsAttachmentHelper.getFellowApproveAttachment(
         routeRequest, channelID, submission
       );
       return await SlackNotifications.sendNotification(message, slackBotOauthToken);
@@ -142,7 +142,7 @@ export default class OperationsNotifications {
       const { user: { id } } = payload;
       const title = 'Route Request Declined';
       const message = `:x: <@${id}> has declined this route request`;
-      const attachments = ManagerAttachmentHelper.getManagerCompleteAttachment(
+      const attachments = await ManagerAttachmentHelper.getManagerCompleteAttachment(
         message, title, routeRequest, '#ff0000'
       );
       await InteractivePrompts.messageUpdate(
@@ -168,12 +168,14 @@ export default class OperationsNotifications {
     } = payload;
 
     if (routeRequest.status === 'Approved') {
-      return OperationsNotifications
+      const opsNotify = await OperationsNotifications
         .completeOperationsApprovedAction(routeRequest,
           channel.id, timeStamp,
           routeRequest.opsReviewer.slackId,
           botToken, {}, true);
+      return opsNotify;
     }
+
 
     if (routeRequest.status === 'Declined') {
       return OperationsNotifications

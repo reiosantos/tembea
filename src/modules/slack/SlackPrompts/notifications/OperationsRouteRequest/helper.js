@@ -4,7 +4,7 @@ import SlackNotifications from '../../Notifications';
 import AttachmentHelper from '../AttachmentHelper';
 
 export default class OpsAttachmentHelper {
-  static getOperationDeclineAttachment(routeRequest, channelID, user = 'manager') {
+  static async getOperationDeclineAttachment(routeRequest, channelID, user = 'manager') {
     const { engagement: { fellow }, status, manager: { slackId: id } } = routeRequest;
     const data = AttachmentHelper.getStatusLabels(status);
     const slackUserId = user === 'manager' ? id : fellow.slackId;
@@ -15,7 +15,7 @@ export default class OpsAttachmentHelper {
     const attachment = new SlackAttachment(title);
     const comment = AttachmentHelper.commentAttachment(routeRequest);
     const routeAttachment = AttachmentHelper.routeRequestAttachment(routeRequest, 'ops');
-    const engagementAttachment = AttachmentHelper.engagementAttachment(routeRequest);
+    const engagementAttachment = await AttachmentHelper.engagementAttachment(routeRequest);
     const attachments = [attachment, comment, routeAttachment, engagementAttachment];
     attachments
       .filter(item => !!item)
@@ -31,7 +31,7 @@ export default class OpsAttachmentHelper {
     );
   }
 
-  static getManagerApproveAttachment(routeRequest, channelID, submission) {
+  static async getManagerApproveAttachment(routeRequest, channelID, submission) {
     const { engagement: { fellow }, manager, status } = routeRequest;
     const data = AttachmentHelper.getStatusLabels(status, 'Approved');
     if (!data) return;
@@ -41,7 +41,7 @@ export default class OpsAttachmentHelper {
     const attachment = new SlackAttachment(title);
     const routeAttachment = AttachmentHelper.routeRequestAttachment(routeRequest);
     const routeInformation = OpsAttachmentHelper.opsRouteInformation(submission);
-    const engagementAttachment = AttachmentHelper.engagementAttachment(routeRequest);
+    const engagementAttachment = await AttachmentHelper.engagementAttachment(routeRequest);
     const attachments = [
       attachment, routeAttachment, engagementAttachment, routeInformation
     ];
@@ -57,7 +57,7 @@ export default class OpsAttachmentHelper {
     );
   }
 
-  static getFellowApproveAttachment(routeRequest, channelID, submission) {
+  static async getFellowApproveAttachment(routeRequest, channelID, submission) {
     const { engagement: { fellow }, status } = routeRequest;
     const data = AttachmentHelper.getStatusLabels(status, 'Approved');
     if (!data) return;
@@ -67,7 +67,7 @@ export default class OpsAttachmentHelper {
     const attachment = new SlackAttachment(title);
     const routeAttachment = AttachmentHelper.routeRequestAttachment(routeRequest);
     const routeInformation = OpsAttachmentHelper.opsRouteInformation(submission);
-    const engagementAttachment = AttachmentHelper.engagementAttachment(routeRequest);
+    const engagementAttachment = await AttachmentHelper.engagementAttachment(routeRequest);
     const attachments = [
       attachment, routeAttachment, engagementAttachment, routeInformation
     ];
@@ -82,12 +82,12 @@ export default class OpsAttachmentHelper {
     );
   }
 
-  static getOperationCompleteAttachment(message, title, routeRequest, submission) {
+  static async getOperationCompleteAttachment(message, title, routeRequest, submission) {
     const footer = new SlackAttachment(message);
     const header = new SlackAttachment(title);
     const routeAttachment = AttachmentHelper.routeRequestAttachment(routeRequest);
     const routeInformation = OpsAttachmentHelper.opsRouteInformation(submission);
-    const engagementAttachment = AttachmentHelper.engagementAttachment(routeRequest);
+    const engagementAttachment = await AttachmentHelper.engagementAttachment(routeRequest);
     const attachments = [header, routeAttachment, engagementAttachment, routeInformation, footer];
     attachments.forEach(at => at.addOptionalProps(
       '', '/fallback', '#3AAF85'
