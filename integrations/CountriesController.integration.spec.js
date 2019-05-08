@@ -9,6 +9,7 @@ const { Country } = models;
 describe('Countries controller', () => {
   let validToken;
   beforeEach(async () => {
+    jest.setTimeout(10000);
     validToken = Utils.generateToken('30m', { userInfo: { rules: ['admin'] } });
 
     const { name } = mockCountry;

@@ -3,10 +3,12 @@ import bugsnagHelper from '../helpers/bugsnagHelper';
 import models from '../database/models';
 import RoleService from '../services/RoleService';
 import cache from '../cache';
+import { DEFAULT_LOCATIONS, DEFAULT_ADDRESSES } from '../helpers/constants';
+import LocationService from '../services/LocationService';
 
 dotenv.config();
 
-const { User } = models;
+const { User, Address } = models;
 
 class StartUpHelper {
   static async ensureSuperAdminExists() {
@@ -40,6 +42,22 @@ class StartUpHelper {
 
   static async flushStaleCache() {
     cache.flush();
+  }
+
+  static async addDefaultAddresses() {
+    const opPromises = DEFAULT_LOCATIONS.map(async (loc, index) => {
+      const location = await LocationService.createLocation(loc.longitude, loc.latitude);
+      const address = DEFAULT_ADDRESSES[index];
+      address.locationId = location.id;
+      const existingAddress = await Address.findOne({ where: { address: address.address } });
+      if (existingAddress && existingAddress.dataValues) {
+        return existingAddress.update({
+          locationId: address.locationId
+        });
+      }
+      return Address.create(address);
+    });
+    await Promise.all(opPromises);
   }
 
   static getUserNameFromEmail(email) {
