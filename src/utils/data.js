@@ -4,6 +4,9 @@ export const pickupLocations = [
   'Andela Nairobi',
   'Jomo Kenyatta Airport',
   'Nairobi Guest House',
+  'Morningside Apartments USIU road',
+  'Safari Park Hotel',
+  'Lymack Suites',
   'Others'
 ];
 
@@ -13,6 +16,9 @@ export const destinations = [
   'Nairobi Guest House',
   'US Embassy',
   'VFS Centre',
+  'Morningside Apartments USIU road',
+  'Safari Park Hotel',
+  'Lymack Suites',
   'Others'
 ];
 
