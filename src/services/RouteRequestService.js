@@ -3,7 +3,7 @@ import TeamDetailsService from './TeamDetailsService';
 import { getRequest, updateRequest } from './SerivceUtils';
 
 const {
-  RouteRequest, Engagement
+  RouteRequest, Engagement, Cab
 } = models;
 
 class RouteRequestService {
@@ -122,6 +122,14 @@ class RouteRequestService {
       where: { status: 'Confirmed' },
       include: RouteRequestService.defaultInclude
     });
+  }
+
+  static async getCabCapacity(regNumber) {
+    const cab = await Cab.findOne({
+      where: { regNumber },
+      attributes: ['id', 'capacity']
+    });
+    return cab && cab.dataValues ? cab.dataValues.capacity : 0;
   }
 }
 

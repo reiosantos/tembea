@@ -103,8 +103,18 @@ class DialogPrompts {
   static async sendOperationsApprovalDialog(payload, respond) {
     const { value } = payload.actions[0];
     const { confirmationComment } = JSON.parse(value);
-    let dialog = new SlackDialog('operations_reason_dialog',
-      'Confirm Trip Request', 'Submit', false, value);
+    let nextCallback; let
+      title;
+    const callbackId = 'operations_reason_dialog';
+    if (payload.callback_id === 'operations_approval_route') {
+      nextCallback = `${callbackId}_route`;
+      title = 'Confirm Route Request';
+    } else {
+      nextCallback = `${callbackId}_trips`;
+      title = 'Confirm Trip Request';
+    }
+    let dialog = new SlackDialog(nextCallback,
+      title, 'Submit', false, value);
     dialog = DialogPrompts.addCabElementsToDialog(dialog, confirmationComment);
     respond(
       new SlackInteractiveMessage('Noted ...')
@@ -135,7 +145,7 @@ class DialogPrompts {
         'Justification',
         'confirmationComment',
         'Reason why',
-        'Enter reason for approving trip',
+        'Enter reason for approval',
         confirmationComment
       ),
     ]);
@@ -147,12 +157,16 @@ class DialogPrompts {
       'Approve Route Request', 'Submit', false, state);
     dialog.addElements([
       new SlackDialogText('Route\'s name', 'routeName', 'Enter route\'s name'),
-      new SlackDialogText('Route\'s capacity', 'routeCapacity', 'Enter route\'s capacity'),
       new SlackDialogText('Route\'s take-off time', 'takeOffTime', 'Enter take-off time',
-        false, 'The time should be in the format (HH:mm), eg. 01:30'),
-      new SlackDialogText('Cab Registration number', 'regNumber',
-        'Enter the Cab\'s registration number'),
+        false, 'The time should be in the format (HH:mm), eg. 01:30')
     ]);
+    const { cabs } = await CabService.getCabs();
+    const cabData = CabsHelper.toCabLabelValuePairs(cabs);
+    dialog.addElements([new SlackDialogSelectElementWithOptions('Select A Cab',
+      'cab', [{
+        label: 'Create New Cab',
+        value: 'Create New Cab'
+      }, ...cabData])]);
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
@@ -202,11 +216,11 @@ class DialogPrompts {
     respond(new SlackInteractiveMessage('Noted ...'));
     const dialog = new SlackDialog(callbackId,
       'Search', 'Submit', false, value);
-    
+
     const hint = 'e.g Emmerich Road';
     const textarea = new SlackDialogText('Search', 'search',
       'Enter the route name to search', false, hint);
-    
+
     dialog.addElements([textarea]);
     await DialogPrompts.sendDialog(dialog, payload);
   }

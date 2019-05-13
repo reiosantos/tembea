@@ -259,7 +259,7 @@ class SlackInteractions {
     try {
       const payload = CleanData.trim(data);
       const { callback_id: callbackId } = payload;
-      const errors = (callbackId === 'operations_reason_dialog')
+      const errors = (callbackId === 'operations_reason_dialog_trips')
         ? TripActionsController.runCabValidation(payload) : [];
       if (errors && errors.length > 0) {
         return { errors };

@@ -1,7 +1,8 @@
 import { createMessageAdapter } from '@slack/interactive-messages';
 import SlackInteractions from './index';
 import ManagerController from '../RouteManagement/ManagerController';
-import OperationsController from '../RouteManagement/OperationsController';
+import { OperationsHandler } from '../RouteManagement/OperationsController';
+import OperationsHelper from '../helpers/slackHelpers/OperationsHelper';
 import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInteractions';
 import RateTripController from '../TripManagement/RateTripController';
 import TripInteractions from '../SlackPrompts/notifications/TripNotifications/TripInteractions';
@@ -33,10 +34,12 @@ slackInteractionsRouter.action({ callbackId: 'decline_trip' },
   SlackInteractions.handleTripDecline);
 slackInteractionsRouter.action({ callbackId: 'trip_itinerary' },
   SlackInteractions.viewTripItineraryActions);
-slackInteractionsRouter.action({ callbackId: 'operations_approval' },
+slackInteractionsRouter.action({ callbackId: /^operations_approval/ },
   SlackInteractions.sendCommentDialog);
-slackInteractionsRouter.action({ callbackId: 'operations_reason_dialog' },
+slackInteractionsRouter.action({ callbackId: 'operations_reason_dialog_trips' },
   SlackInteractions.handleTripActions);
+slackInteractionsRouter.action({ callbackId: 'operations_reason_dialog_route' },
+  OperationsHelper.sendOpsData);
 slackInteractionsRouter.action({ callbackId: 'trips_cab_selection' },
   SlackInteractions.handleOpsAction);
 slackInteractionsRouter.action({ callbackId: 'confirm_ops_approval' },
@@ -48,7 +51,7 @@ slackInteractionsRouter.action({ callbackId: /^new_route/ },
 slackInteractionsRouter.action({ callbackId: /^manager_route/ },
   ManagerController.handleManagerActions);
 slackInteractionsRouter.action({ callbackId: /^operations_route/ },
-  OperationsController.handleOperationsActions);
+  OperationsHandler.handleOperationsActions);
 slackInteractionsRouter.action({ callbackId: 'view_new_trip' },
   SlackInteractions.completeTripResponse);
 slackInteractionsRouter.action({ callbackId: /^join_route/ },

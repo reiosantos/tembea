@@ -449,7 +449,7 @@ describe('validatePickupDestinationEntry', () => {
 describe('validateApproveRoutesDetails', () => {
   const payData = {
     submission: {
-      routeName: 'Kwetu', routeCapacity: '30', takeOffTime: '10:00', regNumber: '12345'
+      routeName: 'Kwetu', takeOffTime: '10:00'
     }
   };
 
@@ -458,7 +458,7 @@ describe('validateApproveRoutesDetails', () => {
     Validators.checkTimeFormat = jest.fn().mockReturnValue([{ error: 'Yes error' }]);
    
     const errors = UserInputValidator.validateApproveRoutesDetails(payData);
-    expect(errors.length).toEqual(4);
+    expect(errors.length).toEqual(2);
   });
 });
 

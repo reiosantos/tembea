@@ -2,19 +2,20 @@ import {
   SlackAttachment, SlackButtonAction, SlackInteractiveMessage
 } from '../SlackModels/SlackMessageModels';
 import SlackInteractions from '../SlackInteractions/index';
-import { bugsnagHelper } from '../RouteManagement/rootFile';
+import bugsnagHelper from '../../../helpers/bugsnagHelper';
 
 class TripCabController {
-  static sendCreateCabAttachment(payload, respond) {
+  static sendCreateCabAttachment(payload, callbackId, routeRequestData) {
     try {
       const state = JSON.parse(payload.state);
       state.confirmationComment = payload.submission.confirmationComment;
+      state.routeRequestData = routeRequestData;
       const attachment = new SlackAttachment();
       attachment.addFieldsOrActions('actions', [
         new SlackButtonAction('confirmTrip', 'Proceed', JSON.stringify(state))]);
-      attachment.addOptionalProps('operations_approval');
-      const message = new SlackInteractiveMessage('*Proceed to Create New Cab*', [attachment]);
-      respond(message);
+      attachment.addOptionalProps(callbackId);
+      const result = new SlackInteractiveMessage('*Proceed to Create New Cab*', [attachment]);
+      return result;
     } catch (error) {
       bugsnagHelper.log(error);
     }
@@ -23,7 +24,8 @@ class TripCabController {
   static async handleSelectCabDialogSubmission(data, respond) {
     const { submission } = data;
     if (submission.cab === 'Create New Cab') {
-      TripCabController.sendCreateCabAttachment(data, respond);
+      const result = TripCabController.sendCreateCabAttachment(data, 'operations_approval_trip', null);
+      respond(result);
       return;
     }
     const {

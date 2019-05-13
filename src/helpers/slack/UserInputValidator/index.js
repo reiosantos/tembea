@@ -201,13 +201,11 @@ class UserInputValidator {
   static validateApproveRoutesDetails(data) {
     const payload = CleanData.trim(data);
     const {
-      routeName, routeCapacity, takeOffTime, regNumber
+      routeName, takeOffTime
     } = payload.submission;
     const errors = [];
     errors.push(...Validators.validateRegex('checkWord', routeName, 'routeName'));
-    errors.push(...Validators.validateRegex('checkNumber', routeCapacity, 'routeCapacity'));
     errors.push(...Validators.checkTimeFormat(takeOffTime, 'takeOffTime'));
-    errors.push(...Validators.validateRegex('checkNumberPlate', regNumber, 'regNumber'));
     return errors;
   }
 

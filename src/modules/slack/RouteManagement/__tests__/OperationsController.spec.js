@@ -1,6 +1,6 @@
 import DialogPrompts from '../../SlackPrompts/DialogPrompts';
 import RouteRequestService from '../../../../services/RouteRequestService';
-import OperationsController from '../OperationsController';
+import { OperationsHandler } from '../OperationsController';
 import { mockRouteRequestData } from '../../../../services/__mocks__';
 import { SlackDialogError } from '../../SlackModels/SlackDialogModels';
 import OperationsNotifications from '../../SlackPrompts/notifications/OperationsRouteRequest';
@@ -8,6 +8,8 @@ import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import ManagerFormValidator
   from '../../../../helpers/slack/UserInputValidator/managerFormValidator';
 import RouteService from '../../../../services/RouteService';
+import OperationsHelper from '../../helpers/slackHelpers/OperationsHelper';
+import TripCabController from '../../TripManagement/TripCabController';
 
 describe('Operations Route Controller', () => {
   let respond;
@@ -61,7 +63,7 @@ describe('Operations Route Controller', () => {
         getRouteRequestAndToken.mockReturnValue(
           { botToken: 'botToken', routeRequest }
         );
-        await OperationsController.handleOperationsActions(payload, respond);
+        await OperationsHandler.handleOperationsActions(payload, respond);
         expect(DialogPrompts.sendOperationsNewRouteApprovalDialog).toHaveBeenCalledTimes(1);
         done();
       });
@@ -77,7 +79,7 @@ describe('Operations Route Controller', () => {
           }
         );
 
-        await OperationsController.handleOperationsActions(payload, respond);
+        await OperationsHandler.handleOperationsActions(payload, respond);
 
         expect(DialogPrompts.sendOperationsNewRouteApprovalDialog)
           .not
@@ -97,7 +99,7 @@ describe('Operations Route Controller', () => {
           }
         );
 
-        await OperationsController.handleOperationsActions(payload, respond);
+        await OperationsHandler.handleOperationsActions(payload, respond);
 
         expect(DialogPrompts.sendOperationsNewRouteApprovalDialog)
           .not
@@ -117,38 +119,43 @@ describe('Operations Route Controller', () => {
         payload = {
           ...payload,
           submission: {
-            routeName: 'QQQQQQ', routeCapacity: 12, takeOffTime: '12:30', regNumber: 'JDD3883'
+            routeName: 'QQQQQQ', takeOffTime: '12:30', regNumber: 'JDD3883, SDSAS, DDDDD'
           },
           callback_id: 'operations_route_approvedRequest'
         };
-        jest.spyOn(OperationsNotifications, 'completeOperationsApprovedAction')
-          .mockImplementation();
         jest.spyOn(RouteService, 'createRouteBatch').mockResolvedValue();
         payload = { ...payload, state };
       });
 
-      it('should complete approve action', async (done) => {
+      it('should complete approve action if cab is selectd from dropdown', async (done) => {
         jest.spyOn(ManagerFormValidator, 'approveRequestFormValidation')
           .mockResolvedValue([]);
-        getRouteRequestAndToken.mockResolvedValue(
-          { routeRequest: { ...mockRouteRequestData }, slackBotOauthToken: 'dfdf' }
-        );
-        updateRouteRequest.mockResolvedValue(
-          { ...mockRouteRequestData, status: 'Approved' }
-        );
-        completeOperationsApprovedAction.mockReturnValue('Token');
-        await OperationsController.handleOperationsActions(payload, respond);
-        expect(RouteRequestService.getRouteRequestAndToken).toHaveBeenCalled();
-        expect(RouteRequestService.updateRouteRequest).toHaveBeenCalled();
-        expect(OperationsNotifications.completeOperationsApprovedAction).toHaveBeenCalled();
+
+        jest.spyOn(OperationsHelper, 'sendOpsData').mockResolvedValue({});
+        await OperationsHandler.handleOperationsActions(payload, respond);
+        expect(OperationsHelper.sendOpsData).toHaveBeenCalled();
+        expect(ManagerFormValidator.approveRequestFormValidation).toHaveBeenCalled();
         done();
       });
+
+
+      it('should create New Cab', async (done) => {
+        payload.submission.cab = 'Create New Cab';
+        jest.spyOn(ManagerFormValidator, 'approveRequestFormValidation')
+          .mockResolvedValue([]);
+        jest.spyOn(TripCabController, 'sendCreateCabAttachment');
+        await OperationsHandler.handleOperationsActions(payload, respond);
+        expect(TripCabController.sendCreateCabAttachment).toHaveBeenCalled();
+        expect(ManagerFormValidator.approveRequestFormValidation).toHaveBeenCalled();
+        done();
+      });
+
 
       it('should not submit invalid user input', async (done) => {
         payload = {
           ...payload,
           submission: {
-            routeName: 'cele', routeCapacity: 'NJJDDJ', takeOffTime: '12:30', regNumber: '@@@$%%%'
+            routeName: 'cele', takeOffTime: '1230'
           },
           callback_id: 'operations_route_approvedRequest'
         };
@@ -159,7 +166,7 @@ describe('Operations Route Controller', () => {
           { ...mockRouteRequestData, status: 'Approved' }
         );
         completeOperationsApprovedAction.mockReturnValue('Token');
-        const result = await OperationsController.handleOperationsActions(payload, respond);
+        const result = await OperationsHandler.handleOperationsActions(payload, respond);
         expect(result.errors[0]).toBeInstanceOf(SlackDialogError);
         expect(RouteRequestService.updateRouteRequest).not.toHaveBeenCalled();
         expect(OperationsNotifications.completeOperationsApprovedAction).not.toHaveBeenCalled();
@@ -167,12 +174,14 @@ describe('Operations Route Controller', () => {
       });
 
       it('should handle errors', async (done) => {
-        getRouteRequestAndToken.mockResolvedValue(
-          { routeRequest: { ...mockRouteRequestData }, slackBotOauthToken: 'dfdf' }
-        );
-        updateRouteRequest.mockResolvedValue();
+        payload = {};
+        payload.callback_id = 'operations_route_approvedRequest';
+        jest.spyOn(ManagerFormValidator, 'approveRequestFormValidation')
+          .mockResolvedValue([]);
+
+        jest.spyOn(OperationsHelper, 'sendOpsData').mockResolvedValue({});
         jest.spyOn(bugsnagHelper, 'log');
-        await OperationsController.handleOperationsActions(payload, respond);
+        await OperationsHandler.handleOperationsActions(payload, respond);
         expect(bugsnagHelper.log).toHaveBeenCalled();
         expect(respond.mock.calls[0][0].text).toEqual('Unsuccessful request. Kindly Try again');
         done();
@@ -181,12 +190,12 @@ describe('Operations Route Controller', () => {
 
     describe('operations route controller', () => {
       it('should return a function if action exist', () => {
-        const result = OperationsController.operationsRouteController('approve');
+        const result = OperationsHandler.operationsRouteController('approve');
         expect(result).toBeInstanceOf(Function);
       });
       it('should throw an error if action does exist', () => {
         try {
-          OperationsController.operationsRouteController('doesNotExist')();
+          OperationsHandler.operationsRouteController('doesNotExist')();
         } catch (e) {
           expect(e).toBeInstanceOf(Error);
           expect(e.message).toBe('Unknown action: operations_route_doesNotExist');
@@ -204,26 +213,26 @@ describe('Operations Route Controller', () => {
           team: { id: 'TEAMID1' }
         };
         mockHandler = jest.fn().mockReturnValue({ test: 'dummy test' });
-        jest.spyOn(OperationsController, 'operationsRouteController')
+        jest.spyOn(OperationsHandler, 'operationsRouteController')
           .mockImplementation(() => mockHandler);
       });
       it('should properly handle route actions', async () => {
         payload2 = { ...payload2, callback_id: 'dummy_callback_id' };
-        const result = await OperationsController.handleOperationsActions(payload2, respond);
-        expect(OperationsController.operationsRouteController).toHaveBeenCalledWith('id');
+        const result = await OperationsHandler.handleOperationsActions(payload2, respond);
+        expect(OperationsHandler.operationsRouteController).toHaveBeenCalledWith('id');
         expect(mockHandler).toHaveBeenCalledWith(payload2, respond);
         expect(result).toEqual({ test: 'dummy test' });
       });
       it('should properly handle slack button actions', async () => {
-        const result = await OperationsController.handleOperationsActions(payload2, respond);
-        expect(OperationsController.operationsRouteController).toHaveBeenCalledWith('action');
+        const result = await OperationsHandler.handleOperationsActions(payload2, respond);
+        expect(OperationsHandler.operationsRouteController).toHaveBeenCalledWith('action');
         expect(mockHandler).toHaveBeenCalledWith(payload2, respond);
         expect(result).toEqual({ test: 'dummy test' });
       });
       it('should properly handle errors', async () => {
         payload2 = { ...payload2, callback_id: null };
         jest.spyOn(bugsnagHelper, 'log');
-        await OperationsController.handleOperationsActions(payload2, respond);
+        await OperationsHandler.handleOperationsActions(payload2, respond);
         expect(bugsnagHelper.log).toHaveBeenCalledTimes(1);
       });
     });
@@ -276,7 +285,7 @@ describe('Operations Route Controller', () => {
       });
       it('should launch decline dialog prompt', async (done) => {
         getRouteRequestAndToken.mockResolvedValue(mockRouteRequestData);
-        await OperationsController.handleOperationsActions(payload, respond);
+        await OperationsHandler.handleOperationsActions(payload, respond);
         expect(DialogPrompts.sendReasonDialog).toHaveBeenCalledTimes(1);
         done();
       });
@@ -291,7 +300,7 @@ describe('Operations Route Controller', () => {
             routeRequest
           }
         );
-        await OperationsController.handleOperationsActions(payload, respond);
+        await OperationsHandler.handleOperationsActions(payload, respond);
 
         expect(DialogPrompts.sendReasonDialog)
           .not
@@ -310,7 +319,7 @@ describe('Operations Route Controller', () => {
             routeRequest
           }
         );
-        await OperationsController.handleOperationsActions(payload, respond);
+        await OperationsHandler.handleOperationsActions(payload, respond);
         expect(DialogPrompts.sendReasonDialog)
           .not
           .toHaveBeenCalled();
@@ -344,7 +353,7 @@ describe('Operations Route Controller', () => {
           opsComment: 'declinind'
         });
         completeOperationsDeclineAction.mockReturnValue('Token');
-        await OperationsController.handleOperationsActions(payload, respond);
+        await OperationsHandler.handleOperationsActions(payload, respond);
         expect(RouteRequestService.getRouteRequestAndToken).toHaveBeenCalled();
         expect(RouteRequestService.updateRouteRequest).toHaveBeenCalled();
         expect(OperationsNotifications.completeOperationsDeclineAction).toHaveBeenCalled();
@@ -357,7 +366,7 @@ describe('Operations Route Controller', () => {
           throw new Error();
         });
         jest.spyOn(bugsnagHelper, 'log');
-        await OperationsController.handleOperationsActions(payload, respond);
+        await OperationsHandler.handleOperationsActions(payload, respond);
         expect(bugsnagHelper.log).toHaveBeenCalled();
         expect(respond.mock.calls[0][0].text).toEqual('Unsuccessful request. Kindly Try again');
         done();
@@ -366,12 +375,12 @@ describe('Operations Route Controller', () => {
 
     describe('operations route controller', () => {
       it('should return a function if action exist', () => {
-        const result = OperationsController.operationsRouteController('decline');
+        const result = OperationsHandler.operationsRouteController('decline');
         expect(result).toBeInstanceOf(Function);
       });
       it('should throw an error if action does exist', () => {
         try {
-          OperationsController.operationsRouteController('doesNotExist')();
+          OperationsHandler.operationsRouteController('doesNotExist')();
         } catch (e) {
           expect(e).toBeInstanceOf(Error);
           expect(e.message).toBe('Unknown action: operations_route_doesNotExist');
@@ -389,26 +398,26 @@ describe('Operations Route Controller', () => {
           team: { id: 'TEAMID1' }
         };
         mockHandler = jest.fn().mockReturnValue({ test: 'dummy test' });
-        jest.spyOn(OperationsController, 'operationsRouteController')
+        jest.spyOn(OperationsHandler, 'operationsRouteController')
           .mockImplementation(() => mockHandler);
       });
       it('should properly handle route actions', async () => {
         payload2 = { ...payload2, callback_id: 'dummy_callback_id' };
-        const result = await OperationsController.handleOperationsActions(payload2, respond);
-        expect(OperationsController.operationsRouteController).toHaveBeenCalledWith('id');
+        const result = await OperationsHandler.handleOperationsActions(payload2, respond);
+        expect(OperationsHandler.operationsRouteController).toHaveBeenCalledWith('id');
         expect(mockHandler).toHaveBeenCalledWith(payload2, respond);
         expect(result).toEqual({ test: 'dummy test' });
       });
       it('should properly handle slack button actions', async () => {
-        const result = await OperationsController.handleOperationsActions(payload2, respond);
-        expect(OperationsController.operationsRouteController).toHaveBeenCalledWith('action');
+        const result = await OperationsHandler.handleOperationsActions(payload2, respond);
+        expect(OperationsHandler.operationsRouteController).toHaveBeenCalledWith('action');
         expect(mockHandler).toHaveBeenCalledWith(payload2, respond);
         expect(result).toEqual({ test: 'dummy test' });
       });
       it('should properly handle errors', async () => {
         payload2 = { ...payload2, callback_id: null };
         jest.spyOn(bugsnagHelper, 'log');
-        await OperationsController.handleOperationsActions(payload2, respond);
+        await OperationsHandler.handleOperationsActions(payload2, respond);
         expect(bugsnagHelper.log).toHaveBeenCalledTimes(1);
         expect(respond).toHaveBeenCalledTimes(1);
       });

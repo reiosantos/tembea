@@ -1,3 +1,5 @@
+
+import { getAction } from './rootFile';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import RouteRequestService from '../../../services/RouteRequestService';
 import DialogPrompts from '../SlackPrompts/DialogPrompts';
@@ -5,9 +7,10 @@ import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import ManagerFormValidator from '../../../helpers/slack/UserInputValidator/managerFormValidator';
 import OperationsNotifications from '../SlackPrompts/notifications/OperationsRouteRequest/index';
 import RouteService from '../../../services/RouteService';
-import { getAction } from './rootFile';
 import ConfirmRouteUseJob from '../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 import CleanData from '../../../helpers/cleanData';
+import TripCabController from '../TripManagement/TripCabController';
+import OperationsHelper from '../helpers/slackHelpers/OperationsHelper';
 
 const saveRoute = async (updatedRequest, submission) => {
   const { busStop, routeImageUrl } = updatedRequest;
@@ -105,34 +108,25 @@ const handlers = {
     DialogPrompts.sendOperationsNewRouteApprovalDialog(payload, JSON.stringify(state));
   },
   approvedRequest: async (data, respond) => {
-    const payload = CleanData.trim(data);
     try {
-      const { submission, team: { id: teamId }, user: { id: userId } } = payload;
+      const payload = CleanData.trim(data);
       const errors = ManagerFormValidator.approveRequestFormValidation(payload);
       if (errors.length > 0) { return { errors }; }
-      const { approve } = JSON.parse(payload.state);
-      const { channelId, timeStamp, routeRequestId } = approve;
-      const {
-        slackBotOauthToken, routeRequest
-      } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
-      const updatedRequest = await RouteRequestService.updateRouteRequest(routeRequest.id, {
-        status: 'Approved'
-      });
-      if (updatedRequest) {
-        const save = saveRoute(updatedRequest, submission);
-        const complete = OperationsNotifications
-          .completeOperationsApprovedAction(
-            updatedRequest, channelId, timeStamp, userId, slackBotOauthToken, submission, false
-          );
-        Promise.all([complete, save]);
-      } else { throw new Error(); }
+      const { submission } = data;
+      if (submission.cab === 'Create New Cab') {
+        const result = TripCabController.sendCreateCabAttachment(data, 'operations_approval_route', submission);
+        respond(result);
+        return;
+      }
+      OperationsHelper.sendOpsData(payload);
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     }
   }
 };
-class OperationsController {
+
+class OperationsHandler {
   static operationsRouteController(action) {
     const errorHandler = (() => {
       throw new Error(`Unknown action: operations_route_${action}`);
@@ -144,7 +138,7 @@ class OperationsController {
     try {
       const payload = CleanData.trim(data);
       const action = getAction(payload, 'actions');
-      const actionHandler = OperationsController.operationsRouteController(action);
+      const actionHandler = OperationsHandler.operationsRouteController(action);
       return actionHandler(payload, respond);
     } catch (error) {
       bugsnagHelper.log(error);
@@ -153,4 +147,5 @@ class OperationsController {
   }
 }
 
-export default OperationsController;
+
+export { saveRoute, handlers, OperationsHandler };

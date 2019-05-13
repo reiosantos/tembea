@@ -89,7 +89,7 @@ describe('SlackInteractions', () => {
 
   describe('Manager decline trip', () => {
     beforeAll(() => {
-      ManageTripController.declineTrip = jest.fn(() => {});
+      ManageTripController.declineTrip = jest.fn(() => { });
     });
 
     it('should handle empty decline message', async (done) => {
@@ -212,7 +212,7 @@ describe('SlackInteractions', () => {
 
     beforeEach(() => {
       respond = respondMock();
-      Cache.save = jest.fn(() => {});
+      Cache.save = jest.fn(() => { });
       DialogPrompts.sendTripReasonForm = jest.fn(value1 => ({ value1 }));
       DialogPrompts.sendTripDetailsForm = jest.fn((value1, value2) => ({ value1, value2 }));
     });
@@ -248,7 +248,7 @@ describe('SlackInteractions', () => {
     it('should call scheduleTripHandler if handler exists in object', async () => {
       const reasonhandler = jest
         .spyOn(ScheduleTripInputHandlers, 'reason')
-        .mockImplementation(() => {});
+        .mockImplementation(() => { });
       const payload = createPayload('reason');
       await SlackInteractions.handleUserInputs(payload, 'respond');
       expect(reasonhandler).toHaveBeenCalledWith(payload, 'respond', 'reason');
@@ -327,7 +327,7 @@ describe('SlackInteractions', () => {
     it('should test reschedule switch interaction', async (done) => {
       RescheduleTripController.runValidations = jest.fn(() => (expectedErrorResponse));
       RescheduleTripController.rescheduleTrip = jest.fn(() => response);
-      TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => {});
+      TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => { });
       const payload = {
         state: 'reschedule boy',
         submission: {
@@ -462,19 +462,19 @@ describe('SlackInteractions', () => {
 
     beforeEach(() => {
       payload = {
-        callback_id: 'operations_reason_dialog',
+        callback_id: 'operations_reason_dialog_trips',
         submission:
-          {
-            confirmationComment: 'yes',
-            driverName: 'Valid Name',
-            driverPhoneNo: '1234567890',
-            regNumber: 'LNS 8367*'
-          }
+        {
+          confirmationComment: 'yes',
+          driverName: 'Valid Name',
+          driverPhoneNo: '1234567890',
+          regNumber: 'LNS 8367*'
+        }
       };
       response = jest.fn();
       DialogPrompts.sendOperationsApprovalDialog = jest.fn();
       DialogPrompts.sendOperationsDeclineDialog = jest.fn();
-      TripActionsController.changeTripStatus = jest.fn(() => {});
+      TripActionsController.changeTripStatus = jest.fn(() => { });
       TripActionsController.runCabValidation = jest.fn(() => []);
       respond = jest.fn();
     });
@@ -608,7 +608,7 @@ describe('SlackInteractions', () => {
 
       expect(result).toEqual({
         errors:
-        [{ error: 'This field cannot be empty', name: 'approveReason' }]
+          [{ error: 'This field cannot be empty', name: 'approveReason' }]
       });
     });
   });
@@ -740,7 +740,7 @@ describe('SlackInteractions', () => {
         SlackInteractions.completeTripResponse(payload1, respond1);
         expect(BugsnagHelper.log).toHaveBeenCalled();
         expect(respond1.mock.calls[0][0].text).toEqual('Error:bangbang: : '
-        + 'We could not complete this process please try again.');
+          + 'We could not complete this process please try again.');
       });
     });
 

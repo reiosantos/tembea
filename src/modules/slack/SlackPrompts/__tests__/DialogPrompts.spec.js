@@ -80,14 +80,30 @@ describe('Dialog prompts test', () => {
     done();
   });
 
+  it('should test sendOperationsApprovalDialog function on create new cab', async (done) => {
+    await DialogPrompts.sendOperationsApprovalDialog({
+      actions: [{
+        value: JSON.stringify({ confirmationComment: 'comment' })
+      }, ''],
+      callback_id: 'operations_approval_route',
+      trigger_id: 'trigger',
+      channel: {
+        id: 'XXXXXXXX'
+      },
+      team: { id: 'TEAMID1' }
+    }, respond);
+    expect(sendDialogTryCatch).toBeCalledTimes(1);
+    done();
+  });
+
   it('should send decline dialog', async (done) => {
     await DialogPrompts.sendReasonDialog({
       trigger_id: 'XXXXXXX',
       team: { id: 'TEAMID1' }
     },
-    'callback_id',
-    'state',
-    'dialogName');
+      'callback_id',
+      'state',
+      'dialogName');
 
     expect(sendDialogTryCatch).toBeCalled();
     done();

@@ -9,13 +9,13 @@ describe('TripCabController', () => {
   });
   it('should send create cab Attacment', (done) => {
     const payload = {
-      state: JSON.stringify({ }),
+      state: JSON.stringify({}),
       submission: {
         confirmationComment: 'comment'
       }
     };
-    TripCabController.sendCreateCabAttachment(payload, respond);
-    expect(respond).toHaveBeenCalledTimes(1);
+    const result = TripCabController.sendCreateCabAttachment(payload, 'operations_approval_trip', null);
+    expect(result.text).toEqual('*Proceed to Create New Cab*');
     done();
   });
   it('should handle create new cab submission', (done) => {
