@@ -595,7 +595,7 @@ describe('RouteController unit test', () => {
         botToken: 'token'
       });
       jest.spyOn(RouteService, 'getRoute').mockResolvedValue({
-        dataValues: { route: { dataValues: { name: 'home' } } }
+        route: { name: 'home' }
       });
       userSpy.mockResolvedValue({
         dataValues: { routeBatchId: 1, slackId: 'user' }
@@ -605,7 +605,6 @@ describe('RouteController unit test', () => {
       );
 
       await RoutesController.deleteFellowFromRoute(req, res);
-
       expect(res.status).toBeCalledWith(200);
       expect(res.status().json).toBeCalledWith({
         success: true,

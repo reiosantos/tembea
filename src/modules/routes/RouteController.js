@@ -298,7 +298,7 @@ class RoutesController {
         const { botToken: teamBotOauthToken } = await TeamDetailsService
           .getTeamDetailsByTeamUrl(teamUrl);
         const {
-          dataValues: { route: { dataValues: { name } } }
+          route: { name }
         } = await RouteService.getRoute(routeBatchId);
         const text = '*:information_source: Reach out to Ops department for any questions*';
         const slackMessage = new SlackInteractiveMessage(
