@@ -1,22 +1,24 @@
 import bugsnag from '@bugsnag/js';
+
 import { Bugsnag } from '../bugsnagHelper';
 
 jest.mock('@bugsnag/js');
 jest.mock('@bugsnag/plugin-express');
 
-const mockCheckEnvironments = (ENV) => {
-  jest.spyOn(Bugsnag, 'checkEnvironments');
-  Bugsnag.checkEnvironments
-    .mockImplementation((...env) => env.includes(ENV));
-};
-
 describe('bugsnag tests', () => {
   const bugsnagApiKey = 'dummy key';
-  const app = { use: jest.fn() };
-  const mockedBugsnag = { use: jest.fn(), getPlugin: jest.fn(), notify: jest.fn() };
+  const app = {
+    use: jest.fn()
+  };
+  const mockedBugsnag = {
+    use: jest.fn(),
+    getPlugin: jest.fn(),
+    notify: jest.fn()
+  };
+  let envSpy;
 
   beforeEach(() => {
-    // const mockedBugsnag = { use: jest.fn(), getPlugin: jest.fn(), notify: jest.fn() };
+    envSpy = jest.spyOn(Bugsnag, 'checkEnvironments');
     bugsnag.mockImplementation(() => (mockedBugsnag));
   });
   afterEach(() => {
@@ -25,7 +27,7 @@ describe('bugsnag tests', () => {
   });
 
   it('should properly instantiate bugsnag when in production', () => {
-    mockCheckEnvironments('production');
+    envSpy.mockReturnValue(false);
     const bugsnagHelper = new Bugsnag(bugsnagApiKey);
     expect(bugsnag).toHaveBeenCalledTimes(1);
     expect(bugsnag.mock.calls[0][0].apiKey).toEqual(bugsnagApiKey);
@@ -36,20 +38,12 @@ describe('bugsnag tests', () => {
   describe('create middle', () => {
     let bugsnagHelper;
     it('should create middle from express plugin when in production environment', () => {
-      mockCheckEnvironments('production');
+      envSpy.mockReturnValue(false);
       bugsnagHelper = new Bugsnag(bugsnagApiKey);
       mockedBugsnag.getPlugin.mockReturnValue('express');
       const result = bugsnagHelper.createMiddleware();
       expect(mockedBugsnag.getPlugin).toBeCalledWith('express');
       expect(result).toBe('express');
-    });
-    it('should not create middle from express plugin when in test environment', () => {
-      mockCheckEnvironments('test');
-      bugsnagHelper = new Bugsnag(bugsnagApiKey);
-      mockedBugsnag.getPlugin.mockReturnValue('express');
-      const result = bugsnagHelper.createMiddleware();
-      expect(result).toBeFalsy();
-      expect(mockedBugsnag.getPlugin).not.toBeCalled();
     });
   });
 
@@ -60,13 +54,13 @@ describe('bugsnag tests', () => {
       jest.spyOn(console, 'error').mockReturnValue();
     });
     it('should notify bugsnag when error occurs in production', () => {
-      mockCheckEnvironments('production');
+      envSpy.mockReturnValue(false);
       bugsnagHelper = new Bugsnag(bugsnagApiKey);
       bugsnagHelper.log(error);
       expect(mockedBugsnag.notify).toBeCalledWith(error);
     });
     it('should log via console in dev environment', () => {
-      mockCheckEnvironments('development');
+      envSpy.mockImplementation(isTest => (!isTest));
       bugsnagHelper = new Bugsnag(bugsnagApiKey);
       bugsnagHelper.log(error);
       // eslint-disable-next-line no-console
@@ -74,7 +68,7 @@ describe('bugsnag tests', () => {
       expect(mockedBugsnag.notify).not.toBeCalled();
     });
     it('should do nothing in test environment', () => {
-      mockCheckEnvironments('test');
+      envSpy.mockReturnValue(true);
       bugsnagHelper = new Bugsnag(bugsnagApiKey);
       bugsnagHelper.log(error);
       // eslint-disable-next-line no-console
@@ -86,11 +80,13 @@ describe('bugsnag tests', () => {
   describe('errorHandler', () => {
     let bugsnagHelper;
     beforeEach(() => {
-      mockCheckEnvironments('production');
+      envSpy.mockReturnValue(false);
       bugsnagHelper = new Bugsnag(bugsnagApiKey);
     });
     it('should initialize and set requestHandler if requestHandler is truthy', () => {
-      mockedBugsnag.getPlugin.mockReturnValue({ errorHandler: 'errorHandler' });
+      mockedBugsnag.getPlugin.mockReturnValue({
+        errorHandler: 'errorHandler'
+      });
       bugsnagHelper.errorHandler(app);
       expect(app.use).toHaveBeenCalled();
     });
@@ -106,11 +102,13 @@ describe('bugsnag tests', () => {
     let requestHandler;
     let bugsnagHelper;
     beforeEach(() => {
-      mockCheckEnvironments('production');
+      envSpy.mockReturnValue(false);
       bugsnagHelper = new Bugsnag(bugsnagApiKey);
     });
     it('should initialize and set requestHandler if requestHandler is truthy', () => {
-      requestHandler = { requestHandler: 'requestHandler' };
+      requestHandler = {
+        requestHandler: 'requestHandler'
+      };
       mockedBugsnag.getPlugin.mockReturnValue(requestHandler);
       bugsnagHelper.init(app);
       expect(app.use).toHaveBeenCalled();

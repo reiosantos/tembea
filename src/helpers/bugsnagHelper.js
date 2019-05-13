@@ -1,12 +1,13 @@
 import bugsnag from '@bugsnag/js';
 import bugsnagExpress from '@bugsnag/plugin-express';
+
 import env from '../config/environment';
 
 export class Bugsnag {
   constructor(bugsnagApiKey) {
     this.bugsnagClient = null;
-    const isTestEnv = Bugsnag.checkEnvironments('test');
-    if (!isTestEnv && bugsnagApiKey) {
+    const isTestOrDev = Bugsnag.checkEnvironments();
+    if (!isTestOrDev && bugsnagApiKey) {
       /* istanbul ignore next */
       this.bugsnagClient = bugsnag({
         apiKey: bugsnagApiKey,
@@ -19,9 +20,12 @@ export class Bugsnag {
     }
   }
 
-  static checkEnvironments(...environments) {
-    const { NODE_ENV } = env;
-    return environments.includes(NODE_ENV);
+  static checkEnvironments(isTest = false) {
+    const environments = ['test', 'development'];
+    const {
+      NODE_ENV
+    } = env;
+    return isTest ? ['test', 'testing'].includes(NODE_ENV) : environments.includes(NODE_ENV);
   }
 
   createMiddleware() {
@@ -33,24 +37,27 @@ export class Bugsnag {
   }
 
   init(app) {
-    const { requestHandler } = this.createMiddleware();
+    const {
+      requestHandler
+    } = this.createMiddleware();
     if (requestHandler) {
       app.use(requestHandler);
     }
   }
 
   errorHandler(app) {
-    const { errorHandler } = this.createMiddleware();
+    const {
+      errorHandler
+    } = this.createMiddleware();
     if (errorHandler) {
       app.use(errorHandler);
     }
   }
 
   log(error) {
-    const isDev = Bugsnag.checkEnvironments('development', 'dev');
-    if (this.bugsnagClient && !isDev) {
+    if (this.bugsnagClient) {
       this.bugsnagClient.notify(error);
-    } else if (isDev) {
+    } else if (!Bugsnag.checkEnvironments(true)) {
       // eslint-disable-next-line no-console
       console.error('Error: ', error);
     }

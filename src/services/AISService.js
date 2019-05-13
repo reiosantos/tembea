@@ -1,8 +1,9 @@
 import request from 'request-promise-native';
+
 import cache from '../cache';
-import BugsnagHelper from '../helpers/bugsnagHelper';
 import env from '../config/environment';
 import partnerData from '../helpers/AISHelper';
+import BugsnagHelper from '../helpers/bugsnagHelper';
 
 export class AISService {
   constructor(apiKey, baseUrl) {
@@ -35,7 +36,9 @@ export class AISService {
       let result = await cache.fetch(key);
       if (result) return result;
       const aisData = await request.get(uri, options);
-      const { values } = JSON.parse(aisData);
+      const {
+        values
+      } = JSON.parse(aisData);
       ([result] = values);
       if (!env.NODE_ENV.includes('production')) {
         result.placement = partnerData[Math.floor(Math.random() * partnerData.length)];
@@ -49,6 +52,6 @@ export class AISService {
   }
 }
 
-const aisService = new AISService(process.env.AIS_API_KEY, process.env.AIS_API_BASEURL);
+const aisService = new AISService(env.AIS_API_KEY, env.AIS_BASE_URL);
 
 export default aisService;
