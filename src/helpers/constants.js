@@ -39,7 +39,25 @@ export const DEFAULT_LOCATIONS = [
     latitude: -1.219539,
     createdAt: '2019-05-08 10:00:00.326000',
     updatedAt: '2019-05-08 10:00:00.006000'
-  }
+  },
+  {
+    longitude: 36.879841,
+    latitude: -1.219918,
+    createdAt: '2019-05-08 10:00:00.326000',
+    updatedAt: '2019-05-08 10:00:00.006000'
+  },
+  {
+    longitude: 36.883281,
+    latitude: -1.226404,
+    createdAt: '2019-05-08 10:00:00.326000',
+    updatedAt: '2019-05-08 10:00:00.006000'
+  },
+  {
+    longitude: 36.838365,
+    latitude: -1.214048,
+    createdAt: '2019-05-08 10:00:00.326000',
+    updatedAt: '2019-05-08 10:00:00.006000'
+  },
 ];
 
 export const DEFAULT_ADDRESSES = [
@@ -65,6 +83,21 @@ export const DEFAULT_ADDRESSES = [
   },
   {
     address: 'Andela Nairobi',
+    createdAt: '2019-04-09',
+    updatedAt: '2019-05-08 10:00:00.326000'
+  },
+  {
+    address: 'Morningside Apartments USIU road',
+    createdAt: '2019-04-09',
+    updatedAt: '2019-05-08 10:00:00.326000'
+  },
+  {
+    address: 'Safari Park Hotel',
+    createdAt: '2019-04-09',
+    updatedAt: '2019-05-08 10:00:00.326000'
+  },
+  {
+    address: 'Lymack Suites',
     createdAt: '2019-04-09',
     updatedAt: '2019-05-08 10:00:00.326000'
   }
