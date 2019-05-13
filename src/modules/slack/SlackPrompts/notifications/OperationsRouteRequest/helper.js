@@ -77,7 +77,7 @@ export default class OpsAttachmentHelper {
     const greeting = `Hi, <@${fellow.slackId}>`;
     return SlackNotifications.createDirectMessage(
       channelID,
-      `${greeting}, the operations team ${action} your request ${emoji}`,
+      `${greeting}, the operations team ${action} your request ${emoji}. You have also been added to the Route you requested`,
       attachments
     );
   }

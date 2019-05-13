@@ -12,7 +12,7 @@ import CleanData from '../../../helpers/cleanData';
 import TripCabController from '../TripManagement/TripCabController';
 import OperationsHelper from '../helpers/slackHelpers/OperationsHelper';
 
-const saveRoute = async (updatedRequest, submission) => {
+const saveRoute = async (updatedRequest, submission, userId) => {
   const { busStop, routeImageUrl } = updatedRequest;
   const {
     routeName, routeCapacity, takeOffTime, regNumber
@@ -27,7 +27,10 @@ const saveRoute = async (updatedRequest, submission) => {
     status: 'Active',
   };
   const batch = await RouteService.createRouteBatch(data);
-  ConfirmRouteUseJob.scheduleBatchStartJob(batch);
+  await Promise.all([
+    ConfirmRouteUseJob.scheduleBatchStartJob(batch),
+    RouteService.addUserToRoute(batch.id, userId),
+  ]);
 };
 
 const handlers = {
@@ -36,7 +39,7 @@ const handlers = {
     const [{ value: routeRequestId }] = actions;
 
     const { botToken, routeRequest } = await RouteRequestService
-      .getRouteRequestAndToken(routeRequestId, payload.team.id);
+        .getRouteRequestAndToken(routeRequestId, payload.team.id);
 
     const declined = routeRequest.status === 'Declined';
     const approved = routeRequest.status === 'Approved';
@@ -55,8 +58,8 @@ const handlers = {
     };
 
     DialogPrompts.sendReasonDialog(payload,
-      'operations_route_declinedRequest',
-      JSON.stringify(state), 'Decline', 'Decline', 'declineReason', 'route');
+        'operations_route_declinedRequest',
+        JSON.stringify(state), 'Decline', 'Decline', 'declineReason', 'route');
   },
   declinedRequest: async (data, respond) => {
     try {
@@ -73,13 +76,13 @@ const handlers = {
         opsComment: declineReason
       });
       await OperationsNotifications.completeOperationsDeclineAction(
-        updatedRequest, channelId, teamId, routeRequestId,
-        timeStamp, oauthToken, payload, respond, false
+          updatedRequest, channelId, teamId, routeRequestId,
+          timeStamp, oauthToken, payload, respond, false
       );
     } catch (error) {
       bugsnagHelper.log(error);
       respond(
-        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
+          new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
       );
     }
   },
@@ -89,7 +92,7 @@ const handlers = {
     const [{ value: routeRequestId }] = actions;
 
     const { botToken, routeRequest, routeRequest: { status } } = await RouteRequestService
-      .getRouteRequestAndToken(routeRequestId, payload.team.id);
+        .getRouteRequestAndToken(routeRequestId, payload.team.id);
 
     const declined = status === 'Declined';
     const approved = status === 'Approved';

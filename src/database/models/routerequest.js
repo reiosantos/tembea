@@ -46,6 +46,11 @@ module.exports = (sequelize, DataTypes) => {
       targetKey: 'id',
       as: 'opsReviewer',
     });
+    RouteRequest.belongsTo(models.User, {
+      foreignKey: 'requesterId',
+      targetKey: 'id',
+      as: 'requester',
+    });
   };
   return RouteRequest;
 };

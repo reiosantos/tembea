@@ -26,7 +26,9 @@ class OperationsHelper {
       submission = {
         ...submission, ...cabDetails, ...routeRequestData
       };
-      const save = saveRoute(updatedRequest, submission);
+      const { id } = updatedRequest.engagement.fellow;
+      const save = saveRoute(updatedRequest, submission, id);
+
       const complete = OperationsNotifications.completeOperationsApprovedAction(
         updatedRequest, channelId, timeStamp, userId, slackBotOauthToken, submission, false
       );

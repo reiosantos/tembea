@@ -20,7 +20,6 @@ export default class RouteInputHandlerHelper {
     const {
       submission: { manager: managerSlackId, workingHours }
     } = submissionValues;
-
     const [partner, manager, requester, fellowBusStop, fellowHomeAddress] = await Promise.all([
       PartnerService.findOrCreatePartner(partnerName),
       SlackHelpers.findOrCreateUserBySlackId(managerSlackId, teamId),
@@ -47,6 +46,7 @@ export default class RouteInputHandlerHelper {
     const homeId = fellowHomeAddress.id;
     const busStopId = fellowBusStop.id;
     const routeImageUrl = staticMapUrl;
+    const requesterId = engagement.fellowId;
     let { distanceInMetres: distance } = dojoToDropOffDistance;
     let { distanceInMetres: busStopDistance } = homeToDropOffDistance;
     distance /= 1000;
@@ -58,7 +58,8 @@ export default class RouteInputHandlerHelper {
       busStopId,
       routeImageUrl,
       distance,
-      busStopDistance
+      busStopDistance,
+      requesterId
     };
   }
 
@@ -72,7 +73,6 @@ export default class RouteInputHandlerHelper {
     ]);
     const { locationInfo } = cachedData;
     const dbData = RouteInputHandlerHelper.resolveRouteRequestDBData(locationInfo, depData);
-
     return RouteRequestService.createRoute(dbData);
   }
 

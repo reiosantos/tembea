@@ -20,7 +20,7 @@ class BatchUseRecordService {
     INNER JOIN "RouteBatches" AS RB ON RUR."batchId" = RB.id
 
     INNER JOIN "Routes" AS R ON RB."routeId" = R.id `;
-    
+
     const filterByDate = `WHERE RUR."batchUseDate" >= '${from}' AND RUR."batchUseDate" <= '${to}'`;
     if (from && to) {
       query += filterByDate;

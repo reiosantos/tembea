@@ -73,7 +73,6 @@ const RouteInputHandlers = {
       const staticMapString = GoogleMapsStatic.getLocationScreenShotUrl([locationMarker]);
       // Convert the string to a URL by removing spaces and replacing with %20
       const staticMapUrl = RouteInputHandlerHelper.convertStringToUrl(staticMapString);
-
       await Cache.save(payload.user.id, 'homeAddress', { address, latitude, longitude });
 
       LocationPrompts

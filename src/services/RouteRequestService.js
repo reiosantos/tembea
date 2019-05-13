@@ -24,7 +24,7 @@ class RouteRequestService {
    */
   static async createRoute({
     engagementId, managerId, homeId, busStopId, routeImageUrl, opsComment, managerComment, distance,
-    busStopDistance
+    busStopDistance, requesterId
   }) {
     return RouteRequest.create({
       routeImageUrl,
@@ -37,6 +37,7 @@ class RouteRequestService {
       distance,
       busStopDistance,
       status: 'Pending',
+      requesterId
     });
   }
 

@@ -10,6 +10,7 @@ import ManagerFormValidator
 import RouteService from '../../../../services/RouteService';
 import OperationsHelper from '../../helpers/slackHelpers/OperationsHelper';
 import TripCabController from '../../TripManagement/TripCabController';
+import UserService from '../../../../services/UserService';
 
 describe('Operations Route Controller', () => {
   let respond;
@@ -123,7 +124,11 @@ describe('Operations Route Controller', () => {
           },
           callback_id: 'operations_route_approvedRequest'
         };
+        jest.spyOn(OperationsNotifications, 'completeOperationsApprovedAction')
+          .mockImplementation();
+        jest.spyOn(UserService, 'getUserBySlackId').mockReturnValue({ dataValues: { id: 1 } });
         jest.spyOn(RouteService, 'createRouteBatch').mockResolvedValue();
+        jest.spyOn(RouteService, 'addUserToRoute');
         payload = { ...payload, state };
       });
 
