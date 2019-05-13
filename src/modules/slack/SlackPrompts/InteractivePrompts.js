@@ -350,7 +350,7 @@ class InteractivePrompts {
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('selectDestination', 'Destination', 'true'),
     ]);
-    const navAttachment = createNavButtons('schedule_trip_addPassengers', 'schedule_trip_addPassengers');
+    const navAttachment = createNavButtons('schedule_trip_addPassengers', 'called_back_button');
 
     attachment.addOptionalProps('schedule_trip_destinationSelection');
     const message = new SlackInteractiveMessage('*Select Destination*', [

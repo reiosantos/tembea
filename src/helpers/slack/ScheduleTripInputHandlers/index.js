@@ -56,12 +56,12 @@ const ScheduleTripInputHandlers = {
     InteractivePrompts.sendAddPassengersResponse(respond, 'false');
   },
   addPassengers: async (payload, respond) => {
-    if (payload.actions[0].value || payload.actions[0].selected_options[0]) {
-      const noOfPassengers = payload.actions[0].value
-        ? payload.actions[0].value : payload.actions[0].selected_options[0].value;
+    const noOfPassengers = payload.actions[0].value
+      ? payload.actions[0].value : payload.actions[0].selected_options[0].value;
+      
+    if (noOfPassengers !== 'called_back_button') {
       await Cache.save(payload.user.id, 'passengers', noOfPassengers);
     }
-
     const {
       forSelf
     } = await Cache.fetch(payload.user.id);
