@@ -345,7 +345,7 @@ class SlackInteractions {
     try {
       const payload = CleanData.trim(data);
       const { value } = payload.actions[0];
-      InteractivePrompts.sendCompletionResponse(respond, value);
+      InteractivePrompts.sendCompletionResponse(respond, value, payload.user.id);
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Error:bangbang: : '
