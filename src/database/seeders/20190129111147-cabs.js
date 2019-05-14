@@ -9,6 +9,7 @@ module.exports = {
       createdAt: '2019-01-14',
       updatedAt: '2019-01-14',
       capacity: 4,
+      providerId: 1,
       model: 'subaru',
       location: 'Lagos'
     },
@@ -20,6 +21,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 4,
       model: 'toyota',
+      providerId: 2,
       location: 'Wakanda'
     },
     {
@@ -30,6 +32,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 8,
       model: 'toyota',
+      providerId: 3,
       location: 'Kampala'
     },
     {
@@ -40,6 +43,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 4,
       model: 'prado',
+      providerId: 1,
       location: 'Nairobi'
     },
     {
@@ -50,6 +54,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 4,
       model: 'subaru',
+      providerId: 1,
       location: 'Lagos'
     },
     {
@@ -60,6 +65,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 4,
       model: 'toyota',
+      providerId: 1,
       location: 'Wakanda'
     },
     {
@@ -70,6 +76,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 8,
       model: 'Ford C-Max',
+      providerId: 1,
       location: 'Kampala'
     },
     {
@@ -80,6 +87,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 4,
       model: 'prado',
+      providerId: 1,
       location: 'Nairobi'
     },
     {
@@ -90,6 +98,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 7,
       model: 'subaruFord Probe',
+      providerId: 3,
       location: 'Lagos'
     },
     {
@@ -100,6 +109,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 4,
       model: 'subaru',
+      providerId: 2,
       location: 'Lagos'
     },
     {
@@ -110,6 +120,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 4,
       model: 'toyota',
+      providerId: 2,
       location: 'Wakanda'
     },
     {
@@ -120,6 +131,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 6,
       model: 'Suzuki Esteem',
+      providerId: 1,
       location: 'Lagos'
     },
     {
@@ -130,6 +142,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 9,
       model: 'Ford Escort',
+      providerId: 1,
       location: 'Kampala'
     },
     {
@@ -140,6 +153,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 8,
       model: 'Audi e-Tron',
+      providerId: 1,
       location: 'Wakanda'
     },
     {
@@ -150,6 +164,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 7,
       model: 'subaruFord Probe',
+      providerId: 2,
       location: 'Lagos'
     },
     {
@@ -160,6 +175,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 6,
       model: 'Suzuki Esteem',
+      providerId: 3,
       location: 'Lagos'
     },
     {
@@ -170,6 +186,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 4,
       model: 'Mitsubishi Mirage',
+      providerId: 2,
       location: 'Lagos'
     },
     {
@@ -180,6 +197,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 4,
       model: 'subaru',
+      providerId: 3,
       location: 'Lagos'
     },
     {
@@ -190,6 +208,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 4,
       model: 'toyota',
+      providerId: 1,
       location: 'Wakanda'
     },
     {
@@ -200,6 +219,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 5,
       model: 'Daihatsu Naked',
+      providerId: 2,
       location: 'Lagos'
     },
     {
@@ -210,6 +230,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 3,
       model: 'Chevrolet Citation',
+      providerId: 1,
       location: 'Lagos'
     },
     {
@@ -220,6 +241,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 7,
       model: 'subaruFord Probe',
+      providerId: 2,
       location: 'Lagos'
     },
     {
@@ -230,6 +252,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 4,
       model: 'subaru',
+      providerId: 1,
       location: 'Lagos'
     },
     {
@@ -240,6 +263,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 4,
       model: 'toyota',
+      providerId: 2,
       location: 'Wakanda'
     },
     {
@@ -250,6 +274,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 2,
       model: 'Mitsubishi Pajero',
+      providerId: 3,
       location: 'Nairobi'
     },
     {
@@ -260,6 +285,7 @@ module.exports = {
       updatedAt: '2019-01-14',
       capacity: 2,
       model: 'Mitsubishi Pajero',
+      providerId: 2,
       location: 'Nairobi'
     }
   ]),

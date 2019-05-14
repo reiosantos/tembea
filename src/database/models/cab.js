@@ -23,12 +23,20 @@ module.exports = (sequelize, DataTypes) => {
     },
     location: {
       type: DataTypes.STRING,
+    },
+    providerId: {
+      type: DataTypes.INTEGER
     }
   }, {
-    paranoid: true,
-    timestamps: true
-  });
-  Cab.associate = () => {
+      paranoid: true,
+      timestamps: true
+    });
+  Cab.associate = (models) => {
+    Cab.belongsTo(models.Provider, {
+      foreignKey: 'providerId',
+      targetKey: 'id',
+      as: 'provider',
+    })
   };
   return Cab;
 };
