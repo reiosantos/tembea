@@ -1,4 +1,4 @@
-const partnerData = [{
+export const partnerData = [{
   id: '-LRpI517GlyGbWQbxeDy',
   client: 'Microsoft Technology',
   status: 'External Engagements - Technology'
@@ -52,4 +52,48 @@ addDataValues({
   client_id: ''
 });
 
-export default partnerData;
+export const AisData = email => ({
+  success: 'true',
+  aisUserData: {
+    id: '-Leq62lHFgakZGSjztk1',
+    email,
+    first_name: email.split('@')[0].split('.')[0],
+    last_name: email.split('@')[0].split('.')[1],
+    name: email.split('@')[0],
+    api_token: '',
+    picture: 'https://lh3.googleusercontent.com/-m00wMFFdllM/AAAAAAAAAAI/AAAAAAAAAAc/5aXzLWyz1Wk/s50/photo.jpg',
+    status: 'active',
+    roles: [
+      {
+        id: '-KXH7iME4ebMEXAEc7HP',
+        name: 'Technology'
+      },
+      {
+        id: '-KiihfZoseQeqC6bWTau',
+        name: 'Andelan'
+      }
+    ],
+    cohort: null,
+    location: null,
+    level: null,
+    slogan: '',
+    known_as: '',
+    bio: '',
+    github: '',
+    slack: '',
+    phone_number: '',
+    organisation: null,
+    progress: 0,
+    access_token: '',
+    promotion: '',
+    last_login: '2019-05-14T11:31:04.910Z',
+    created_at: '2019-05-14T11:31:04.934Z',
+    updated_at: '2019-05-14T14:21:25.895Z',
+    greenhouse_id: 0,
+    bamboo_hr_id: 0,
+    department_name: '',
+    job_name: '',
+    offer_start_date: '2019-05-14T11:31:04.913Z',
+    department: null
+  },
+});

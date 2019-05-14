@@ -2,7 +2,7 @@ import request from 'request-promise-native';
 
 import cache from '../cache';
 import env from '../config/environment';
-import partnerData from '../helpers/AISHelper';
+import { partnerData, AisData } from '../helpers/AISHelper';
 import BugsnagHelper from '../helpers/bugsnagHelper';
 
 export class AISService {
@@ -40,8 +40,14 @@ export class AISService {
         values
       } = JSON.parse(aisData);
       ([result] = values);
-      if (!env.NODE_ENV.includes('production')) {
-        result.placement = partnerData[Math.floor(Math.random() * partnerData.length)];
+      const notOnAis = !env.NODE_ENV.includes('production') && !result;
+      const notOnProduction = !env.NODE_ENV.includes('production');
+      if (notOnAis) {
+        result = AisData(email);
+        result.placement = await partnerData[Math.floor(Math.random() * partnerData.length)];
+      }
+      if (notOnProduction) {
+        result.placement = await partnerData[Math.floor(Math.random() * partnerData.length)];
       }
       await cache.saveObject(key, result);
       return result;

@@ -24,6 +24,7 @@ describe('AISService', () => {
   it('should get user details', async () => {
     jest.spyOn(request, 'get').mockResolvedValueOnce(JSON.stringify(mockAISData));
     const result = await aisService.getUserDetails('test.user@andela.com');
+
     expect(result).toHaveProperty('placement');
     expect(result).toHaveProperty('id');
     expect(result).toHaveProperty('email');
@@ -47,5 +48,17 @@ describe('AISService', () => {
     jest.spyOn(cache, 'fetch').mockRejectedValue(new Error(errMessage));
 
     expect(aisService.getUserDetails('test.user@test.com')).rejects.toThrow(Error);
+  });
+
+  it('should get user details without AIS profile', async () => {
+    const aisData = '{ "values": [], "total": 0 }';
+    jest.spyOn(cache, 'fetch').mockResolvedValue(null);
+    jest.spyOn(request, 'get').mockResolvedValue(aisData);
+    jest.spyOn(JSON, 'parse');
+    const result = await aisService.getUserDetails('someone@andela.com');
+    expect(result.success).toEqual('true');
+    expect(result).toHaveProperty('aisUserData');
+    expect(result.aisUserData.first_name).toEqual('someone');
+    expect(result.aisUserData.last_name).toEqual(undefined);
   });
 });
