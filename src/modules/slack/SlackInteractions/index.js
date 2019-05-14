@@ -12,7 +12,9 @@ import ManageTripController from '../TripManagement/ManageTripController';
 import TripActionsController from '../TripManagement/TripActionsController';
 import TripRescheduleHelper from '../helpers/slackHelpers/rescheduleHelper';
 import Cache from '../../../cache';
-import ScheduleTripInputHandlers from '../../../helpers/slack/ScheduleTripInputHandlers';
+import ScheduleTripInputHandlers, {
+  getTripKey
+} from '../../../helpers/slack/ScheduleTripInputHandlers';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import travelTripHelper from '../helpers/slackHelpers/TravelTripHelper';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
@@ -72,7 +74,7 @@ class SlackInteractions {
     switch (action) {
       case 'true':
       case 'false':
-        await Cache.save(payload.user.id, 'forSelf', action);
+        await Cache.save(getTripKey(payload.user.id), 'forSelf', action);
         DialogPrompts.sendTripReasonForm(payload);
         break;
       default:

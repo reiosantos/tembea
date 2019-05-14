@@ -70,7 +70,6 @@ describe('ScheduleTripInputHandlers Tests', () => {
       await ScheduleTripInputHandlers.reason(payload, responder);
       expect(InteractivePrompts.sendAddPassengersResponse)
         .toHaveBeenCalledWith(responder);
-      expect(UpdateSlackMessageHelper.updateMessage).toBeCalledTimes(1);
     });
 
     it('should respond with list of users', async () => {

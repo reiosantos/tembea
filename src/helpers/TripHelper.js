@@ -1,5 +1,6 @@
 import Cache from '../cache';
 import AddressService from '../services/AddressService';
+import { getTripKey } from './slack/ScheduleTripInputHandlers';
 
 export default class TripHelper {
   static cleanDateQueryParam(query, field) {
@@ -34,7 +35,7 @@ export default class TripHelper {
 
   static async updateTripData(userId, name, pickup, othersPickup, dateTime,
     tripType = 'Regular Trip') {
-    const userTripDetails = await Cache.fetch(userId);
+    const userTripDetails = await Cache.fetch(getTripKey(userId));
     const userTripData = { ...userTripDetails };
     const pickupCoords = pickup !== 'Others'
       ? await AddressService.findCoordinatesByAddress(pickup) : null;

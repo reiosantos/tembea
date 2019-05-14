@@ -13,6 +13,8 @@ import GoogleMapsError from '../../googleMaps/googleMapsError';
 import TripHelper from '../../TripHelper';
 import UpdateSlackMessageHelper from '../updatePastMessageHelper';
 
+export const getTripKey = userId => `TRIP_IN_PROCESS_${userId}`;
+
 export const createDepartmentPayloadObject = (payload, respond, forSelf = 'true') => {
   const navButtonCallbackId = forSelf === 'true' ? 'schedule_trip_reason' : 'schedule_trip_rider';
   return {
@@ -27,20 +29,24 @@ export const createDepartmentPayloadObject = (payload, respond, forSelf = 'true'
 const ScheduleTripInputHandlers = {
   reason: async (payload, respond, callbackId) => {
     const data = { text: 'Noted...' };
-    await UpdateSlackMessageHelper.updateMessage(payload, data);
-
-    const checkIfEmpty = Validators.validateDialogSubmission(payload);
-    if (checkIfEmpty.length) {
-      return {
-        errors: checkIfEmpty
-      };
+    if (payload.state) {
+      await UpdateSlackMessageHelper.updateMessage(payload.state, data);
     }
+
     if (payload.submission) {
-      await Cache.save(payload.user.id, callbackId, payload.submission.reason);
+      const checkIfEmpty = Validators.validateDialogSubmission(payload);
+      if (checkIfEmpty.length) {
+        return {
+          errors: checkIfEmpty
+        };
+      }
+      if (payload.submission.reason) {
+        await Cache.save(getTripKey(payload.user.id), callbackId, payload.submission.reason);
+      }
     }
 
     // check if user clicked for me or for someone
-    const userValue = await Cache.fetch(payload.user.id);
+    const userValue = await Cache.fetch(getTripKey(payload.user.id));
     if (userValue.forSelf === 'true') {
       InteractivePrompts.sendAddPassengersResponse(respond);
     } else {
@@ -50,7 +56,7 @@ const ScheduleTripInputHandlers = {
   rider: async (payload, respond, callbackId) => {
     if (payload.actions[0].selected_options) {
       const rider = payload.actions[0].selected_options[0].value;
-      await Cache.save(payload.user.id, callbackId, rider);
+      await Cache.save(getTripKey(payload.user.id), callbackId, rider);
     }
 
     InteractivePrompts.sendAddPassengersResponse(respond, 'false');
@@ -58,27 +64,27 @@ const ScheduleTripInputHandlers = {
   addPassengers: async (payload, respond) => {
     const noOfPassengers = payload.actions[0].value
       ? payload.actions[0].value : payload.actions[0].selected_options[0].value;
-      
+
     if (noOfPassengers !== 'called_back_button') {
-      await Cache.save(payload.user.id, 'passengers', noOfPassengers);
+      await Cache.save(getTripKey(payload.user.id), 'passengers', noOfPassengers);
     }
     const {
       forSelf
-    } = await Cache.fetch(payload.user.id);
+    } = await Cache.fetch(getTripKey(payload.user.id));
     const props = createDepartmentPayloadObject(payload, respond, forSelf);
     return InteractivePrompts.sendListOfDepartments(props, forSelf);
   },
 
   department: async (payload) => {
     const department = payload.actions[0];
-    await Cache.save(payload.user.id, 'department', department);
+    await Cache.save(getTripKey(payload.user.id), 'department', department);
     DialogPrompts.sendTripDetailsForm(payload, 'regularTripForm',
       'schedule_trip_tripPickup', 'Pickup Details');
   },
 
   tripPickup: async (payload, respond) => {
     const data = { text: 'Noted...' };
-    await UpdateSlackMessageHelper.updateMessage(payload, data);
+    await UpdateSlackMessageHelper.updateMessage(payload.state, data);
     const {
       submission: { pickup, othersPickup, dateTime }, user: { id: userId, name }
     } = payload;
@@ -87,7 +93,7 @@ const ScheduleTripInputHandlers = {
       if (errors.length) return { errors };
       const tripData = await TripHelper
         .updateTripData(userId, name, pickup, othersPickup, dateTime, 'Regular Trip');
-      await Cache.saveObject(userId, tripData);
+      await Cache.saveObject(getTripKey(userId), tripData);
       if (pickup !== 'Others') {
         return InteractivePrompts.sendSelectDestination(respond);
       }
@@ -115,12 +121,12 @@ const ScheduleTripInputHandlers = {
 
   confirmDestination: async (payload, respond) => {
     const data = { text: 'Noted...' };
-    await UpdateSlackMessageHelper.updateMessage(payload, data);
+    await UpdateSlackMessageHelper.updateMessage(payload.state, data);
     let tripData;
     try {
       const payloadCopy = { ...payload };
       const { submission: { destination, othersDestination }, user: { id: userId } } = payload;
-      const tripDetails = await Cache.fetch(userId);
+      const tripDetails = await Cache.fetch(getTripKey(userId));
       tripDetails.destination = destination;
       tripDetails.othersDestination = othersDestination;
       payloadCopy.submission.pickup = tripDetails.pickup;
@@ -128,9 +134,9 @@ const ScheduleTripInputHandlers = {
       const errors = await ScheduleTripController.validateTripDetailsForm(payloadCopy, 'destination');
       if (errors.length) return { errors };
       const updatedTripData = await TripHelper.getDestinationCoordinates(destination, tripDetails);
-      
+
       tripData = UserInputValidator.getScheduleTripDetails(updatedTripData);
-      await Cache.saveObject(userId, tripData);
+      await Cache.saveObject(getTripKey(userId), tripData);
       if (destination !== 'Others') return InteractivePrompts.sendScheduleTripResponse(tripData, respond);
       const verifiable = await LocationHelpers.locationVerify(payload.submission, 'destination', 'schedule_trip');
       respond(verifiable);
@@ -146,14 +152,14 @@ const ScheduleTripInputHandlers = {
   detailsConfirmation: async (payload, respond) => {
     try {
       const { user: { id: userId } } = payload;
-      const tripDetails = await Cache.fetch(userId);
+      const tripDetails = await Cache.fetch(getTripKey(userId));
       const tripData = UserInputValidator.getScheduleTripDetails(tripDetails);
       if (tripData.pickup === tripData.destination) {
         respond(new SlackInteractiveMessage('Pickup and Destination cannot be the same...'));
         return await DialogPrompts.sendTripDetailsForm(payload, 'tripDestinationLocationForm',
           'schedule_trip_confirmDestination', 'Destination Details');
       }
-      await Cache.saveObject(userId, tripData);
+      await Cache.saveObject(getTripKey(userId), tripData);
 
       return InteractivePrompts.sendScheduleTripResponse(tripData, respond);
     } catch (error) {
@@ -165,9 +171,9 @@ const ScheduleTripInputHandlers = {
   confirmation: async (payload, respond) => {
     try {
       const { user: { id: userId } } = payload;
-      const tripDetails = await Cache.fetch(userId);
+      const tripDetails = await Cache.fetch(getTripKey(userId));
       await ScheduleTripController.createTripRequest(payload, respond, tripDetails);
-      await Cache.delete(userId);
+      await Cache.delete(getTripKey(userId));
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));

@@ -1,8 +1,8 @@
 import Utils from '../src/utils';
 import tripService, { TripService } from '../src/services/TripService';
-import sequelize from '../src/database/models';
+import models from '../src/database/models';
 
-describe.skip('TripService', () => {
+describe('TripService', () => {
   const [testUserId, departmentId] = [2, 2];
   const testTrips = [];
   const tripsCount = 3;
@@ -14,9 +14,9 @@ describe.skip('TripService', () => {
         reason: 'Testing the flow',
         departmentId,
         tripStatus: 'Pending',
-        departureTime: Utils.formatDateForDatabase(new Date(
+        departureTime: new Date(
           new Date().getTime() - 864000000
-        ).toLocaleString()),
+        ).toLocaleString(),
         requestedById: testUserId,
         originId: 1,
         destinationId: 2,
@@ -24,21 +24,21 @@ describe.skip('TripService', () => {
         tripType: 'Regular Trip'
       }));
     }
-
     await Promise.all(testTrips);
   });
 
-  afterAll(() => sequelize.close());
+  afterAll(async () => {
+    await models.sequelize.close();
+  });
 
   describe('getPaginatedTrips', () => {
-    it('should return paginated trips', async () => {
+    it('should return paginated trips', async (done) => {
       const itemPerPage = 5;
       const response = await tripService.getPaginatedTrips({}, 1, itemPerPage);
       expect(response).toBeDefined();
       expect(response.data).toBeDefined();
       expect(response.pageMeta).toBeDefined();
-      // expect(response.data.length).toEqual(itemPerPage);
-      // expect(response.pageMeta.totalItems).toBeGreaterThanOrEqual(tripsCount - 1);
+      done();
     });
   });
 });

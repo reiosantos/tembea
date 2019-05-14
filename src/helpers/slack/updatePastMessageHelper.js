@@ -2,10 +2,10 @@ import request from 'request-promise-native';
 import BugsnagHelper from '../bugsnagHelper';
 
 class UpdateSlackMessageHelper {
-  static async updateMessage(payload, data) {
+  static async updateMessage(state, data) {
     try {
-      const { response_url: responseUrl } = JSON.parse(payload.state);
-      
+      const { response_url: responseUrl } = JSON.parse(state);
+
       const options = {
         url: responseUrl,
         method: 'POST',
