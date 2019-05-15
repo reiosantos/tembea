@@ -33,24 +33,42 @@ describe('ProvidersController', () => {
         });
     });
   });
+
   describe('ProviderController_updateProvider', async () => {
-    describe('ProviderController_updateProvider', async () => {
-      let updateData;
-      it('should update provider successfully', (done) => {
-        updateData = { name: 'SharkDevs Uber' };
-        request(app)
-          .patch(`${apiURL}/1`)
-          .send(updateData)
-          .set(headers)
-          .expect(200, (err, res) => {
-            const { body } = res;
-            expect(err).toBeNull();
-            expect(body).toHaveProperty('message');
-            expect(body).toHaveProperty('data');
-            expect(body.data.name).toEqual('SharkDevs Uber');
-            done();
-          });
-      });
+    let updateData;
+    it('should update provider successfully', (done) => {
+      updateData = { name: 'SharkDevs Uber' };
+      request(app)
+        .patch(`${apiURL}/1`)
+        .send(updateData)
+        .set(headers)
+        .expect(200, (err, res) => {
+          const { body } = res;
+          expect(err).toBeNull();
+          expect(body).toHaveProperty('message');
+          expect(body).toHaveProperty('data');
+          expect(body.data.name).toEqual('SharkDevs Uber');
+          done();
+        });
+    });
+  });
+
+  describe('ProviderController_addProvider', () => {
+    it('should create provider successfully', async () => {
+      const requestData = {
+        name: 'TaxiCako',
+        email: 'abishai.omari@andela.com'
+      };
+      request(app)
+        .post(apiURL)
+        .send(requestData)
+        .set(headers)
+        .expect(201)
+        .end((err, res) => {
+          expect(res.body.provider.name).toEqual('TaxiCako');
+          expect(res.body.message).toEqual('Provider created successfully');
+          expect(res.body.provider.providerUserId).toEqual(3);
+        });
     });
   });
 });

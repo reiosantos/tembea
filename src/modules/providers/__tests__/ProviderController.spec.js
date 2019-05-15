@@ -1,59 +1,142 @@
 import {
   providers, paginatedData, successMessage, returnedData
 } from '../__mocks__/ProviderMockData';
-import ProvidersController from '../ProvidersController';
-import ProviderService from '../../../services/ProviderService';
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
-import HttpError from '../../../helpers/errorHandler';
 import ProviderHelper from '../../../helpers/providerHelper';
 import Response from '../../../helpers/responseHelper';
 import models from '../../../database/models';
-import { bugsnagHelper } from '../../slack/RouteManagement/rootFile';
+
+import ProviderService from '../../../services/ProviderService';
+import HttpError from '../../../helpers/errorHandler';
+import UserService from '../../../services/UserService';
+import {
+  mockReturnedProvider,
+  mockProvider,
+  mockExistingProvider,
+  mockUser
+} from '../../../services/__mocks__';
+import ProviderController from '../ProviderController';
 
 const { sequelize } = models;
 
 describe('ProviderController', () => {
   let req;
-  let res;
   let providerServiceSpy;
+  const res = {
+    status() {
+      return this;
+    },
+    json() {
+      return this;
+    }
+  };
+
+  HttpError.sendErrorResponse = jest.fn();
+  Response.sendResponse = jest.fn();
+  BugsnagHelper.log = jest.fn();
+
   beforeEach(() => {
-    req = {
-      query: {
-        page: 1, size: 3, name: 'uber'
-      }
-    };
-    res = {
-      status: jest.fn(() => ({
-        json: jest.fn(() => { })
-      })).mockReturnValue({ json: jest.fn() })
-    };
+    jest.spyOn(res, 'status');
+    jest.spyOn(res, 'json');
   });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
+
   describe('ProviderController_getAllProviders', () => {
-    providerServiceSpy = jest.spyOn(ProviderService, 'getProviders');
-    jest.spyOn(Response, 'sendResponse');
-    jest.spyOn(BugsnagHelper, 'log');
-    jest.spyOn(HttpError, 'sendErrorResponse');
+    beforeEach(() => {
+      providerServiceSpy = jest.spyOn(ProviderService, 'getProviders');
+      req = {
+        query: {
+          page: 1,
+          size: 3,
+          name: 'uber'
+        }
+      };
+    });
 
     it('Should get all providers', async () => {
       const paginateSpy = jest.spyOn(ProviderHelper, 'paginateData');
       providerServiceSpy.mockResolvedValue(providers);
       paginateSpy.mockReturnValue(paginatedData);
-      await ProvidersController.getAllProviders(req, res);
-      expect(ProviderHelper.paginateData).toHaveBeenCalled();
-      expect(Response.sendResponse).toBeCalledWith(res, 200, true, successMessage, returnedData);
+      await ProviderController.getAllProviders(req, res);
+      expect(ProviderHelper.paginateData)
+        .toHaveBeenCalled();
+      expect(Response.sendResponse)
+        .toBeCalledWith(res, 200, true, successMessage, returnedData);
     });
 
     it('Should catch errors', async () => {
-      jest.spyOn(BugsnagHelper, 'log');
       const error = new Error('Something went wrong');
       providerServiceSpy.mockRejectedValue(error);
-      await ProvidersController.getAllProviders(req, res);
-      expect(BugsnagHelper.log).toBeCalledWith(error);
-      expect(HttpError.sendErrorResponse).toBeCalledWith(error, res);
+      await ProviderController.getAllProviders(req, res);
+      expect(BugsnagHelper.log)
+        .toBeCalledWith(error);
+      expect(HttpError.sendErrorResponse)
+        .toBeCalledWith(error, res);
     });
   });
+
+  describe('ProviderController_addProvider', () => {
+    let providerSpy;
+    beforeEach(() => {
+      req = {
+        body: {
+          name: 'Uber',
+          email: 'allan@andela.com'
+        }
+      };
+      jest.spyOn(UserService, 'getUserByEmail')
+        .mockResolvedValue(mockUser);
+      providerSpy = jest.spyOn(ProviderService, 'createProvider');
+    });
+
+    it('creates a provider successfully', async () => {
+      providerSpy.mockResolvedValue(mockReturnedProvider);
+      await ProviderController.addProvider(req, res);
+      expect(UserService.getUserByEmail)
+        .toHaveBeenCalledWith(req.body.email);
+      expect(ProviderService.createProvider)
+        .toHaveBeenCalledWith(req.body.name, mockUser.id);
+      expect(res.status)
+        .toHaveBeenCalledWith(201);
+      expect(res.json)
+        .toHaveBeenCalledWith({
+          success: true,
+          message: 'Provider created successfully',
+          provider: mockProvider.provider
+        });
+    });
+
+    it('returns a 409 error if provider exists', async () => {
+      providerSpy.mockResolvedValue(mockExistingProvider);
+      await ProviderController.addProvider(req, res);
+      expect(ProviderService.createProvider)
+        .toHaveBeenCalledWith(req.body.name, mockUser.id);
+      expect(res.status)
+        .toHaveBeenCalledWith(409);
+      expect(res.json)
+        .toHaveBeenCalledWith({
+          success: false,
+          message: 'The provider with name: \'Uber\' already exists'
+        });
+    });
+
+    it('logs HTTP errors', async () => {
+      const err = 'validationError';
+      providerSpy.mockRejectedValueOnce(err);
+      await ProviderController.addProvider(req, res);
+      expect(BugsnagHelper.log)
+        .toHaveBeenCalledWith(err);
+      expect(HttpError.sendErrorResponse)
+        .toHaveBeenCalledWith(err, res);
+    });
+  });
+
   describe('ProviderController_updateProvider', () => {
-    jest.spyOn(Response, 'sendResponse');
     it('should update provider successfully', async () => {
       providerServiceSpy = jest.spyOn(ProviderService, 'updateProvider').mockReturnValue([1, [{}]]);
       req = {
@@ -63,10 +146,9 @@ describe('ProviderController', () => {
           email: 'Sharks@uber.com'
         }
       };
-      await ProvidersController.updateProvider(req, res);
-      expect(Response.sendResponse).toBeCalledWith(
-        res, 200, true, 'Provider Details updated Successfully', {}
-      );
+      await ProviderController.updateProvider(req, res);
+      expect(Response.sendResponse).toBeCalled();
+      expect(Response.sendResponse).toBeCalledWith(res, 200, true, 'Provider Details updated Successfully', {});
     });
 
     it('should return message if provider doesnt exist', async () => {
@@ -78,7 +160,7 @@ describe('ProviderController', () => {
           email: 'Sharks@uber.com'
         }
       };
-      await ProvidersController.updateProvider(req, res);
+      await ProviderController.updateProvider(req, res);
       expect(Response.sendResponse).toBeCalledWith(res, 404, false, 'Provider doesnt exist');
     });
 
@@ -93,7 +175,7 @@ describe('ProviderController', () => {
           email: 'Sharks@uber.com'
         }
       };
-      await ProvidersController.updateProvider(req, res);
+      await ProviderController.updateProvider(req, res);
       expect(Response.sendResponse).toBeCalledWith(res, 404, false, 'user with email doesnt exist');
     });
 
@@ -107,7 +189,7 @@ describe('ProviderController', () => {
           email: 'Sharks@uber.com'
         }
       };
-      await ProvidersController.updateProvider(req, res);
+      await ProviderController.updateProvider(req, res);
       expect(BugsnagHelper.log).toBeCalled();
       expect(Response.sendResponse).toBeCalled();
     });
@@ -121,12 +203,13 @@ describe('ProviderController', () => {
           email: 'Sharks@uber.com'
         }
       };
-      await ProvidersController.updateProvider(req, res);
+      await ProviderController.updateProvider(req, res);
       expect(BugsnagHelper.log).toBeCalled();
       expect(Response.sendResponse).toBeCalled();
     });
   });
-  describe('deleteProvider', () => {
+  describe('ProviderController_deleteProvider', () => {
+    let deleteProviderSpy;
     let message;
     beforeEach(() => {
       req = {
@@ -134,16 +217,10 @@ describe('ProviderController', () => {
           id: 1
         }
       };
-      res = {
-        status: jest.fn(() => ({
-          json: jest.fn(() => {})
-        })).mockReturnValue({ json: jest.fn() })
-      };
     });
-    const deleteProviderSpy = jest.spyOn(ProviderService, 'deleteProvider');
-    jest.spyOn(Response, 'sendResponse');
-    HttpError.sendErrorResponse = jest.fn();
-    bugsnagHelper.log = jest.fn();
+    beforeEach(() => {
+      deleteProviderSpy = jest.spyOn(ProviderService, 'deleteProvider');
+    });
 
     it('should return server error', async () => {
       deleteProviderSpy.mockRejectedValueOnce('something happened');
@@ -151,22 +228,22 @@ describe('ProviderController', () => {
         message: 'Server Error. Could not complete the request',
         statusCode: 500
       };
-      await ProvidersController.deleteProvider(req, res);
-      expect(bugsnagHelper.log).toHaveBeenCalledWith('something happened');
+      await ProviderController.deleteProvider(req, res);
+      expect(BugsnagHelper.log).toHaveBeenCalledWith('something happened');
       expect(HttpError.sendErrorResponse).toHaveBeenCalledWith(serverError, res);
     });
 
     it('should delete a provider successfully', async () => {
       message = 'Provider deleted successfully';
       deleteProviderSpy.mockReturnValue(1);
-      await ProvidersController.deleteProvider(req, res);
+      await ProviderController.deleteProvider(req, res);
       expect(Response.sendResponse).toHaveBeenCalledWith(res, 200, true, message);
     });
 
     it('should return provider does not exist', async () => {
       message = 'Provider does not exist';
       deleteProviderSpy.mockReturnValue(0);
-      await ProvidersController.deleteProvider(req, res);
+      await ProviderController.deleteProvider(req, res);
       expect(Response.sendResponse).toHaveBeenCalledWith(res, 404, false, message);
     });
   });

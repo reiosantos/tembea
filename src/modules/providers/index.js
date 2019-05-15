@@ -1,15 +1,14 @@
-import { Router } from 'express';
+import express from 'express';
+import ProviderController from './ProviderController';
 import middlewares from '../../middlewares';
-import ProvidersController from './ProvidersController';
 
 const {
-  TokenValidator, GeneralValidator, ProviderValidator, CleanRequestBody, CabsValidator
+  TokenValidator, GeneralValidator, ProviderValidator, CabsValidator
 } = middlewares;
+const providerRouter = express.Router();
 
-const providersRouter = Router();
 
-
-providersRouter.use(
+providerRouter.use(
   '/providers',
   TokenValidator.attachJwtSecretKey,
   TokenValidator.authenticateToken
@@ -46,12 +45,13 @@ providersRouter.use(
  *      401:
  *        description: unauthorized access not allowed
  */
-providersRouter.get(
+providerRouter.get(
   '/providers',
   GeneralValidator.validateQueryParams,
   GeneralValidator.validateSearchParams,
-  ProvidersController.getAllProviders
+  ProviderController.getAllProviders
 );
+
 /**
  * @swagger
  * /provider/{id}:
@@ -85,11 +85,11 @@ providersRouter.get(
  *      400:
  *        Validation Errors
  */
-providersRouter.patch(
+providerRouter.patch(
   '/providers/:id',
-  CleanRequestBody.trimAllInputs,
+  ProviderValidator.validateReqBody,
   ProviderValidator.verifyProviderUpdateBody,
-  ProvidersController.updateProvider
+  ProviderController.updateProvider
 );
 
 /**
@@ -111,10 +111,44 @@ providersRouter.patch(
  *      404:
  *        description: Provider does not exist
  */
-providersRouter.delete(
+providerRouter.delete(
   '/providers/:id',
   CabsValidator.validateDeleteCabIdParam,
-  ProvidersController.deleteProvider
+  ProviderController.deleteProvider
 );
 
-export default providersRouter;
+/**
+ * /providers:
+ *  post:
+ *    summary: creates a new provider
+ *    tags:
+ *      - Providers
+ *    parameters:
+ *      - name: body
+ *      - email: body
+ *        in: body
+ *        required: true
+ *        type: string
+ *        schema:
+ *          type: object
+ *          required:
+ *            - name
+ *            - email
+ *          properties:
+ *            name:
+ *              type: string
+ *            email :
+ *              type: string
+ *    responses:
+ *      201:
+ *        description: provider created successfully
+ */
+providerRouter.post(
+  '/providers',
+  ProviderValidator.validateReqBody,
+  ProviderValidator.validateUserExistence,
+  ProviderController.addProvider
+);
+
+
+export default providerRouter;

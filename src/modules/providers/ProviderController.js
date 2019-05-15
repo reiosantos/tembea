@@ -1,12 +1,48 @@
 import ProviderService from '../../services/ProviderService';
-import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
-import Response from '../../helpers/responseHelper';
-import BugsnagHelper from '../../helpers/bugsnagHelper';
 import HttpError from '../../helpers/errorHandler';
+import bugsnagHelper from '../../helpers/bugsnagHelper';
+import UserService from '../../services/UserService';
+import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
 import ProviderHelper from '../../helpers/providerHelper';
 import ErrorTypeChecker from '../../helpers/ErrorTypeChecker';
+import Response from '../../helpers/responseHelper';
 
-class ProvidersController {
+class ProviderController {
+  /**
+   * @description Create a provider in the database
+   * @param {object} req
+   * @param {object} res
+   * @returns {object} Http response object
+   */
+
+  static async addProvider(req, res) {
+    const {
+      name, email
+    } = req.body;
+    try {
+      const user = await UserService.getUserByEmail(email.trim());
+      const { provider, isNewProvider } = await ProviderService.createProvider(
+        name, user.id
+      );
+      if (isNewProvider) {
+        delete provider.deletedAt;
+        return res.status(201)
+          .json({
+            success: true,
+            message: 'Provider created successfully',
+            provider
+          });
+      }
+      return res.status(409).json({
+        success: false,
+        message: `The provider with name: '${name.trim()}' already exists`
+      });
+    } catch (err) {
+      bugsnagHelper.log(err);
+      HttpError.sendErrorResponse(err, res);
+    }
+  }
+
   static async getAllProviders(req, res) {
     try {
       let { page, size, name } = req.query;
@@ -30,7 +66,7 @@ class ProvidersController {
       );
       return Response.sendResponse(res, 200, true, message, pageData);
     } catch (error) {
-      BugsnagHelper.log(error);
+      bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
     }
   }
@@ -52,7 +88,7 @@ class ProvidersController {
       return Response.sendResponse(res, 200, true,
         'Provider Details updated Successfully', data[1][0]);
     } catch (error) {
-      BugsnagHelper.log(error);
+      bugsnagHelper.log(error);
       const { message, statusCode } = ErrorTypeChecker.checkSequelizeValidationError(error,
         `The name ${req.body.name} is already taken`);
       return Response.sendResponse(res, statusCode || 500,
@@ -79,7 +115,7 @@ class ProvidersController {
       }
       return Response.sendResponse(res, 404, false, message);
     } catch (error) {
-      BugsnagHelper.log(error);
+      bugsnagHelper.log(error);
       const serverError = {
         message: 'Server Error. Could not complete the request',
         statusCode: 500
@@ -89,4 +125,4 @@ class ProvidersController {
   }
 }
 
-export default ProvidersController;
+export default ProviderController;

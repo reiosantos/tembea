@@ -1,14 +1,12 @@
 import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
 import ProviderHelper from '../../helpers/providerHelper';
-import { mockGetCabsData } from '../__mocks__';
 import ProviderService from '../ProviderService';
-import models from '../../database/models';
 import UserService from '../UserService';
+import { mockGetCabsData, mockCreatedProvider, mockReturnedProvider } from '../__mocks__';
+import models from '../../database/models';
 
 const { Provider } = models;
-
 jest.mock('../../helpers/sequelizePaginationHelper', () => jest.fn());
-jest.mock('../../cache');
 
 
 describe('ProviderService', () => {
@@ -28,29 +26,33 @@ describe('ProviderService', () => {
         page: 1,
         size: 10
       });
-      expect(SequelizePaginationHelper)
-        .toHaveBeenCalled();
-      expect(getPageItems)
-        .toHaveBeenCalledWith(1);
-      expect(ProviderHelper.serializeDetails)
-        .toHaveBeenCalled();
+      expect(SequelizePaginationHelper).toHaveBeenCalled();
+      expect(getPageItems).toHaveBeenCalledWith(1);
+      expect(ProviderHelper.serializeDetails).toHaveBeenCalled();
+    });
+  });
+
+  describe('createProvider', () => {
+    beforeEach(() => {
+      jest.spyOn(Provider, 'findOrCreate').mockResolvedValue(mockCreatedProvider);
+    });
+    it('test createProvider', async () => {
+      const result = await ProviderService.createProvider('Uber', 3);
+      expect(Provider.findOrCreate).toHaveBeenCalled();
+      expect(result).toEqual(mockReturnedProvider);
     });
     describe('ProviderService', () => {
       it('should delete a provider successfully', async () => {
         Provider.destroy = jest.fn(() => 1);
         const result = await ProviderService.deleteProvider(1);
-        expect(result)
-          .toEqual(
-            1
-          );
+        expect(result).toEqual(1);
       });
 
       it('should return zero for unexisting data', async () => {
         Provider.destroy = jest.fn(() => 0);
 
         const result = await ProviderService.deleteProvider(1);
-        expect(result)
-          .toEqual(0);
+        expect(result).toEqual(0);
       });
     });
 

@@ -16,7 +16,7 @@ import cabsRouter from './cabs';
 import countryRouter from './countries';
 import fellowsRouter from './fellows';
 import homebaseRouter from './homebases';
-import providersRouter from './providers';
+import providerRouter from './providers';
 
 const apiPrefix = '/api/v1';
 const apiDocsOptions = {
@@ -42,7 +42,7 @@ const routes = (app) => {
   app.use(apiPrefix, exportsRouter);
   app.use(apiPrefix, fellowsRouter);
   app.use(apiPrefix, homebaseRouter);
-  app.use(apiPrefix, providersRouter);
+  app.use(apiPrefix, providerRouter);
   return app;
 };
 

@@ -1,17 +1,17 @@
+import { Op } from 'sequelize';
 import models from '../database/models';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import ProviderHelper from '../helpers/providerHelper';
 import ProviderValidator from '../middlewares/ProviderValidator';
 
-
 const { Provider, User } = models;
 
-export default class ProviderService {
+class ProviderService {
   /**
    * @description Returns a list of providers from db
    * page and size variables can also be passed on the url
    * @param {{ page:number, size:number }} pageable
-   * @param where
+   * @param where {object}
    * @returns {object} An array of providers
    * @example ProviderService.getAllProvidersByPage(
    *  { page:1, size:20 }
@@ -59,7 +59,6 @@ export default class ProviderService {
 
   /**
    *@description Deletes provider details
-   * @export ProviderService,deleteProvide(1)
    * @param id
    * @returns {Promise<*>}
    */
@@ -70,4 +69,27 @@ export default class ProviderService {
     });
     return responseData;
   }
+
+  /**
+   *@description Adds a provider
+   * @param name string
+   * @param providerUserId number
+   * @returns {object }
+   */
+  static async createProvider(name, providerUserId) {
+    const [provider] = await Provider.findOrCreate({
+      where: { name: { [Op.iLike]: `${name.trim()}%` } },
+      defaults: {
+        name: name.trim(),
+        providerUserId,
+      }
+    });
+    const { _options: { isNewRecord }, dataValues } = provider;
+    return {
+      provider: dataValues,
+      isNewProvider: isNewRecord
+    };
+  }
 }
+
+export default ProviderService;

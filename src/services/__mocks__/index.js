@@ -387,6 +387,7 @@ export const mockExistingHomebase = {
   isNewHomeBase: false
 };
 
+
 export const mockGetCabsData = {
   pageMeta: {
     totalPages: 1,
@@ -426,4 +427,57 @@ export const mockGetCabsData = {
       }
     }
   ]
+};
+
+export const mockCreatedProvider = [{
+  dataValues: {
+    id: 1,
+    name: 'Uber Kenya',
+    providerUserId: 1,
+    createdAt: '2019-04-01T12:07:13.002Z',
+    updatedAt: '2019-04-01T12:07:13.002Z',
+    deletedAt: null
+  },
+  _options: {
+    isNewRecord: true
+  }
+}];
+
+export const mockReturnedProvider = {
+  provider: {
+    id: 1,
+    name: 'Uber Kenya',
+    providerUserId: 1,
+    createdAt: '2019-04-01T12:07:13.002Z',
+    updatedAt: '2019-04-01T12:07:13.002Z',
+    deletedAt: null
+  },
+  isNewProvider: true
+};
+
+export const mockProvider = {
+  provider: {
+    id: 1,
+    name: 'Uber Kenya',
+    providerUserId: 1,
+    createdAt: '2019-04-01T12:07:13.002Z',
+    updatedAt: '2019-04-01T12:07:13.002Z'
+  }
+};
+
+export const mockExistingProvider = {
+  provider: {
+    id: 1,
+    name: 'Uber Kenya',
+    providerUserId: 1,
+    createdAt: '2019-04-01T12:07:13.002Z',
+    updatedAt: '2019-04-01T12:07:13.002Z',
+    deletedAt: null
+  },
+  isNewProvider: false
+};
+
+export const mockUser = {
+  id: 1,
+  name: 'Allan Mogusu'
 };
