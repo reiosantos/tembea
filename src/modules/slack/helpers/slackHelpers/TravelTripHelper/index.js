@@ -176,8 +176,9 @@ const travelTripHelper = {
         return InteractivePrompts.sendCancelRequestResponse(respond);
       }
       if (payload.actions[0].value === 'trip_note') {
-        travelTripHelper.notesRequest(payload, respond);
+        return travelTripHelper.notesRequest(payload, respond);
       }
+
       const { tripDetails } = await Cache.fetch(payload.user.id);
       const tripRequest = await ScheduleTripController.createTravelTripRequest(
         payload, tripDetails

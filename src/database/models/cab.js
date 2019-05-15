@@ -28,15 +28,15 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER
     }
   }, {
-      paranoid: true,
-      timestamps: true
-    });
+    paranoid: true,
+    timestamps: true
+  });
   Cab.associate = (models) => {
     Cab.belongsTo(models.Provider, {
       foreignKey: 'providerId',
       targetKey: 'id',
       as: 'provider',
-    })
+    });
   };
   return Cab;
 };

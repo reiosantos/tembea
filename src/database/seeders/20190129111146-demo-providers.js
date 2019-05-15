@@ -18,6 +18,6 @@ module.exports = {
     updatedAt: '2019-01-01'
   }
   ],
-    {}),
+  {}),
   down: queryInterface => queryInterface.bulkDelete('Providers', null, {})
 };
