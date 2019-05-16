@@ -45,7 +45,7 @@ class RoutesController {
         pageMeta: {
           totalPages: result.totalPages,
           page: result.pageNo,
-          totalResults: result.totalItems,
+          totalResults: result.totalItems.length,
           pageSize: result.itemsPerPage
         },
         routes: result.routes

@@ -8,7 +8,7 @@ import { mockRouteBatchData as routeBatch } from '../__mocks__';
 import { MAX_INT } from '../../helpers/constants';
 
 const {
-  Route, RouteBatch, Cab, Address, sequelize
+  Route, RouteBatch, Cab, Address, sequelize, Sequelize, User,
 } = models;
 
 describe('RouteService', () => {
@@ -264,6 +264,7 @@ describe('RouteService', () => {
         .spyOn(RouteBatch, 'findAll')
         .mockResolvedValue([routeBatch, { riders: [null] }]);
       jest.spyOn(RouteBatch, 'count').mockResolvedValue(10);
+      jest.spyOn(Sequelize, 'fn').mockImplementation(() => 0);
     });
     it('should ', async () => {
       const result = await RouteService.getRoutes();
@@ -301,14 +302,21 @@ describe('RouteService', () => {
     });
     it('should return only active routes', async () => {
       const where = { status: 'Active' };
-      const defaultInclude = RouteService.updateDefaultInclude(where);
+      const defaultInclude = [
+        ...RouteService.updateDefaultInclude(where),
+        { model: User, as: 'riders', attributes: [] }
+      ];
+      const attributes = [...RouteService.defaultRouteDetails];
+      const group = [...RouteService.defaultRouteGroupBy];
       const expectedCallArgs = {
         include: defaultInclude,
         limit: 4294967295,
         offset: 0,
         order: [['id', 'asc']],
         subQuery: false,
-        where
+        where,
+        attributes: [[0, 'inUse'], ...attributes],
+        group,
       };
       await RouteService.getRoutes(RouteService.defaultPageable, where);
       expect(RouteBatch.findAll).toHaveBeenCalledWith(expectedCallArgs);
@@ -416,6 +424,20 @@ describe('RouteService', () => {
       const results = await RouteService.RouteRatings();
       expect(querySpy).toBeCalled();
       expect(results).toEqual(mockData);
+    });
+  });
+  describe('RouteService > defaultRouteDetails', () => {
+    it('should return a list of default values (route details)', () => {
+      const expected = ['id', 'status', 'capacity', 'takeOff', 'batch', 'comments'];
+      const values = RouteService.defaultRouteDetails;
+      expect(values).toEqual(expect.arrayContaining(expected));
+    });
+  });
+  describe('RouteService > defaultRouteGroupBy', () => {
+    it('should return a list of default groupBy values', () => {
+      const expected = ['RouteBatch.id', 'cabDetails.id', 'route.id', 'route->destination.id'];
+      const values = RouteService.defaultRouteGroupBy;
+      expect(values).toEqual(expect.arrayContaining(expected));
     });
   });
 });

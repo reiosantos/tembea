@@ -11,7 +11,7 @@ import CabService from './CabService';
 
 
 const {
-  Route, RouteBatch, Cab, Address, User, sequelize,
+  Route, RouteBatch, Cab, Address, User, sequelize, Sequelize
 } = models;
 
 class RouteService {
@@ -36,6 +36,28 @@ class RouteService {
         model: Route, as: 'route', include: ['destination']
       },
     ];
+  }
+
+  /**
+   * Returns a list of route default details (required)
+   *
+   * @readonly
+   * @static
+   * @memberof RouteService
+   */
+  static get defaultRouteDetails() {
+    return ['id', 'status', 'capacity', 'takeOff', 'batch', 'comments'];
+  }
+
+  /**
+   * Returns a list of default groupBy values (required)
+   *
+   * @readonly
+   * @static
+   * @memberof RouteService
+   */
+  static get defaultRouteGroupBy() {
+    return ['RouteBatch.id', 'cabDetails.id', 'route.id', 'route->destination.id'];
   }
 
   /**
@@ -66,11 +88,7 @@ class RouteService {
   }
 
   static async createBatch(batchDetails, routeId, cabId) {
-    const batch = await RouteBatch.create({
-      ...batchDetails,
-      routeId,
-      cabId
-    });
+    const batch = await RouteBatch.create({ ...batchDetails, routeId, cabId });
     return batch;
   }
 
@@ -174,24 +192,24 @@ class RouteService {
    */
   static async getRoutes(pageable = RouteService.defaultPageable, where = {}) {
     const { page, size, sort } = pageable;
-    let order;
-    if (sort) {
-      const convert = RouteService.convertToSequelizeOrderByClause(sort);
-      order = [...convert];
-    }
-    let filter;
-    if (where && where.status) {
-      filter = { where: { status: where.status } };
-    }
+    let [order, filter] = [];
+    if (sort) { order = [...RouteService.convertToSequelizeOrderByClause(sort)]; }
+    if (where && where.status) { filter = { where: { status: where.status } }; }
     const paginatedRoutes = new SequelizePaginationHelper(RouteBatch, filter, size);
     paginatedRoutes.filter = {
-      ...filter, subQuery: false, order, include: RouteService.updateDefaultInclude(where)
+      ...filter,
+      subQuery: false,
+      order,
+      attributes: [
+        [Sequelize.fn('COUNT', Sequelize.col('riders.routeBatchId')), 'inUse'],
+        ...RouteService.defaultRouteDetails
+      ],
+      include: [...RouteService.updateDefaultInclude(where), { model: User, as: 'riders', attributes: [] }],
+      group: [...RouteService.defaultRouteGroupBy]
     };
     const { data, pageMeta } = await paginatedRoutes.getPageItems(page);
     const routes = data.map(RouteService.serializeRouteBatch);
-    return {
-      routes, ...pageMeta
-    };
+    return { routes, ...pageMeta };
   }
 
   static canJoinRoute(route) {

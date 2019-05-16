@@ -211,6 +211,8 @@ describe('RoutesController', () => {
           expect(body).toHaveProperty('data');
           expect(body.data).toHaveProperty('pageMeta');
           expect(body.data).toHaveProperty('routes');
+          const { pageMeta: { totalResults } } = body.data;
+          expect(typeof totalResults).toBe('number');
           if (body.data.routes.length) {
             assertRouteInfo(body.data.routes[0]);
           }
