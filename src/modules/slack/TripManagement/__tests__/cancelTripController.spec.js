@@ -18,7 +18,7 @@ describe('cancel trip test', () => {
 
   it('should return success', async (done) => {
     jest.spyOn(tripService, 'getById')
-      .mockImplementation(id => Promise.resolve({ id, name: 'Test Trip' }));
+      .mockImplementation(id => Promise.resolve({ id, name: 'Test Trip', approvedById: 4 }));
     jest.spyOn(tripService, 'updateRequest').mockResolvedValue({});
 
     const result = await CancelTripController.cancelTrip(1);

@@ -84,7 +84,7 @@ const handlers = {
     const payload = CleanData.trim(data);
     const { actions, channel: { id: channelId }, original_message: { ts: timeStamp } } = payload;
     const [{ value: routeRequestId }] = actions;
-
+    
     const { botToken, routeRequest, routeRequest: { status } } = await RouteRequestService
       .getRouteRequestAndToken(routeRequestId, payload.team.id);
 

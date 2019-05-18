@@ -24,19 +24,23 @@ const web = new WebClientSingleton();
 
 class SlackNotifications {
   static async getDMChannelId(user, teamBotOauthToken) {
-    const imResponse = await web.getWebClient(teamBotOauthToken).im.open({
-      user
-    });
+    const imResponse = await web.getWebClient(teamBotOauthToken)
+      .im
+      .open({
+        user
+      });
     const { id } = imResponse.channel;
     return id;
   }
 
   static sendNotifications(channelId, attachments, text, teamBotOauthToken) {
-    return web.getWebClient(teamBotOauthToken).chat.postMessage({
-      channel: channelId,
-      text,
-      attachments: [attachments]
-    });
+    return web.getWebClient(teamBotOauthToken)
+      .chat
+      .postMessage({
+        channel: channelId,
+        text,
+        attachments: [attachments]
+      });
   }
 
   static async sendManagerTripRequestNotification(data, tripInfo, respond, type = 'newTrip') {
@@ -67,6 +71,15 @@ class SlackNotifications {
     }
   }
 
+  static async getMessage(riderId, requesterId, text) {
+    const smiley = text === 'cancelled this' ? '' : ' :smiley:';
+    if (requesterId === riderId) {
+      return `Hey, <@${requesterId}> has just ${text} trip.${smiley}`;
+    }
+    return `Hey, <@${requesterId}> has just ${text} trip for <@${
+      riderId}>.${smiley}`;
+  }
+
   static async getManagerMessageAttachment(newTripRequest,
     imResponse, requester, requestType, rider) {
     const { tripStatus } = newTripRequest;
@@ -82,12 +95,34 @@ class SlackNotifications {
       const actions = SlackNotifications.notificationActions(newTripRequest);
       attachments.addFieldsOrActions('actions', actions);
     }
-    let msg = `Hey, <@${requester.slackId}> has just ${text} trip. :smiley:`;
-    if (requester.slackId !== rider.slackId) {
-      msg = `Hey, <@${requester.slackId}> has just ${text} trip for <@${
-        rider.slackId}>. :smiley:`;
-    }
+
+    const msg = await SlackNotifications.getMessage(rider.slackId, requester.slackId, text);
     return SlackNotifications.createDirectMessage(imResponse, msg, attachments);
+  }
+
+  static async getManagerCancelAttachment(newTripRequest, imResponse, requester, rider) {
+    const text = 'cancelled this';
+    const attachments = new SlackAttachment('Trip Request Details');
+    attachments.addOptionalProps('manager_actions', '/fallback', '#3359DF');
+    await Services.findOrCreateNewUserWithSlackId(rider);
+    let fields = null;
+    fields = SlackNotifications.notificationFields(newTripRequest);
+    attachments.addFieldsOrActions('fields', fields);
+
+    const msg = await SlackNotifications.getMessage(rider.slackId, requester.slackId, text);
+    return SlackNotifications.createDirectMessage(imResponse, msg, attachments);
+  }
+
+  static async getOperationCancelAttachment(tripDetails, requester, rider, channelId) {
+    const text = 'cancelled this';
+    const attachments = new SlackAttachment('Trip Request Details');
+    let fields = null;
+    attachments.addOptionalProps('', '', '#3359DF');
+    fields = SlackNotifications.notificationFields(tripDetails);
+    attachments.addFieldsOrActions('fields', fields);
+
+    const msg = await SlackNotifications.getMessage(rider.slackId, requester.slackId, text);
+    return SlackNotifications.createDirectMessage(channelId, msg, attachments);
   }
 
   static async sendOperationsTripRequestNotification(trip, data, respond, type = 'regular') {
@@ -113,7 +148,7 @@ class SlackNotifications {
       bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         'An error occurred while processing your request. '
-          + 'Please contact the administrator.', [], undefined, '#b52833'
+        + 'Please contact the administrator.', [], undefined, '#b52833'
       );
       respond(message);
     }
@@ -136,9 +171,11 @@ class SlackNotifications {
 
       Object.assign(responseData, { department: name });
 
-      const imResponse = await web.getWebClient(slackBotOauthToken).im.open({
-        user: responseData.requester.slackId
-      });
+      const imResponse = await web.getWebClient(slackBotOauthToken)
+        .im
+        .open({
+          user: responseData.requester.slackId
+        });
       const response = await NotificationsResponse.responseForRequester(
         responseData,
         imResponse.channel.id
@@ -153,7 +190,9 @@ class SlackNotifications {
   }
 
   static async sendNotification(response, teamBotOauthToken) {
-    return web.getWebClient(teamBotOauthToken).chat.postMessage(response);
+    return web.getWebClient(teamBotOauthToken)
+      .chat
+      .postMessage(response);
   }
 
   static async sendWebhookPushMessage(webhookUrl, message) {
@@ -305,7 +344,7 @@ class SlackNotifications {
       'fallback', undefined, 'default');
     const channelId = await SlackNotifications.getDMChannelId(rider, slackBotOauthToken);
     const letterMessage = `You are hereby Requested by <@${userID}> to provide `
-    + `your ${location} location`;
+      + `your ${location} location`;
     SlackNotifications.sendNotifications(channelId, attachment, letterMessage, slackBotOauthToken);
   }
 
@@ -319,13 +358,18 @@ class SlackNotifications {
         opsChannelId
       } = await TeamDetailsService.getTeamDetails(teamID);
       SlackNotifications.OperationsRiderlocationConfirmationMessage({
-        waitingRequester, riderID, location, confirmedLocation, opsChannelId, slackBotOauthToken
+        waitingRequester,
+        riderID,
+        location,
+        confirmedLocation,
+        opsChannelId,
+        slackBotOauthToken
       });
     } catch (error) {
       bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         'An error occurred while processing your request. '
-          + 'Please contact the administrator.', [], undefined, '#b52833'
+        + 'Please contact the administrator.', [], undefined, '#b52833'
       );
       respond(message);
     }
@@ -479,6 +523,56 @@ class SlackNotifications {
       `Hey :simple_smile: <@${fellow}> requested a new route`,
       botToken
     );
+  }
+
+  static async sendManagerCancelNotification(data, tripInfo, respond) {
+    try {
+      const { team: { id: teamId } } = data;
+      const {
+        id, departmentId, requestedById, riderId
+      } = tripInfo;
+      const [
+        head, requester, rider, newTripRequest, slackBotOauthToken
+      ] = await Promise.all([
+        DepartmentService.getHeadByDeptId(departmentId),
+        SlackHelpers.findUserByIdOrSlackId(requestedById),
+        SlackHelpers.findUserByIdOrSlackId(riderId),
+        tripService.getById(id),
+        TeamDetailsService.getTeamDetailsBotOauthToken(teamId)
+      ]);
+      const imResponse = await SlackNotifications.getDMChannelId(head.slackId, slackBotOauthToken);
+      const message = await SlackNotifications.getManagerCancelAttachment(
+        newTripRequest, imResponse, requester, rider
+      );
+      return SlackNotifications.sendNotification(message, slackBotOauthToken);
+    } catch (err) {
+      bugsnagHelper.log(err);
+      respond({
+        text: 'Error:warning:: Request saved, but I could not send a notification to your manager.'
+      });
+    }
+  }
+
+  static async sendOpsCancelNotification(data, trip, respond) {
+    try {
+      const payload = CleanData.trim(data);
+      const { team: { id: teamId } } = payload;
+      const { requester, rider } = trip;
+      const {
+        botToken: slackBotOauthToken, opsChannelId
+      } = await TeamDetailsService.getTeamDetails(teamId);
+      const opsRequestMessage = await SlackNotifications.getOperationCancelAttachment(
+        trip, requester, rider, opsChannelId
+      );
+      return SlackNotifications.sendNotification(opsRequestMessage, slackBotOauthToken);
+    } catch (error) {
+      bugsnagHelper.log(error);
+      const message = new SlackInteractiveMessage(
+        'An error occurred while processing your request. '
+        + 'Please contact the administrator.', [], undefined, '#b52833'
+      );
+      respond(message);
+    }
   }
 }
 

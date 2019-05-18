@@ -19,6 +19,8 @@ export const slackEventNames = Object.freeze({
   OPS_FILLED_CAPACITY_ROUTE_REQUEST: 'ops_filled_capacity_route_request',
   TRIP_COMPLETION: 'trip_completion',
   RIDERS_CONFIRM_ROUTE_USE: 'riders_confirm_route_use',
+  RIDER_CANCEL_TRIP: 'rider_cancel_trip',
+  NOTIFY_OPS_CANCELLED_TRIP: 'notify_ops_cancelled_trip'
 });
 
 export class SlackEvents {

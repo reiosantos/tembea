@@ -165,3 +165,13 @@ export const createPayloadWithEmbassyTime = (value = 'value', name = 'name') => 
 
 
 export const respondMock = () => (jest.fn(value => value));
+
+export const OpsTripActionDataMock = {
+  actions: [{ name: 'confirmTrip', type: 'button', value: '25' }],
+  team: { id: 'TJPMCN24X', domain: 'adaezeodurukwe' },
+  user: { id: 'UJPMCN431', name: 'adaeze.eze-odurukwe' },
+  channel: { id: 'CJMAUUJSY', name: 'travelling-app' },
+  original_message: {
+    ts: '1558172628.000100',
+  }
+};

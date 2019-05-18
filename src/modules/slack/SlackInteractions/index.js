@@ -27,6 +27,7 @@ import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInterac
 import tripService from '../../../services/TripService';
 import CleanData from '../../../helpers/cleanData';
 import TripCabController from '../TripManagement/TripCabController';
+import OpsTripActions from '../TripManagement/OpsTripActions';
 
 class SlackInteractions {
   static launch(data, respond) {
@@ -112,7 +113,7 @@ class SlackInteractions {
         message = await TripRescheduleHelper.sendTripRescheduleDialog(payload, value);
         break;
       case 'cancel_trip':
-        message = await CancelTripController.cancelTrip(value);
+        message = await CancelTripController.cancelTrip(value, payload);
         break;
       default:
         message = SlackInteractions.goodByeMessage();
@@ -274,11 +275,36 @@ class SlackInteractions {
     }
   }
 
+  static async handleOpsAction(data, respond) {
+    const payload = CleanData.trim(data);
+    const {
+      actions: [{ value: tripId }], channel: { id: channelId }, team: { id: teamId },
+      user: { id: userId }, original_message: { ts: timeStamp }
+    } = payload;
+    
+    const trip = await tripService.getById(tripId);
+    
+    const tripIsCancelled = trip.tripStatus === 'Cancelled';
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+    if (tripIsCancelled) {
+      return OpsTripActions.sendUserCancellation(
+        channelId, slackBotOauthToken, trip, userId, timeStamp
+      );
+    }
+    return SlackInteractions.handleSelectCabActions(data, respond);
+  }
+
 
   static async handleSelectCabActions(data, respond) {
-    if (data.actions && data.actions[0].name === 'confirmTrip') await DialogPrompts.sendSelectCabDialog(data);
-    if (data.actions && data.actions[0].name === 'declineRequest') await DialogPrompts.sendOperationsDeclineDialog(data);
-    if (data.type === 'dialog_submission') await TripCabController.handleSelectCabDialogSubmission(data, respond);
+    if (data.actions && data.actions[0].name === 'confirmTrip') {
+      await DialogPrompts.sendSelectCabDialog(data);
+    }
+    if (data.actions && data.actions[0].name === 'declineRequest') {
+      await DialogPrompts.sendOperationsDeclineDialog(data);
+    }
+    if (data.type === 'dialog_submission') {
+      await TripCabController.handleSelectCabDialogSubmission(data, respond);
+    }
   }
 
   static async bookTravelTripStart(data, respond) {

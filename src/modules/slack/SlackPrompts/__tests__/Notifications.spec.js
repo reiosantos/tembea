@@ -14,6 +14,7 @@ import Services from '../../../../services/UserService';
 import tripService from '../../../../services/TripService';
 import responseMock from '../__mocks__/NotificationResponseMock';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
+import { SlackAttachment, OpsSlackAttachment } from '../__mocks__/NotificationsMocks.mock';
 
 
 const tripInitial = {
@@ -743,6 +744,136 @@ describe('SlackNotifications', () => {
         location: 'Pickup'
       }, respond);
       expect(bugsnagHelper.log).toHaveBeenCalled();
+      expect(respond).toHaveBeenCalled();
+    });
+  });
+
+  describe('Get manager attachments', () => {
+    beforeEach(() => {
+      jest.spyOn(Services, 'findOrCreateNewUserWithSlackId').mockResolvedValue({});
+      jest.spyOn(SlackNotifications, 'notificationFields').mockResolvedValue({});
+    });
+
+    it('Should get manager cancel attachment when requester is rider', async () => {
+      const [newTripRequest, imResponse, requester, rider] = [
+        {}, {}, { slackId: '090OPI' }, { slackId: '090OPI' }
+      ];
+      const message = `Hey, <@${requester.slackId}> has just cancelled this trip.`;
+      const createDirectMessageSpy = jest.spyOn(SlackNotifications, 'createDirectMessage');
+      await SlackNotifications.getManagerCancelAttachment(
+        newTripRequest, imResponse, requester, rider
+      );
+      expect(Services.findOrCreateNewUserWithSlackId).toHaveBeenCalled();
+      expect(SlackNotifications.notificationFields).toHaveBeenCalled();
+      expect(createDirectMessageSpy).toHaveBeenCalledWith({}, message, SlackAttachment);
+    });
+
+    it('Should get manager cancel attachment when requester is not rider', async () => {
+      const [newTripRequest, imResponse, requester, rider] = [
+        {}, {}, { slackId: '090OPJKL' }, { slackId: '090OPI' }
+      ];
+      const message = `Hey, <@${requester.slackId}> has just cancelled this trip for <@${
+        rider.slackId}>.`;
+      const createDirectMessageSpy = jest.spyOn(SlackNotifications, 'createDirectMessage');
+      await SlackNotifications.getManagerCancelAttachment(
+        newTripRequest, imResponse, requester, rider
+      );
+      expect(Services.findOrCreateNewUserWithSlackId).toHaveBeenCalled();
+      expect(SlackNotifications.notificationFields).toHaveBeenCalled();
+      expect(createDirectMessageSpy).toHaveBeenCalledWith({}, message, SlackAttachment);
+    });
+  });
+
+  describe('Get operations attachments', () => {
+    beforeEach(() => {
+      jest.spyOn(SlackNotifications, 'notificationFields').mockResolvedValue({});
+    });
+
+    it('Should get Ops cancel attachment when requester is rider', async () => {
+      const [tripDetails, requester, rider, channelId] = [
+        {}, { slackId: '090OPI' }, { slackId: '090OPI' }, 'EPP009'
+      ];
+      const message = `Hey, <@${requester.slackId}> has just cancelled this trip.`;
+      const createDirectMessageSpy = jest.spyOn(SlackNotifications, 'createDirectMessage');
+
+      await SlackNotifications.getOperationCancelAttachment(
+        tripDetails, requester, rider, channelId
+      );
+      expect(SlackNotifications.notificationFields).toHaveBeenCalled();
+      expect(createDirectMessageSpy).toHaveBeenCalledWith(channelId, message, OpsSlackAttachment);
+    });
+
+    it('Should get Ops cancel attachment when requester is not the rider', async () => {
+      const [tripDetails, requester, rider, channelId] = [
+        {}, { slackId: '090O33' }, { slackId: '090OPI' }, 'EPP009'
+      ];
+      const message = `Hey, <@${requester.slackId}> has just cancelled this trip for <@${
+        rider.slackId}>.`;
+      const createDirectMessageSpy = jest.spyOn(SlackNotifications, 'createDirectMessage');
+
+      await SlackNotifications.getOperationCancelAttachment(
+        tripDetails, requester, rider, channelId
+      );
+      expect(SlackNotifications.notificationFields).toHaveBeenCalled();
+      expect(createDirectMessageSpy).toHaveBeenCalledWith(channelId, message, OpsSlackAttachment);
+    });
+  });
+
+  describe('Send manager cancel notifications', () => {
+    const tripInfo = {
+      id: '090OPI', departmentId: '090OPI', requestedById: '090OPI', riderId: '090OPI'
+    };
+    const respond = jest.fn();
+    const data = { team: { id: 'teamId' } };
+    beforeEach(() => {
+      jest.spyOn(DepartmentService, 'getHeadByDeptId').mockResolvedValue({ slackId: 'OOO908' });
+      jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockResolvedValue('Adaeze');
+      jest.spyOn(tripService, 'getById').mockResolvedValue({});
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('TKD44OL');
+      jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue({});
+    });
+
+    it('Should send manager notification successfully', async () => {
+      jest.spyOn(SlackNotifications, 'getManagerCancelAttachment').mockResolvedValue({});
+      const getManagerCancelAttachmentSpy = jest.spyOn(
+        SlackNotifications, 'getManagerCancelAttachment'
+      );
+      await SlackNotifications.sendManagerCancelNotification(data, tripInfo, respond);
+      expect(DepartmentService.getHeadByDeptId).toHaveBeenCalled();
+      expect(SlackHelpers.findUserByIdOrSlackId).toHaveBeenCalled();
+      expect(tripService.getById).toHaveBeenCalled();
+      expect(TeamDetailsService.getTeamDetailsBotOauthToken).toHaveBeenCalled();
+      expect(getManagerCancelAttachmentSpy).toHaveBeenCalled();
+    });
+
+    it('Should run the catch block when there is an error', async () => {
+      jest.spyOn(SlackNotifications, 'getManagerCancelAttachment').mockRejectedValue({});
+      await SlackNotifications.sendManagerCancelNotification(data, tripInfo, respond);
+      expect(respond).toHaveBeenCalled();
+    });
+  });
+  describe('Send Ops cancel notifications', () => {
+    const respond = jest.fn();
+    const data = { team: { id: 'teamId' } };
+    const tripInfo = {
+      requester: '090OPI', rider: '090OPI'
+    };
+    beforeEach(() => {
+      jest.spyOn(TeamDetailsService, 'getTeamDetails').mockResolvedValue({});
+    });
+
+    it('Should send cancel notification to the operations team', async () => {
+      jest.spyOn(SlackNotifications, 'getOperationCancelAttachment').mockResolvedValue({});
+      const sendNotificationSpy = jest.spyOn(SlackNotifications, 'sendNotification');
+      await SlackNotifications.sendOpsCancelNotification(data, tripInfo, respond);
+      expect(TeamDetailsService.getTeamDetails).toHaveBeenCalled();
+      expect(SlackNotifications.getOperationCancelAttachment).toHaveBeenCalled();
+      expect(sendNotificationSpy).toHaveBeenCalled();
+    });
+
+    it('Should run catch block when there is an error', async () => {
+      jest.spyOn(SlackNotifications, 'getOperationCancelAttachment').mockRejectedValue({});
+      await SlackNotifications.sendOpsCancelNotification(data, tripInfo, respond);
       expect(respond).toHaveBeenCalled();
     });
   });

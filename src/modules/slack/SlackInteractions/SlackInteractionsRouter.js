@@ -37,7 +37,7 @@ slackInteractionsRouter.action({ callbackId: 'operations_approval' },
 slackInteractionsRouter.action({ callbackId: 'operations_reason_dialog' },
   SlackInteractions.handleTripActions);
 slackInteractionsRouter.action({ callbackId: 'trips_cab_selection' },
-  SlackInteractions.handleSelectCabActions);
+  SlackInteractions.handleOpsAction);
 slackInteractionsRouter.action({ callbackId: 'tembea_route' },
   SlackInteractions.startRouteActions);
 slackInteractionsRouter.action({ callbackId: /^new_route/ },

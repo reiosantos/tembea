@@ -56,4 +56,10 @@ SlackEvents.handle(slackEventNames.TRIP_COMPLETION,
 SlackEvents.handle(slackEventNames.RIDERS_CONFIRM_ROUTE_USE,
   RouteNotifications.sendRouteUseConfirmationNotificationToRider);
 
+SlackEvents.handle(slackEventNames.RIDER_CANCEL_TRIP,
+  SlackNotifications.sendManagerCancelNotification);
+
+SlackEvents.handle(slackEventNames.NOTIFY_OPS_CANCELLED_TRIP,
+  SlackNotifications.sendOpsCancelNotification);
+
 export default slackEvents;
