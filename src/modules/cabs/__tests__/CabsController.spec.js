@@ -151,6 +151,20 @@ describe('CabsController', () => {
         });
     });
 
+    it('should return cabs for a specific provider', (done) => {
+      request(app)
+        .get(`${apiURL}?providerId=1`)
+        .set(headers)
+        .expect(200, (err, res) => {
+          const { body } = res;
+          expect(body.message).toBe('1 of 1 page(s).');
+          expect(body).toHaveProperty('data');
+          expect(body.data).toHaveProperty('pageMeta');
+          expect(body.data).toHaveProperty('cabs');
+          done();
+        });
+    });
+
     it('pagination should work as expected', (done) => {
       request(app)
         .get(`${apiURL}?size=2&page=2`)
