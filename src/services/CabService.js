@@ -18,18 +18,17 @@ export default class CabService {
     return cabDetails;
   }
 
-  static async findOrCreateCab(driverName, driverPhoneNo, regNumber, capacity, model, location) {
+  static async findOrCreateCab(driverName, driverPhoneNo, regNumber, capacity, model, location, providerId) {
     const [cab] = await Cab.findOrCreate({
-      where: {
-        [Op.or]: [{ driverPhoneNo }, { regNumber }]
-      },
+      where: { regNumber },
       defaults: {
         driverName,
         driverPhoneNo,
         regNumber,
         capacity,
         model,
-        location
+        location,
+        providerId
       }
     });
     return cab;

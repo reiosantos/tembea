@@ -10,11 +10,11 @@ class CabsController {
     try {
       const {
         body: {
-          driverName, driverPhoneNo, regNumber, capacity, model, location
+          driverName, driverPhoneNo, regNumber, capacity, model, location, providerId
         }
       } = req;
       const { _options: { isNewRecord }, dataValues } = await CabService.findOrCreateCab(
-        driverName, driverPhoneNo, regNumber, capacity, model, location
+        driverName, driverPhoneNo, regNumber, capacity, model, location, providerId
       );
       if (isNewRecord) {
         return res.status(201).json({
