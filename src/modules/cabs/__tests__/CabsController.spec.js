@@ -6,10 +6,63 @@ import payloadData from '../__mocks__/cabsMocks';
 import CabService from '../../../services/CabService';
 import MockData from '../../../middlewares/__mocks__/CabsValidatorMocks';
 import CabsController from '../CabsController';
+import ProviderHelper from '../../../helpers/providerHelper';
+import Response from '../../../helpers/responseHelper';
+import BugsnagHelper from '../../../helpers/bugsnagHelper';
+import HttpError from '../../../helpers/errorHandler';
 
 const { Cab } = models;
 
 const apiURL = '/api/v1/cabs';
+
+
+describe('CabsController_getAllCabs', () => {
+  let req;
+  let res;
+  let cabServiceSpy;
+  beforeEach(() => {
+    req = {
+      query: {
+        page: 1, size: 3
+      }
+    };
+    res = {
+      status: jest.fn(() => ({
+        json: jest.fn(() => { })
+      })).mockReturnValue({ json: jest.fn() })
+    };
+    cabServiceSpy = jest.spyOn(CabService, 'getCabs');
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  it('Should get all cabs and return a success message', async () => {
+    const {
+      successMessage, cabs, paginatedData, returnedData
+    } = payloadData;
+    const paginateSpy = jest.spyOn(ProviderHelper, 'paginateData');
+    cabServiceSpy.mockResolvedValue(cabs);
+    paginateSpy.mockReturnValue(paginatedData);
+    jest.spyOn(Response, 'sendResponse');
+    await CabsController.getAllCabs(req, res);
+    expect(ProviderHelper.paginateData).toHaveBeenCalled();
+    expect(Response.sendResponse).toBeCalledWith(res, 200, true, successMessage, returnedData);
+  });
+
+  it('Should catch errors', async () => {
+    const error = new Error('Something went wrong');
+    cabServiceSpy.mockRejectedValue(error);
+    jest.spyOn(BugsnagHelper, 'log');
+    jest.spyOn(HttpError, 'sendErrorResponse');
+    await CabsController.getAllCabs(req, res);
+    expect(BugsnagHelper.log).toBeCalledWith(error);
+    expect(HttpError.sendErrorResponse).toBeCalledWith(error, res);
+  });
+});
+
 
 describe('CabsController', () => {
   let validToken;
@@ -206,7 +259,7 @@ describe('CabsController', () => {
         location: 'Zùrich'
       }]);
     });
-    
+
     it('should delete a cab successfully', (done) => {
       request(app)
         .delete(`${apiURL}/40`)
@@ -252,7 +305,7 @@ describe('CabsController', () => {
       };
       res = {
         status: jest.fn(() => ({
-          json: jest.fn(() => {})
+          json: jest.fn(() => { })
         })).mockReturnValue({ json: jest.fn() })
       };
     });

@@ -1,0 +1,33 @@
+import models from '../database/models';
+import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
+import ProviderHelper from '../helpers/providerHelper';
+
+
+const { Provider, User } = models;
+
+export default class ProviderService {
+  /**
+       * @description Returns a list of providers from db
+       * page and size variables can also be passed on the url
+       * @param {{ page:number, size:number }} pageable
+       * @returns {object} An array of providers
+       * @example ProviderService.getAllProvidersByPage(
+       *  { page:1, size:20 }
+       * );
+       */
+  static async getProviders(pageable = ProviderHelper.defaultPageable, where = {}) {
+    let providers = [];
+    const { page, size } = pageable;
+    const include = [{
+      model: User,
+      as: 'user',
+      attributes: ['name', 'phoneNo', 'email']
+    }];
+    const filter = { include, where };
+    const paginatedCabs = new SequelizePaginationHelper(Provider, filter, size);
+    const { data, pageMeta } = await paginatedCabs.getPageItems(page);
+    const { totalPages } = pageMeta;
+    if (page <= totalPages) { providers = data.map(ProviderHelper.serializeDetails); }
+    return { providers, ...pageMeta };
+  }
+}

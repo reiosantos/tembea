@@ -10,6 +10,7 @@ import addressRouter from './addresses';
 import slackClientAuth from '../middlewares/slackClientAuth';
 import roleManagementRouter from './roleManagement';
 import authenticationRouter from './authentication';
+import providersRouter from './providers';
 import aisRouter from './ais';
 import exportsRouter from './exports';
 import cabsRouter from './cabs';
@@ -41,6 +42,7 @@ const routes = (app) => {
   app.use(apiPrefix, exportsRouter);
   app.use(apiPrefix, fellowsRouter);
   app.use(apiPrefix, homebaseRouter);
+  app.use(apiPrefix, providersRouter);
   return app;
 };
 

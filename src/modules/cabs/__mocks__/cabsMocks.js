@@ -7,6 +7,46 @@ const payload = {
   location: 'Kampala'
 };
 
+const cabs = {
+  cabs:
+    [{
+      id: 1,
+      driverName: 'Dominic Toretto',
+      driverPhoneNo: '(470) 810-1413 x43362',
+      regNumber: 'SMK 319 JK',
+      capacity: '4',
+      model: 'subaru',
+      location: 'Lagos',
+      providerId: 1,
+      deletedAt: null
+    }],
+  totalPages: 1,
+  pageNo: 1,
+  totalItems: 1,
+  itemsPerPage: 3
+};
+
+const paginatedData = {
+  pageMeta: {
+    totalPages: 1,
+    page: 1,
+    totalResults: 26,
+    pageSize: 100
+  },
+  cabs: [
+    {
+      id: 1,
+      driverName: 'Dominic Toretto',
+      driverPhoneNo: '(470) 810-1413 x43362',
+      regNumber: 'SMK 319 JK',
+      capacity: '4',
+      model: 'subaru',
+      location: 'Lagos',
+      providerId: 1,
+      deletedAt: null
+    }]
+};
+
 const overloadPayload = {
   driverName: 'Ian Leakey',
   driverPhoneNo: '07757736238',
@@ -18,12 +58,41 @@ const overloadPayload = {
     + 'specimen book. It has survived not',
   location: 'Kampala'
 };
+
+const returnedData = {
+  pageMeta: {
+    totalPages: 1,
+    page: 1,
+    totalResults: 26,
+    pageSize: 100
+  },
+  cabs: [
+    {
+      id: 1,
+      driverName: 'Dominic Toretto',
+      driverPhoneNo: '(470) 810-1413 x43362',
+      regNumber: 'SMK 319 JK',
+      capacity: '4',
+      model: 'subaru',
+      location: 'Lagos',
+      providerId: 1,
+      deletedAt: null
+    }]
+};
+
+
 const updateData = {
   driverName: 'Deo Muhwezi'
 };
-
+const successMessage = '1 of 1 page(s).';
 const payloadData = {
-  payload, overloadPayload, updateData
+  payload,
+  overloadPayload,
+  updateData,
+  cabs,
+  paginatedData,
+  successMessage,
+  returnedData
 };
 
 export default payloadData;

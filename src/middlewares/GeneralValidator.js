@@ -36,6 +36,23 @@ class GeneralValidator {
     return numRegex.test(num);
   }
 
+  static validateIsAlphaNumeric(prop) {
+    const alphaRegex = /^([a-zA-Z0-9 _-]+)$/;
+    return alphaRegex.test(prop);
+  }
+
+  static validateSearchParams(req, res, next) {
+    const { name } = req.query;
+    const isSpecial = GeneralValidator.validateIsAlphaNumeric(name);
+    if (!isSpecial) {
+      return res.status(400).json({
+        success: false,
+        message: 'Search cannot have special characters. Try again.'
+      });
+    }
+    return next();
+  }
+
   static disallowNumericsAsValuesOnly(value) {
     const result = GeneralValidator.validateNumber(value);
     if (result) {

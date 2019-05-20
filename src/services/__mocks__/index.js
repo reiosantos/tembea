@@ -362,3 +362,44 @@ export const mockExistingHomebase = {
   },
   isNewHomeBase: false
 };
+
+export const mockGetCabsData = {
+  pageMeta: {
+    totalPages: 1,
+    page: 1,
+    totalResults: 3,
+    pageSize: 100
+  },
+  data: [
+    {
+      id: 1,
+      name: 'Uber Kenya',
+      providerUserId: 1,
+      user: {
+        name: 'John smith',
+        phoneNo: null,
+        email: 'john.smith@gmail.com'
+      }
+    },
+    {
+      id: 2,
+      name: 'Taxify Kenya',
+      providerUserId: 2,
+      user: {
+        name: 'Derrick jones',
+        phoneNo: null,
+        email: 'derrick.jones@gmail.com'
+      }
+    },
+    {
+      id: 3,
+      name: 'Endesha Kenya',
+      providerUserId: 3,
+      user: {
+        name: 'Abishai Omari',
+        phoneNo: null,
+        email: 'abishai.omari@andela.com'
+      }
+    }
+  ]
+};

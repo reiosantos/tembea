@@ -2,8 +2,8 @@ import { Op } from 'sequelize';
 import models from '../database/models';
 import cache from '../cache';
 import RemoveDataValues from '../helpers/removeDataValues';
-import { MAX_INT as all } from '../helpers/constants';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
+import ProviderHelper from '../helpers/providerHelper';
 
 
 const { Cab } = models;
@@ -55,25 +55,6 @@ export default class CabService {
     }
   }
 
-  static get defaultPageable() {
-    return {
-      page: 1,
-      size: all
-    };
-  }
-
-  /* eslint no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
-  static serializeCab(cabDetails) {
-    let cabInfo = {};
-    if (cabDetails) {
-      const {
-        createdAt, updatedAt, ...details
-      } = cabDetails;
-      cabInfo = details;
-    }
-    return cabInfo;
-  }
-
   /**
    * @description Returns a list of cabs from db
    * page and size variables can also be passed on the url
@@ -83,13 +64,13 @@ export default class CabService {
    *  { page:1, size:20 }
    * );
    */
-  static async getCabs(pageable = CabService.defaultPageable) {
+  static async getCabs(pageable = ProviderHelper.defaultPageable) {
     let cabs = [];
     const { page, size } = pageable;
     const paginatedCabs = new SequelizePaginationHelper(Cab, null, size);
     const { data, pageMeta } = await paginatedCabs.getPageItems(page);
     const { totalPages } = pageMeta;
-    if (page <= totalPages) { cabs = data.map(CabService.serializeCab); }
+    if (page <= totalPages) { cabs = data.map(ProviderHelper.serializeDetails); }
     return { cabs, ...pageMeta };
   }
 
@@ -100,7 +81,7 @@ export default class CabService {
           returning: true,
           where: { id: cabId }
         });
-        
+
       if (cabDetails[1].length === 0) return { message: 'Update Failed. Cab does not exist' };
 
       return RemoveDataValues.removeDataValues(cabDetails[1][0]);
@@ -108,7 +89,7 @@ export default class CabService {
       throw new Error('Could not update cab details');
     }
   }
-  
+
   static async deleteCab(cabId) {
     const responseData = await Cab.destroy({
       where: { id: cabId }

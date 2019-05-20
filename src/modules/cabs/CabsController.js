@@ -3,7 +3,7 @@ import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
 import Response from '../../helpers/responseHelper';
 import BugsnagHelper from '../../helpers/bugsnagHelper';
 import HttpError from '../../helpers/errorHandler';
-
+import ProviderHelper from '../../helpers/providerHelper';
 
 class CabsController {
   static async createCab(req, res) {
@@ -48,12 +48,7 @@ class CabsController {
       } = await CabService.getCabs({ page, size });
 
       const message = `${pageNo} of ${totalPages} page(s).`;
-      const pageData = {
-        pageMeta: {
-          totalPages, page, totalResults, pageSize
-        },
-        cabs
-      };
+      const pageData = ProviderHelper.paginateData(totalPages, page, totalResults, pageSize, cabs, 'cabs');
       return Response.sendResponse(res, 200, true, message, pageData);
     } catch (error) {
       BugsnagHelper.log(error);
@@ -65,7 +60,7 @@ class CabsController {
     const { params: { id }, body } = req;
     try {
       const cab = await CabService.updateCab(id, body);
-  
+
       if (cab.message) {
         return res.status(404).send({
           success: false,
@@ -82,7 +77,7 @@ class CabsController {
       HttpError.sendErrorResponse(error, res);
     }
   }
-  
+
   static async deleteCab(req, res) {
     try {
       const { params: { id } } = req;
