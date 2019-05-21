@@ -10,6 +10,7 @@ import CabsValidator from './CabsValidator';
 import CleanRequestBody from './CleanRequestBody';
 import CountryValidator from './CountryValidator';
 import HomebaseValidator from './HomebaseValidator';
+import ProviderValidator from './ProviderValidator';
 
 const middleware = {
   UserValidator,
@@ -23,7 +24,8 @@ const middleware = {
   CabsValidator,
   CleanRequestBody,
   CountryValidator,
-  HomebaseValidator
+  HomebaseValidator,
+  ProviderValidator
 };
 
 export default middleware;

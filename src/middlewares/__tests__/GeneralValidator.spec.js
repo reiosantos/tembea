@@ -1,5 +1,6 @@
 import GeneralValidator from '../GeneralValidator';
 import Response from '../../helpers/responseHelper';
+import HttpError from '../../helpers/errorHandler';
 
 
 describe('General Validator', () => {
@@ -273,6 +274,29 @@ describe('General Validator', () => {
       const str = 'Please provide a positive integer value';
       expect(result.message).toEqual(str);
       expect(result.success).toEqual(false);
+    });
+  });
+  describe('ValidateUpdateBody', async () => {
+    const res = {
+      status: jest
+        .fn(() => ({
+          json: jest.fn(() => { })
+        }))
+        .mockReturnValue({ json: jest.fn() })
+    };
+    let httpErrorSpy;
+    beforeEach(() => {
+      httpErrorSpy = jest.spyOn(HttpError, 'sendErrorResponse');
+    });
+
+    it('should return errors errors if validation fails', async () => {
+      httpErrorSpy.mockReturnValue('Invalid Param');
+      jest.spyOn(GeneralValidator, 'validateNumber');
+      const results = await GeneralValidator.validateUpdateBody('notValid',
+        {}, res, ['name'], '2');
+      expect(HttpError.sendErrorResponse).toBeCalled();
+      expect(GeneralValidator.validateNumber).toBeCalled();
+      expect(results).toEqual('Invalid Param');
     });
   });
 });

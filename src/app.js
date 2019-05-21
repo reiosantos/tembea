@@ -51,8 +51,6 @@ app.use('*', (req, res) => res.status(404).json({
 // create super admin method
 StartUpHelper.ensureSuperAdminExists();
 StartUpHelper.addDefaultAddresses();
-
-
 /* This handles any errors that Express catches,
    it should come last in the pipeline */
 BugsnagHelper.errorHandler(app);

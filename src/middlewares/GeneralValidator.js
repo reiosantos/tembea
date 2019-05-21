@@ -1,4 +1,5 @@
 import Response from '../helpers/responseHelper';
+import HttpError from '../helpers/errorHandler';
 
 class GeneralValidator {
   /**
@@ -170,6 +171,40 @@ class GeneralValidator {
       return Response.sendResponse(res, 400, false, message);
     }
     return next();
+  }
+
+  /**
+   * @description validate  update body middleware
+   * @returns void or calls next
+   * @example GeneralValidator.validateUpdateBody(1,body,res, ['name','email'], 2);
+   * @param integerParam
+   * @param body request body
+   * @param res response
+   * @param updateProperties Array of properties to expected in update body
+   * @param requiredLength to check if no parameters where passed in
+   */
+  static validateUpdateBody(integerParam, body, res, updateProperties, requiredLength, next) {
+    const validateParams = GeneralValidator.validateNumber(integerParam);
+    if (!validateParams) {
+      return HttpError.sendErrorResponse({
+        message: { invalidParameter: 'Id should be a valid integer' },
+        statusCode: 400
+      }, res);
+    }
+    const inputErrors = GeneralValidator.validateReqBody(
+      body, ...updateProperties
+    );
+    if (inputErrors.length === requiredLength) {
+      return HttpError.sendErrorResponse({ message: { inputErrors }, statusCode: 400 }, res);
+    }
+    const checkEmptyInputData = GeneralValidator.validateEmptyReqBodyProp(
+      body, ...updateProperties
+    );
+
+    if (checkEmptyInputData.length > 0) {
+      return HttpError.sendErrorResponse({ message: { checkEmptyInputData }, statusCode: 400 }, res);
+    }
+    next();
   }
 }
 

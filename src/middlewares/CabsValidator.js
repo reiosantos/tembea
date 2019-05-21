@@ -18,11 +18,10 @@ class CabsValidator {
     if (checkEmptyInputData.length > 0) {
       return HttpError.sendErrorResponse({ message: { checkEmptyInputData } }, res);
     }
-    CabsValidator.checkInputValuesValidity(req, res);
-    next();
+    CabsValidator.checkInputValuesValidity(req, res, next);
   }
 
-  static checkInputValuesValidity(req, res) {
+  static checkInputValuesValidity(req, res, next) {
     const { isValid, checkValidPhoneNo, isValidLocation } = CabsValidator.validatePhoneLocationCapacity(req);
     if (!isValid) {
       return HttpError.sendErrorResponse({
@@ -43,6 +42,7 @@ class CabsValidator {
         statusCode: 400
       }, res);
     }
+    next();
   }
 
   static validatePhoneLocationCapacity(req) {
@@ -53,33 +53,10 @@ class CabsValidator {
     return { isValid, checkValidPhoneNo, isValidLocation };
   }
 
-  static validateCabUpdateBody(req, res, next) {
+  static async validateCabUpdateBody(req, res, next) {
     const { body, params: { id } } = req;
-    const validateParams = GeneralValidator.validateNumber(id);
-    if (!validateParams) {
-      return HttpError.sendErrorResponse({
-        message: { invalidParameter: 'Id should be a valid integer' },
-        statusCode: 400
-      }, res);
-    }
-    const inputErrors = GeneralValidator.validateReqBody(
-      body, 'driverName', 'driverPhoneNo', 'regNumber', 'capacity', 'model', 'location'
-    );
-  
-    if (inputErrors.length === 6) {
-      return HttpError.sendErrorResponse({ message: { inputErrors }, statusCode: 400 }, res);
-    }
- 
-    const checkEmptyInputData = GeneralValidator.validateEmptyReqBodyProp(
-      body, 'driverName', 'driverPhoneNo', 'regNumber', 'capacity', 'model', 'location'
-    );
-    
-    if (checkEmptyInputData.length > 0) {
-      return HttpError.sendErrorResponse({ message: { checkEmptyInputData } }, res);
-    }
-
-    CabsValidator.checkInputValuesValidity(req, res);
-    next();
+    await GeneralValidator.validateUpdateBody(id, body, res,
+      ['driverName', 'driverPhoneNo', 'regNumber', 'capacity', 'model', 'location'], 6, next);
   }
 
   static validateDeleteCabIdParam(req, res, next) {

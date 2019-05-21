@@ -1,6 +1,7 @@
 import models from '../database/models';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import ProviderHelper from '../helpers/providerHelper';
+import ProviderValidator from '../middlewares/ProviderValidator';
 
 
 const { Provider, User } = models;
@@ -29,5 +30,21 @@ export default class ProviderService {
     const { totalPages } = pageMeta;
     if (page <= totalPages) { providers = data.map(ProviderHelper.serializeDetails); }
     return { providers, ...pageMeta };
+  }
+  
+  /**
+   * @description Update provider details
+   * @returns {object} update provider details
+   * @example ProviderService.updateProvider(
+   *  {object},1);
+   * @param updateObject
+   * @param id
+   */
+  static async updateProvider(updateObject, id) {
+    const data = await ProviderValidator.createUpdateBody(updateObject);
+    if (data.message) return { message: data.message };
+    const updatedProviderDetails = await Provider.update({ ...data },
+      { returning: true, where: { id } });
+    return updatedProviderDetails;
   }
 }

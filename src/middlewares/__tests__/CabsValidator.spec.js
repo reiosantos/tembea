@@ -1,6 +1,7 @@
 import CabsValidator from '../CabsValidator';
 import MockData from '../__mocks__/CabsValidatorMocks';
 import HttpError from '../../helpers/errorHandler';
+import GeneralValidator from '../GeneralValidator';
 
 
 describe('CabsValidator', () => {
@@ -71,25 +72,29 @@ describe('CabsValidator', () => {
     });
   });
   describe('validateCabUpdateBody', () => {
+    let validateUpdateBodySpy;
+    beforeEach(() => {
+      validateUpdateBodySpy = jest.spyOn(GeneralValidator, 'validateUpdateBody');
+    });
     it('should validate Params', async () => {
       jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(invalidParamsError, res);
-      const response = await CabsValidator.validateCabUpdateBody(invalidReqParams, res, next);
+      await CabsValidator.validateCabUpdateBody(invalidReqParams, res, next);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(response).toEqual(invalidParamsError);
+      expect(validateUpdateBodySpy).toBeCalled();
     });
 
     it('should validate InPuts', async () => {
       jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(noInputsError, res);
-      const response = await CabsValidator.validateCabUpdateBody(emptyUpdateBody, res, next);
+      await CabsValidator.validateCabUpdateBody(emptyUpdateBody, res, next);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(response).toEqual(noInputsError);
+      expect(validateUpdateBodySpy).toBeCalled();
     });
 
     it('should check empty input data', async () => {
       jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(noValueErrors, res);
-      const response = await CabsValidator.validateCabUpdateBody(emptyValueInBody, res, next);
+      await CabsValidator.validateCabUpdateBody(emptyValueInBody, res, next);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(response).toEqual(noValueErrors);
+      expect(validateUpdateBodySpy).toBeCalled();
     });
 
     it('should skip checkInputValidity if Phone, capacity and location are null', async () => {

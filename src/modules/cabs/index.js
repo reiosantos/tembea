@@ -137,6 +137,7 @@ cabsRouter.put(
   '/cabs/:id',
   CleanRequestBody.trimAllInputs,
   CabsValidator.validateCabUpdateBody,
+  CabsValidator.checkInputValuesValidity,
   CabsController.updateCabDetails
 );
 

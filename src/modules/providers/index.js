@@ -3,12 +3,14 @@ import middlewares from '../../middlewares';
 import ProvidersController from './ProvidersController';
 
 const {
-  TokenValidator, GeneralValidator
+  TokenValidator, GeneralValidator, ProviderValidator, CleanRequestBody
 } = middlewares;
 
 const providersRouter = Router();
 
+
 providersRouter.use(
+  '/providers',
   TokenValidator.attachJwtSecretKey,
   TokenValidator.authenticateToken
 );
@@ -50,6 +52,45 @@ providersRouter.get(
   GeneralValidator.validateQueryParams,
   GeneralValidator.validateSearchParams,
   ProvidersController.getAllProviders
+);
+/**
+ * @swagger
+ * /provider/{id}:
+ *  put:
+ *    summary: update provider details
+ *    tags:
+ *      - Providers
+ *    parameters:
+ *      - in : path
+ *        name: id
+ *        schema:
+ *          type: integer
+ *        required: true
+ *        description: ID of the provider to update
+ *      - name: body
+ *        in: body
+ *        required: true
+ *        type: string
+ *        schema:
+ *          type: object
+ *          properties:
+ *            name:
+ *              type: string
+ *            email:
+ *              type: string
+ *    responses:
+ *      200:
+ *        description: details of provider  are returned and a success message
+ *      404:
+ *        provider doesnt exist ||  user doesnt exist
+ *      400:
+ *        Validation Errors
+ */
+providersRouter.patch(
+  '/providers/:id',
+  CleanRequestBody.trimAllInputs,
+  ProviderValidator.verifyProviderUpdateBody,
+  ProvidersController.updateProvider
 );
 
 export default providersRouter;

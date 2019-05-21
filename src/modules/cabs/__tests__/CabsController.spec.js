@@ -191,7 +191,8 @@ describe('CabsController', () => {
           success: false,
           message:
             { invalidParameter: 'Id should be a valid integer' }
-        }, done);
+        });
+      done();
     });
 
     it('should fail to update if no data is provided', (done) => {
@@ -200,7 +201,8 @@ describe('CabsController', () => {
         .put(`${apiURL}/1`)
         .send({})
         .set(headers)
-        .expect(400, noInputsError, done);
+        .expect(400, noInputsError);
+      done();
     });
 
     it('should update cab details successfully', (done) => {

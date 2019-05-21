@@ -10,13 +10,13 @@ import addressRouter from './addresses';
 import slackClientAuth from '../middlewares/slackClientAuth';
 import roleManagementRouter from './roleManagement';
 import authenticationRouter from './authentication';
-import providersRouter from './providers';
 import aisRouter from './ais';
 import exportsRouter from './exports';
 import cabsRouter from './cabs';
 import countryRouter from './countries';
 import fellowsRouter from './fellows';
 import homebaseRouter from './homebases';
+import providersRouter from './providers';
 
 const apiPrefix = '/api/v1';
 const apiDocsOptions = {
