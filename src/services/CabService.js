@@ -58,19 +58,16 @@ export default class CabService {
   /**
    * @description Returns a list of cabs from db
    * page and size variables can also be passed on the url
-   * @param {{object}} where - Sequelize options.
    * @param {{ page:number, size:number }} pageable
    * @returns {object} An array of cabs
    * @example CabService.getAllCabsByPage(
    *  { page:1, size:20 }
    * );
    */
-  static async getCabs(pageable = ProviderHelper.defaultPageable, where = {}) {
+  static async getCabs(pageable = ProviderHelper.defaultPageable) {
     let cabs = [];
     const { page, size } = pageable;
-    let filter;
-    if (where && where.providerId) filter = { where: { providerId: where.providerId } };
-    const paginatedCabs = new SequelizePaginationHelper(Cab, filter, size);
+    const paginatedCabs = new SequelizePaginationHelper(Cab, null, size);
     const { data, pageMeta } = await paginatedCabs.getPageItems(page);
     const { totalPages } = pageMeta;
     if (page <= totalPages) { cabs = data.map(ProviderHelper.serializeDetails); }

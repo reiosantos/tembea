@@ -198,7 +198,6 @@ export const mockCabsData = {
       regNumber: 'SMK 319 JK',
       capacity: 4,
       model: 'subaru',
-      providerId: 1,
       location: 'Lagos'
     },
     {
@@ -207,7 +206,6 @@ export const mockCabsData = {
       regNumber: 'LND 419 CN',
       capacity: 4,
       model: 'toyota',
-      providerId: 1,
       location: 'Wakanda'
     },
     {
@@ -216,7 +214,6 @@ export const mockCabsData = {
       regNumber: 'IKR 409 KI',
       capacity: 8,
       model: 'toyota',
-      providerId: 1,
       location: 'Kampala'
     },
     {
@@ -225,28 +222,7 @@ export const mockCabsData = {
       regNumber: 'APP 519 DT',
       capacity: 4,
       model: 'prado',
-      providerId: 2,
       location: 'Nairobi'
-    }
-  ],
-  cabsFiltered: [
-    {
-      driverName: 'Dominic Toretto',
-      driverPhoneNo: '1-219-560-3666',
-      regNumber: 'SMK 319 JK',
-      capacity: 4,
-      model: 'subaru',
-      providerId: 1,
-      location: 'Lagos'
-    },
-    {
-      driverName: "Brian O'Conner",
-      driverPhoneNo: '(137) 416-5270 x302',
-      regNumber: 'LND 419 CN',
-      capacity: 4,
-      model: 'toyota',
-      providerId: 1,
-      location: 'Wakanda'
     }
   ],
   mockCabUpdateData: {

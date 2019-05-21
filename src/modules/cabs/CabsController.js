@@ -36,23 +36,19 @@ class CabsController {
 
   static async getAllCabs(req, res) {
     try {
-      let { page, size, providerId } = req.query;
+      let { page, size } = req.query;
       page = page || 1;
       size = size || defaultSize;
-      providerId = providerId || null;
-      const pageable = { page, size };
-      const where = { providerId };
       const {
         totalPages,
-        cabs, pageNo,
+        cabs,
+        pageNo,
         totalItems: totalResults,
         itemsPerPage: pageSize
-      } = await CabService.getCabs(pageable, where);
+      } = await CabService.getCabs({ page, size });
 
       const message = `${pageNo} of ${totalPages} page(s).`;
-      const pageData = ProviderHelper.paginateData(
-        totalPages, page, totalResults, pageSize, cabs, 'cabs'
-      );
+      const pageData = ProviderHelper.paginateData(totalPages, page, totalResults, pageSize, cabs, 'cabs');
       return Response.sendResponse(res, 200, true, message, pageData);
     } catch (error) {
       BugsnagHelper.log(error);
@@ -66,10 +62,15 @@ class CabsController {
       const cab = await CabService.updateCab(id, body);
 
       if (cab.message) {
-        return res.status(404).send({ success: false, message: cab.message });
+        return res.status(404).send({
+          success: false,
+          message: cab.message
+        });
       }
       res.status(200).send({
-        success: true, message: 'Cab details updated successfully', data: cab
+        success: true,
+        message: 'Cab details updated successfully',
+        data: cab
       });
     } catch (error) {
       BugsnagHelper.log(error);
@@ -85,7 +86,10 @@ class CabsController {
         const message = 'Cab successfully deleted';
         return Response.sendResponse(res, 200, true, message);
       }
-      const doesNotExist = { message: 'Cab does not exist', statusCode: 404 };
+      const doesNotExist = {
+        message: 'Cab does not exist',
+        statusCode: 404
+      };
       HttpError.sendErrorResponse(doesNotExist, res);
     } catch (e) {
       BugsnagHelper.log(e);
