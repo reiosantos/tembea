@@ -2,6 +2,7 @@ import CabService from '../CabService';
 import models from '../../database/models';
 import cache from '../../cache';
 import RemoveDataValues from '../../helpers/removeDataValues';
+import { mockCabsData } from '../__mocks__';
 
 
 jest.mock('../../cache');
@@ -53,11 +54,13 @@ describe('CabService', () => {
       expect(cabDetails).toEqual(strippedData);
     });
     it('should return cab data successfully', async () => {
-      cache.fetch.mockResolvedValue(strippedData);
+      const cacheSaveSpy = jest.spyOn(cache, 'saveObject');
+      cacheSaveSpy.mockResolvedValue(strippedData);
       Cab.findByPk = jest.fn(() => strippedData);
       RemoveDataValues.removeDataValues = jest.fn(() => strippedData);
       const cabDetails = await CabService.getById(1);
 
+      expect(cache.saveObject).toHaveBeenCalled();
       expect(cabDetails).toEqual(strippedData);
     });
     it('should throw error if not in cache', async () => {
@@ -71,37 +74,32 @@ describe('CabService', () => {
   });
 
   describe('getCabs', () => {
+    const getAllCabsSpy = jest.spyOn(Cab, 'findAll');
     it('should return array of cabs from the db', async () => {
+      getAllCabsSpy.mockResolvedValue(mockCabsData.cabs);
       const result = await CabService.getCabs();
 
       expect(result.pageNo).toBe(1);
-      expect(result.totalItems).toBe(27);
+      expect(result.cabs.length).toEqual(4);
       expect(result.totalPages).toBe(1);
     });
+
     it('total items per page should be 2 when size provided is 2', async () => {
-      const pageable = {
-        page: 2,
-        size: 2
-      };
+      getAllCabsSpy.mockResolvedValue(mockCabsData.cabsFiltered);
+      const pageable = { page: 2, size: 2 };
       const result = await CabService.getCabs(pageable);
 
-      expect(result.pageNo).toBe(2);
-      expect(result.cabs.length).toBe(2);
-      expect(result.itemsPerPage).toBe(2);
-      expect(result.totalItems).toBe(27);
-      expect(result.totalPages).toBe(14);
+      expect(result.pageNo).toEqual(2);
+      expect(result.cabs.length).toEqual(2);
+      expect(result.itemsPerPage).toEqual(2);
     });
     it('pageNo should be 3 when the third page is requested', async () => {
-      const pageable = {
-        page: 3,
-        size: 2
-      };
+      getAllCabsSpy.mockResolvedValue(mockCabsData.cabsFiltered);
+      const pageable = { page: 3, size: 2 };
       const result = await CabService.getCabs(pageable);
       expect(result.pageNo).toBe(3);
       expect(result.cabs.length).toBe(2);
       expect(result.itemsPerPage).toBe(2);
-      expect(result.totalItems).toBe(27);
-      expect(result.totalPages).toBe(14);
     });
   });
 

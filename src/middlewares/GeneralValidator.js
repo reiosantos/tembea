@@ -45,7 +45,7 @@ class GeneralValidator {
   static validateSearchParams(req, res, next) {
     const { name } = req.query;
     const isSpecial = GeneralValidator.validateIsAlphaNumeric(name);
-    if (!isSpecial) {
+    if (name && !isSpecial) {
       return res.status(400).json({
         success: false,
         message: 'Search cannot have special characters. Try again.'
