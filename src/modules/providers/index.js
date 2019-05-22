@@ -3,7 +3,7 @@ import middlewares from '../../middlewares';
 import ProvidersController from './ProvidersController';
 
 const {
-  TokenValidator, GeneralValidator, ProviderValidator, CleanRequestBody
+  TokenValidator, GeneralValidator, ProviderValidator, CleanRequestBody, CabsValidator
 } = middlewares;
 
 const providersRouter = Router();
@@ -14,7 +14,6 @@ providersRouter.use(
   TokenValidator.attachJwtSecretKey,
   TokenValidator.authenticateToken
 );
-
 
 /**
  * @swagger
@@ -91,6 +90,31 @@ providersRouter.patch(
   CleanRequestBody.trimAllInputs,
   ProviderValidator.verifyProviderUpdateBody,
   ProvidersController.updateProvider
+);
+
+/**
+ * @swagger
+ * /providers/{id}:
+ *  delete:
+ *    summary: delete a specific provider
+ *    tags:
+ *      - Providers
+ *    parameters:
+ *      - name: id
+ *        in: path
+ *        required: true
+ *        description: id of provider to be deleted
+ *        type: number
+ *    responses:
+ *      200:
+ *        description: Provider successfully deleted
+ *      404:
+ *        description: Provider does not exist
+ */
+providersRouter.delete(
+  '/providers/:id',
+  CabsValidator.validateDeleteCabIdParam,
+  ProvidersController.deleteProvider
 );
 
 export default providersRouter;

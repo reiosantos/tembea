@@ -25,7 +25,9 @@ class ProvidersController {
         itemsPerPage: pageSize
       } = await ProviderService.getProviders(pageable, where);
       const message = `${pageNo} of ${totalPages} page(s).`;
-      const pageData = ProviderHelper.paginateData(totalPages, page, totalResults, pageSize, providers, 'providers');
+      const pageData = ProviderHelper.paginateData(
+        totalPages, page, totalResults, pageSize, providers, 'providers'
+      );
       return Response.sendResponse(res, 200, true, message, pageData);
     } catch (error) {
       BugsnagHelper.log(error);
@@ -55,6 +57,34 @@ class ProvidersController {
         `The name ${req.body.name} is already taken`);
       return Response.sendResponse(res, statusCode || 500,
         false, message || `Unable to update details ${error}`);
+    }
+  }
+  /**
+   * @description Deletes provider details
+   * @returns {object} deletes provider details
+   * @example ProviderService.deleteProvider(req,res);
+   * @param req
+   * @param res
+   */
+
+  static async deleteProvider(req, res) {
+    let message;
+    try {
+      const { params: { id } } = req;
+      const result = await ProviderService.deleteProvider(id);
+      message = 'Provider does not exist';
+      if (result > 0) {
+        message = 'Provider deleted successfully';
+        return Response.sendResponse(res, 200, true, message);
+      }
+      return Response.sendResponse(res, 404, false, message);
+    } catch (error) {
+      BugsnagHelper.log(error);
+      const serverError = {
+        message: 'Server Error. Could not complete the request',
+        statusCode: 500
+      };
+      HttpError.sendErrorResponse(serverError, res);
     }
   }
 }

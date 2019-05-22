@@ -8,6 +8,7 @@ import HttpError from '../../../helpers/errorHandler';
 import ProviderHelper from '../../../helpers/providerHelper';
 import Response from '../../../helpers/responseHelper';
 import models from '../../../database/models';
+import { bugsnagHelper } from '../../slack/RouteManagement/rootFile';
 
 const { sequelize } = models;
 
@@ -63,8 +64,9 @@ describe('ProviderController', () => {
         }
       };
       await ProvidersController.updateProvider(req, res);
-      expect(Response.sendResponse).toBeCalled();
-      expect(Response.sendResponse).toBeCalledWith(res, 200, true, 'Provider Details updated Successfully', {});
+      expect(Response.sendResponse).toBeCalledWith(
+        res, 200, true, 'Provider Details updated Successfully', {}
+      );
     });
 
     it('should return message if provider doesnt exist', async () => {
@@ -77,7 +79,6 @@ describe('ProviderController', () => {
         }
       };
       await ProvidersController.updateProvider(req, res);
-      expect(Response.sendResponse).toBeCalled();
       expect(Response.sendResponse).toBeCalledWith(res, 404, false, 'Provider doesnt exist');
     });
 
@@ -93,7 +94,6 @@ describe('ProviderController', () => {
         }
       };
       await ProvidersController.updateProvider(req, res);
-      expect(Response.sendResponse).toBeCalled();
       expect(Response.sendResponse).toBeCalledWith(res, 404, false, 'user with email doesnt exist');
     });
 
@@ -124,6 +124,50 @@ describe('ProviderController', () => {
       await ProvidersController.updateProvider(req, res);
       expect(BugsnagHelper.log).toBeCalled();
       expect(Response.sendResponse).toBeCalled();
+    });
+  });
+  describe('deleteProvider', () => {
+    let message;
+    beforeEach(() => {
+      req = {
+        params: {
+          id: 1
+        }
+      };
+      res = {
+        status: jest.fn(() => ({
+          json: jest.fn(() => {})
+        })).mockReturnValue({ json: jest.fn() })
+      };
+    });
+    const deleteProviderSpy = jest.spyOn(ProviderService, 'deleteProvider');
+    jest.spyOn(Response, 'sendResponse');
+    HttpError.sendErrorResponse = jest.fn();
+    bugsnagHelper.log = jest.fn();
+
+    it('should return server error', async () => {
+      deleteProviderSpy.mockRejectedValueOnce('something happened');
+      const serverError = {
+        message: 'Server Error. Could not complete the request',
+        statusCode: 500
+      };
+      await ProvidersController.deleteProvider(req, res);
+      expect(bugsnagHelper.log).toHaveBeenCalledWith('something happened');
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledWith(serverError, res);
+    });
+
+    it('should delete a provider successfully', async () => {
+      message = 'Provider deleted successfully';
+      deleteProviderSpy.mockReturnValue(1);
+      await ProvidersController.deleteProvider(req, res);
+      expect(Response.sendResponse).toHaveBeenCalledWith(res, 200, true, message);
+    });
+
+    it('should return provider does not exist', async () => {
+      message = 'Provider does not exist';
+      deleteProviderSpy.mockReturnValue(0);
+      await ProvidersController.deleteProvider(req, res);
+      expect(Response.sendResponse).toHaveBeenCalledWith(res, 404, false, message);
     });
   });
 });
