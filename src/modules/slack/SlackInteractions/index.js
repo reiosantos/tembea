@@ -26,7 +26,6 @@ import handleActions from './SlackInteractionsHelper';
 import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInteractions';
 import tripService from '../../../services/TripService';
 import CleanData from '../../../helpers/cleanData';
-import TripCabController from '../TripManagement/TripCabController';
 import OpsTripActions from '../TripManagement/OpsTripActions';
 
 class SlackInteractions {
@@ -281,9 +280,7 @@ class SlackInteractions {
       actions: [{ value: tripId }], channel: { id: channelId }, team: { id: teamId },
       user: { id: userId }, original_message: { ts: timeStamp }
     } = payload;
-    
     const trip = await tripService.getById(tripId);
-    
     const tripIsCancelled = trip.tripStatus === 'Cancelled';
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     if (tripIsCancelled) {
@@ -295,15 +292,12 @@ class SlackInteractions {
   }
 
 
-  static async handleSelectCabActions(data, respond) {
+  static async handleSelectCabActions(data) {
     if (data.actions && data.actions[0].name === 'confirmTrip') {
       await DialogPrompts.sendSelectCabDialog(data);
     }
     if (data.actions && data.actions[0].name === 'declineRequest') {
       await DialogPrompts.sendOperationsDeclineDialog(data);
-    }
-    if (data.type === 'dialog_submission') {
-      await TripCabController.handleSelectCabDialogSubmission(data, respond);
     }
   }
 

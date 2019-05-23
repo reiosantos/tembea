@@ -24,7 +24,6 @@ import ManagerActionsHelper from '../../helpers/slackHelpers/ManagerActionsHelpe
 import ViewTripHelper from '../../helpers/slackHelpers/ViewTripHelper';
 import JoinRouteInteractions from '../../RouteManagement/JoinRoute/JoinRouteInteractions';
 import tripService from '../../../../services/TripService';
-import TripCabController from '../../TripManagement/TripCabController';
 import OpsTripActions from '../../TripManagement/OpsTripActions';
 
 describe('SlackInteractions', () => {
@@ -771,10 +770,8 @@ describe('SlackInteractions', () => {
         expect(sendOperationsDeclineDialogSpy).toHaveBeenCalled();
       });
       it('should handle select cab dialog submission', async () => {
-        const data = {
-          type: 'dialog_submission'
-        };
-        const cabDialogSubmissionSpy = jest.spyOn(TripCabController, 'handleSelectCabDialogSubmission').mockResolvedValue({});
+        const data = { actions: [{ name: 'confirmTrip' }] };
+        const cabDialogSubmissionSpy = jest.spyOn(DialogPrompts, 'sendSelectCabDialog').mockResolvedValue({});
         await SlackInteractions.handleSelectCabActions(data, respond);
         expect(cabDialogSubmissionSpy).toHaveBeenCalled();
       });
@@ -795,7 +792,7 @@ describe('SlackInteractions', () => {
       it('Should call select trip action when trip is not cancelled', async () => {
         jest.spyOn(tripService, 'getById').mockResolvedValue({ tripStatus: 'Pending' });
         jest.spyOn(DialogPrompts, 'sendSelectCabDialog').mockResolvedValue({});
-        
+
         const handleSelectCabActions = jest.spyOn(SlackInteractions, 'handleSelectCabActions');
         await SlackInteractions.handleOpsAction(OpsTripActionDataMock, respond);
         expect(handleSelectCabActions).toHaveBeenCalled();

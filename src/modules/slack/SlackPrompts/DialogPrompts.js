@@ -82,7 +82,7 @@ class DialogPrompts {
     } = payload;
     const cabData = CabsHelper.toCabLabelValuePairs(cabs);
     const state = { tripId, timeStamp, channel };
-    const dialog = new SlackDialog('trips_cab_selection',
+    const dialog = new SlackDialog('confirm_ops_approval',
       'Confirm Trip Request', 'Submit', false, JSON.stringify(state));
     dialog.addElements([
       new SlackDialogSelectElementWithOptions('Select A Cab',

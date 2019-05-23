@@ -5,6 +5,7 @@ import OperationsController from '../RouteManagement/OperationsController';
 import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInteractions';
 import RateTripController from '../TripManagement/RateTripController';
 import TripInteractions from '../SlackPrompts/notifications/TripNotifications/TripInteractions';
+import TripCabController from '../TripManagement/TripCabController';
 
 const slackInteractionsRouter = createMessageAdapter(process.env.SLACK_SIGNING_SECRET);
 
@@ -38,6 +39,8 @@ slackInteractionsRouter.action({ callbackId: 'operations_reason_dialog' },
   SlackInteractions.handleTripActions);
 slackInteractionsRouter.action({ callbackId: 'trips_cab_selection' },
   SlackInteractions.handleOpsAction);
+slackInteractionsRouter.action({ callbackId: 'confirm_ops_approval' },
+  TripCabController.handleSelectCabDialogSubmission);
 slackInteractionsRouter.action({ callbackId: 'tembea_route' },
   SlackInteractions.startRouteActions);
 slackInteractionsRouter.action({ callbackId: /^new_route/ },
