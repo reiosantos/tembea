@@ -101,9 +101,9 @@ describe('Dialog prompts test', () => {
       trigger_id: 'XXXXXXX',
       team: { id: 'TEAMID1' }
     },
-      'callback_id',
-      'state',
-      'dialogName');
+    'callback_id',
+    'state',
+    'dialogName');
 
     expect(sendDialogTryCatch).toBeCalled();
     done();

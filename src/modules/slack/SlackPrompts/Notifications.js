@@ -124,6 +124,24 @@ class SlackNotifications {
     const msg = await SlackNotifications.getMessage(rider.slackId, requester.slackId, text);
     return SlackNotifications.createDirectMessage(channelId, msg, attachments);
   }
+  
+  static async getOpsMessageAttachment(newTripRequest,
+    opsChannelId, lineManagerSlackId) {
+    const attachments = new SlackAttachment('Trip Request');
+    attachments.addOptionalProps('', '', '#3359DF');
+    const { rider, requester } = newTripRequest;
+    await Services.findOrCreateNewUserWithSlackId(rider);
+    let fields = null;
+    fields = SlackNotifications.notificationFields(newTripRequest);
+    attachments.addFieldsOrActions('fields', fields);
+    let msg = `Hey, <@${requester.slackId}> has just  requested a trip. It is awaiting approval from <@${lineManagerSlackId}> :smiley:`;
+    if (requester.slackId !== rider.slackId) {
+      msg = `Hey, <@${requester.slackId}> h as just requested a trip for <@${
+        rider.slackId}>. It is awaiting approval from <@${lineManagerSlackId}> :smiley:`;
+    }
+    return SlackNotifications.createDirectMessage(opsChannelId, msg, attachments);
+  }
+  
 
   static async sendOperationsTripRequestNotification(trip, data, respond, type = 'regular') {
     try {
@@ -153,6 +171,39 @@ class SlackNotifications {
       respond(message);
     }
   }
+
+
+  static async sendOpsTripRequestNotification(payload, trip, respond) {
+    try {
+      const { opsRequestMessage, botToken } = await SlackNotifications.opsNotificationMessage(payload.team.id, trip);
+      await SlackNotifications.sendNotification(opsRequestMessage, botToken);
+    } catch (error) {
+      bugsnagHelper.log(error);
+      const message = new SlackInteractiveMessage(
+        'An error occurred while processing your request. '
+          + 'Please contact the administrator.', [], undefined, '#b52833'
+      );
+      respond(message);
+    }
+  }
+
+  static async opsNotificationMessage(teamId, trip) {
+    await Promise.all([
+      SlackHelpers.findUserByIdOrSlackId(trip.requestedById),
+      SlackHelpers.findUserByIdOrSlackId(trip.riderId)
+    ]);
+    const { opsChannelId, botToken } = await TeamDetailsService.getTeamDetails(teamId);
+    const { name } = await DepartmentService.getById(trip.departmentId);
+    const tripInformation = trip;
+    tripInformation.department = name;
+    const tripData = await tripService.getById(tripInformation.id);
+    const { slackId } = await DepartmentService.getHeadByDeptId(tripData.departmentId);
+    const opsRequestMessage = await SlackNotifications.getOpsMessageAttachment(
+      tripData, opsChannelId, slackId
+    );
+    return { opsRequestMessage, botToken };
+  }
+
 
   static async sendRequesterApprovedNotification(
     data,

@@ -17,7 +17,6 @@ import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import { SlackAttachment, OpsSlackAttachment } from '../__mocks__/NotificationsMocks.mock';
 import Cache from '../../../../cache';
 
-
 const tripInitial = {
   id: 2,
   requestId: null,
@@ -80,6 +79,7 @@ jest.mock('../../../../services/TeamDetailsService', () => ({
   })),
   getTeamDetailsBotOauthToken: jest.fn(() => Promise.resolve('just a random token'))
 }));
+
 
 describe('SlackNotifications', () => {
   beforeEach(() => {
@@ -877,6 +877,129 @@ describe('SlackNotifications', () => {
     it('Should run catch block when there is an error', async () => {
       jest.spyOn(SlackNotifications, 'getOperationCancelAttachment').mockRejectedValue({});
       await SlackNotifications.sendOpsCancelNotification(data, tripInfo, respond);
+      expect(respond).toHaveBeenCalled();
+    });
+  });
+
+
+  describe('getOpsMessageAttachment', () => {
+    const newTripRequest = {
+      requester: {
+        slackId: 'HURT1233'
+      },
+      rider: {
+        slackId: 'HURT1233'
+      }
+    };
+    const mockData = [];
+    beforeEach(() => {
+      jest.spyOn(Services, 'findOrCreateNewUserWithSlackId');
+      jest.spyOn(SlackNotifications, 'notificationFields').mockResolvedValue(mockData);
+      jest.spyOn(SlackNotifications, 'createDirectMessage');
+    });
+
+    it('sends notification to ops when user has booked themselves', async () => {
+      await SlackNotifications.getOpsMessageAttachment(newTripRequest, 1, 'HURT1234');
+      expect(Services.findOrCreateNewUserWithSlackId).toHaveBeenCalledWith(newTripRequest.rider);
+      expect(SlackNotifications.notificationFields).toHaveBeenCalledWith(newTripRequest);
+      expect(SlackNotifications.createDirectMessage).toHaveBeenCalled();
+    });
+
+    it('sends notification to ops when user has been booked for', async () => {
+      newTripRequest.rider = {
+        slackId: 'HGY1234'
+      };
+
+      await SlackNotifications.getOpsMessageAttachment(newTripRequest, 1, 'HURT1234');
+      expect(Services.findOrCreateNewUserWithSlackId).toHaveBeenCalledWith(newTripRequest.rider);
+      expect(SlackNotifications.notificationFields).toHaveBeenCalledWith(newTripRequest);
+      expect(SlackNotifications.createDirectMessage).toHaveBeenCalled();
+    });
+  });
+
+  describe('sendOpsTripRequestNotification', () => {
+    const trip = {
+      requestedById: 'Hello123',
+      riderId: 10,
+      departmentId: 2,
+      id: 3
+    };
+
+    const tripData = {
+      departmentId: 2
+    };
+
+
+    const requester = {
+      id: 1,
+      slackId: 'HURT123',
+      name: 'John',
+    };
+
+    const rider = {
+      id: 10,
+      slackId: 'HELLO1',
+      name: 'David',
+    };
+
+    const payload = {
+      team: {
+        id: 1
+      }
+    };
+
+    const dataReturned = {
+      botToken: 'WELL1',
+      opsChannelId: 2
+    };
+
+    const department = {
+      name: 'TDD'
+    };
+
+    const deptHead = {
+      slackId: 'TTT1',
+    };
+
+    const resolvedData = {
+      channel: 'ABC123',
+      text: 'hello world',
+      attachment: []
+    };
+
+
+    let respond;
+
+    beforeEach(() => {
+      respond = jest.fn();
+      jest.spyOn(tripService, 'getById').mockResolvedValue(tripData);
+      jest.spyOn(TeamDetailsService, 'getTeamDetails').mockResolvedValue(dataReturned);
+      jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockResolvedValueOnce(requester);
+      jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockResolvedValueOnce(rider);
+      jest.spyOn(DepartmentService, 'getById').mockResolvedValue(department);
+      jest.spyOn(SlackNotifications, 'sendNotification');
+      jest.spyOn(SlackNotifications, 'opsNotificationMessage');
+      jest.spyOn(SlackNotifications, 'getOpsMessageAttachment').mockResolvedValue(resolvedData);
+      jest.spyOn(DepartmentService, 'getHeadByDeptId').mockResolvedValue(deptHead);
+      jest.spyOn(SlackNotifications, 'sendNotification');
+      bugsnagHelper.log = jest.fn();
+    });
+
+    it('should send a notification to the operations team when a user request a trip', async () => {
+      await SlackNotifications.sendOpsTripRequestNotification(payload, trip, respond);
+      expect(SlackNotifications.opsNotificationMessage).toHaveBeenCalledWith(payload.team.id, trip);
+      expect(SlackHelpers.findUserByIdOrSlackId).toHaveBeenCalledTimes(2);
+      expect(TeamDetailsService.getTeamDetails).toHaveBeenCalledWith(payload.team.id);
+      expect(DepartmentService.getById).toHaveBeenCalledWith(trip.departmentId);
+      expect(tripService.getById).toHaveBeenCalledWith(trip.id);
+      expect(SlackNotifications.getOpsMessageAttachment).toHaveBeenCalledWith(tripData, dataReturned.opsChannelId, deptHead.slackId);
+      expect(SlackNotifications.sendNotification).toHaveBeenCalled();
+    });
+
+    it('should returns an error when the notification fails to send', async () => {
+      jest.spyOn(SlackNotifications, 'sendNotification').mockRejectedValueOnce('An error just occured');
+      await SlackNotifications.sendOpsTripRequestNotification(payload, trip, respond);
+      expect(bugsnagHelper.log).toHaveBeenCalledWith('An error just occured');
       expect(respond).toHaveBeenCalled();
     });
   });

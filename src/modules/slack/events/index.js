@@ -20,6 +20,9 @@ slackEvents.handle(slackEventNames.RECEIVE_NEW_ROUTE_REQUEST,
 slackEvents.handle(slackEventNames.NEW_TRIP_REQUEST,
   SlackNotifications.sendManagerTripRequestNotification);
 
+SlackEvents.handle(slackEventNames.NEW_TRIP_REQUEST,
+  SlackNotifications.sendOpsTripRequestNotification);
+
 slackEvents.handle(slackEventNames.DECLINED_TRIP_REQUEST,
   SlackNotifications.sendRequesterDeclinedNotification);
 
@@ -61,5 +64,6 @@ SlackEvents.handle(slackEventNames.RIDER_CANCEL_TRIP,
 
 SlackEvents.handle(slackEventNames.NOTIFY_OPS_CANCELLED_TRIP,
   SlackNotifications.sendOpsCancelNotification);
+
 
 export default slackEvents;
