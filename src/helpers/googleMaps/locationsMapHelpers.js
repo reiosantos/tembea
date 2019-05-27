@@ -13,6 +13,8 @@ import DialogPrompts from '../../modules/slack/SlackPrompts/DialogPrompts';
 import bugsnagHelper from '../bugsnagHelper';
 import { SlackInteractiveMessage } from '../../modules/slack/SlackModels/SlackMessageModels';
 import GoogleMapsError from './googleMapsError';
+import { getTravelKey } from '../../modules/slack/helpers/slackHelpers/TravelTripHelper';
+
 
 export default class LocationHelpers {
   static convertStringToUrl(string) {
@@ -136,7 +138,7 @@ export default class LocationHelpers {
   static async callDestinationSelection(payload, respond) {
     try {
       const { user: { id } } = payload;
-      const { tripType } = await Cache.fetch(id);
+      const { tripType } = await Cache.fetch(getTravelKey(id));
 
       if (tripType === 'Airport Transfer') {
         respond(
@@ -159,7 +161,7 @@ export default class LocationHelpers {
     try {
       return DialogPrompts.sendTripDetailsForm(
         payload, 'riderLocationConfirmationForm',
-        'travel_trip_OpsLocationConfirmation', `Confirm ${location}`
+        'travel_trip_completeTravelConfirmation', `Confirm ${location}`
       );
     } catch (error) {
       respond(

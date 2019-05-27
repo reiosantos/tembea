@@ -207,7 +207,7 @@ describe('helper functions', async () => {
       await LocationHelpers.callRiderLocationConfirmation(payload, respond, 'Pickup');
 
       expect(sendTripDetailsForm).toHaveBeenCalledWith(payload, 'riderLocationConfirmationForm',
-        'travel_trip_OpsLocationConfirmation', 'Confirm Pickup');
+        'travel_trip_completeTravelConfirmation', 'Confirm Pickup');
     });
     it('should rspond and call bugsnug of error caught', async () => {
       DialogPrompts.sendTripDetailsForm = jest.fn().mockImplementation(() => {

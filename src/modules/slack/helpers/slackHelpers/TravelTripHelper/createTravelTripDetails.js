@@ -1,10 +1,13 @@
 import Cache from '../../../../../cache';
 import Utils from '../../../../../utils';
+import { getTravelKey } from './index';
+
 
 export default async (payload, dateTimeType = 'flightDateTime') => {
+  const { user: { id } } = payload;
   const {
     departmentId, departmentName, contactDetails, tripType
-  } = await Cache.fetch(payload.user.id);
+  } = await Cache.fetch(getTravelKey(id));
   return {
     rider: contactDetails.rider,
     departmentId,

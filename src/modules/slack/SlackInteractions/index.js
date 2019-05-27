@@ -16,7 +16,7 @@ import ScheduleTripInputHandlers, {
   getTripKey
 } from '../../../helpers/slack/ScheduleTripInputHandlers';
 import TeamDetailsService from '../../../services/TeamDetailsService';
-import travelTripHelper from '../helpers/slackHelpers/TravelTripHelper';
+import TravelTripHelper, { getTravelKey } from '../helpers/slackHelpers/TravelTripHelper';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import RouteInputHandlers from '../RouteManagement';
 import ManagerActionsHelper from '../helpers/slackHelpers/ManagerActionsHelper';
@@ -311,7 +311,7 @@ class SlackInteractions {
       );
       return;
     }
-    await Cache.save(id, 'tripType', name);
+    await Cache.save(getTravelKey(id), 'tripType', name);
     return DialogPrompts.sendTripDetailsForm(
       payload, 'travelTripContactDetailsForm', 'travel_trip_contactDetails'
     );
@@ -319,7 +319,7 @@ class SlackInteractions {
 
   static handleTravelTripActions(data, respond) {
     const payload = CleanData.trim(data);
-    return handleActions(payload, respond, travelTripHelper);
+    return handleActions(payload, respond, TravelTripHelper);
   }
 
   static async startRouteActions(data, respond) {

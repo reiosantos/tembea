@@ -15,7 +15,7 @@ import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import SlackEvents from '../../events';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
-import travelTripHelper from '../../helpers/slackHelpers/TravelTripHelper';
+import TravelTripHelper from '../../helpers/slackHelpers/TravelTripHelper';
 import TripRescheduleHelper from '../../helpers/slackHelpers/rescheduleHelper';
 import RouteInputHandlers from '../../RouteManagement';
 import BugsnagHelper from '../../../../helpers/bugsnagHelper';
@@ -650,10 +650,10 @@ describe('SlackInteractions', () => {
 
     it('should call the tripHandler method based on callBackId', () => {
       const payload = createPayload('testBack', 'cancel');
-      travelTripHelper.testBack = jest.fn((value1, value2) => ({ value1, value2 }));
+      TravelTripHelper.testBack = jest.fn((value1, value2) => ({ value1, value2 }));
       SlackInteractions.handleTravelTripActions(payload, respond);
 
-      expect(travelTripHelper.testBack).toHaveBeenCalledWith(payload, respond);
+      expect(TravelTripHelper.testBack).toHaveBeenCalledWith(payload, respond);
     });
 
     it('should call the tripHandler method based on callBackId', () => {

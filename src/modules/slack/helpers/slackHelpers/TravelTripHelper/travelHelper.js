@@ -1,6 +1,6 @@
 import InteractivePrompts from '../../../SlackPrompts/InteractivePrompts';
 import LocationMapHelpers from '../../../../../helpers/googleMaps/locationsMapHelpers';
-import travelTripHelper from './index';
+import TravelTripHelper from './index';
 import GoogleMapsError from '../../../../../helpers/googleMaps/googleMapsError';
 import {
   SlackInteractiveMessage,
@@ -23,7 +23,7 @@ export default class travelHelper {
   static async getDestinationType(payload, respond) {
     const { submission: { destination } } = payload;
     if (destination !== 'Others') {
-      const confirmDetails = await travelTripHelper.detailsConfirmation(payload, respond);
+      const confirmDetails = await TravelTripHelper.detailsConfirmation(payload, respond);
       return confirmDetails;
     }
     try {
@@ -32,7 +32,7 @@ export default class travelHelper {
       if (verifiable) respond(verifiable);
     } catch (err) {
       if (err instanceof GoogleMapsError && err.code === GoogleMapsError.UNAUTHENTICATED) {
-        const confirmDetails = await travelTripHelper.detailsConfirmation(payload, respond);
+        const confirmDetails = await TravelTripHelper.detailsConfirmation(payload, respond);
         respond(confirmDetails);
       }
     }

@@ -124,7 +124,7 @@ class SlackNotifications {
     const msg = await SlackNotifications.getMessage(rider.slackId, requester.slackId, text);
     return SlackNotifications.createDirectMessage(channelId, msg, attachments);
   }
-  
+
   static async getOpsMessageAttachment(newTripRequest,
     opsChannelId, lineManagerSlackId) {
     const attachments = new SlackAttachment('Trip Request');
@@ -141,7 +141,7 @@ class SlackNotifications {
     }
     return SlackNotifications.createDirectMessage(opsChannelId, msg, attachments);
   }
-  
+
 
   static async sendOperationsTripRequestNotification(trip, data, respond, type = 'regular') {
     try {
@@ -436,16 +436,6 @@ class SlackNotifications {
       `The entered ${location} location is ${confirmedLocation}`,
       '', '', '', 'default', 'warning'
     );
-    const actions = [
-      new SlackButtonAction('allConfirmed', `Confirm ${location}`, 'locationConfrimed'),
-      new SlackCancelButtonAction(
-        'Cancel Travel Request', 'cancel',
-        'Are you sure you want to cancel this travel request', 'cancel_request'
-      )
-    ];
-    attachment.addFieldsOrActions('actions', actions);
-    attachment.addOptionalProps('travel_trip_detailsConfirmation',
-      'fallback', undefined, 'default');
     const letterMessage = `Tembea travel ${location} confirmation`;
     SlackNotifications.sendNotifications(opsChannelId,
       attachment, letterMessage, slackBotOauthToken);
