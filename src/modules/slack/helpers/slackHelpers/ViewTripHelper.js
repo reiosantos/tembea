@@ -1,4 +1,3 @@
-import moment from 'moment-timezone';
 import tripService from '../../../../services/TripService';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import {
@@ -8,6 +7,7 @@ import {
   SlackInteractiveMessage
 } from '../../SlackModels/SlackMessageModels';
 import UserService from '../../../../services/UserService';
+import { getSlackDateString } from '../dateHelpers';
 
 export default class ViewTripHelper {
   /**
@@ -29,16 +29,15 @@ export default class ViewTripHelper {
     }
   }
 
-  static tripAttachmentFields(tripRequest, passSlackId, slackId, timezone) {
+  static tripAttachmentFields(tripRequest, passSlackId, slackId) {
     const {
       noOfPassengers, reason, tripStatus, origin, destination,
       departureTime, tripType, createdAt, tripNote, distance
     } = tripRequest;
 
-    const requestedOn = moment(createdAt).tz(timezone)
-      .format('ddd, MMM Do YYYY hh:mm a');
-    const pickupTime = moment(departureTime).tz(timezone)
-      .format('ddd, MMM Do YYYY hh:mm a');
+    const [createdString, departureString] = [
+      getSlackDateString(createdAt), getSlackDateString(departureTime)
+    ];
 
     const { address: pickUpLocation } = origin;
     const { address: destinationAddress } = destination;
@@ -51,15 +50,15 @@ export default class ViewTripHelper {
       && new SlackAttachmentField('*Distance*', distance, true);
     const noOfPassengersField = new SlackAttachmentField('*No Of Passengers*', noOfPassengers, true);
     const reasonField = new SlackAttachmentField('*Reason*', reason, true);
-    const requestDateField = new SlackAttachmentField('*Request Date*', requestedOn, true);
-    const departureField = new SlackAttachmentField('*Trip Date*', pickupTime, true);
+    const requestDateField = new SlackAttachmentField('*Request Date*', createdString, true);
+    const departureField = new SlackAttachmentField('*Trip Date*', departureString, true);
     const tripTypeField = new SlackAttachmentField('*Trip Type*', tripType, true);
     const tripNoteField = new SlackAttachmentField('*Trip Notes*', tripNote, true);
     return [fromField, toField, requestedByField, passengerField, noOfPassengersField,
       reasonField, requestDateField, departureField, distanceField, statusField, tripTypeField, tripNoteField];
   }
 
-  static tripAttachment(tripRequest, SlackId, passSlackId, timezone = 'Africa/Nairobi') {
+  static tripAttachment(tripRequest, SlackId, passSlackId, timezone) {
     const { id } = tripRequest;
     const attachment = new SlackAttachment('Trip Information');
     const done = new SlackButtonAction('done', 'Done', id);

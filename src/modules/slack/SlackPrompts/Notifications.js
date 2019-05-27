@@ -1,6 +1,5 @@
 import { IncomingWebhook } from '@slack/client';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
-import Utils from '../../../utils';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
 import {
   SlackAttachment,
@@ -19,6 +18,7 @@ import Services from '../../../services/UserService';
 import tripService from '../../../services/TripService';
 import TripCompletion from '../../../services/jobScheduler/jobs/TripCompletionJob';
 import CleanData from '../../../helpers/cleanData';
+import { getSlackDateString } from '../helpers/dateHelpers';
 
 const web = new WebClientSingleton();
 
@@ -382,9 +382,9 @@ class SlackNotifications {
       new SlackAttachmentField('Pickup Location', pickup, true),
       new SlackAttachmentField('Destination', destination, true),
       new SlackAttachmentField('Request Date',
-        Utils.formatDate(createdAt), true),
+        getSlackDateString(createdAt), true),
       new SlackAttachmentField('Trip Date',
-        Utils.formatDate(departureTime), true),
+        getSlackDateString(departureTime), true),
       new SlackAttachmentField('Reason', reason, true),
       new SlackAttachmentField('Passenger', passenger, true),
       new SlackAttachmentField('Trip Notes', tripNote, true),

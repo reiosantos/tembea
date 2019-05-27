@@ -1,11 +1,11 @@
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
-import Utils from '../../../utils/index';
 import {
   SlackAttachment,
   SlackAttachmentField,
   SlackButtonAction,
   SlackInteractiveMessage
 } from '../SlackModels/SlackMessageModels';
+import { getSlackDateString } from '../helpers/dateHelpers';
 
 class NotificationsResponse {
   static getRequestMessageForOperationsChannel(data, payload, channel, tripType) {
@@ -31,7 +31,7 @@ class NotificationsResponse {
         channelId, data, color, actions, callbackId, payload
       );
     }
-    
+
     return this.travelOperationsDepartmentResponse(
       channelId, data, color, actions, callbackId
     );
@@ -61,7 +61,7 @@ class NotificationsResponse {
       new SlackAttachmentField('Department', department, true),
       new SlackAttachmentField('Pickup Location', pickup.address, true),
       new SlackAttachmentField('Destination', destination.address, true),
-      new SlackAttachmentField('Pick-Up Time', Utils.formatDate(departureTime), true),
+      new SlackAttachmentField('Pick-Up Time', getSlackDateString(departureTime), true),
       new SlackAttachmentField('Number of Passengers', noOfPassengers, true),
       new SlackAttachmentField('Trip Type', tripType, true),
       new SlackAttachmentField('Status', tripStatus, true),
@@ -83,7 +83,7 @@ class NotificationsResponse {
       tripStatus, requester, pickup, departureTime,
       rider, destination, managerComment, department
     } = responseData;
-    
+
     const riderInfo = this.riderInfoResponse(rider, requester);
 
     const detailedAttachment = new SlackAttachment(
@@ -94,7 +94,7 @@ class NotificationsResponse {
       new SlackAttachmentField('Department', `<@${department}>`, true),
       new SlackAttachmentField('Pickup Location', pickup.address, true),
       new SlackAttachmentField('Destination', destination.address, true),
-      new SlackAttachmentField('Departure', Utils.formatDate(departureTime), true),
+      new SlackAttachmentField('Departure', getSlackDateString(departureTime), true),
       new SlackAttachmentField('Status', tripStatus, true),
       new SlackAttachmentField('Manager Comment', managerComment)
     ];
@@ -140,8 +140,8 @@ class NotificationsResponse {
     const fields = [
       new SlackAttachmentField('Pickup', pickup.address, true),
       new SlackAttachmentField('Destination', destination.address, true),
-      new SlackAttachmentField('Request Date', Utils.formatDate(requestDate), true),
-      new SlackAttachmentField('Departure Date', Utils.formatDate(departureDate), true),
+      new SlackAttachmentField('Request Date', getSlackDateString(requestDate), true),
+      new SlackAttachmentField('Departure Date', getSlackDateString(departureDate), true),
       new SlackAttachmentField('Trip Status', tripStatus, true),
       new SlackAttachmentField('Reason', managerComment, true)
     ];

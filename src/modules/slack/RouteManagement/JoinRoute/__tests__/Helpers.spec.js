@@ -131,9 +131,7 @@ describe('JoinRouteHelpers', () => {
         takeOff: '00:00',
         route: { name: 'routeName', destination: { address: 'address' } }
       };
-      const formatTimeSpy = jest.spyOn(Utils, 'formatTime');
       const result = JoinRouteHelpers.routeFields(route);
-      expect(formatTimeSpy).toBeCalledWith('00:00');
       expect(result.length).toEqual(4);
     });
   });

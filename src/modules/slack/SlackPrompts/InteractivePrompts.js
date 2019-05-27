@@ -14,6 +14,7 @@ import previewTripDetailsAttachment
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
 import DepartmentService from '../../../services/DepartmentService';
 import PreviewScheduleTrip from '../helpers/slackHelpers/previewScheduleTripAttachments';
+import { getSlackDateString } from '../helpers/dateHelpers';
 
 const web = new WebClientSingleton();
 
@@ -127,7 +128,7 @@ class InteractivePrompts {
     const { id } = payload.user;
     const attachment = new SlackAttachment();
     const journey = `From ${trip['origin.address']} To ${trip['destination.address']}`;
-    const time = `Departure Time:  ${trip.departureTime}`;
+    const time = `Departure Time:  ${getSlackDateString(trip.departureTime)}`;
     const requestedBy = id === trip['requester.slackId']
       ? `Requested By: ${trip['requester.name']} (You)`
       : `Requested By: ${trip['requester.name']}`;
