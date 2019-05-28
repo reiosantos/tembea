@@ -318,7 +318,6 @@ describe('LocationPrompts', () => {
       const selectedActions = new SlackSelectAction('pickupBtn',
         'Pick Up location', predictedLocations);
 
-      const buttonAction = new SlackButtonAction('no', 'Location not listed', 'no');
       const staticMapUrl = 'https://staticMap';
 
       const locationData = {
@@ -332,7 +331,7 @@ describe('LocationPrompts', () => {
       optionalPropsSpy = jest.spyOn(SlackAttachment.prototype, 'addOptionalProps');
 
       LocationPrompts.sendMapSuggestionsResponse(locationData);
-      expect(fieldsOrActionsSpy).toBeCalledWith('actions', [selectedActions, buttonAction]);
+      expect(fieldsOrActionsSpy).toBeCalledWith('actions', [selectedActions]);
       expect(optionalPropsSpy).toBeCalledWith('travel_trip_suggestions',
         '', '#3AAF85', 'default', 'pickup');
 

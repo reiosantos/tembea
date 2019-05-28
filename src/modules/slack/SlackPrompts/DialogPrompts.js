@@ -14,6 +14,8 @@ import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import CabService from '../../../services/CabService';
 import CabsHelper from '../helpers/slackHelpers/CabsHelper';
 
+export const getPayloadKey = userId => `PAYLOAD_DETAILS${userId}`;
+
 class DialogPrompts {
   static async sendTripDetailsForm(payload, formElementsFunction, callbackId, dialogTitle) {
     const { team: { id: teamId } } = payload;
@@ -256,6 +258,23 @@ class DialogPrompts {
       )
     ]);
     await DialogPrompts.sendDialog(dialog, payload);
+  }
+
+  static async sendLocationDialogToUser(state) {
+    const dialog = new SlackDialog(
+      'schedule_trip_resubmitLocation', 'Location Details', 'Submit', true,
+      state
+    );
+    const { value } = state.actions[0];
+    const hint = 'Andela Nairobi, Kenya';
+    const pickupOrDestination = value === 'no_Pick up' ? 'Pickup' : 'Destination';
+    dialog.addElements([
+      new SlackDialogText(
+        `${pickupOrDestination} Location: `, `${pickupOrDestination}_location`,
+        `Enter your ${pickupOrDestination} details`, false, hint
+      )
+    ]);
+    await DialogPrompts.sendDialog(dialog, state);
   }
 
   static async sendEngagementInfoDialogToManager(payload, callback, state, defaultValues = {}) {

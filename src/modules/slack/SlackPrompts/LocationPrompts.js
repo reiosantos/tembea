@@ -36,22 +36,26 @@ class LocationPrompts {
       staticMapUrl, predictedLocations, pickupOrDestination, buttonType, tripType
     } = locationData;
 
+    const errorMessage = 'Sorry, we could not find the location you entered :disappointed:. '
+     + `However, :smiley: you may proceed to enter the same ${pickupOrDestination} location details`
+     + ' and book the trip by pressing the button below';
     const title = 'Locations on the map are marked in the order they appear on the list';
 
-    const attachment = new SlackAttachment('', title, '', '',
+    const attachment = new SlackAttachment('', predictedLocations.length ? title : errorMessage,
+      '', '',
       predictedLocations.length ? staticMapUrl : '');
 
-    attachment.addFieldsOrActions('actions', [
-      new SlackSelectAction(`${buttonType}Btn`,
-        `${pickupOrDestination} location`, predictedLocations),
-      new SlackButtonAction('no', 'Location not listed', 'no')]);
+    const button = new SlackButtonAction('no', 'Location not listed', `no_${pickupOrDestination}`);
+    const dropdown = new SlackSelectAction(`${buttonType}Btn`,
+      `${pickupOrDestination} location`, predictedLocations);
+    attachment.addFieldsOrActions('actions', predictedLocations.length ? [dropdown] : [button]);
 
     attachment.addOptionalProps(predictedLocations.length
       ? `${tripType}_suggestions` : `${tripType}_locationNotFound`, '',
     '#3AAF85', 'default', buttonType);
 
     return new SlackInteractiveMessage(
-      `Select your ${pickupOrDestination} location`, [attachment]
+      `*Select your ${pickupOrDestination} location*`, [attachment]
     );
   }
 

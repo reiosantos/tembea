@@ -1,6 +1,6 @@
 import Cache from '../../../cache';
 import InteractivePrompts from '../../../modules/slack/SlackPrompts/InteractivePrompts';
-import DialogPrompts from '../../../modules/slack/SlackPrompts/DialogPrompts';
+import DialogPrompts, { getPayloadKey } from '../../../modules/slack/SlackPrompts/DialogPrompts';
 import {
   SlackInteractiveMessage
 } from '../../../modules/slack/SlackModels/SlackMessageModels';
@@ -159,10 +159,16 @@ const ScheduleTripInputHandlers = {
         return await DialogPrompts.sendTripDetailsForm(payload, 'tripDestinationLocationForm',
           'schedule_trip_confirmDestination', 'Destination Details');
       }
+      const updatedPickup = await Cache.fetch(getPayloadKey(userId));
+      if (updatedPickup) {
+        tripData.pickup = updatedPickup.submission.Pickup_location;
+        tripData.othersPickup = tripData.pickup;
+      }
       await Cache.saveObject(getTripKey(userId), tripData);
 
       return InteractivePrompts.sendScheduleTripResponse(tripData, respond);
     } catch (error) {
+      console.log(error)
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     }
@@ -190,11 +196,30 @@ const ScheduleTripInputHandlers = {
     }
   },
 
-  locationNotFound: (payload, respond) => {
-    respond(new SlackInteractiveMessage(
-      'Sorry😞, your location wasn\'t found on the map...contact the ops team'
-    ));
+
+  locationNotFound: async (payload) => {
+    await DialogPrompts.sendLocationDialogToUser(payload);
   },
+
+  resubmitLocation: async (payload, respond) => {
+    try {
+      const tripData = await Cache.fetch(getTripKey(payload.user.id));
+      if (tripData.destination) {
+        const updatedPickup = await Cache.fetch(getPayloadKey(payload.user.id));
+        tripData.pickup = updatedPickup.submission.Pickup_location;
+        tripData.othersPickup = tripData.pickup;
+        tripData.othersDestination = payload.submission.Destination_location;
+        tripData.destination = tripData.othersDestination;
+        await Cache.saveObject(getTripKey(payload.user.id), tripData);
+        return InteractivePrompts.sendScheduleTripResponse(tripData, respond);
+      }
+      await Cache.saveObject(getPayloadKey(payload.user.id), payload);
+      return InteractivePrompts.sendSelectDestination(respond);
+    } catch (error) {
+      bugsnagHelper.log(error);
+      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+    }
+  }
 };
 
 export default ScheduleTripInputHandlers;

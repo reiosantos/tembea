@@ -94,7 +94,7 @@ describe('Tests for google maps locations', () => {
     );
     GoogleMapsStatic.getLocationScreenShotUrl = jest.fn().mockReturnValue('staticMapUrl');
     LocationPrompts.sendMapSuggestionsResponse = jest.fn().mockReturnValue({});
-    await LocationHelpers.locationVerify(payload, respond, pickUpString, 'travel_trip');
+    await LocationHelpers.locationVerify(payload.submission, respond, pickUpString, 'travel_trip');
     expect(LocationPrompts.sendMapSuggestionsResponse).toHaveBeenCalled();
   });
 

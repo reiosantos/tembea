@@ -16,6 +16,7 @@ import LocationHelpers from '../../../googleMaps/locationsMapHelpers';
 import UserInputValidator from '../../UserInputValidator';
 import TripHelper from '../../../TripHelper';
 import UpdateSlackMessageHelper from '../../updatePastMessageHelper';
+import { bugsnagHelper } from '../../../../modules/slack/RouteManagement/rootFile';
 
 jest.mock('../../../../modules/slack/events/', () => ({
   slackEvents: jest.fn(() => ({
@@ -262,11 +263,12 @@ describe('ScheduleTripInputHandlers Tests', () => {
     });
   });
   describe('Response to "detailsConfirmation" interaction', () => {
-    const destinationPayload = createDestinationPayload('dummyData');
+    let destinationPayload;
     const tripDetails = createTripData();
     beforeEach(() => {
+      destinationPayload = createDestinationPayload('dummyData');
       jest.spyOn(Cache, 'saveObject');
-      jest.spyOn(Cache, 'fetch').mockResolvedValue({
+      jest.spyOn(Cache, 'fetch').mockResolvedValueOnce({
         id: '1',
         department: {
           value: 'dummy'
@@ -278,12 +280,6 @@ describe('ScheduleTripInputHandlers Tests', () => {
     });
     afterEach(() => {
       jest.resetAllMocks();
-    });
-
-    it('should respond with preview summary of trip details - detailsConfirmation', async () => {
-      await ScheduleTripInputHandlers.detailsConfirmation(destinationPayload, responder);
-      expect(InteractivePrompts.sendScheduleTripResponse)
-        .toHaveBeenCalled();
     });
 
     it('should return users to destination dialog box', async () => {
@@ -300,6 +296,34 @@ describe('ScheduleTripInputHandlers Tests', () => {
         .mockRejectedValue(new Error('Error'));
       await ScheduleTripInputHandlers.detailsConfirmation(tripDetails, responder);
       expect(responder).toHaveBeenCalled();
+    });
+  });
+
+  describe('detailsConfirmation - sendScheduleTripResponse', () => {
+    let destinationPayload;
+    const tripDetails = createTripData();
+    beforeEach(() => {
+      destinationPayload = createDestinationPayload('dummyData');
+      jest.spyOn(Cache, 'saveObject');
+      jest.spyOn(Cache, 'fetch').mockResolvedValueOnce({
+        id: '1',
+        department: {
+          value: 'dummy'
+        },
+        tripDetails: {}
+      });
+      ScheduleTripController.validateTripDetailsForm = jest.fn(() => []);
+      jest.spyOn(UserInputValidator, 'getScheduleTripDetails').mockReturnValue(tripDetails);
+    });
+    it('should respond with preview summary of trip details - detailsConfirmation', async () => {
+      const data = {
+        submission: {
+          Pickup_location: 'Qwetu'
+        }
+      };
+      jest.spyOn(Cache, 'fetch').mockResolvedValueOnce(data);
+      await ScheduleTripInputHandlers.detailsConfirmation(destinationPayload, responder);
+      expect(InteractivePrompts.sendScheduleTripResponse).toHaveBeenCalled();
     });
   });
 
@@ -344,11 +368,52 @@ describe('ScheduleTripInputHandlers Tests', () => {
       expect(responder).toHaveBeenCalledTimes(1);
     });
   });
-  describe('Response to "locatNotFound" dialog', () => {
-    it('should return a response of location not found', async () => {
+  describe('test LocationNotFound', () => {
+    DialogPrompts.sendLocationDialogToUser = jest.fn();
+    it('should send a dialog with the payload when called', async () => {
       await ScheduleTripInputHandlers.locationNotFound(payload, responder);
-      expect(responder)
-        .toHaveBeenCalled();
+      expect(DialogPrompts.sendLocationDialogToUser).toHaveBeenCalledWith(payload);
+    });
+  });
+
+  describe('test resubmitLocation', () => {
+    let tripData;
+    let cacheSpy;
+    beforeEach(() => {
+      bugsnagHelper.log = jest.fn();
+      cacheSpy = jest.spyOn(Cache, 'fetch');
+      jest.spyOn(InteractivePrompts, 'sendScheduleTripResponse');
+      jest.spyOn(InteractivePrompts, 'sendSelectDestination');
+    });
+
+    it('sends prompt to select destination', async () => {
+      tripData = {
+        id: 1,
+        department: 'TDD',
+        pickup: 'RidgeLands'
+      };
+      cacheSpy.mockResolvedValueOnce(tripData);
+      await ScheduleTripInputHandlers.resubmitLocation(payload, responder);
+      expect(InteractivePrompts.sendSelectDestination).toHaveBeenCalledWith(responder);
+      expect(InteractivePrompts.sendScheduleTripResponse).not.toHaveBeenCalled();
+    });
+
+    it('calls schedule trip response after confirming location', async () => {
+      tripData = {
+        forSelf: 'true', id: 1, department: 'TDD', destination: 'RidgeLands', name: 'akssa'
+      };
+      const trip = { submission: { Pickup_location: 'Kisiagi' } };
+      cacheSpy.mockResolvedValueOnce(tripData);
+      cacheSpy.mockResolvedValueOnce(trip);
+      await ScheduleTripInputHandlers.resubmitLocation(payload, responder);
+      expect(InteractivePrompts.sendScheduleTripResponse).toHaveBeenCalledWith(tripData, responder);
+    });
+
+    it('logs errors', async () => {
+      cacheSpy.mockRejectedValueOnce('an error');
+      await ScheduleTripInputHandlers.resubmitLocation(payload, responder);
+      expect(bugsnagHelper.log).toHaveBeenCalled();
+      expect(responder).toHaveBeenCalled();
     });
   });
 });

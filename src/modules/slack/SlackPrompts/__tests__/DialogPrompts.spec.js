@@ -201,4 +201,19 @@ describe('sendBusStopForm dialog', () => {
       done();
     });
   });
+
+  describe('sendLocationDialogToUser', () => {
+    it('should send resubmit location dialog to user', async (done) => {
+      await DialogPrompts.sendLocationDialogToUser({
+        actions: [{
+          value: 'no_Pick up'
+        }],
+        trigger_id: 'XXXXXXX',
+        team: { id: 'TEAMID1' }
+      });
+
+      expect(sendDialogTryCatch).toHaveBeenCalled();
+      done();
+    });
+  });
 });
