@@ -90,6 +90,11 @@ class ProviderService {
       isNewProvider: isNewRecord
     };
   }
+
+  static async findProviderByPk(pk) {
+    const provider = await Provider.findByPk(pk);
+    return provider;
+  }
 }
 
 export default ProviderService;

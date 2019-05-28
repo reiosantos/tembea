@@ -3,6 +3,7 @@ import HttpError from '../../helpers/errorHandler';
 import GeneralValidator from '../GeneralValidator';
 import UserService from '../../services/UserService';
 import Response from '../../helpers/responseHelper';
+import ProviderService from '../../services/ProviderService';
 
 describe('ProviderValidator', () => {
   let res;
@@ -178,6 +179,80 @@ describe('ProviderValidator', () => {
       getUserSpy.mockResolvedValue(mockUser);
       await ProviderValidator.validateUserExistence(req, res, next);
       expect(UserService.getUserByEmail).toHaveBeenCalledWith(req.body.email);
+      expect(next).toHaveBeenCalled();
+    });
+  });
+  describe('ProviderValidator_validateDriverRequestBody', () => {
+    it('should throw errors if fields are missing in body', async () => {
+      const createReq = {
+        body: {
+          driverName: 'Muhwezi Deo',
+          driverNumber: '42220222',
+          email: 'Test@test.com'
+        }
+      };
+      await ProviderValidator.validateDriverRequestBody(createReq, res, next);
+      expect(Response.sendResponse).toHaveBeenCalledWith(res, 400,
+        false, ["\"driverPhoneNo\" is required", "\"providerId\" is required"]);
+    });
+    it('should throw errors if a field is empty', async () => {
+      const createReq = {
+        body: {
+          driverName: '',
+          driverNumber: '42220222',
+          email: 'Test@test.com',
+          driverPhoneNo: '07042211313',
+          providerId: 1
+        }
+      };
+      await ProviderValidator.validateDriverRequestBody(createReq, res, next);
+      expect(Response.sendResponse).toHaveBeenCalledWith(res, 400,
+        false,  ["\"driverName\" is not allowed to be empty"]);
+    });
+    it('should call next if request body is valid', async () => {
+      const createReq = {
+        body: {
+          driverName: 'Test User',
+          driverNumber: '42220222',
+          email: 'Test@test.com',
+          driverPhoneNo: '07042211313',
+          providerId: 1
+        }
+      };
+      await ProviderValidator.validateDriverRequestBody(createReq, res, next);
+      expect(next).toHaveBeenCalled();
+    });
+  });
+  describe('ProviderValidator_validateProviderExistence', async () => {
+    it('should send error if a provider doesnt exist', async () => {
+      const createReq = {
+        body: {
+          driverName: 'Test User',
+          driverNumber: '42220222',
+          email: 'Test@test.com',
+          driverPhoneNo: '07042211313',
+          providerId: 1
+        }
+      };
+      jest.spyOn(ProviderService, 'findProviderByPk').mockReturnValue(null);
+      await ProviderValidator.validateProviderExistence(createReq, res, next);
+      expect(Response.sendResponse).toBeCalledWith(res, 404, false, 'Provider doesnt exist');
+    });
+    it('should call next if provider exists', async () => {
+      const createReq = {
+        body: {
+          driverName: 'Test User',
+          driverNumber: '42220222',
+          email: 'Test@test.com',
+          driverPhoneNo: '07042211313',
+          providerId: 1
+        }
+      };
+      jest.spyOn(ProviderService, 'findProviderByPk').mockReturnValue({
+        name: 'Test Provider',
+        email: 'test@test.com'
+      });
+      await ProviderValidator.validateProviderExistence(createReq, res, next);
       expect(next).toHaveBeenCalled();
     });
   });

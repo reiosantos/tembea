@@ -150,5 +150,4 @@ providerRouter.post(
   ProviderController.addProvider
 );
 
-
 export default providerRouter;

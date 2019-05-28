@@ -103,5 +103,19 @@ describe('ProviderService', () => {
           .toEqual(0);
       });
     });
+    it('should find provider by PK', async () => {
+      const mockResponse = {
+        dataValues: {
+          id: 1,
+          driverName: 'Test',
+          driverNumber: '0702432331',
+          driverPhoneNo: '0702432331'
+        }
+      };
+      jest.spyOn(Provider, 'findByPk').mockReturnValue(mockResponse);
+      const results = await ProviderService.findProviderByPk(1);
+      expect(results).toBeDefined();
+      expect(results).toEqual(mockResponse);
+    });
   });
 });
