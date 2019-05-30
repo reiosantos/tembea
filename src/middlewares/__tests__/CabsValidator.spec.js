@@ -8,11 +8,10 @@ describe('CabsValidator', () => {
   let res;
   let next;
   const {
-    correctReq, incompleteReq, invalidPhoneNoReq, invalidCapacityReq,
-    emptySpacesReq, invalidLocationReq, errorMessages, invalidPhoneNoError,
-    invalidCapacityError, invalidLocationError, emptyInputError, invalidReqParams,
-    emptyUpdateBody, invalidParamsError, noInputsError, emptyValueInBody,
-    noValueErrors, validUpdateBody, invalidInput
+    correctReq, incompleteReq, invalidCapacityReq,
+    emptySpacesReq, errorMessages, emptyValueInBody,
+    invalidCapacityError, emptyInputError, invalidReqParams,
+    invalidParamsError, noValueErrors, validUpdateBody, invalidInput
   } = MockData;
   beforeEach(() => {
     res = {
@@ -43,25 +42,11 @@ describe('CabsValidator', () => {
       expect(response).toEqual(errorMessages);
     });
 
-    it('should return invalid phone number', async () => {
-      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(invalidPhoneNoError, res);
-      const response = await CabsValidator.checkInputValuesValidity(invalidPhoneNoReq, res);
-      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(response).toEqual(invalidPhoneNoError);
-    });
-
     it('should return capacity should be a number greater than zero', async () => {
       jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(invalidCapacityError, res);
       const response = await CabsValidator.checkInputValuesValidity(invalidCapacityReq, res);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
       expect(response).toEqual(invalidCapacityError);
-    });
-
-    it('should return Location cannot include numbers', async () => {
-      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(invalidLocationError, res);
-      const response = await CabsValidator.checkInputValuesValidity(invalidLocationReq, res);
-      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(response).toEqual(invalidLocationError);
     });
 
     it('should return empty inputs errors', async () => {
@@ -83,13 +68,6 @@ describe('CabsValidator', () => {
       expect(validateUpdateBodySpy).toBeCalled();
     });
 
-    it('should validate InPuts', async () => {
-      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(noInputsError, res);
-      await CabsValidator.validateCabUpdateBody(emptyUpdateBody, res, next);
-      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(validateUpdateBodySpy).toBeCalled();
-    });
-
     it('should check empty input data', async () => {
       jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(noValueErrors, res);
       await CabsValidator.validateCabUpdateBody(emptyValueInBody, res, next);
@@ -104,16 +82,14 @@ describe('CabsValidator', () => {
       expect(HttpError.sendErrorResponse).not.toBeCalled();
     });
 
-    it('should validate validatePhoneLocationCapacity', () => {
+    it('should validate validateCapacity', () => {
       const req = {
         body: {
-          driverPhoneNo: 'invalid',
-          location: '123445',
           capacity: 'invalid'
         }
       };
-      const response = CabsValidator.validatePhoneLocationCapacity(req);
-      expect(response).toEqual({ isValid: false, checkValidPhoneNo: false, isValidLocation: false });
+      const response = CabsValidator.validateCapacity(req);
+      expect(response).toEqual({ isValid: false });
     });
   });
 

@@ -43,10 +43,6 @@ const assertRouteInfo = (body) => {
   expect(body)
     .toHaveProperty('destination');
   expect(body)
-    .toHaveProperty('driverName');
-  expect(body)
-    .toHaveProperty('driverPhoneNo');
-  expect(body)
     .toHaveProperty('regNumber');
   expect(body)
     .toHaveProperty('id');
@@ -93,6 +89,7 @@ describe('RoutesController', () => {
       });
       done();
     });
+    
     it('should return a not found error', async (done) => {
       const spy = jest.spyOn(HttpError, 'throwErrorIfNull');
       RouteService.getRouteBatchByPk = jest.fn(() => false);

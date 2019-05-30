@@ -6,12 +6,6 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
       type: DataTypes.INTEGER,
     },
-    driverName: {
-      type: DataTypes.STRING,
-    },
-    driverPhoneNo: {
-      type: DataTypes.STRING,
-    },
     regNumber: {
       type: DataTypes.STRING,
     },
@@ -19,9 +13,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
     },
     model: {
-      type: DataTypes.STRING,
-    },
-    location: {
       type: DataTypes.STRING,
     },
     providerId: {

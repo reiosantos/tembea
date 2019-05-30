@@ -30,7 +30,7 @@ describe('CabService', () => {
         dataValues: obj.defaults
       }]));
       const cab = await CabService.findOrCreateCab('Hello', 'World', 'Test');
-      expect(cab.dataValues.driverName).toEqual('Hello');
+      expect(cab.dataValues.regNumber).toEqual('Hello');
       done();
     });
   });

@@ -97,18 +97,12 @@ describe('CabsController', () => {
           expect(body).toHaveProperty('message');
           expect(body.message).toBe('You have successfully created a cab');
           expect(body).toHaveProperty('cab');
-          expect(body.cab).toHaveProperty('driverName');
-          expect(body.cab.driverName).toBe('Cassidy Eze');
-          expect(body.cab).toHaveProperty('driverPhoneNo');
-          expect(body.cab.driverPhoneNo).toBe('+254 639 003 893');
           expect(body.cab).toHaveProperty('regNumber');
           expect(body.cab.regNumber).toBe('KCA 545');
           expect(body.cab).toHaveProperty('capacity');
           expect(body.cab.capacity).toBe('1');
           expect(body.cab).toHaveProperty('model');
           expect(body.cab.model).toBe('Limo');
-          expect(body.cab).toHaveProperty('location');
-          expect(body.cab.location).toBe('Kampala');
           done();
         });
     });
@@ -213,7 +207,7 @@ describe('CabsController', () => {
         .expect(200, (err, res) => {
           expect(err).toBe(null);
           const { body, status } = res;
-          expect(body.data.driverName).toEqual(payloadData.updateData.driverName);
+          expect(body.data.regNumber).toEqual(payloadData.updateData.regNumber);
           expect(status).toEqual(200);
           done();
         });
@@ -253,12 +247,9 @@ describe('CabsController', () => {
     beforeAll(async () => {
       await Cab.bulkCreate([{
         id: 40,
-        driverName: 'Mabishi',
-        driverPhoneNo: '07327899928',
         regNumber: 'KCA 3453',
         model: 'Audi',
         capacity: 3,
-        location: 'Zùrich'
       }]);
     });
 

@@ -4,7 +4,7 @@ import HttpError from '../helpers/errorHandler';
 class CabsValidator {
   static validateAllInputs(req, res, next) {
     const inputErrors = GeneralValidator.validateReqBody(
-      req.body, 'driverName', 'driverPhoneNo', 'regNumber', 'capacity', 'model', 'location'
+      req.body, 'regNumber', 'capacity', 'model'
     );
     if (inputErrors.length > 0) {
       return HttpError.sendErrorResponse({ message: { inputErrors } }, res);
@@ -13,7 +13,7 @@ class CabsValidator {
     const modifiedBodyData = { ...req.body };
     modifiedBodyData.capacity = (typeof capacity === 'number') ? `${capacity}` : capacity;
     const checkEmptyInputData = GeneralValidator.validateEmptyReqBodyProp(
-      modifiedBodyData, 'driverName', 'driverPhoneNo', 'regNumber', 'capacity', 'model', 'location'
+      modifiedBodyData, 'regNumber', 'capacity', 'model',
     );
     if (checkEmptyInputData.length > 0) {
       return HttpError.sendErrorResponse({ message: { checkEmptyInputData } }, res);
@@ -22,7 +22,7 @@ class CabsValidator {
   }
 
   static checkInputValuesValidity(req, res, next) {
-    const { isValid, checkValidPhoneNo, isValidLocation } = CabsValidator.validatePhoneLocationCapacity(req);
+    const { isValid } = CabsValidator.validateCapacity(req);
     if (!isValid) {
       return HttpError.sendErrorResponse({
         message: { invalidInput: 'Capacity should be a number and greater than zero' },
@@ -30,33 +30,19 @@ class CabsValidator {
 
       }, res);
     }
-    if (!checkValidPhoneNo) {
-      return HttpError.sendErrorResponse({
-        message: { invalidInput: 'Use a valid phone number' },
-        statusCode: 400
-      }, res);
-    }
-    if (!isValidLocation) {
-      return HttpError.sendErrorResponse({
-        message: { invalidInput: 'Location cannot include numbers' },
-        statusCode: 400
-      }, res);
-    }
     next();
   }
 
-  static validatePhoneLocationCapacity(req) {
-    const { body: { driverPhoneNo, capacity, location } } = req;
+  static validateCapacity(req) {
+    const { body: { capacity } } = req;
     const isValid = capacity ? GeneralValidator.validateNumber(capacity) : true;
-    const checkValidPhoneNo = driverPhoneNo ? GeneralValidator.validatePhoneNo(driverPhoneNo) : true;
-    const isValidLocation = location ? GeneralValidator.disallowNumericsAsValuesOnly(location) : true;
-    return { isValid, checkValidPhoneNo, isValidLocation };
+    return { isValid };
   }
 
   static async validateCabUpdateBody(req, res, next) {
     const { body, params: { id } } = req;
     await GeneralValidator.validateUpdateBody(id, body, res,
-      ['driverName', 'driverPhoneNo', 'regNumber', 'capacity', 'model', 'location'], 6, next);
+      ['regNumber', 'capacity', 'model'], 3, next);
   }
 
   static validateDeleteCabIdParam(req, res, next) {
