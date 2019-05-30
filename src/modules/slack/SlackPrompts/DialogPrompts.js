@@ -79,6 +79,7 @@ class DialogPrompts {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
+  // TODO2: @Ada Use this function to display a dialog to providers. I have Implemented a different function below to select the providers in OPs trip approval
   static async sendSelectCabDialog(payload) {
     const { cabs } = await CabService.getCabs();
     const {
@@ -87,7 +88,7 @@ class DialogPrompts {
     } = payload;
     const cabData = CabsHelper.toCabLabelValuePairs(cabs);
     const state = { tripId, timeStamp, channel };
-    const dialog = new SlackDialog('confirm_ops_approval',
+    const dialog = new SlackDialog('confirm_ops_approval', // TODO2.1: @Ada You will change this callback ID so that it reflects the desired one
       'Confirm Trip Request', 'Submit', false, JSON.stringify(state));
     dialog.addElements([
       new SlackDialogSelectElementWithOptions('Select A Cab',

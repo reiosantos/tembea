@@ -101,6 +101,26 @@ class TripActionsController {
     ]);
   }
 
+  static async assignProvider(payload, trip, slackBotOauthToken) {
+    const {
+      submission: {
+        providerUserSlackId
+      },
+      team: {
+        id: teamId
+      },
+      user: {
+        id: userId
+      },
+    } = payload;
+    const isDecline = false;
+    await Promise.all([
+      ProviderNotifications.sendProviderNotification(providerUserSlackId, slackBotOauthToken, trip),
+      SendNotifications.sendManagerConfirmOrDeclineNotification(teamId, userId, trip,
+        isDecline),
+    ]);
+  }
+
   static async sendAllNotifications(teamId, userId, trip, timeStamp, channel,
     slackBotOauthToken, isDecline = false) {
     await Promise.all([
