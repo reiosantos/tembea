@@ -5,6 +5,8 @@ import {
   SlackAttachmentField
 } from '../../../SlackModels/SlackMessageModels';
 import SlackNotifications from '../../Notifications';
+import { getSlackDateString } from '../../../helpers/dateHelpers';
+
 
 class ProviderAttachmentHelper {
   static createProviderRouteAttachment(routeRequest, channelID, submission) {
@@ -38,6 +40,34 @@ class ProviderAttachmentHelper {
     ];
     attachments.addFieldsOrActions('fields', fields);
     return attachments;
+  }
+
+  static providerFields(tripInformation, driverDetails) {
+    const {
+      noOfPassengers,
+      origin: { address: pickup },
+      destination: { address: destination },
+      rider: { name: passenger, phoneNo },
+      createdAt,
+      departureTime,
+      cab: { regNumber, model },
+    } = tripInformation;
+    const [driverName, driverPhoneNo] = driverDetails.split(',');
+    return [
+      new SlackAttachmentField('Pickup Location', pickup, true),
+      new SlackAttachmentField('Destination', destination, true),
+      new SlackAttachmentField('Request Date',
+        getSlackDateString(createdAt), true),
+      new SlackAttachmentField('Trip Date',
+        getSlackDateString(departureTime), true),
+      new SlackAttachmentField('Passenger', passenger, true),
+      new SlackAttachmentField('Passenger Contact', phoneNo || 'N/A', true),
+      new SlackAttachmentField('Number of Riders', noOfPassengers, true),
+      new SlackAttachmentField('Driver Name', driverName, true),
+      new SlackAttachmentField('Driver Contact', driverPhoneNo, true),
+      new SlackAttachmentField('Vehicle Model', model, true),
+      new SlackAttachmentField('Vehicle Number', regNumber, true)
+    ];
   }
 }
 

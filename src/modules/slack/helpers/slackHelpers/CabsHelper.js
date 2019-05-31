@@ -24,8 +24,8 @@ export default class CabsHelper {
    */
   static toCabLabelValuePairs(cabs) {
     return cabs.map((val) => {
-      const { driverName, driverPhoneNo, regNumber } = val;
-      const valueDetails = [driverName, driverPhoneNo, regNumber].toString();
+      const { regNumber } = val;
+      const valueDetails = regNumber.toString();
       const data = {
         label: CabsHelper.generateCabLabel(val),
         value: valueDetails

@@ -290,8 +290,6 @@ class SlackInteractions {
     return SlackInteractions.handleSelectProviderAction(data, respond);
   }
 
-
-  // TODO: modified
   static async handleSelectCabActions(data) {
     await DialogPrompts.sendSelectCabDialog(data);
   }
@@ -303,7 +301,7 @@ class SlackInteractions {
    * @param {Object} data - The request payload
    * @memberof SlackInteractions
    */
-  static async handleSelectProviderActions(data) {
+  static async handleSelectProviderAction(data) {
     if (data.actions && data.actions[0].name === 'confirmTrip') {
       await DialogPrompts.sendSelectProviderDialog(data);
     }
@@ -382,10 +380,6 @@ class SlackInteractions {
       respond(new SlackInteractiveMessage('Error:bangbang: : '
         + 'We could not complete this process please try again.'));
     }
-  }
-
-  static handleProviderActions() {
-    // TODO: Handle all the actions that pertain to providers
   }
 }
 

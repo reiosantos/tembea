@@ -16,6 +16,9 @@ import CabsHelper from '../helpers/slackHelpers/CabsHelper';
 import ProviderService from '../../../services/ProviderService';
 import ProvidersHelper from '../helpers/slackHelpers/ProvidersHelper';
 import ProviderHelper from '../../../helpers/providerHelper';
+import UserService from '../../../services/UserService';
+import DriverService from '../../../services/DriverService';
+import DriverHelper from '../helpers/slackHelpers/DriverHelper';
 
 export const getPayloadKey = userId => `PAYLOAD_DETAILS${userId}`;
 
@@ -79,29 +82,26 @@ class DialogPrompts {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
-  // TODO2: @Ada Use this function to display a dialog to providers. I have Implemented a different function below to select the providers in OPs trip approval
   static async sendSelectCabDialog(payload) {
-    const { cabs } = await CabService.getCabs();
     const {
       actions: [{ value: tripId }], message_ts: timeStamp,
-      channel: { id: channel }
+      channel: { id: channel }, user: { id: userId },
     } = payload;
+    const { id } = await UserService.getUserBySlackId(userId);
+    const provider = await ProviderService.findProviderByUserId(id);
+    const where = { providerId: provider.id };
+    const { cabs } = await CabService.getCabs(undefined, where);
+    const drivers = await DriverService.getProviderDrivers(provider.id);
     const cabData = CabsHelper.toCabLabelValuePairs(cabs);
+    const driverData = DriverHelper.createDriverLabel(drivers);
     const state = { tripId, timeStamp, channel };
-    const dialog = new SlackDialog('confirm_ops_approval', // TODO2.1: @Ada You will change this callback ID so that it reflects the desired one
-      'Confirm Trip Request', 'Submit', false, JSON.stringify(state));
+    const dialog = new SlackDialog('assign_cab_to_trip',
+      'Complete Trip Request', 'Submit', false, JSON.stringify(state));
     dialog.addElements([
-      new SlackDialogSelectElementWithOptions('Select A Cab',
-        'cab', [{
-          label: 'Create New Cab',
-          value: 'Create New Cab'
-        }, ...cabData]),
-      new SlackDialogTextarea(
-        'Justification',
-        'confirmationComment',
-        'Reason why',
-        'Enter reason for approving trip',
-      )
+      new SlackDialogSelectElementWithOptions('Select A Driver',
+        'driver', [...driverData]),
+      new SlackDialogSelectElementWithOptions('Select A Vehicle',
+        'cab', [...cabData])
     ]);
     await DialogPrompts.sendDialog(dialog, payload);
   }

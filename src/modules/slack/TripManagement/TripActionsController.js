@@ -8,6 +8,7 @@ import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import ProviderNotifications from '../SlackPrompts/notifications/ProviderNotifications';
 import UserService from '../../../services/UserService';
 import RemoveDataValues from '../../../helpers/removeDataValues';
+import CabService from '../../../services/CabService';
 
 
 class TripActionsController {
@@ -101,24 +102,36 @@ class TripActionsController {
     ]);
   }
 
-  static async assignProvider(payload, trip, slackBotOauthToken) {
+  static async completeTripRequest(payload) {
     const {
       submission: {
-        providerUserSlackId
+        driver: driverDetails,
+        cab: cabRegNo,
       },
-      team: {
-        id: teamId
-      },
-      user: {
-        id: userId
-      },
+      team: { id: teamId },
+      user: { id: userId },
+      state: payloadState,
     } = payload;
-    const isDecline = false;
-    await Promise.all([
-      ProviderNotifications.sendProviderNotification(providerUserSlackId, slackBotOauthToken, trip),
-      SendNotifications.sendManagerConfirmOrDeclineNotification(teamId, userId, trip,
-        isDecline),
-    ]);
+
+    const {
+      tripId,
+      timeStamp,
+      channel,
+    } = JSON.parse(payloadState);
+
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+    
+    
+    const cab = await CabService.findOrCreate(cabRegNo);
+    
+    const trip = await tripService.updateRequest(tripId, {
+      cabId: cab.id,
+    });
+    await ProviderNotifications.UpdateProviderNotification(channel, slackBotOauthToken, trip, timeStamp, driverDetails);
+    await SendNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, trip,
+      false);
+
+    return 'success';
   }
 
   static async sendAllNotifications(teamId, userId, trip, timeStamp, channel,

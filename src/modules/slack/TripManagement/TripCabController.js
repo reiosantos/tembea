@@ -3,6 +3,7 @@ import {
 } from '../SlackModels/SlackMessageModels';
 import SlackInteractions from '../SlackInteractions/index';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
+import TripActionsController from './TripActionsController';
 
 class TripCabController {
   static sendCreateCabAttachment(payload, callbackId, routeRequestData) {
@@ -21,7 +22,6 @@ class TripCabController {
     }
   }
 
-  // TODO3: @Ada when a providerUser submits cab assignment, handle it here. It is just the previous workflow only its moved to providers instead of OPS
   static async handleSelectCabDialogSubmission(data, respond) {
     const { submission } = data;
     if (submission.cab === 'Create New Cab') {
@@ -31,19 +31,19 @@ class TripCabController {
     }
     const {
       submission: {
-        cab
+        driver
       }
     } = data;
-    const cabDetails = cab.split(',');
-    const [driverName, driverPhoneNo, regNumber] = cabDetails;
+    const driverDetails = driver.split(',');
+    const [driverName, driverPhoneNo, driverNumber] = driverDetails;
     const modifiedCabData = { ...data };
     modifiedCabData.submission = {
       ...data.submission,
       driverName,
       driverPhoneNo,
-      regNumber
+      driverNumber
     };
-    await SlackInteractions.handleTripActions(modifiedCabData, respond);
+    await TripActionsController.completeTripRequest(modifiedCabData, respond);
   }
 
   /**

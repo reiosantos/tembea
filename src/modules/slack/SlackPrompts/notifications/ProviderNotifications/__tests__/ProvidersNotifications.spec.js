@@ -1,10 +1,12 @@
 import SlackNotifications from '../../../Notifications';
 import ProviderAttachmentHelper from '../helper';
+import ProviderService from '../../../../../../services/ProviderService';
 import ProviderNotifications from '../index';
 import TeamDetailsService from '../../../../../../services/TeamDetailsService';
 import SlackAttachment from '../../OperationsRouteRequest/__mocks__/SlackAttachment.mock';
 import AttachmentHelper from '../../AttachmentHelper';
 import bugsnagHelper from '../../../../../../helpers/bugsnagHelper';
+import responseData from '../../../__mocks__/NotificationResponseMock';
 
 describe('ProviderNotifications', () => {
   const routeDetails = { Provider: '1, chirchir, 2' };
@@ -80,5 +82,19 @@ describe('ProviderNotifications', () => {
       expect(ProviderAttachmentHelper.routeInfoAttachment).toHaveBeenCalledWith(submission);
       expect(SlackNotifications.createDirectMessage).toHaveBeenCalled();
     });
+  });
+});
+
+describe('Provider notifications', () => {
+  it('Should update provider notification', async () => {
+    const tripDetails = responseData;
+    const [channel, botToken, trip, timeStamp, driverDetails] = [
+      'cpd33', 'xxop', tripDetails, '1555500000', 'duude, 090909090, 999999'];
+    jest.spyOn(ProviderService, 'findProviderByPk').mockResolvedValue({ name: 'Uber' });
+    const providerFieldMock = jest.spyOn(ProviderAttachmentHelper, 'providerFields');
+    await ProviderNotifications.UpdateProviderNotification(
+      channel, botToken, trip, timeStamp, driverDetails
+    );
+    expect(providerFieldMock).toHaveBeenCalled();
   });
 });

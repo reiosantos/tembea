@@ -270,4 +270,16 @@ describe('TripActionController operations approve tests', () => {
     expect(SendNotifications.sendManagerConfirmOrDeclineNotification).toHaveBeenCalled();
     expect(ProviderNotifications.sendTripNotification).toHaveBeenCalled();
   });
+  it('Should send notifications to provider and user on trip completion', async () => {
+    const cab = { id: 1 };
+    jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('xxop');
+    jest.spyOn(CabService, 'findOrCreate').mockResolvedValue(cab);
+    jest.spyOn(tripService, 'updateRequest').mockResolvedValue({});
+
+    const updateNotificationSpy = jest.spyOn(ProviderNotifications, 'UpdateProviderNotification').mockResolvedValue({});
+    const sendUserNotificationSpy = jest.spyOn(SendNotifications, 'sendUserConfirmOrDeclineNotification');
+    await TripActionsController.completeTripRequest(payload);
+    expect(updateNotificationSpy).toHaveBeenCalled();
+    expect(sendUserNotificationSpy).toHaveBeenCalled();
+  });
 });

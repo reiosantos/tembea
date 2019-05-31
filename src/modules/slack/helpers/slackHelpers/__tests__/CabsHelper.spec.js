@@ -25,7 +25,7 @@ describe('ManagerActionsHelper', () => {
     const expectedData = [
       {
         label: `${cabMock.model.toUpperCase()} - ${cabMock.regNumber} - Seats up to ${cabMock.capacity} people`,
-        value: [cabMock.driverName, cabMock.driverPhoneNo, cabMock.regNumber].toString()
+        value: [cabMock.regNumber].toString()
       }
     ];
     expect(valuePairsData).toEqual(expectedData);

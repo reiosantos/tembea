@@ -95,6 +95,11 @@ class ProviderService {
     const provider = await Provider.findByPk(pk);
     return provider;
   }
+
+  static async findProviderByUserId(providerUserId) {
+    const provider = await Provider.findOne({ where: { providerUserId } });
+    return provider;
+  }
 }
 
 export default ProviderService;

@@ -21,5 +21,16 @@ class DriverService {
       return e;
     }
   }
+
+  /**
+   * @method getProviderDrivers
+   * @description gets all drivers belonging to a provider
+   * @param providerId
+   * @returns {array} drivers
+   */
+  static async getProviderDrivers(providerId) {
+    const drivers = await Driver.findAll({ where: { providerId } });
+    return drivers;
+  }
 }
 export default DriverService;

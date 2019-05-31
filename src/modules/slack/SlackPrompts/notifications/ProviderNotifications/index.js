@@ -5,8 +5,11 @@ import {
 } from '../../../SlackModels/SlackMessageModels';
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
 import UserService from '../../../../../services/UserService';
-import bugsnagHelper from '../../../../../helpers/bugsnagHelper';
 import ProviderAttachmentHelper from './helper';
+import { InteractivePrompts } from '../../../RouteManagement/rootFile';
+import BugsnagHelper from '../../../../../helpers/bugsnagHelper';
+import ProviderService from '../../../../../services/ProviderService';
+
 /**
  * A class representing provider notifications
  *
@@ -32,7 +35,7 @@ export default class ProviderNotifications {
       );
       return SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (error) {
-      bugsnagHelper.log(error);
+      BugsnagHelper.log(error);
     }
   }
 
@@ -47,6 +50,7 @@ export default class ProviderNotifications {
    * @memberof ProviderNotifications
    */
   static async sendTripNotification(providerUserSlackId, providerName, slackBotOauthToken, tripDetails) {
+    const { id: tripId } = tripDetails;
     const directMessageId = await SlackNotifications.getDMChannelId(providerUserSlackId, slackBotOauthToken);
     const attachment = new SlackAttachment();
     const fields = SlackNotifications.notificationFields(tripDetails);
@@ -54,7 +58,7 @@ export default class ProviderNotifications {
       new SlackButtonAction(
         'assign-cab',
         'Accept',
-        'assign_cab_to_trip'
+        `${tripId}`
       )
     ]);
     attachment.addFieldsOrActions('fields', fields);
@@ -63,5 +67,34 @@ export default class ProviderNotifications {
     const message = SlackNotifications.createDirectMessage(directMessageId,
       `A trip has been assigned to *${providerName}*, please assign a cab`, [attachment]);
     return SlackNotifications.sendNotification(message, slackBotOauthToken);
+  }
+
+  /**
+   * @method UpdateProviderNotification
+   * @description Updates provider notification after assigning a cab and vehicle
+   * @param {string} channel
+   * @param {string} botToken
+   * @param {object} trip
+   * @param {string} timeStamp
+   * @param {string} driverDetails
+   */
+  static async UpdateProviderNotification(channel, botToken, trip, timeStamp, driverDetails) {
+    const { cab: { providerId } } = trip;
+    const provider = await ProviderService.findProviderByPk(providerId);
+    
+    const message = `Thank you *${provider.name}* for completing this trip request`;
+    const tripDetailsAttachment = new SlackAttachment('Trip request complete');
+    tripDetailsAttachment.addOptionalProps('', '', '#3c58d7');
+    tripDetailsAttachment.addFieldsOrActions('fields',
+      ProviderAttachmentHelper.providerFields(trip, driverDetails));
+    try {
+      await InteractivePrompts.messageUpdate(channel,
+        message,
+        timeStamp,
+        [tripDetailsAttachment],
+        botToken);
+    } catch (err) {
+      BugsnagHelper.log(err);
+    }
   }
 }

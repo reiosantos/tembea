@@ -1,5 +1,6 @@
 import TripCabController from '../TripCabController';
 import SlackInteractions from '../../SlackInteractions';
+import TripActionsController from '../TripActionsController';
 
 
 describe('TripCabController', () => {
@@ -32,12 +33,12 @@ describe('TripCabController', () => {
   it('should handle non create new cab submission', (done) => {
     const data = {
       submission: {
-        cab: 'DriverName 8484938389 HFKF-84748'
+        driver: 'DriverName, 8484938389, HFKF-84748'
       }
     };
-    const sendCreateCabSpy = jest.spyOn(SlackInteractions, 'handleTripActions');
+    const completeTripSpy = jest.spyOn(TripActionsController, 'completeTripRequest');
     TripCabController.handleSelectCabDialogSubmission(data, respond);
-    expect(sendCreateCabSpy).toHaveBeenCalledTimes(1);
+    expect(completeTripSpy).toHaveBeenCalledTimes(1);
     done();
   });
   it('should handle provider assignment submission', (done) => {

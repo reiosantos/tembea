@@ -5,7 +5,7 @@ const {
   Driver, sequelize
 } = models;
 
-describe('CreateDriver', () => {
+describe('Driver Service', () => {
   let testDriver;
   beforeAll(async () => {
     testDriver = Driver.create({
@@ -16,7 +16,7 @@ describe('CreateDriver', () => {
     });
   });
   afterAll(async () => {
-    testDriver.destroy({ force: true });
+    await testDriver.destroy({ force: true });
     sequelize.close();
   });
   it('should create driver successfully', async () => {
@@ -40,5 +40,10 @@ describe('CreateDriver', () => {
     const { _options: { isNewRecord } } = driver;
     expect(isNewRecord).toBeFalsy();
     done();
+  });
+  it('Should get all drivers belonging to a provider', async () => {
+    const drivers = await DriverService.getProviderDrivers(1);
+    expect(drivers).toBeDefined();
+    expect(drivers[0].driverName).toEqual('James Savali');
   });
 });

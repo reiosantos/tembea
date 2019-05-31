@@ -14,7 +14,8 @@ const responseData = {
   departmentId: 3,
   origin: {},
   noOfPassengers: 'noPa',
-  managerComment: 'manager'
+  managerComment: 'manager',
+  cab: { providerId: 1, model: 'jeep' }
 };
 
 export default responseData;

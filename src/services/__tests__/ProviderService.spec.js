@@ -117,5 +117,20 @@ describe('ProviderService', () => {
       expect(results).toBeDefined();
       expect(results).toEqual(mockResponse);
     });
+    it('should find provider by user id', async () => {
+      const mockResponse = {
+        dataValues: {
+          id: 1,
+          name: 'Test',
+          providerUserId: '16',
+          createdAt: '2019-01-01 01:00:00+01',
+          updatedAt: '2019-01-01 01:00:00+01'
+        }
+      };
+      jest.spyOn(Provider, 'findOne').mockReturnValue(mockResponse);
+      const results = await ProviderService.findProviderByUserId(16);
+      expect(results).toBeDefined();
+      expect(results).toEqual(mockResponse);
+    });
   });
 });
