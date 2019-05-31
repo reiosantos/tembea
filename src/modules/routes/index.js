@@ -277,7 +277,7 @@ routesRouter.put(
   RouteRequestValidator.validateRequestBody,
   RouteRequestValidator.validateParams,
   RouteRequestValidator.validateRouteStatus,
-  RoutesController.changeRouteRequestStatus
+  RoutesController.updateRouteRequestStatus
 );
 
 /**

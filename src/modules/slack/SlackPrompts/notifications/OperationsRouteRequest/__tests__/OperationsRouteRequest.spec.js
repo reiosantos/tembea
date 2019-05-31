@@ -6,8 +6,9 @@ import bugsnagHelper from '../../../../../../helpers/bugsnagHelper';
 import RouteRequestService from '../../../../../../services/RouteRequestService';
 import TeamDetailsService from '../../../../../../services/TeamDetailsService';
 import OpsAttachmentHelper from '../helper';
-import AttachmentHelper from '../../ManagerRouteRequest/helper';
 import Cache from '../../../../../../cache';
+import ManagerAttachmentHelper from '../../ManagerRouteRequest/helper';
+
 
 describe('OperationsNotifications', () => {
   const submission = {
@@ -25,7 +26,6 @@ describe('OperationsNotifications', () => {
     jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue({});
     jest.spyOn(OpsAttachmentHelper, 'getFellowApproveAttachment');
     jest.spyOn(OpsAttachmentHelper, 'getManagerApproveAttachment');
-    jest.spyOn(OpsAttachmentHelper, 'getOperationCompleteAttachment');
     jest.spyOn(InteractivePrompts, 'messageUpdate').mockResolvedValue({});
     jest.spyOn(SlackNotifications, 'sendNotification').mockReturnValue({});
     jest.spyOn(bugsnagHelper, 'log');
@@ -33,28 +33,6 @@ describe('OperationsNotifications', () => {
   afterEach(() => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
-  });
-
-  describe('completeOperationsApproveActions', () => {
-    const channelId = 'channelId';
-    const timestamp = 'timestamp';
-    const opsId = 'XXXXXX';
-    jest.spyOn(OperationsNotifications, 'sendOpsApproveMessageToFellow').mockResolvedValue({});
-    jest.spyOn(OperationsNotifications, 'sendOpsApproveMessageToManager').mockResolvedValue({});
-    it('should complete the approve new route action', async (done) => {
-      requestData = {
-        ...mockRouteRequestData,
-        status: 'Approved',
-      };
-      await OperationsNotifications.completeOperationsApprovedAction(
-        requestData, channelId, timestamp, opsId, botToken, submission
-      );
-      expect(InteractivePrompts.messageUpdate).toHaveBeenCalled();
-      expect(OperationsNotifications.sendOpsApproveMessageToFellow).toHaveBeenCalled();
-      expect(OperationsNotifications.sendOpsApproveMessageToManager).toHaveBeenCalled();
-      expect(OpsAttachmentHelper.getOperationCompleteAttachment).toHaveBeenCalled();
-      done();
-    });
   });
 
   describe('sendOpsApprovedMessageToFellow', () => {
@@ -69,7 +47,6 @@ describe('OperationsNotifications', () => {
         requestData, botToken, submission
       );
       expect(SlackNotifications.getDMChannelId).toHaveBeenCalledTimes(1);
-      expect(OpsAttachmentHelper.getFellowApproveAttachment).toHaveBeenCalledTimes(1);
       expect(SlackNotifications.sendNotification).toHaveBeenCalled();
     });
 
@@ -123,7 +100,7 @@ describe('OperationsNotifications', () => {
     jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue({});
     jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue({});
     jest.spyOn(OpsAttachmentHelper, 'getOperationDeclineAttachment');
-    jest.spyOn(AttachmentHelper, 'getManagerCompleteAttachment');
+    jest.spyOn(ManagerAttachmentHelper, 'getManagerCompleteAttachment');
     jest.spyOn(SlackNotifications, 'sendNotification').mockReturnValue({});
     jest.spyOn(bugsnagHelper, 'log');
   });
@@ -171,6 +148,9 @@ describe('OperationsNotifications', () => {
       jest.spyOn(InteractivePrompts, 'messageUpdate').mockResolvedValue();
       jest.spyOn(OperationsNotifications, 'sendOpsDeclineMessageToFellow').mockResolvedValue({});
     });
+    afterEach(() => {
+      jest.resetAllMocks();
+    });
     it('should complete the decline new route action', async (done) => {
       requestData = {
         ...mockRouteRequestData,
@@ -192,7 +172,7 @@ describe('OperationsNotifications', () => {
       );
       expect(InteractivePrompts.messageUpdate).toHaveBeenCalled();
       expect(OperationsNotifications.sendOpsDeclineMessageToFellow).toHaveBeenCalled();
-      expect(AttachmentHelper.getManagerCompleteAttachment).toHaveBeenCalled();
+      expect(ManagerAttachmentHelper.getManagerCompleteAttachment).toHaveBeenCalled();
       done();
     });
     it('should handle errors', async (done) => {

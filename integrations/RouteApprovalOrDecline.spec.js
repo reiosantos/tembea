@@ -67,9 +67,7 @@ describe('Decline route request', () => {
           {
             success: false,
             message: 'Some properties are missing',
-            errors: [
-              'Please provide teamUrl.'
-            ]
+            errors: ['Please provide teamUrl.']
           },
           done
         );
@@ -84,7 +82,7 @@ describe('Decline route request', () => {
           400,
           {
             success: false,
-            message: 'comment can only contain words and [,."\' -]'
+            message: 'comment can only contain words and [,."\' -]',
           },
           done
         );
@@ -180,13 +178,13 @@ describe('Approve a route request', () => {
               'Please provide routeName.',
               'Please provide capacity.',
               'Please provide takeOff.',
-              'Please provide cabRegNumber.'
+              'Please provide provider.'
             ]
           },
           done
         );
     });
-    it('should respond with an invalid request for invalid capacity', (done) => {
+    it('should respond with an invalid request for invalid provider value', (done) => {
       request(app)
         .put('/api/v1/routes/requests/status/1')
         .set(reqHeaders)
@@ -195,13 +193,13 @@ describe('Approve a route request', () => {
           400,
           {
             success: false,
-            message: 'Capacity must be an integer greater than zero'
+            message: 'Capacity must be an integer greater than zero',
           },
           done
         );
     });
 
-    it('should respond with an invalid request for invalid take off time', (done) => {
+    it('should respond with an invalid request for invalid provider type', (done) => {
       request(app)
         .put('/api/v1/routes/requests/status/1')
         .set(reqHeaders)
@@ -210,7 +208,7 @@ describe('Approve a route request', () => {
           400,
           {
             success: false,
-            message: 'Take off time must be in the right format e.g 11:30'
+            message: 'Take off time must be in the right format e.g 11:30',
           },
           done
         );

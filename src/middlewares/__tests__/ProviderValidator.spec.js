@@ -193,7 +193,7 @@ describe('ProviderValidator', () => {
       };
       await ProviderValidator.validateDriverRequestBody(createReq, res, next);
       expect(Response.sendResponse).toHaveBeenCalledWith(res, 400,
-        false, ["\"driverPhoneNo\" is required", "\"providerId\" is required"]);
+        false, ['"driverPhoneNo" is required', '"providerId" is required']);
     });
     it('should throw errors if a field is empty', async () => {
       const createReq = {
@@ -207,7 +207,7 @@ describe('ProviderValidator', () => {
       };
       await ProviderValidator.validateDriverRequestBody(createReq, res, next);
       expect(Response.sendResponse).toHaveBeenCalledWith(res, 400,
-        false,  ["\"driverName\" is not allowed to be empty"]);
+        false, ['"driverName" is not allowed to be empty']);
     });
     it('should call next if request body is valid', async () => {
       const createReq = {

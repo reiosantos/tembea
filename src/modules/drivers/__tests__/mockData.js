@@ -25,4 +25,3 @@ export const existingUserMock = {
   _options: { isNewRecord: false },
   dataValues: {}
 };
-

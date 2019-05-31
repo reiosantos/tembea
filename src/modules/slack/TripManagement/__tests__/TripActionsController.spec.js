@@ -263,11 +263,11 @@ describe('TripActionController operations approve tests', () => {
   it('should run notifyProvider', async () => {
     jest.spyOn(SendNotifications, 'sendManagerConfirmOrDeclineNotification')
       .mockReturnValue();
-    jest.spyOn(ProviderNotifications, 'sendProviderNotification')
+    jest.spyOn(ProviderNotifications, 'sendTripNotification')
       .mockReturnValue();
 
     await TripActionsController.notifyProvider(payload, {}, 'token');
     expect(SendNotifications.sendManagerConfirmOrDeclineNotification).toHaveBeenCalled();
-    expect(ProviderNotifications.sendProviderNotification).toHaveBeenCalled();
+    expect(ProviderNotifications.sendTripNotification).toHaveBeenCalled();
   });
 });

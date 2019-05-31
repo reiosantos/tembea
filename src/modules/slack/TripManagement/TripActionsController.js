@@ -92,7 +92,7 @@ class TripActionsController {
     } = payload;
 
     await Promise.all([
-      ProviderNotifications.sendProviderNotification(providerUserSlackId, providerName, slackBotOauthToken, trip),
+      ProviderNotifications.sendTripNotification(providerUserSlackId, providerName, slackBotOauthToken, trip),
       SendNotifications.sendManagerConfirmOrDeclineNotification(teamId, userId, trip, false),
     ]);
   }

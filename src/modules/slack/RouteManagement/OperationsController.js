@@ -1,4 +1,3 @@
-
 import { getAction } from './rootFile';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import RouteRequestService from '../../../services/RouteRequestService';
@@ -6,32 +5,8 @@ import DialogPrompts from '../SlackPrompts/DialogPrompts';
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import ManagerFormValidator from '../../../helpers/slack/UserInputValidator/managerFormValidator';
 import OperationsNotifications from '../SlackPrompts/notifications/OperationsRouteRequest/index';
-import RouteService from '../../../services/RouteService';
-import ConfirmRouteUseJob from '../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 import CleanData from '../../../helpers/cleanData';
-import TripCabController from '../TripManagement/TripCabController';
 import OperationsHelper from '../helpers/slackHelpers/OperationsHelper';
-
-const saveRoute = async (updatedRequest, submission, userId) => {
-  const { busStop, routeImageUrl } = updatedRequest;
-  const {
-    routeName, routeCapacity, takeOffTime, regNumber
-  } = submission;
-  const data = {
-    destinationName: busStop.address,
-    imageUrl: routeImageUrl,
-    name: routeName,
-    capacity: routeCapacity,
-    takeOff: takeOffTime,
-    vehicleRegNumber: regNumber,
-    status: 'Active',
-  };
-  const batch = await RouteService.createRouteBatch(data);
-  await Promise.all([
-    ConfirmRouteUseJob.scheduleBatchStartJob(batch),
-    RouteService.addUserToRoute(batch.id, userId),
-  ]);
-};
 
 const handlers = {
   decline: async (payload) => {
@@ -70,7 +45,6 @@ const handlers = {
       const {
         slackBotOauthToken: oauthToken, routeRequest
       } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
-      // should change  to ops comment
       const updatedRequest = await RouteRequestService.updateRouteRequest(routeRequest.id, {
         status: 'Declined',
         opsComment: declineReason
@@ -98,7 +72,9 @@ const handlers = {
     const approved = status === 'Approved';
 
     if (approved || declined) {
-      await OperationsNotifications.updateOpsStatusNotificationMessage(payload, routeRequest, botToken);
+      await OperationsNotifications.updateOpsStatusNotificationMessage(
+        payload, routeRequest, botToken
+      );
       return;
     }
     const state = {
@@ -108,19 +84,13 @@ const handlers = {
         routeRequestId
       }
     };
-    DialogPrompts.sendOperationsNewRouteApprovalDialog(payload, JSON.stringify(state));
+    await DialogPrompts.sendOperationsNewRouteApprovalDialog(payload, JSON.stringify(state));
   },
   approvedRequest: async (data, respond) => {
     try {
       const payload = CleanData.trim(data);
       const errors = ManagerFormValidator.approveRequestFormValidation(payload);
       if (errors.length > 0) { return { errors }; }
-      const { submission } = data;
-      if (submission.cab === 'Create New Cab') {
-        const result = TripCabController.sendCreateCabAttachment(data, 'operations_approval_route', submission);
-        respond(result);
-        return;
-      }
       await OperationsHelper.sendOpsData(payload);
     } catch (error) {
       bugsnagHelper.log(error);
@@ -150,5 +120,4 @@ class OperationsHandler {
   }
 }
 
-
-export { saveRoute, handlers, OperationsHandler };
+export { handlers, OperationsHandler };

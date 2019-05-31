@@ -3,6 +3,11 @@ const endDate = 'BBBBBB';
 const workHours = 'CCC-DDD';
 const id = 12;
 
+const providerUserDetails = {
+  id: 1,
+  name: 'Andela Kenya',
+  providerUserId: 15
+};
 const fellow = {
   id: 1,
   slackId: 'FFFFFF',
@@ -137,7 +142,8 @@ export const mockRouteBatchData = {
 export const mockDataMissingTeamUrl = {
   newOpsStatus: 'decline',
   comment: 'some comment',
-  reviewerEmail: 'test.buddy2@andela.com'
+  reviewerEmail: 'test.buddy2@andela.com',
+  provider: providerUserDetails
 };
 export const mockDeclinedRouteRequest = {
   newOpsStatus: 'decline',
@@ -155,7 +161,8 @@ export const mockDataInvalidComment = {
   newOpsStatus: 'decline',
   comment: 'some = comment',
   reviewerEmail: 'test.buddy2@andela.com',
-  teamUrl: 'tembea.slack.com'
+  teamUrl: 'tembea.slack.com',
+  provider: providerUserDetails
 };
 export const mockDataInvalidCapacity = {
   newOpsStatus: 'approve',
@@ -165,7 +172,7 @@ export const mockDataInvalidCapacity = {
   routeName: 'ParksWay',
   capacity: 'capacity',
   takeOff: '2:30',
-  cabRegNumber: 'KCX XXX0'
+  provider: providerUserDetails
 };
 
 export const mockDataInvalidTakeOffTime = {
@@ -176,7 +183,7 @@ export const mockDataInvalidTakeOffTime = {
   routeName: 'ParksWay',
   capacity: '2',
   takeOff: 'Take Off',
-  cabRegNumber: 'KCX XXX0'
+  provider: providerUserDetails
 };
 
 export const mockDataCorrectRouteRequest = {
@@ -187,7 +194,7 @@ export const mockDataCorrectRouteRequest = {
   routeName: 'ParksWay',
   capacity: '2',
   takeOff: '9:30',
-  cabRegNumber: 'KCX XXX0'
+  provider: providerUserDetails
 };
 
 export const mockCabsData = {

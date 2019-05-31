@@ -3,13 +3,39 @@ import {
   SlackButtonAction,
   SlackAttachment
 } from '../../../SlackModels/SlackMessageModels';
-
+import TeamDetailsService from '../../../../../services/TeamDetailsService';
+import UserService from '../../../../../services/UserService';
+import bugsnagHelper from '../../../../../helpers/bugsnagHelper';
+import ProviderAttachmentHelper from './helper';
 /**
  * A class representing provider notifications
  *
  * @class ProviderNotifications
  */
-class ProviderNotifications {
+export default class ProviderNotifications {
+  static async sendRouteRequestNotification(
+    routeRequest, slackBotOauthToken, routeDetails
+  ) {
+    try {
+      const provider = (routeDetails.Provider).split(',');
+      const providerUser = await UserService.getUserById(provider[2]);
+      if (!slackBotOauthToken) {
+        const { botToken } = await (
+          TeamDetailsService.getTeamDetailsByTeamUrl(routeDetails.teamUrl));
+        slackBotOauthToken = botToken; // eslint-disable-line no-param-reassign
+      }
+      const channelID = await SlackNotifications.getDMChannelId(
+        providerUser.slackId, slackBotOauthToken
+      );
+      const message = await ProviderAttachmentHelper.createProviderRouteAttachment(
+        routeRequest, channelID, routeDetails
+      );
+      return SlackNotifications.sendNotification(message, slackBotOauthToken);
+    } catch (error) {
+      bugsnagHelper.log(error);
+    }
+  }
+
   /**
    * Handler for sending notifications to provider
    *
@@ -20,7 +46,7 @@ class ProviderNotifications {
    * @returns {Function} HTTP client that makes request to Slack's Web API
    * @memberof ProviderNotifications
    */
-  static async sendProviderNotification(providerUserSlackId, providerName, slackBotOauthToken, tripDetails) {
+  static async sendTripNotification(providerUserSlackId, providerName, slackBotOauthToken, tripDetails) {
     const directMessageId = await SlackNotifications.getDMChannelId(providerUserSlackId, slackBotOauthToken);
     const attachment = new SlackAttachment();
     const fields = SlackNotifications.notificationFields(tripDetails);
@@ -39,4 +65,3 @@ class ProviderNotifications {
     return SlackNotifications.sendNotification(message, slackBotOauthToken);
   }
 }
-export default ProviderNotifications;

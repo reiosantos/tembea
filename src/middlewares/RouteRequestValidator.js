@@ -62,10 +62,7 @@ class RouteRequestValidator {
 
   static validateApprovalBody(req, res, next) {
     const messages = GeneralValidator.validateReqBody(req.body,
-      'routeName',
-      'capacity',
-      'takeOff',
-      'cabRegNumber');
+      'routeName', 'capacity', 'takeOff', 'provider');
     if (messages.length > 0) {
       return RouteRequestValidator.sendResponseWithErrors(res,
         'Some properties are missing for approval', messages);
@@ -93,10 +90,7 @@ class RouteRequestValidator {
    */
   static validateRequestBody(req, res, next) {
     const messages = GeneralValidator.validateReqBody(req.body,
-      'newOpsStatus',
-      'comment',
-      'reviewerEmail',
-      'teamUrl');
+      'newOpsStatus', 'comment', 'reviewerEmail', 'teamUrl');
 
     if (messages.length > 0) {
       return RouteRequestValidator.sendResponseWithErrors(res,

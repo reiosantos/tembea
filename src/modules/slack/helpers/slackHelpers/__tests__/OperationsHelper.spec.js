@@ -4,6 +4,7 @@ import OperationsNotifications from '../../../SlackPrompts/notifications/Operati
 import OperationsHelper from '../OperationsHelper';
 import CabService from '../../../../../services/CabService';
 import cache from '../../../../../cache';
+import { bugsnagHelper } from '../../../RouteManagement/rootFile';
 
 describe('operations approve request', () => {
   let payload;
@@ -65,7 +66,6 @@ describe('operations approve request', () => {
     await OperationsHelper.sendOpsData(payload);
     expect(RouteRequestService.getRouteRequestAndToken).toHaveBeenCalled();
     expect(RouteRequestService.updateRouteRequest).toHaveBeenCalled();
-    expect(OperationsHelper.getCabSubmissionDetails).toHaveBeenCalled();
     completeOperationsApprovedAction.mockReturnValue('Token');
   });
   it('get cab details if a new cab is created', async (done) => {
@@ -83,5 +83,15 @@ describe('operations approve request', () => {
     await OperationsHelper.getCabSubmissionDetails(payload, payload.submission);
     expect(CabService.findOrCreateCab).toBeCalled();
     done();
+  });
+  it('should throw an error if route request is not updated', async () => {
+    getRouteRequestAndToken.mockResolvedValue(
+      { routeRequest: { }, slackBotOauthToken: 'dfdf' }
+    );
+    updateRouteRequest.mockRejectedValue(new Error('failed'));
+    jest.spyOn(bugsnagHelper, 'log');
+    await OperationsHelper.sendOpsData(payload);
+    expect(bugsnagHelper.log).toHaveBeenCalled();
+    completeOperationsApprovedAction.mockReturnValue('Token');
   });
 });

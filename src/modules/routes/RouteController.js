@@ -17,7 +17,6 @@ import UserService from '../../services/UserService';
 import RouteHelper from '../../helpers/RouteHelper';
 import RouteNotifications from '../slack/SlackPrompts/notifications/RouteNotifications';
 import TeamDetailsService from '../../services/TeamDetailsService';
-import ConfirmRouteUseJob from '../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 
 class RoutesController {
   /**
@@ -84,8 +83,7 @@ class RoutesController {
       return address;
     }
     const place = await RoutesHelper.getPlaceInfo(
-      'coordinates',
-      destinationCoordinates
+      'coordinates', destinationCoordinates
     );
 
     if (!place) {
@@ -93,11 +91,7 @@ class RoutesController {
       HttpError.throwErrorIfNull(null, 'Invalid Coordinates', 400);
     }
 
-    const {
-      geometry: {
-        location: { lat: latitude, lng: longitude }
-      }
-    } = place;
+    const { geometry: { location: { lat: latitude, lng: longitude } } } = place;
 
     const placeDetails = await GoogleMapsPlaceDetails.getPlaceDetails(
       place.place_id
@@ -132,9 +126,7 @@ class RoutesController {
       const routes = await RouteRequestService.getAllConfirmedRouteRequests();
       return res.status(200).json({ routes });
     } catch (e) {
-      return res
-        .status(500)
-        .json({ message: 'An error has occurred', success: false });
+      return res.status(500).json({ message: 'An error has occurred', success: false });
     }
   }
 
@@ -153,12 +145,7 @@ class RoutesController {
       });
     } catch (error) {
       BugSnagHelper.log(error);
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: 'Route not found'
-        });
+      return res.status(404).json({ success: false, message: 'Route not found' });
     }
   }
 
@@ -187,20 +174,20 @@ class RoutesController {
    * @param  {Object} req The HTTP request object
    * @param  {Object} res The HTTP response object
    */
-  static async changeRouteRequestStatus(req, res) {
+  static async updateRouteRequestStatus(req, res) {
     try {
       const { params: { requestId } } = req;
       const { body } = req;
-      const { routeRequest, updatedRouteRequest } = await RoutesController
-        .getUpdatedRouteRequest(requestId, body);
+      const {
+        routeRequest, updatedRouteRequest
+      } = await RoutesController.getUpdatedRouteRequest(requestId, body);
       if (routeRequest.status === 'Approved') {
-        const submission = await RoutesController.saveRoute(routeRequest, body);
-        RoutesController.sendApprovalNotificationToFellow(requestId,
-          body.teamUrl,
-          submission);
+        const submission = RoutesController.saveRoute(routeRequest, body);
+        RoutesController.sendNotificationToProvider(requestId, submission);
       } else {
         RoutesController.sendDeclineNotificationToFellow(requestId, body.teamUrl);
       }
+
       return res.status(201).json({
         success: true,
         message: 'This route request has been updated',
@@ -213,37 +200,59 @@ class RoutesController {
   }
 
   static async getUpdatedRouteRequest(requestId, body) {
-    const routeRequest = await RouteRequestService.getRouteRequest(requestId);
-    if (!routeRequest) {
-      HttpError.throwErrorIfNull(null, 'Route request not found');
+    try {
+      const routeRequest = await RouteRequestService.getRouteRequest(requestId);
+      if (!routeRequest) {
+        HttpError.throwErrorIfNull(null, 'Route request not found');
+      }
+      const updateData = {};
+      updateData.status = body.newOpsStatus.trim().toLowerCase() === 'approve'
+        ? 'Approved' : 'Declined';
+      updateData.opsComment = body.comment.trim();
+      const reviewer = await UserService.getUserByEmail(body.reviewerEmail);
+      updateData.opsReviewerId = reviewer.dataValues.id;
+      const updatedRouteRequest = await RouteRequestService.updateRouteRequest(
+        requestId, updateData
+      );
+      return { routeRequest, updatedRouteRequest };
+    } catch (error) {
+      BugSnagHelper.log(error);
+      return HttpError.sendErrorResponse(error);
     }
-    const updateData = {};
-    updateData.status = body.newOpsStatus.trim().toLowerCase() === 'approve'
-      ? 'Approved' : 'Declined';
-    updateData.opsComment = body.comment.trim();
-    const reviewer = await UserService.getUserByEmail(body.reviewerEmail);
-    updateData.opsReviewerId = reviewer.dataValues.id;
-    const updatedRouteRequest = await RouteRequestService.updateRouteRequest(requestId, updateData);
-    return { routeRequest, updatedRouteRequest };
   }
 
-  static async saveRoute(routeRequest, body) {
+  /**
+   * @description creates a string from the provider object values
+   * @param  {object} provider The provider object
+   * @returns {string} The string containing the values from the provider object
+   */
+  static formatProviderDetails(provider) {
+    const formattedProvider = { ...provider };
+    delete formattedProvider.user;
+    return Object.values(formattedProvider).toString();
+  }
+
+  /**
+   * @description format updated request data to be sent to provider
+   * @param  {object} routeRequest The created route request
+   * @param  {object} body The request body containing update info
+   * @returns {object} The submission containing route info
+   */
+  static saveRoute(routeRequest, body) {
     const data = {
       destinationName: routeRequest.home.dataValues.address,
       name: body.routeName.trim().toLowerCase(),
-      capacity: body.capacity,
       takeOff: body.takeOff.trim(),
-      vehicleRegNumber: body.cabRegNumber.trim()
+      provider: this.formatProviderDetails(body.provider)
     };
 
     const submission = {
       routeName: data.name,
-      routeCapacity: data.capacity,
       takeOffTime: data.takeOff,
-      regNumber: data.vehicleRegNumber
+      teamUrl: body.teamUrl,
+      Provider: data.provider
     };
-    const batch = await RouteService.createRouteBatch(data);
-    ConfirmRouteUseJob.scheduleBatchStartJob(batch);
+
     return submission;
   }
 
@@ -251,9 +260,11 @@ class RoutesController {
     SlackEvents.raise(slackEventNames.OPERATIONS_DECLINE_ROUTE_REQUEST, requestId, '', teamUrl);
   }
 
-  static async sendApprovalNotificationToFellow(requestId, teamUrl, submission) {
+  static async sendNotificationToProvider(requestId, submission) {
     const route = await RouteRequestService.getRouteRequest(requestId);
-    SlackEvents.raise(slackEventNames.APPROVE_ROUTE_REQUEST, route, '', submission, teamUrl);
+    SlackEvents.raise(
+      slackEventNames.SEND_PROVIDER_APPROVED_ROUTE_REQUEST, route, '', submission
+    );
   }
 
   /**
@@ -265,10 +276,7 @@ class RoutesController {
   static async deleteRouteBatch(req, res) {
     let message;
     try {
-      const {
-        params: { routeBatchId },
-        body: { teamUrl }
-      } = req;
+      const { params: { routeBatchId }, body: { teamUrl } } = req;
       const slackTeamUrl = teamUrl.trim();
       const routeBatch = await RouteService.getRouteBatchByPk(routeBatchId);
       if (!routeBatch) {

@@ -5,6 +5,7 @@ import OperationsNotifications from '../SlackPrompts/notifications/OperationsRou
 import RouteNotifications from '../SlackPrompts/notifications/RouteNotifications';
 import JoinRouteNotifications from '../RouteManagement/JoinRoute/JoinRouteNotifications';
 import TripNotifications from '../SlackPrompts/notifications/TripNotifications';
+import ProviderNotifications from '../SlackPrompts/notifications/ProviderNotifications';
 
 const slackEvents = SlackEvents;
 
@@ -65,5 +66,7 @@ SlackEvents.handle(slackEventNames.RIDER_CANCEL_TRIP,
 SlackEvents.handle(slackEventNames.NOTIFY_OPS_CANCELLED_TRIP,
   SlackNotifications.sendOpsCancelNotification);
 
+SlackEvents.handle(slackEventNames.SEND_PROVIDER_APPROVED_ROUTE_REQUEST,
+  ProviderNotifications.sendRouteRequestNotification);
 
 export default slackEvents;

@@ -27,7 +27,7 @@ class DriverController {
     } catch (error) {
       bugsnagHelper.log(error);
       return Response.sendResponse(res, 500, false,
-        `An error occurred in the creation of the driver`);
+        'An error occurred in the creation of the driver');
     }
   }
 }

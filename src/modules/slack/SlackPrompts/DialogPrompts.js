@@ -14,6 +14,7 @@ import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import CabService from '../../../services/CabService';
 import CabsHelper from '../helpers/slackHelpers/CabsHelper';
 import ProviderService from '../../../services/ProviderService';
+import ProvidersHelper from '../helpers/slackHelpers/ProvidersHelper';
 import ProviderHelper from '../../../helpers/providerHelper';
 
 export const getPayloadKey = userId => `PAYLOAD_DETAILS${userId}`;
@@ -199,13 +200,10 @@ class DialogPrompts {
       new SlackDialogText('Route\'s take-off time', 'takeOffTime', 'Enter take-off time',
         false, 'The time should be in the format (HH:mm), eg. 01:30')
     ]);
-    const { cabs } = await CabService.getCabs();
-    const providerData = CabsHelper.toCabLabelValuePairs(cabs);
-    dialog.addElements([new SlackDialogSelectElementWithOptions('Select A Cab',
-      'cab', [{
-        label: 'Create New Cab',
-        value: 'Create New Cab'
-      }, ...providerData])]);
+    const { providers } = await ProviderService.getProviders();
+    const providersData = ProvidersHelper.toProviderLabelPairValues(providers);
+    dialog.addElements([new SlackDialogSelectElementWithOptions('Select A Provider',
+      'Provider', [...providersData])]);
     await DialogPrompts.sendDialog(dialog, payload);
   }
 

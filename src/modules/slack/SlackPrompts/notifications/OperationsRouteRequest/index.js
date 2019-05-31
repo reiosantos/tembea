@@ -5,6 +5,7 @@ import OpsAttachmentHelper from './helper';
 import InteractivePrompts from '../../InteractivePrompts';
 import RouteRequestService from '../../../../../services/RouteRequestService';
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
+import ProviderNotifications from '../ProviderNotifications';
 
 export default class OperationsNotifications {
   /**
@@ -65,19 +66,17 @@ export default class OperationsNotifications {
     const attachments = await OpsAttachmentHelper.getOperationCompleteAttachment(
       message, title, routeRequest, submission
     );
-    InteractivePrompts.messageUpdate(
+    await InteractivePrompts.messageUpdate(
       channel,
       `<@${opsId}> have just approved <@${fellow.slackId}> route request`,
       timestamp,
       attachments,
       botToken
     );
-
     if (!update) {
-      OperationsNotifications
-        .sendOpsApproveMessageToFellow(routeRequest, botToken, submission);
-      OperationsNotifications
-        .sendOpsApproveMessageToManager(routeRequest, botToken, submission);
+      await ProviderNotifications.sendRouteRequestNotification(
+        routeRequest, botToken, submission
+      );
     }
   }
 

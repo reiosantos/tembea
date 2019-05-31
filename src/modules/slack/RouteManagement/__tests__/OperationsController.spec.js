@@ -9,7 +9,6 @@ import ManagerFormValidator
   from '../../../../helpers/slack/UserInputValidator/managerFormValidator';
 import RouteService from '../../../../services/RouteService';
 import OperationsHelper from '../../helpers/slackHelpers/OperationsHelper';
-import TripCabController from '../../TripManagement/TripCabController';
 import UserService from '../../../../services/UserService';
 
 describe('Operations Route Controller', () => {
@@ -143,19 +142,6 @@ describe('Operations Route Controller', () => {
         done();
       });
 
-
-      it('should create New Cab', async (done) => {
-        payload.submission.cab = 'Create New Cab';
-        jest.spyOn(ManagerFormValidator, 'approveRequestFormValidation')
-          .mockResolvedValue([]);
-        jest.spyOn(TripCabController, 'sendCreateCabAttachment');
-        await OperationsHandler.handleOperationsActions(payload, respond);
-        expect(TripCabController.sendCreateCabAttachment).toHaveBeenCalled();
-        expect(ManagerFormValidator.approveRequestFormValidation).toHaveBeenCalled();
-        done();
-      });
-
-
       it('should not submit invalid user input', async (done) => {
         payload = {
           ...payload,
@@ -181,11 +167,11 @@ describe('Operations Route Controller', () => {
       it('should handle errors', async (done) => {
         payload = {};
         payload.callback_id = 'operations_route_approvedRequest';
-        jest.spyOn(ManagerFormValidator, 'approveRequestFormValidation')
-          .mockResolvedValue([]);
-
-        jest.spyOn(OperationsHelper, 'sendOpsData').mockResolvedValue({});
+        jest.spyOn(
+          ManagerFormValidator, 'approveRequestFormValidation'
+        ).mockImplementation(() => { throw new Error(); });
         jest.spyOn(bugsnagHelper, 'log');
+
         await OperationsHandler.handleOperationsActions(payload, respond);
         expect(bugsnagHelper.log).toHaveBeenCalled();
         expect(respond.mock.calls[0][0].text).toEqual('Unsuccessful request. Kindly Try again');
