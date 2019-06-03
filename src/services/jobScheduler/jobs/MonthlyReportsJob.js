@@ -9,6 +9,7 @@ class MonthlyReportsJob {
     rule.dayOfWeek = [1];
     rule.date = [1, 2, 3, 4, 5, 6, 7];
     rule.hour = 1;
+    rule.minute = 1;
     schedule.scheduleJob(rule, async () => {
       await new MonthlyReportSender(hbs).sendMail();
     });
