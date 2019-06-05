@@ -23,7 +23,7 @@ class ProviderService {
     const include = [{
       model: User,
       as: 'user',
-      attributes: ['name', 'phoneNo', 'email']
+      attributes: ['name', 'phoneNo', 'email', 'slackId']
     }];
     const filter = {
       include,

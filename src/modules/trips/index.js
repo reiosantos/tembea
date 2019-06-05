@@ -75,7 +75,11 @@ tripsRouter.get(
   TripsController.getTrips
 );
 
-const tripValidator = [CleanRequestBody.trimAllInputs, TripValidator.validateAll, TripValidator.validateEachInput];
+const tripValidator = [
+  CleanRequestBody.trimAllInputs,
+  TripValidator.validateAll,
+  TripValidator.validateEachInput
+];
 
 /**
  * @swagger

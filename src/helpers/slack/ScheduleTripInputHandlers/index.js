@@ -168,7 +168,6 @@ const ScheduleTripInputHandlers = {
 
       return InteractivePrompts.sendScheduleTripResponse(tripData, respond);
     } catch (error) {
-      console.log(error)
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     }

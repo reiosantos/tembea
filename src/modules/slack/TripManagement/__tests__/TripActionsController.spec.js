@@ -7,6 +7,7 @@ import models from '../../../../database/models';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import CabService from '../../../../services/CabService';
 import tripService from '../../../../services/TripService';
+import ProviderNotifications from '../../SlackPrompts/notifications/ProviderNotifications';
 
 const { TripRequest } = models;
 
@@ -190,7 +191,7 @@ describe('TripActionController operations approve tests', () => {
         capacity: '1',
         model: 'ferrari'
       },
-      state: '{ "tripId": "3" }'
+      state: '{ "tripId": "3", "isAssignProvider": true }'
     };
   });
 
@@ -222,18 +223,12 @@ describe('TripActionController operations approve tests', () => {
     );
     done();
   });
+  it('should run notifiyProvider upon provider assignment', async (done) => {
+    const notifyProvider = jest.spyOn(TripActionsController, 'notifyProvider');
+    jest.spyOn(tripService, 'updateRequest').mockResolvedValue({ id: 1, name: 'Sample User' });
 
-  it('should run changeTripStatusToConfirmed() to approvedByOps', async (done) => {
-    jest.spyOn(SendNotifications, 'sendUserConfirmOrDeclineNotification')
-      .mockReturnValue();
-    jest.spyOn(SendNotifications, 'sendManagerConfirmOrDeclineNotification')
-      .mockReturnValue();
-    jest.spyOn(tripService, 'getById').mockResolvedValue({ id: 1, name: 'Sample User' });
-
-    await TripActionsController.changeTripStatusToConfirmed(opsUserId,
-      payload, 'token');
-    expect(SendNotifications.sendUserConfirmOrDeclineNotification).toHaveBeenCalled();
-    expect(SendNotifications.sendManagerConfirmOrDeclineNotification).toHaveBeenCalled();
+    await TripActionsController.changeTripStatusToConfirmed(opsUserId, payload, 'token');
+    expect(notifyProvider).toHaveBeenCalled();
     done();
   });
 
@@ -264,5 +259,15 @@ describe('TripActionController operations approve tests', () => {
     const result = TripActionsController.runCabValidation(payload);
     expect(validateCabDetailsSpy).toHaveBeenCalledWith(payload);
     expect(result.length).toBe(1);
+  });
+  it('should run notifyProvider', async () => {
+    jest.spyOn(SendNotifications, 'sendManagerConfirmOrDeclineNotification')
+      .mockReturnValue();
+    jest.spyOn(ProviderNotifications, 'sendProviderNotification')
+      .mockReturnValue();
+
+    await TripActionsController.notifyProvider(payload, {}, 'token');
+    expect(SendNotifications.sendManagerConfirmOrDeclineNotification).toHaveBeenCalled();
+    expect(ProviderNotifications.sendProviderNotification).toHaveBeenCalled();
   });
 });

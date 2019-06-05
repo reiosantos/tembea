@@ -28,4 +28,28 @@ export default class ProviderHelper {
       [key]: status
     };
   }
+
+  /**
+   * Generates a list of providers label
+   *
+   * @static
+   * @param {Array} providers - A list of providers
+   * @returns {Array} Generated list of providers label
+   * @memberof ProviderHelper
+   */
+  static generateProvidersLabel(providers) {
+    return providers.map((provider) => {
+      const {
+        name: label,
+        providerUserId,
+        user: { slackId }
+      } = provider;
+      const valueDetails = [label, providerUserId, slackId].toString();
+      const data = {
+        label,
+        value: valueDetails
+      };
+      return data;
+    });
+  }
 }

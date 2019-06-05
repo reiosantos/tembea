@@ -216,4 +216,15 @@ describe('sendBusStopForm dialog', () => {
       done();
     });
   });
+  describe('DialogPrompts > sendSelectProviderDialog', () => {
+    it('should send select provider dialog', async () => {
+      await DialogPrompts.sendSelectProviderDialog({
+        actions: [{ value: 7 }],
+        message_ts: '3703484984.4849',
+        channel: { id: 84 },
+        team: { id: 9 }
+      });
+      expect(sendDialogTryCatch).toHaveBeenCalled();
+    });
+  });
 });

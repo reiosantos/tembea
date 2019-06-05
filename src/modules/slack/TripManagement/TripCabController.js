@@ -44,6 +44,31 @@ class TripCabController {
     };
     await SlackInteractions.handleTripActions(modifiedCabData, respond);
   }
+
+  /**
+   * Handles trip dialog form submission (providers assignment)
+   *
+   * @static
+   * @param {Object} data - The request payload
+   * @param {Object} respond - The response object
+   * @returns {void}
+   * @memberof TripCabController
+   */
+  static async handleSelectProviderDialogSubmission(data, respond) {
+    const { submission: { provider } } = data;
+    const providerDetails = provider.split(',');
+    const [providerName, providerUserId, providerUserSlackId] = providerDetails;
+    const modifiedProviderData = {
+      ...data,
+      submission: {
+        ...data.submission,
+        providerName,
+        providerUserId,
+        providerUserSlackId
+      }
+    };
+    await SlackInteractions.handleTripActions(modifiedProviderData, respond);
+  }
 }
 
 export default TripCabController;

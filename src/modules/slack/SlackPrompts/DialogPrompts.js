@@ -13,6 +13,8 @@ import TeamDetailsService from '../../../services/TeamDetailsService';
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import CabService from '../../../services/CabService';
 import CabsHelper from '../helpers/slackHelpers/CabsHelper';
+import ProviderService from '../../../services/ProviderService';
+import ProviderHelper from '../../../helpers/providerHelper';
 
 export const getPayloadKey = userId => `PAYLOAD_DETAILS${userId}`;
 
@@ -102,6 +104,41 @@ class DialogPrompts {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
+  /**
+   * Displays a select input field of list of providers
+   *
+   * @static
+   * @param {Object} payload - Response object
+   * @returns {void}
+   * @memberof DialogPrompts
+   */
+  static async sendSelectProviderDialog(payload) {
+    const {
+      actions: [{ value: tripId }],
+      message_ts: timeStamp,
+      channel: { id: channel }
+    } = payload;
+    const { providers } = await ProviderService.getProviders();
+    const providerData = ProviderHelper.generateProvidersLabel(providers);
+    const state = {
+      tripId, timeStamp, channel, isAssignProvider: true
+    };
+    const dialog = new SlackDialog('confirm_ops_approval',
+      'Confirm Trip Request', 'Submit', false, JSON.stringify(state));
+    dialog.addElements([
+      new SlackDialogSelectElementWithOptions(
+        'Select A Provider', 'provider', [...providerData]
+      ),
+      new SlackDialogTextarea(
+        'Justification',
+        'confirmationComment',
+        'Reason why',
+        'Enter reason for approving trip',
+      )
+    ]);
+    await DialogPrompts.sendDialog(dialog, payload);
+  }
+
   static async sendOperationsApprovalDialog(payload, respond) {
     const { value } = payload.actions[0];
     const { confirmationComment } = JSON.parse(value);
@@ -163,12 +200,12 @@ class DialogPrompts {
         false, 'The time should be in the format (HH:mm), eg. 01:30')
     ]);
     const { cabs } = await CabService.getCabs();
-    const cabData = CabsHelper.toCabLabelValuePairs(cabs);
+    const providerData = CabsHelper.toCabLabelValuePairs(cabs);
     dialog.addElements([new SlackDialogSelectElementWithOptions('Select A Cab',
       'cab', [{
         label: 'Create New Cab',
         value: 'Create New Cab'
-      }, ...cabData])]);
+      }, ...providerData])]);
     await DialogPrompts.sendDialog(dialog, payload);
   }
 

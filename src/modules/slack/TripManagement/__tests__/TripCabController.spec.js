@@ -40,4 +40,15 @@ describe('TripCabController', () => {
     expect(sendCreateCabSpy).toHaveBeenCalledTimes(1);
     done();
   });
+  it('should handle provider assignment submission', (done) => {
+    const data = {
+      submission: {
+        provider: 'DbrandTaxify, 1, UXTXFY'
+      }
+    };
+    const handleTripActionsSpy = jest.spyOn(SlackInteractions, 'handleTripActions');
+    TripCabController.handleSelectProviderDialogSubmission(data, respond);
+    expect(handleTripActionsSpy).toHaveBeenCalled();
+    done();
+  });
 });

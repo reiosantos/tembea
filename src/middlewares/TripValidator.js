@@ -8,19 +8,18 @@ import TripHelper from '../helpers/TripHelper';
 
 class TripValidator {
   static async validateAll(req, res, next) {
-    const { query: { action } } = req;
-    let messages = [];
-    if (action === 'confirm') {
-      messages = GeneralValidator.validateReqBody(
-        req.body,
-        'driverName', 'driverPhoneNo',
-        'regNumber', 'comment', 'slackUrl'
-      );
+    const {
+      query: { action },
+      body: { isAssignProvider }
+    } = req;
+    let messages = GeneralValidator.validateReqBody(req.body, 'comment', 'slackUrl');
+    if (action === 'confirm' && !isAssignProvider) {
+      messages = [
+        ...messages,
+        ...GeneralValidator.validateReqBody(req.body, 'driverName', 'driverPhoneNo', 'regNumber'),
+      ];
     }
-    if (action === 'decline') {
-      messages = GeneralValidator.validateReqBody(req.body, 'comment',
-        'slackUrl');
-    }
+
     const { params: { tripId } } = req;
     if (!tripId) {
       messages.push('Add tripId to the url');
@@ -38,25 +37,21 @@ class TripValidator {
   }
 
   static validateEachInput(req, res, next) {
-    const { body } = req;
-    const { params: { tripId }, query: { action } } = req;
+    const {
+      params: { tripId },
+      query: { action },
+      body
+    } = req;
+    const { slackUrl, isAssignProvider } = body;
+    const messages = [
+      ...this.validateTripId(tripId),
+      ...this.validateSlackUrl(slackUrl),
+    ];
 
-    const messages = [];
-    if (!GeneralValidator.validateNumber(tripId)) {
-      messages.push({
-        name: 'tripId',
-        error: 'Invalid tripId in the url it must be a number. eg: api/v1/trips/12/confirm'
-      });
-    }
-    if (action === 'confirm') {
+    if (action === 'confirm' && !isAssignProvider) {
       messages.push(...UserInputValidator.validateCabDetails({ submission: body }));
     }
-    if (!GeneralValidator.validateTeamUrl(body.slackUrl)) {
-      messages.push({
-        name: 'slackUrl',
-        error: 'Invalid slackUrl. e.g: ACME.slack.com'
-      });
-    }
+
     if (messages.length) {
       return HttpError.sendErrorResponse({ message: messages }, res);
     }
@@ -64,6 +59,38 @@ class TripValidator {
     const trimmedSlackUrl = body.slackUrl.replace(regex, '');
     req.body.slackUrl = trimmedSlackUrl.trim();
     next();
+  }
+
+  /**
+   * Validates and returns an error for invalid tripId value
+   *
+   * @static
+   * @param {string|number} value - Trip id value
+   * @returns {{ name: string, error: string }} - The error object
+   * @memberof TripValidator
+   */
+  static validateTripId(value) {
+    return !GeneralValidator.validateNumber(value)
+      ? [{
+        name: 'tripId',
+        error: 'Invalid tripId in the url it must be a number. eg: api/v1/trips/12/confirm'
+      }] : [];
+  }
+
+  /**
+   * Validates and returns an error for invalid slackUrl value
+   *
+   * @static
+   * @param {string} value - Slack url value
+   * @returns {{ name: string, error: string }} - The error object
+   * @memberof TripValidator
+   */
+  static validateSlackUrl(value) {
+    return !GeneralValidator.validateTeamUrl(value)
+      ? [{
+        name: 'slackUrl',
+        error: 'Invalid slackUrl. e.g: ACME.slack.com'
+      }] : [];
   }
 
   static validateGetTripsParam(req, res, next) {

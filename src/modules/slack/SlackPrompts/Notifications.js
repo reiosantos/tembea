@@ -134,7 +134,7 @@ class SlackNotifications {
     let fields = null;
     fields = SlackNotifications.notificationFields(newTripRequest);
     attachments.addFieldsOrActions('fields', fields);
-    let msg = `Hey, <@${requester.slackId}> has just  requested a trip. It is awaiting approval from <@${lineManagerSlackId}> :smiley:`;
+    let msg = `Hey, <@${requester.slackId}> has just requested a trip. It is awaiting approval from <@${lineManagerSlackId}> :smiley:`;
     if (requester.slackId !== rider.slackId) {
       msg = `Hey, <@${requester.slackId}> h as just requested a trip for <@${
         rider.slackId}>. It is awaiting approval from <@${lineManagerSlackId}> :smiley:`;
@@ -457,11 +457,12 @@ class SlackNotifications {
     const {
       origin: { address: pickup },
       destination: { address: destination },
-      rider: { name: passenger },
+      rider: { name: passenger, phoneNo: riderPhoneNumber },
       createdAt,
       departureTime,
       reason,
-      tripNote
+      tripNote,
+      noOfPassengers,
     } = tripInformation;
     return [
       new SlackAttachmentField('Pickup Location', pickup, true),
@@ -469,51 +470,66 @@ class SlackNotifications {
       new SlackAttachmentField('Request Date',
         getSlackDateString(createdAt), true),
       new SlackAttachmentField('Trip Date',
-        getSlackDateString(departureTime), true),
+        `*${getSlackDateString(departureTime)}*`, true),
       new SlackAttachmentField('Reason', reason, true),
+      new SlackAttachmentField('No of Passengers', noOfPassengers, true),
       new SlackAttachmentField('Passenger', passenger, true),
-      new SlackAttachmentField('Trip Notes', tripNote, true),
+      new SlackAttachmentField('Passenger Phone No.', riderPhoneNumber || 'N/A', true),
+      new SlackAttachmentField('Trip Notes', tripNote || 'N/A', true),
     ];
   }
 
+  /**
+   * Generate declined trip notification fields (slack)
+   *
+   * @static
+   * @param {Object} tripInformation - An object containing the trip information
+   * @param {string} userId - The user's unique slack identifier
+   * @returns {Array} - A list of slack attachments
+   * @memberof SlackNotifications
+   */
   static declineNotificationFields(tripInformation, userId) {
-    const reason = tripInformation.operationsComment;
-    const notifications = SlackNotifications.notificationFields(
-      tripInformation
+    return this.generateNotificationFields(
+      'Declined', tripInformation, userId
     );
-    const decliner = new SlackAttachmentField(
-      '',
-      `Declined by <@${userId}>`,
-      false
-    );
-    const commentField = new SlackAttachmentField('Reason', reason, false);
-    notifications.unshift(decliner);
-    notifications.push(commentField);
-    return notifications;
   }
 
+  /**
+   * Generate approved trip notification fields (slack)
+   *
+   * @static
+   * @param {Object} tripInformation - An object containing the trip information
+   * @param {string} userId - The user's unique slack identifier
+   * @returns {Array} - A list of slack attachments
+   * @memberof SlackNotifications
+   */
   static approveNotificationFields(tripInformation, userId) {
-    const reason = tripInformation.operationsComment;
-    const { driverName, driverPhoneNo, regNumber } = tripInformation.cab;
-    const notifications = SlackNotifications.notificationFields(
-      tripInformation
+    return this.generateNotificationFields(
+      'Confirmed', tripInformation, userId
     );
+  }
+
+  /**
+   * Generate slack trip notification fields based on the type
+   *
+   * @static
+   * @param {string} type - The type of notification
+   * @param {Object} tripInformation - An object containing the trip information
+   * @param {string} userId - The user's unique slack identifier
+   * @returns {Array} - A list of slack attachments
+   * @memberof SlackNotifications
+   */
+  static generateNotificationFields(type, tripInformation, userId) {
+    const reason = tripInformation.operationsComment;
+    const notifications = this.notificationFields(tripInformation);
     const decliner = new SlackAttachmentField(
       '',
-      `Confirmed by <@${userId}>`,
+      `${type} by <@${userId}>`,
       false
     );
     const commentField = new SlackAttachmentField('Reason', reason, false);
     notifications.unshift(decliner);
     notifications.push(commentField);
-    const cabAttachmentFields = [
-      new SlackAttachmentField(null, null, false),
-      new SlackAttachmentField('Cab Details', null, false),
-      new SlackAttachmentField('Driver Name', driverName, true),
-      new SlackAttachmentField('Driver Contacts', driverPhoneNo, true),
-      new SlackAttachmentField('Registration Number', regNumber, true)
-    ];
-    notifications.push(...cabAttachmentFields);
     return notifications;
   }
 

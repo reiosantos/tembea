@@ -288,13 +288,19 @@ class SlackInteractions {
         channelId, slackBotOauthToken, trip, userId, timeStamp
       );
     }
-    return SlackInteractions.handleSelectCabActions(data, respond);
+    return SlackInteractions.handleSelectProviderAction(data, respond);
   }
 
-
-  static async handleSelectCabActions(data) {
+  /**
+   * Action handler for input selectors on provider dialog
+   *
+   * @static
+   * @param {Object} data - The request payload
+   * @memberof SlackInteractions
+   */
+  static async handleSelectProviderAction(data) {
     if (data.actions && data.actions[0].name === 'confirmTrip') {
-      await DialogPrompts.sendSelectCabDialog(data);
+      await DialogPrompts.sendSelectProviderDialog(data);
     }
     if (data.actions && data.actions[0].name === 'declineRequest') {
       await DialogPrompts.sendOperationsDeclineDialog(data);

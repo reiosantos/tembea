@@ -5,7 +5,9 @@ import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
-import CabService from '../../../services/CabService';
+import ProviderNotifications from '../SlackPrompts/notifications/ProviderNotifications';
+import UserService from '../../../services/UserService';
+import RemoveDataValues from '../../../helpers/removeDataValues';
 
 
 class TripActionsController {
@@ -48,28 +50,51 @@ class TripActionsController {
   static async changeTripStatusToConfirmed(opsUserId, payload, slackBotOauthToken) {
     const {
       submission: {
-        confirmationComment, driverName,
-        driverPhoneNo, regNumber, model, capacity
+        confirmationComment,
+        selectedProviderId
       },
-      team: { id: teamId },
-      user: { id: userId },
       state: payloadState
     } = payload;
 
-    const { tripId, timeStamp, channel } = JSON.parse(payloadState);
-
-    const cab = await CabService.findOrCreateCab(driverName, driverPhoneNo, regNumber, capacity, model);
-
-    const trip = await tripService.updateRequest(tripId, {
-      tripStatus: 'Confirmed',
-      operationsComment: confirmationComment,
-      confirmedById: opsUserId,
-      cabId: cab.id
-    });
-    await TripActionsController.sendAllNotifications(teamId, userId, trip,
-      timeStamp, channel, slackBotOauthToken);
-
+    const { tripId, isAssignProvider } = JSON.parse(payloadState);
+    if (selectedProviderId) {
+      const { slackId: providerUserSlackId } = RemoveDataValues.removeDataValues(
+        await UserService.getUserById(selectedProviderId)
+      );
+      // eslint-disable-next-line no-param-reassign
+      payload.submission.providerUserSlackId = providerUserSlackId;
+    }
+    if (isAssignProvider) {
+      const trip = await tripService.updateRequest(tripId, {
+        tripStatus: 'Confirmed',
+        operationsComment: confirmationComment,
+        confirmedById: opsUserId,
+      });
+      await this.notifyProvider(payload, trip, slackBotOauthToken);
+    }
     return 'success';
+  }
+
+  /**
+   * Handles the process of notifying the assigned provider and Ops
+   *
+   * @static
+   * @param {Object} payload - The request payload
+   * @param {Object} trip - The trip details
+   * @param {string} slackBotOauthToken - Slackbot auth token
+   * @memberof TripActionsController
+   */
+  static async notifyProvider(payload, trip, slackBotOauthToken) {
+    const {
+      submission: { providerUserSlackId, providerName },
+      team: { id: teamId },
+      user: { id: userId },
+    } = payload;
+
+    await Promise.all([
+      ProviderNotifications.sendProviderNotification(providerUserSlackId, providerName, slackBotOauthToken, trip),
+      SendNotifications.sendManagerConfirmOrDeclineNotification(teamId, userId, trip, false),
+    ]);
   }
 
   static async sendAllNotifications(teamId, userId, trip, timeStamp, channel,

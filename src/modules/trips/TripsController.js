@@ -53,13 +53,16 @@ class TripsController {
    * @returns {object} The http response object
    */
   static async updateTrip(req, res) {
-    const { params: { tripId }, query: { action }, body: { slackUrl } } = req;
+    const { params: { tripId }, query: { action }, body: { slackUrl, isAssignProvider } } = req;
     const payload = await TripsController.getCommonPayloadParam(req.currentUser, slackUrl, tripId);
     let actionSuccessMessage = '';
     if (action === 'confirm') {
       actionSuccessMessage = 'trip confirmed';
       try {
         payload.submission = TripsController.getConfirmationSubmission(req.body);
+        const state = JSON.parse(payload.state);
+        state.isAssignProvider = isAssignProvider;
+        payload.state = JSON.stringify(state);
       } catch (err) {
         return HttpError.sendErrorResponse({ success: false, message: err.customMessage }, res);
       }
@@ -101,8 +104,14 @@ class TripsController {
 
   static getConfirmationSubmission(reqBody) {
     const {
-      driverName, driverPhoneNo, regNumber, comment
+      driverName, driverPhoneNo, regNumber, comment, isAssignProvider, selectedProviderId
     } = reqBody;
+    if (isAssignProvider) {
+      return {
+        selectedProviderId,
+        confirmationComment: comment,
+      };
+    }
     const messages = GeneralValidator.validateReqBody(
       reqBody,
       'driverName',
