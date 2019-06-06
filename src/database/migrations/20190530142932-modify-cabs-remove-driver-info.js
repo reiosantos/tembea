@@ -6,7 +6,7 @@ module.exports = {
     queryInterface.removeColumn('Cabs', 'driverName'),
     queryInterface.removeColumn('Cabs', 'driverPhoneNo')
   ]),
-  
+
 
   down: (queryInterface, Sequelize) => Promise.all([
     queryInterface.addColumn('Cabs', 'driverPhoneNo', Sequelize.STRING),
