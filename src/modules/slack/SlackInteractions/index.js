@@ -265,7 +265,6 @@ class SlackInteractions {
         return { errors };
       }
       await TripActionsController.changeTripStatus(payload);
-      respond(new SlackInteractiveMessage('Request Successful'));
     } catch (error) {
       bugsnagHelper.log(error);
       respond(

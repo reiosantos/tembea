@@ -202,8 +202,16 @@ class DialogPrompts {
     ]);
     const { providers } = await ProviderService.getProviders();
     const providersData = ProvidersHelper.toProviderLabelPairValues(providers);
-    dialog.addElements([new SlackDialogSelectElementWithOptions('Select A Provider',
-      'Provider', [...providersData])]);
+    dialog.addElements([
+      new SlackDialogSelectElementWithOptions('Select A Provider',
+        'Provider', [...providersData]),
+      new SlackDialogTextarea(
+        'Justification',
+        'confirmationComment',
+        'Reason why',
+        'Enter reason for approval',
+      ),
+    ]);
     await DialogPrompts.sendDialog(dialog, payload);
   }
 

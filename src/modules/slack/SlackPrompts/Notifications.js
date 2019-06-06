@@ -467,10 +467,8 @@ class SlackNotifications {
     return [
       new SlackAttachmentField('Pickup Location', pickup, true),
       new SlackAttachmentField('Destination', destination, true),
-      new SlackAttachmentField('Request Date',
-        getSlackDateString(createdAt), true),
-      new SlackAttachmentField('Trip Date',
-        `*${getSlackDateString(departureTime)}*`, true),
+      new SlackAttachmentField('Request Date', getSlackDateString(createdAt), true),
+      new SlackAttachmentField('Trip Date', getSlackDateString(departureTime), true),
       new SlackAttachmentField('Reason', reason, true),
       new SlackAttachmentField('No of Passengers', noOfPassengers, true),
       new SlackAttachmentField('Passenger', passenger, true),

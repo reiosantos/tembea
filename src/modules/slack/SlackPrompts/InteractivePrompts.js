@@ -222,9 +222,6 @@ class InteractivePrompts {
         ? `:X: <@${tripInformation.decliner.slackId}> declined this request`
         : `:white_check_mark: <@${tripInformation.confirmer.slackId}> approved this request`
     );
-    const cabDetailsAttachment = !decline
-      ? InteractivePromptsHelpers.generateCabDetailsAttachment(tripInformation)
-      : {};
 
     confirmationDetailsAttachment.addOptionalProps('', '', (decline ? 'danger' : 'good'));
     tripDetailsAttachment.addOptionalProps('', '', '#3c58d7');
@@ -235,7 +232,7 @@ class InteractivePrompts {
       await InteractivePrompts.messageUpdate(channel,
         (decline ? 'Trip request declined.' : 'Trip request approved'),
         timeStamp,
-        [tripDetailsAttachment, cabDetailsAttachment, confirmationDetailsAttachment],
+        [tripDetailsAttachment, confirmationDetailsAttachment],
         slackBotOauthToken);
     } catch (err) {
       BugsnagHelper.log(err);

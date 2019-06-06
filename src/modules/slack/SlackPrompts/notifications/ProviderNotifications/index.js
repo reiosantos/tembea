@@ -61,7 +61,7 @@ export default class ProviderNotifications {
     attachment.addOptionalProps('provider_actions', 'fallback', '#FFCCAA', 'default');
 
     const message = SlackNotifications.createDirectMessage(directMessageId,
-      `A trip request has been made to *${providerName}*, please assign a cab`, [attachment]);
+      `A trip has been assigned to *${providerName}*, please assign a cab`, [attachment]);
     return SlackNotifications.sendNotification(message, slackBotOauthToken);
   }
 }

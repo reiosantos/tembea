@@ -56,7 +56,9 @@ class TripActionsController {
       state: payloadState
     } = payload;
 
-    const { tripId, isAssignProvider } = JSON.parse(payloadState);
+    const {
+      tripId, isAssignProvider, timeStamp, channel
+    } = JSON.parse(payloadState);
     if (selectedProviderId) {
       const { slackId: providerUserSlackId } = RemoveDataValues.removeDataValues(
         await UserService.getUserById(selectedProviderId)
@@ -70,7 +72,7 @@ class TripActionsController {
         operationsComment: confirmationComment,
         confirmedById: opsUserId,
       });
-      await this.notifyProvider(payload, trip, slackBotOauthToken);
+      await this.notifyProvider(payload, trip, slackBotOauthToken, timeStamp, channel);
     }
     return 'success';
   }
@@ -84,7 +86,7 @@ class TripActionsController {
    * @param {string} slackBotOauthToken - Slackbot auth token
    * @memberof TripActionsController
    */
-  static async notifyProvider(payload, trip, slackBotOauthToken) {
+  static async notifyProvider(payload, trip, slackBotOauthToken, timeStamp, channel) {
     const {
       submission: { providerUserSlackId, providerName },
       team: { id: teamId },
@@ -93,6 +95,8 @@ class TripActionsController {
 
     await Promise.all([
       ProviderNotifications.sendTripNotification(providerUserSlackId, providerName, slackBotOauthToken, trip),
+      InteractivePrompts.sendOpsDeclineOrApprovalCompletion(false, trip, timeStamp, channel,
+        slackBotOauthToken),
       SendNotifications.sendManagerConfirmOrDeclineNotification(teamId, userId, trip, false),
     ]);
   }

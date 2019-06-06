@@ -44,8 +44,8 @@ class TripValidator {
     } = req;
     const { slackUrl, isAssignProvider } = body;
     const messages = [
-      ...this.validateTripId(tripId),
-      ...this.validateSlackUrl(slackUrl),
+      ...TripValidator.validateTripId(tripId),
+      ...TripValidator.validateSlackUrl(slackUrl),
     ];
 
     if (action === 'confirm' && !isAssignProvider) {
