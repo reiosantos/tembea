@@ -17,6 +17,15 @@ export default class CabsHelper {
     return format;
   }
 
+  static generateDriverLabel(driver) {
+    let format = '';
+    if (driver.driverName && driver.driverPhoneNo) {
+      format = `${driver.driverName.toUpperCase()} - (${driver.driverPhoneNo})`;
+    }
+    return format;
+  }
+
+
   /**
    * maps array of cab details to 'cabmodel - regNumber' format
    * @return {Array}
@@ -24,10 +33,24 @@ export default class CabsHelper {
    */
   static toCabLabelValuePairs(cabs) {
     return cabs.map((val) => {
-      const { regNumber } = val;
-      const valueDetails = regNumber.toString();
+      const { capacity, model, regNumber } = val;
+      const valueDetails = [capacity, model, regNumber].toString();
       const data = {
         label: CabsHelper.generateCabLabel(val),
+        value: valueDetails
+      };
+      return data;
+    });
+  }
+
+  static toCabDriverValuePairs(drivers) {
+    return drivers.map((val) => {
+      const {
+        id, driverName, driverPhoneNo, driverNumber
+      } = val;
+      const valueDetails = [id, driverName, driverPhoneNo, driverNumber].toString();
+      const data = {
+        label: CabsHelper.generateDriverLabel(val),
         value: valueDetails
       };
       return data;

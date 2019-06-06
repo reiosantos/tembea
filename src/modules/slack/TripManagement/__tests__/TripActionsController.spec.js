@@ -188,6 +188,8 @@ describe('TripActionController operations approve tests', () => {
         driverName: 'derick',
         driverPhoneNo: '0700000000',
         regNumber: 'KAA666Q',
+        cab: '1, SBARU, KAA666Q',
+        driver: '1, Derro, 234234324, 67876867',
         capacity: '1',
         model: 'ferrari'
       },

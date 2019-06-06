@@ -59,7 +59,7 @@ const genRoutes = (num) => {
   };
 };
 
-const genRouteBatch = (num, cabSize, routeSize) => {
+const genRouteBatch = (num, cabSize, driverSize, routeSize) => {
   const routes = [];
   const map = {};
   const baseCode = 64;
@@ -84,6 +84,7 @@ const genRouteBatch = (num, cabSize, routeSize) => {
       comments: faker.lorem.sentence(),
       batch,
       cabId: Math.floor(Math.random() * cabSize) + 1,
+      driverId: Math.floor(Math.random() * driverSize) + 1,
       routeId,
       createdAt,
       updatedAt
@@ -92,8 +93,8 @@ const genRouteBatch = (num, cabSize, routeSize) => {
   return routes;
 };
 
-const genFakerUser = (userSize, batchSize, cabSize, routeSize) => {
-  const routeBatches = genRouteBatch(batchSize, cabSize, routeSize);
+const genFakerUser = (userSize, batchSize, cabSize, driverSize, routeSize) => {
+  const routeBatches = genRouteBatch(batchSize, cabSize, driverSize, routeSize);
   const copy = [...routeBatches];
   const [routeBatchs] = copy.splice(0, 1);
   const users = [];
@@ -153,7 +154,7 @@ const genFakerUser = (userSize, batchSize, cabSize, routeSize) => {
 
 const routeSize = 8;
 const { addresses, locations, routes } = genRoutes(routeSize);
-const { users, routeBatches } = genFakerUser(50, 25, 4, routeSize);
+const { users, routeBatches } = genFakerUser(50, 25, 4, 3, routeSize);
 module.exports = {
   up: queryInterface => queryInterface.bulkInsert('Locations', locations)
     .then(queryInterface.bulkInsert('Addresses', addresses))

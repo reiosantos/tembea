@@ -112,25 +112,20 @@ class TripActionsController {
       user: { id: userId },
       state: payloadState,
     } = payload;
-
     const {
       tripId,
       timeStamp,
       channel,
     } = JSON.parse(payloadState);
-
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-    
-    
-    const cab = await CabService.findOrCreate(cabRegNo);
-    
+    const regitrationNo = cabRegNo.split(',')[2];
+    const cab = await CabService.findOrCreate(regitrationNo);
     const trip = await tripService.updateRequest(tripId, {
       cabId: cab.id,
     });
     await ProviderNotifications.UpdateProviderNotification(channel, slackBotOauthToken, trip, timeStamp, driverDetails);
     await SendNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, trip,
       false);
-
     return 'success';
   }
 

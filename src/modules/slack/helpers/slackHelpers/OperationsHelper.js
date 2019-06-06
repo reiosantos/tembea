@@ -8,7 +8,7 @@ class OperationsHelper {
     try {
       const { team: { id: teamId }, user: { id: userId } } = data;
       let { submission } = data;
-      const { approve, routeRequestData } = JSON.parse(data.state);
+      const { approve } = JSON.parse(data.state);
       const { channelId, timeStamp, routeRequestId } = approve;
       const {
         slackBotOauthToken, routeRequest
@@ -16,6 +16,8 @@ class OperationsHelper {
       const updatedRequest = await RouteRequestService.updateRouteRequest(routeRequest.id, {
         status: 'Approved'
       });
+      const { routeName, takeOffTime } = submission;
+      const routeRequestData = { routeName, takeOffTime };
       if (updatedRequest) {
         submission = {
           ...submission, ...routeRequestData

@@ -169,12 +169,15 @@ describe('Dialog prompts test', () => {
     done();
   });
   it('should send select cab dialog', async (done) => {
-    const driver = [{
-      id: 2,
-      driverName: 'good',
-      driverPhoneNo: '09090999090',
-      driverNumber: '909909'
-    }];
+    const driver = {
+      drivers: [{
+        id: 2,
+        driverName: 'good',
+        driverPhoneNo: '09090999090',
+        driverNumber: '909909',
+        providerId: 1
+      }]
+    };
     const cab = {
       cabs: [{
         model: 'doodle',
@@ -185,7 +188,7 @@ describe('Dialog prompts test', () => {
     jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({});
     jest.spyOn(ProviderService, 'findProviderByUserId').mockResolvedValue({});
     jest.spyOn(CabService, 'getCabs').mockResolvedValue(cab);
-    jest.spyOn(DriverService, 'getProviderDrivers').mockResolvedValue(driver);
+    jest.spyOn(DriverService, 'getDrivers').mockResolvedValue(driver);
 
     await DialogPrompts.sendSelectCabDialog({
       actions: [{ value: 7 }],
@@ -194,7 +197,7 @@ describe('Dialog prompts test', () => {
       team: { id: 9 },
       user: { id: 'uxclla' }
     });
-    
+
     expect(sendDialogTryCatch).toBeCalledTimes(1);
     done();
   });

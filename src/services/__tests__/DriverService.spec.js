@@ -1,6 +1,10 @@
 import DriverService from '../DriverService';
 import models from '../../database/models';
+import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
+import ProviderHelper from '../../helpers/providerHelper';
 
+
+jest.mock('../../helpers/sequelizePaginationHelper', () => jest.fn());
 const {
   Driver, sequelize
 } = models;
@@ -41,9 +45,37 @@ describe('Driver Service', () => {
     expect(isNewRecord).toBeFalsy();
     done();
   });
-  it('Should get all drivers belonging to a provider', async () => {
-    const drivers = await DriverService.getProviderDrivers(1);
-    expect(drivers).toBeDefined();
-    expect(drivers[0].driverName).toEqual('James Savali');
+  describe('getProviders', () => {
+    beforeEach(() => {
+      SequelizePaginationHelper.mockClear();
+      ProviderHelper.serializeDetails = jest.fn();
+    });
+    const listDrivers = {
+      data: [
+        {
+          driverName: 'Muhwezi Deo2',
+          driverPhoneNo: '070533111166',
+          driverNumber: 'UB5422424344',
+          providerId: 1
+        },
+        {
+          driverName: 'Muhwezi Deo',
+          driverPhoneNo: '070533111164',
+          driverNumber: 'UB5422424345',
+          providerId: 2
+        }]
+    };
+    it('returns a list of drivers', async () => {
+      const getPageItems = jest.fn()
+        .mockResolvedValue(listDrivers);
+      SequelizePaginationHelper.mockImplementation(() => ({
+        getPageItems
+      }));
+      await DriverService.getDrivers({
+        providerId: 1
+      });
+      expect(SequelizePaginationHelper).toHaveBeenCalled();
+      expect(ProviderHelper.serializeDetails).toHaveBeenCalled();
+    });
   });
 });

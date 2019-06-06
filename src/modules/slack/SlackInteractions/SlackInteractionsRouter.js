@@ -44,12 +44,14 @@ slackInteractionsRouter.action({ callbackId: 'trips_cab_selection' },
   SlackInteractions.handleOpsAction);
 slackInteractionsRouter.action({ callbackId: 'provider_actions' },
   SlackInteractions.handleSelectCabActions);
-slackInteractionsRouter.action({ callbackId: 'assign_cab_to_trip' },
-  TripCabController.handleSelectCabDialogSubmission);
 slackInteractionsRouter.action({ callbackId: 'confirm_ops_approval' },
   TripCabController.handleSelectProviderDialogSubmission);
 slackInteractionsRouter.action({ callbackId: 'tembea_route' },
   SlackInteractions.startRouteActions);
+slackInteractionsRouter.action({ callbackId: 'providers_route_approval' },
+  SlackInteractions.startProviderActions);
+slackInteractionsRouter.action({ callbackId: /^providers_approval/ },
+  SlackInteractions.handleSelectCabAndDriverAction);
 slackInteractionsRouter.action({ callbackId: /^new_route/ },
   SlackInteractions.handleRouteActions);
 slackInteractionsRouter.action({ callbackId: /^manager_route/ },

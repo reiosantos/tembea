@@ -27,6 +27,8 @@ import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInterac
 import tripService from '../../../services/TripService';
 import CleanData from '../../../helpers/cleanData';
 import OpsTripActions from '../TripManagement/OpsTripActions';
+import ProvidersController from '../RouteManagement/ProvidersController';
+import TripCabController from '../TripManagement/TripCabController';
 
 class SlackInteractions {
   static launch(data, respond) {
@@ -310,6 +312,14 @@ class SlackInteractions {
     }
   }
 
+  static async handleSelectCabAndDriverAction(data, respond) {
+    if (data && data.callback_id === 'providers_approval_trip') {
+      await TripCabController.handleSelectCabDialogSubmission(data, respond);
+    } else {
+      await ProvidersController.handleProvidersRouteApproval(data, respond);
+    }
+  }
+
   static async bookTravelTripStart(data, respond) {
     const payload = CleanData.trim(data);
     const { user: { id }, actions } = payload;
@@ -342,6 +352,19 @@ class SlackInteractions {
         break;
       case 'view_available_routes':
         await JoinRouteInteractions.handleViewAvailableRoutes(payload, respond);
+        break;
+      default:
+        respond(SlackInteractions.goodByeMessage());
+        break;
+    }
+  }
+
+  static async startProviderActions(data, respond) {
+    const payload = CleanData.trim(data);
+    const action = payload.state || payload.actions[0].value;
+    switch (action.split('_')[0]) {
+      case 'accept':
+        DialogPrompts.sendSelectCabDialog(payload);
         break;
       default:
         respond(SlackInteractions.goodByeMessage());

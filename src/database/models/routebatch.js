@@ -35,6 +35,11 @@ module.exports = (sequelize, DataTypes) => {
       targetKey: 'id',
       as: 'cabDetails',
     });
+    RouteBatch.belongsTo(model.Driver, {
+      foreignKey: 'driverId',
+      targetKey: 'id',
+      as: 'driver',
+    });
   };
   return RouteBatch;
 };

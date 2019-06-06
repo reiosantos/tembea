@@ -14,11 +14,9 @@ import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import CabService from '../../../services/CabService';
 import CabsHelper from '../helpers/slackHelpers/CabsHelper';
 import ProviderService from '../../../services/ProviderService';
+import DriverService from '../../../services/DriverService';
 import ProvidersHelper from '../helpers/slackHelpers/ProvidersHelper';
 import ProviderHelper from '../../../helpers/providerHelper';
-import UserService from '../../../services/UserService';
-import DriverService from '../../../services/DriverService';
-import DriverHelper from '../helpers/slackHelpers/DriverHelper';
 
 export const getPayloadKey = userId => `PAYLOAD_DETAILS${userId}`;
 
@@ -87,16 +85,15 @@ class DialogPrompts {
       actions: [{ value: tripId }], message_ts: timeStamp,
       channel: { id: channel }, user: { id: userId },
     } = payload;
-    const { id } = await UserService.getUserBySlackId(userId);
-    const provider = await ProviderService.findProviderByUserId(id);
-    const where = { providerId: provider.id };
+    const { callback_id: callback } = payload;
+    const { where, callbackId } = await ProvidersHelper.selectCabDialogHelper(callback, payload, userId);
     const { cabs } = await CabService.getCabs(undefined, where);
-    const drivers = await DriverService.getProviderDrivers(provider.id);
+    const { drivers } = await DriverService.getDrivers(where);
     const cabData = CabsHelper.toCabLabelValuePairs(cabs);
-    const driverData = DriverHelper.createDriverLabel(drivers);
+    const driverData = CabsHelper.toCabDriverValuePairs(drivers);
     const state = { tripId, timeStamp, channel };
-    const dialog = new SlackDialog('assign_cab_to_trip',
-      'Complete Trip Request', 'Submit', false, JSON.stringify(state));
+    const dialog = new SlackDialog(callbackId,
+      'Complete The Request', 'Submit', false, JSON.stringify(state));
     dialog.addElements([
       new SlackDialogSelectElementWithOptions('Select A Driver',
         'driver', [...driverData]),

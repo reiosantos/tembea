@@ -81,7 +81,7 @@ export default class ProviderNotifications {
   static async UpdateProviderNotification(channel, botToken, trip, timeStamp, driverDetails) {
     const { cab: { providerId } } = trip;
     const provider = await ProviderService.findProviderByPk(providerId);
-    
+
     const message = `Thank you *${provider.name}* for completing this trip request`;
     const tripDetailsAttachment = new SlackAttachment('Trip request complete');
     tripDetailsAttachment.addOptionalProps('', '', '#3c58d7');
@@ -95,6 +95,110 @@ export default class ProviderNotifications {
         botToken);
     } catch (err) {
       BugsnagHelper.log(err);
+    }
+  }
+
+  /**
+  * Updates the notification message sent to the providers
+  * team to avoid approving a request
+  * twice
+  * @param {RouteRequest} routeRequest - Sequelize route request model
+  * @param {number} channel - Slack channel id
+  * @param {string} timestamp - Timestamp of the message to update
+  * @param opsId
+  * @param {string} botToken - Slack authentication token for tembea bot
+  * @param submission
+  * @param {boolean} update
+  * @return {Promise<void>}
+  */
+  static async completeProviderApprovedAction(
+    routeRequest, channel, teamId, timestamp, botToken, submission, update
+  ) {
+    const { engagement: { fellow } } = routeRequest;
+    const title = 'Route Request Approved';
+    const message = ':white_check_mark: You have approved this route request';
+    const attachments = await ProviderAttachmentHelper.getProviderCompleteAttachment(
+      message, title, routeRequest, submission
+    );
+    InteractivePrompts.messageUpdate(
+      channel,
+      `Hi, You have just approved <@${fellow.slackId}> route request.`
+      + '*`This is a recurring trip.`*',
+      timestamp,
+      attachments,
+      botToken
+    );
+    if (!update) {
+      ProviderNotifications
+        .sendToOpsDept(routeRequest, teamId, botToken, submission);
+      ProviderNotifications
+        .sendProviderApproveMessageToFellow(routeRequest, botToken, submission);
+      ProviderNotifications
+        .sendProviderApproveMessageToManager(routeRequest, botToken, submission);
+    }
+  }
+
+  static async sendToOpsDept(routeRequest, teamId, slackBotOauthToken, submission) {
+    const teamDetails = await TeamDetailsService.getTeamDetails(teamId);
+    const { opsChannelId } = teamDetails;
+    const message = await ProviderAttachmentHelper.getManagerApproveAttachment(
+      routeRequest, opsChannelId, submission, false
+    );
+    return SlackNotifications.sendNotification(message, slackBotOauthToken);
+  }
+
+
+  /**
+      * Sends notification to the manager
+      * when a fellow request for a new route have been approved.
+      * @return {Promise<*>}
+      * @param routeRequest
+      * @param slackBotOauthToken
+      * @param submission
+      */
+  static async sendProviderApproveMessageToManager(
+    routeRequest, slackBotOauthToken, submission
+  ) {
+    try {
+      const channelID = await SlackNotifications.getDMChannelId(
+        routeRequest.manager.slackId, slackBotOauthToken
+      );
+      const message = await ProviderAttachmentHelper.getManagerApproveAttachment(
+        routeRequest, channelID, submission, true
+      );
+      return await SlackNotifications.sendNotification(message, slackBotOauthToken);
+    } catch (error) {
+      BugsnagHelper.log(error);
+    }
+  }
+
+  /**
+      * This function sends a notification to the fellow
+      * when the providers team approves the route request
+      * @return {Promise<*>}
+      * @param routeRequest
+      * @param slackBotOauthToken
+      * @param submission
+      * @param teamUrl
+      */
+  static async sendProviderApproveMessageToFellow(
+    routeRequest, slackBotOauthToken, submission, teamUrl
+  ) {
+    try {
+      const { fellow } = routeRequest.engagement;
+      if (!slackBotOauthToken) {
+        const { botToken } = await (TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl));
+        slackBotOauthToken = botToken; // eslint-disable-line no-param-reassign
+      }
+      const channelID = await SlackNotifications.getDMChannelId(
+        fellow.slackId, slackBotOauthToken
+      );
+      const message = await ProviderAttachmentHelper.getFellowApproveAttachment(
+        routeRequest, channelID, submission
+      );
+      return await SlackNotifications.sendNotification(message, slackBotOauthToken);
+    } catch (error) {
+      BugsnagHelper.log(error);
     }
   }
 }

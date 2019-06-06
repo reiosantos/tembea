@@ -31,57 +31,6 @@ export default class OpsAttachmentHelper {
     );
   }
 
-  static async getManagerApproveAttachment(routeRequest, channelID, submission) {
-    const { engagement: { fellow }, manager, status } = routeRequest;
-    const data = AttachmentHelper.getStatusLabels(status, 'Approved');
-    if (!data) return;
-    const {
-      action, emoji, title, color
-    } = data;
-    const attachment = new SlackAttachment(title);
-    const routeAttachment = AttachmentHelper.routeRequestAttachment(routeRequest);
-    const routeInformation = OpsAttachmentHelper.opsRouteInformation(submission);
-    const engagementAttachment = await AttachmentHelper.engagementAttachment(routeRequest);
-    const attachments = [
-      attachment, routeAttachment, engagementAttachment, routeInformation
-    ];
-    attachments
-      .filter(item => !!item)
-      .forEach(at => at.addOptionalProps('', '/fallback', color));
-    const greeting = `Hi, <@${manager.slackId}>`;
-    return SlackNotifications.createDirectMessage(
-      channelID,
-      `${greeting}, the route request you confirmed for 
-      <@${fellow.slackId}> has been ${action} ${emoji}`,
-      attachments
-    );
-  }
-
-  static async getFellowApproveAttachment(routeRequest, channelID, submission) {
-    const { engagement: { fellow }, status } = routeRequest;
-    const data = AttachmentHelper.getStatusLabels(status, 'Approved');
-    if (!data) return;
-    const {
-      action, emoji, title, color
-    } = data;
-    const attachment = new SlackAttachment(title);
-    const routeAttachment = AttachmentHelper.routeRequestAttachment(routeRequest);
-    const routeInformation = OpsAttachmentHelper.opsRouteInformation(submission);
-    const engagementAttachment = await AttachmentHelper.engagementAttachment(routeRequest);
-    const attachments = [
-      attachment, routeAttachment, engagementAttachment, routeInformation
-    ];
-    attachments
-      .filter(item => !!item)
-      .forEach(at => at.addOptionalProps('', '/fallback', color));
-    const greeting = `Hi, <@${fellow.slackId}>`;
-    return SlackNotifications.createDirectMessage(
-      channelID,
-      `${greeting}, the operations team ${action} your request ${emoji}. You have also been added to the Route you requested`,
-      attachments
-    );
-  }
-
   static async getOperationCompleteAttachment(message, title, routeRequest, submission) {
     const footer = new SlackAttachment(message);
     const header = new SlackAttachment(title);
@@ -97,15 +46,13 @@ export default class OpsAttachmentHelper {
 
   static opsRouteInformation(submission) {
     const {
-      routeName, routeCapacity, takeOffTime, regNumber
+      routeName, takeOffTime
     } = submission;
     const time = moment(takeOffTime, 'HH:mm').format('LT');
     const attachments = new SlackAttachment('');
     const fields = [
       new SlackAttachmentField('Route Name', routeName, true),
-      new SlackAttachmentField('Route Capacity', routeCapacity, true),
-      new SlackAttachmentField('Take-off Time', time, true),
-      new SlackAttachmentField('Cab Registration Number', regNumber, true)
+      new SlackAttachmentField('Take-off Time', time, true)
     ];
     attachments.addFieldsOrActions('fields', fields);
     return attachments;

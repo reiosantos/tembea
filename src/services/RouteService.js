@@ -70,7 +70,7 @@ class RouteService {
    */
   static async createRouteBatch(data) {
     const {
-      name, imageUrl, destinationName, vehicleRegNumber, ...batchDetails
+      name, imageUrl, destinationName, vehicleRegNumber, driverId, ...batchDetails
     } = data;
 
     const destination = await AddressService.findAddress(destinationName);
@@ -80,15 +80,17 @@ class RouteService {
 
     batchDetails.batch = RouteService.updateBatchLabel(routeDetails);
     const routeId = route.id;
-    const batch = await RouteService.createBatch(batchDetails, routeId, cabDetails.id);
+    const batch = await RouteService.createBatch(batchDetails, routeId, cabDetails.id, driverId);
     batch.cabDetails = cabDetails;
     route.destination = destination;
     batch.route = route;
     return RouteService.serializeRouteBatch(batch);
   }
 
-  static async createBatch(batchDetails, routeId, cabId) {
-    const batch = await RouteBatch.create({ ...batchDetails, routeId, cabId });
+  static async createBatch(batchDetails, routeId, cabId, driverId) {
+    const batch = await RouteBatch.create({
+      ...batchDetails, routeId, cabId, driverId
+    });
     return batch;
   }
 

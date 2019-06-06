@@ -25,6 +25,8 @@ import ViewTripHelper from '../../helpers/slackHelpers/ViewTripHelper';
 import JoinRouteInteractions from '../../RouteManagement/JoinRoute/JoinRouteInteractions';
 import tripService from '../../../../services/TripService';
 import OpsTripActions from '../../TripManagement/OpsTripActions';
+import TripCabController from '../../TripManagement/TripCabController';
+import ProvidersController from '../../RouteManagement/ProvidersController';
 
 describe('SlackInteractions', () => {
   let payload1;
@@ -757,6 +759,39 @@ describe('SlackInteractions', () => {
         SlackInteractions.handleSelectProviderAction(data, respond);
         expect(sendSelectProviderDialogSpy).toHaveBeenCalled();
       });
+      it('should call identify difference between trip and route request and call trip controller', () => {
+        const data = {
+          callback_id: 'providers_approval_trip'
+        };
+        const TripCabControllerSpy = jest.spyOn(TripCabController, 'handleSelectCabDialogSubmission').mockResolvedValue({});
+
+        SlackInteractions.handleSelectCabAndDriverAction(data, respond);
+        expect(TripCabControllerSpy).toHaveBeenCalled();
+      });
+      it('should call identify difference between trip and route request and call provider controller', () => {
+        const ProvidersControllerSpy = jest.spyOn(ProvidersController, 'handleProvidersRouteApproval').mockResolvedValue({});
+        const data = {
+          callback_id: 'providers_approval_route'
+        };
+        SlackInteractions.handleSelectCabAndDriverAction(data, respond);
+        expect(ProvidersControllerSpy).toHaveBeenCalled();
+      });
+      it('should handle provider actions', (done) => {
+        jest.spyOn(DialogPrompts, 'sendSelectCabDialog');
+        const payload = createPayload('accept_route_request');
+        SlackInteractions.startProviderActions(payload, respond);
+        expect(DialogPrompts.sendSelectCabDialog).toBeCalled();
+        done();
+      });
+      it('should handle provider actions', (done) => {
+        const payload = createPayload('default');
+        SlackInteractions.startProviderActions(payload, respond);
+        expect(respond).toHaveBeenCalledWith(
+          responseMessage('Thank you for using Tembea. See you again.')
+        );
+        done();
+      });
+
       it('should handle decline request action', () => {
         const data = {
           actions: [

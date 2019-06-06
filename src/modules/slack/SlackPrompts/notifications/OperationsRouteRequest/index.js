@@ -80,59 +80,6 @@ export default class OperationsNotifications {
     }
   }
 
-  /**
-   * Sends notification to the manager
-   * when a fellow request for a new route have been approved.
-   * @return {Promise<*>}
-   * @param routeRequest
-   * @param slackBotOauthToken
-   * @param submission
-   */
-  static async sendOpsApproveMessageToManager(
-    routeRequest, slackBotOauthToken, submission
-  ) {
-    try {
-      const channelID = await SlackNotifications.getDMChannelId(
-        routeRequest.manager.slackId, slackBotOauthToken
-      );
-      const message = await OpsAttachmentHelper.getManagerApproveAttachment(
-        routeRequest, channelID, submission
-      );
-      return await SlackNotifications.sendNotification(message, slackBotOauthToken);
-    } catch (error) {
-      bugsnagHelper.log(error);
-    }
-  }
-
-  /**
-   * This function sends a notification to the fellow
-   * when the operations team approves the route request
-   * @return {Promise<*>}
-   * @param routeRequest
-   * @param slackBotOauthToken
-   * @param submission
-   * @param teamUrl
-   */
-  static async sendOpsApproveMessageToFellow(
-    routeRequest, slackBotOauthToken, submission, teamUrl
-  ) {
-    try {
-      const { fellow } = routeRequest.engagement;
-      if (!slackBotOauthToken) {
-        const { botToken } = await (TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl));
-        slackBotOauthToken = botToken; // eslint-disable-line no-param-reassign
-      }
-      const channelID = await SlackNotifications.getDMChannelId(
-        fellow.slackId, slackBotOauthToken
-      );
-      const message = await OpsAttachmentHelper.getFellowApproveAttachment(
-        routeRequest, channelID, submission
-      );
-      return await SlackNotifications.sendNotification(message, slackBotOauthToken);
-    } catch (error) {
-      bugsnagHelper.log(error);
-    }
-  }
 
   static async completeOperationsDeclineAction(
     routeRequest, channel, teamId, routeRequestId, timestamp, botToken, payload, update
