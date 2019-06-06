@@ -78,9 +78,9 @@ describe('RoutesController', () => {
     it('should change the status of the route request to approved', async () => {
       jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
         dataValues: {
-          status: 'Approved'
+          status: 'Confirmed'
         },
-        status: 'Approved'
+        status: 'Confirmed'
       }));
       await RoutesController.updateRouteRequestStatus(approveReq, res);
 

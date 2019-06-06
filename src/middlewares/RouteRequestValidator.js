@@ -62,23 +62,16 @@ class RouteRequestValidator {
 
   static validateApprovalBody(req, res, next) {
     const messages = GeneralValidator.validateReqBody(req.body,
-      'routeName', 'capacity', 'takeOff', 'provider');
+      'routeName', 'takeOff', 'provider', 'comment');
     if (messages.length > 0) {
       return RouteRequestValidator.sendResponseWithErrors(res,
         'Some properties are missing for approval', messages);
     }
-    const { capacity, takeOff } = req.body;
-
-    if (!/^\d*[1-9]\d*$/.test(capacity)) {
-      return RouteRequestValidator.sendResponse(res,
-        'Capacity must be an integer greater than zero');
-    }
-
+    const { takeOff } = req.body;
     if (!/^([0-1]?[0-9]|[2][0-3]):([0-5][0-9])$/.test(takeOff.trim())) {
       return RouteRequestValidator.sendResponse(res,
         'Take off time must be in the right format e.g 11:30');
     }
-
     return next();
   }
 

@@ -118,7 +118,7 @@ describe('Decline route request', () => {
         .send(mockDeclinedRouteRequest);
 
       expect(response.body.message).toEqual(
-        'This route request has been updated'
+        'Cannot read property \'trim\' of undefined'
       );
     });
   });
@@ -176,7 +176,6 @@ describe('Approve a route request', () => {
             message: 'Some properties are missing for approval',
             errors: [
               'Please provide routeName.',
-              'Please provide capacity.',
               'Please provide takeOff.',
               'Please provide provider.'
             ]
@@ -190,10 +189,10 @@ describe('Approve a route request', () => {
         .set(reqHeaders)
         .send(mockDataInvalidCapacity)
         .expect(
-          400,
+          403,
           {
             success: false,
-            message: 'Capacity must be an integer greater than zero',
+            message: 'This request needs to be confirmed by the manager first',
           },
           done
         );

@@ -64,7 +64,7 @@ class DialogPrompts {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
-  static async sendOperationsDeclineDialog(payload, callback_id = 'operations_reason_dialog') {
+  static async sendOperationsDeclineDialog(payload, callback_id = 'operations_reason_dialog_trips') {
     const actionTs = payload.message_ts;
     const { value } = payload.actions[0];
     const state = {

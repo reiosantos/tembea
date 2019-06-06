@@ -181,7 +181,7 @@ class RoutesController {
       const {
         routeRequest, updatedRouteRequest
       } = await RoutesController.getUpdatedRouteRequest(requestId, body);
-      if (routeRequest.status === 'Approved') {
+      if (routeRequest.status === 'Confirmed') {
         const submission = RoutesController.saveRoute(routeRequest, body);
         RoutesController.sendNotificationToProvider(requestId, submission);
       } else {

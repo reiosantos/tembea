@@ -261,7 +261,7 @@ describe('RouteRequestValidator', () => {
       expect(HttpError.sendErrorResponse).toHaveBeenCalled();
     });
   });
-  describe.skip('validateApprovalBody', () => {
+  describe('validateApprovalBody', () => {
     const res = {
       status: () => ({
         json: () => {}
@@ -297,13 +297,17 @@ describe('RouteRequestValidator', () => {
           reviewerId: '2',
           routeName: 'Yaba',
           capacity: '2',
-          takeOff: '1900'
+          takeOff: '1900',
+          teamUrl: 'stuff.slack.com',
+          provider: {}
         }
       };
       jest.spyOn(RouteRequestValidator, 'sendResponse');
 
       RouteRequestValidator.validateApprovalBody(req, res, next);
-      expect(RouteRequestValidator.sendResponse).toHaveBeenCalledWith(res, 'Take off time must be in the right format e.g 11:30');
+      expect(RouteRequestValidator.sendResponse).toHaveBeenCalledWith(
+        res, 'Take off time must be in the right format e.g 11:30'
+      );
     });
 
     it('should call the next middleware', () => {
@@ -317,7 +321,8 @@ describe('RouteRequestValidator', () => {
           reviewerId: '2',
           routeName: 'Yaba',
           capacity: '2',
-          takeOff: '19:00'
+          takeOff: '19:00',
+          provider: {}
         }
       };
 
