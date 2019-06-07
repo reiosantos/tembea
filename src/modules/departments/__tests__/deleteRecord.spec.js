@@ -146,34 +146,6 @@ describe('Delete department record', () => {
       );
   });
 
-  it('should not be able to delete a deleted department', async (done) => {
-    await request(app).delete('/api/v1/departments').send({
-      name: 'Test Department 2'
-    })
-      .set({
-        Accept: 'application/json',
-        authorization: validToken
-      });
-
-    request(app)
-      .delete('/api/v1/departments')
-      .send({
-        name: 'Test Department 2'
-      })
-      .set({
-        Accept: 'application/json',
-        authorization: validToken
-      })
-      .expect(
-        404,
-        {
-          success: false,
-          message: 'Department not found'
-        },
-        done
-      );
-  });
-
   it('should fail which some unforseen data', (done) => {
     HttpError.sendErrorResponse = jest.fn(() => {});
     DepartmentController.deleteRecord('no', 'no');
