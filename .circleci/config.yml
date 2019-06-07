@@ -213,6 +213,7 @@ workflows:
             - test_and_report
           <<: *filters
       - docker_and_deploy:
+          type: approval
           requires:
             - checkout_code
             # - package_vulnerability_check

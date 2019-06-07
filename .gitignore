@@ -83,6 +83,9 @@ dist/
 .floo*
 .snyk
 
+# jenkins secrets
+jenkins/secrets
+
 .vscode
 
 package-lock.json
