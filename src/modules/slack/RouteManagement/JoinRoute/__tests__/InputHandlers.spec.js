@@ -246,12 +246,10 @@ describe('JoinInputHandlers', () => {
       const routeId = 1;
       const value = JSON.stringify({ routeId, capacityFilled: false });
       payload = { ...payload, actions: [{ value }] };
-      jest.spyOn(UserService, 'getUserBySlackId')
-        .mockResolvedValue({ id: 1 });
+      jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({ id: 1 });
       jest.spyOn(PartnerService, 'updateEngagement').mockResolvedValue({ id: 1 });
       jest.spyOn(RouteService, 'addUserToRoute').mockResolvedValue({ id: 1 });
-      jest.spyOn(formHelper, 'getFellowEngagementDetails')
-        .mockResolvedValue(engagement);
+      jest.spyOn(formHelper, 'getFellowEngagementDetails').mockResolvedValue(engagement);
 
       await JoinRouteInputHandlers.submitJoinRoute(payload, respond);
       expect(respond).toBeCalledTimes(1);

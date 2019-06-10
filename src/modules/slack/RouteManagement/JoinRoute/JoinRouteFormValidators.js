@@ -1,7 +1,7 @@
 import Validators from '../../../../helpers/slack/UserInputValidator/Validators';
 import ManagerFormValidator from
   '../../../../helpers/slack/UserInputValidator/managerFormValidator';
-import DateDialogHelper, { validateTime } from '../../../../helpers/dateHelper';
+import DateDialogHelper from '../../../../helpers/dateHelper';
 import { SlackDialogError } from '../../SlackModels/SlackDialogModels';
 import cache from '../../../../cache';
 
@@ -22,8 +22,8 @@ class FormValidators {
   static validateHours(validHours) {
     const errors = [];
     let [from, to] = validHours;
-    from = validateTime(from.trim());
-    to = validateTime(to.trim());
+    from = DateDialogHelper.validateTime(from.trim());
+    to = DateDialogHelper.validateTime(to.trim());
     if (!(to && from)) {
       errors.push(new SlackDialogError('workHours', 'Invalid time.'));
     }
