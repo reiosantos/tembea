@@ -30,7 +30,7 @@ class StartUpHelper {
         where: { email: email2 },
         defaults: { slackId: slackId2, name: StartUpHelper.getUserNameFromEmail(email2) }
       });
-
+      
       const [[user], [user2]] = await Promise.all([user1Promise, user2Promise]);
       const [role] = await RoleService.createOrFindRole('Super Admin');
       await Promise.all([user.addRoles(role), user2.addRoles(role)]);

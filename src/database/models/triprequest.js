@@ -99,8 +99,18 @@ module.exports = (sequelize, DataTypes) => {
       references: {
         model: 'Drivers',
         key: 'id',
-      }
+      },
     },
+    providerId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'Providers',
+        key: 'id',
+      },
+    },
+    approvalDate: {
+      type: DataTypes.STRING
+    }
   }, {});
   TripRequest.associate = (models) => {
     TripRequest.belongsTo(models.User, {
@@ -157,6 +167,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'driverId',
       targetKey: 'id',
       as: 'driver'
+    });
+    TripRequest.belongsTo(models.Provider, {
+      foreignKey: 'providerId',
+      targetKey: 'id',
+      as: 'provider'
     });
   };
   return TripRequest;

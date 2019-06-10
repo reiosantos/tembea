@@ -1,7 +1,7 @@
 import tripService, { TripService } from '../TripService';
 import models from '../../database/models';
 import {
-  mockedValue, tripInfo, mockTrip, updatedValue, mockAirportTransferTrip
+  mockedValue, tripInfo, mockTrip, updatedValue, mockAirportTransferTrip, providerMock
 } from '../../modules/trips/__tests__/__mocks__';
 import cache from '../../cache';
 import RemoveDataValues from '../../helpers/removeDataValues';
@@ -172,6 +172,8 @@ describe('TripService', () => {
       expect(response).toHaveProperty('requester');
       expect(response).toHaveProperty('approvedBy');
       expect(response).toHaveProperty('confirmedBy');
+      expect(response).toHaveProperty('provider');
+      expect(response).toHaveProperty('approvalDate');
     });
   });
 
@@ -247,6 +249,32 @@ describe('TripService', () => {
       } catch (error) {
         expect(error).toEqual(err);
       }
+    });
+  });
+  describe('tripService_serializeProviderData', () => {
+    it('should return a serialized provider', () => {
+      const serializedProvider = TripService.serializeProviderData(providerMock);
+      expect(serializedProvider).toEqual({
+        name: 'Provider Test Name',
+        email: 'provider_email@email.com',
+        phoneNumber: '08001111111'
+      });
+    });
+
+    it('should return a serialized provider', () => {
+      const newProviderMock = {
+        ...providerMock,
+        user: {
+          ...providerMock.user,
+          phoneNo: undefined
+        }
+      };
+      const serializedProvider = TripService.serializeProviderData(newProviderMock);
+      expect(serializedProvider).toEqual({
+        name: 'Provider Test Name',
+        email: 'provider_email@email.com',
+        phoneNumber: '-'
+      });
     });
   });
 });

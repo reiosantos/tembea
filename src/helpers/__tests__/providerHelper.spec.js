@@ -7,18 +7,19 @@ describe('Providers Helper', () => {
     expect(result).toEqual(returnedObj);
   });
   it('it should convert an array of provider details into provider lable value pairs', (done) => {
-    const [providerName, slackId, providerUserId] = ['DbrandTaxify', 1, 'UXTMIE'];
+    const [providerName, slackId, providerUserId, providerId] = ['DbrandTaxify', 1, 'UXTMIE', 1];
     const providerMock = {
       name: providerName,
       user: { slackId },
       providerUserId,
+      id: providerId
     };
     const providersMock = [providerMock];
     const valuePairsData = ProviderHelper.generateProvidersLabel(providersMock);
     const expectedData = [
       {
         label: providerName,
-        value: [providerName, providerUserId, slackId].toString()
+        value: [providerName, providerUserId, slackId, providerId].toString()
       }
     ];
     expect(valuePairsData).toEqual(expectedData);

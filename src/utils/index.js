@@ -193,6 +193,17 @@ class Utils {
       throw error;
     }
   }
+
+  /**
+   * @description Converts the time in seconds to milliseconds
+   * @method convertSecondsToMs
+   * @param {Number} sceonds the time in secs
+   * @returns {Number} Returns the time in ms
+   */
+  static convertSecondsToMs(seconds) {
+    const ONE_SEC_TO_MS = 1000;
+    return seconds * ONE_SEC_TO_MS;
+  }
 }
 
 module.exports = Utils;

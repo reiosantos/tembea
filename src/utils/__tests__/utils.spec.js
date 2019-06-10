@@ -77,4 +77,11 @@ describe('Utils Method', () => {
       done();
     });
   });
+
+  it('should convert time in seconds to ms', () => {
+    const todayInSecs = new Date().getTime() / 1000;
+    const todayInMs = Utils.convertSecondsToMs(todayInSecs);
+    expect(todayInMs).toBeGreaterThan(todayInSecs);
+    expect(new Date(todayInMs).getDay()).toEqual(new Date(todayInSecs * 1000).getDay());
+  });
 });

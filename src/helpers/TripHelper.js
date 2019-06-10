@@ -1,6 +1,8 @@
+import moment from 'moment';
 import Cache from '../cache';
 import AddressService from '../services/AddressService';
 import { getTripKey } from './slack/ScheduleTripInputHandlers';
+import TripUtils from '../utils';
 
 export default class TripHelper {
   static cleanDateQueryParam(query, field) {
@@ -66,5 +68,17 @@ export default class TripHelper {
       return tripDetails;
     }
     return tripData;
+  }
+
+  /**
+   * @description Converts approval date format to another format
+   * @param {number} approvalDate the approval date in seconds
+   * @returns {string} The new approval date in a user-friendly format
+   */
+  static convertApprovalDateFormat(approvalDate) {
+    const approvalDateInMs = TripUtils.convertSecondsToMs(approvalDate);
+    return moment(
+      new Date(parseInt(approvalDateInMs, 10)), 'YYYY-MM-DD HH:mm:ss'
+    ).toISOString();
   }
 }

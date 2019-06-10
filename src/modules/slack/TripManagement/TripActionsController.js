@@ -9,7 +9,7 @@ import ProviderNotifications from '../SlackPrompts/notifications/ProviderNotific
 import UserService from '../../../services/UserService';
 import RemoveDataValues from '../../../helpers/removeDataValues';
 import { cabService } from '../../../services/CabService';
-
+import TripHelper from '../../../helpers/TripHelper';
 
 class TripActionsController {
   static getErrorMessage() {
@@ -50,16 +50,14 @@ class TripActionsController {
 
   static async changeTripStatusToConfirmed(opsUserId, payload, slackBotOauthToken) {
     const {
-      submission: {
-        confirmationComment,
-        selectedProviderId
-      },
+      submission: { confirmationComment, selectedProviderId, providerId },
       state: payloadState
     } = payload;
-
+  
     const {
       tripId, isAssignProvider, timeStamp, channel
     } = JSON.parse(payloadState);
+  
     if (selectedProviderId) {
       const { slackId: providerUserSlackId } = RemoveDataValues.removeDataValues(
         await UserService.getUserById(selectedProviderId)
@@ -67,11 +65,16 @@ class TripActionsController {
       // eslint-disable-next-line no-param-reassign
       payload.submission.providerUserSlackId = providerUserSlackId;
     }
+  
+    const approvalDate = TripHelper.convertApprovalDateFormat(timeStamp);
+
     if (isAssignProvider) {
       const trip = await tripService.updateRequest(tripId, {
         tripStatus: 'Confirmed',
         operationsComment: confirmationComment,
         confirmedById: opsUserId,
+        providerId,
+        approvalDate
       });
       await this.notifyProvider(payload, trip, slackBotOauthToken, timeStamp, channel);
     }

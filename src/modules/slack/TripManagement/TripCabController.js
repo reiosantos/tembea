@@ -53,14 +53,15 @@ class TripCabController {
   static async handleSelectProviderDialogSubmission(data, respond) {
     const { submission: { provider } } = data;
     const providerDetails = provider.split(',');
-    const [providerName, providerUserId, providerUserSlackId] = providerDetails;
+    const [providerName, providerUserId, providerUserSlackId, providerId] = providerDetails;
     const modifiedProviderData = {
       ...data,
       submission: {
         ...data.submission,
         providerName,
         providerUserId,
-        providerUserSlackId
+        providerUserSlackId,
+        providerId
       }
     };
     await SlackInteractions.handleTripActions(modifiedProviderData, respond);

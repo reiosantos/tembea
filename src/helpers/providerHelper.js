@@ -42,9 +42,10 @@ export default class ProviderHelper {
       const {
         name: label,
         providerUserId,
-        user: { slackId }
+        user: { slackId },
+        id: providerId,
       } = provider;
-      const valueDetails = [label, providerUserId, slackId].toString();
+      const valueDetails = [label, providerUserId, slackId, providerId].toString();
       const data = {
         label,
         value: valueDetails

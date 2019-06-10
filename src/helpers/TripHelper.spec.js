@@ -106,3 +106,15 @@ describe('TripHelper for Schedule Trip', () => {
     expect(result.destinationLat).toBeUndefined();
   });
 });
+
+describe('Trip approval Date test', () => {
+  it('should return a new trip approval date format', () => {
+    const approvalDate = new Date().getTime() / 1000;
+    const newApprovalDateFormat = TripHelper.convertApprovalDateFormat(approvalDate);
+    const date = newApprovalDateFormat.split('T')[0];
+    const year = new Date().getFullYear();
+    const month = new Date().getMonth() + 1;
+    const day = new Date().getDate();
+    expect(date).toEqual(`${year}-0${month}-${day}`);
+  });
+});

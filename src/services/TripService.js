@@ -7,15 +7,26 @@ import cache from '../cache';
 import HttpError from '../helpers/errorHandler';
 import SlackPagination from '../helpers/slack/SlackPaginationHelper';
 import RemoveDataValues from '../helpers/removeDataValues';
+import WhereClauseHelper from '../helpers/WhereClauseHelper';
 
-const { TripRequest, Department } = models;
+const {
+  TripRequest, Department, Provider, User
+} = models;
 const getTripKey = pk => `tripDetail_${pk}`;
 
 export class TripService {
   constructor() {
     this.defaultInclude = [
       'requester', 'origin', 'destination', 'rider', 'approver', 'confirmer',
-      'department', 'decliner', 'cab', 'tripDetail', 'driver'
+      'department', 'decliner', 'cab', 'tripDetail', 'driver',
+      {
+        model: Provider,
+        as: 'provider',
+        include: [{
+          model: User,
+          as: 'user'
+        }]
+      }
     ];
   }
 
@@ -23,13 +34,16 @@ export class TripService {
     const {
       departureTime, requestedOn, currentDay,
       status: tripStatus, department: departmentName,
-      type: tripType
+      type: tripType,
+      noCab
     } = filterParams;
     let where = {};
 
     if (tripStatus) where = { tripStatus };
     if (departmentName) where = { ...where, departmentName };
     if (tripType) where = { ...where, tripType };
+    where = WhereClauseHelper.getNoCabWhereClause(Boolean(noCab), where);
+
     if (currentDay) {
       where = {
         ...where,
@@ -48,24 +62,15 @@ export class TripService {
 
   async getPaginatedTrips(filters, pageNo,
     limit = SlackPagination.getSlackPageSize()) {
-    const filter = {
-      ...filters,
-      include: this.defaultInclude
-    };
-    const trips = new SequelizePaginationHelper(
-      TripRequest, filter, limit
-    );
+    const filter = { ...filters, include: this.defaultInclude };
+    const trips = new SequelizePaginationHelper(TripRequest, filter, limit);
     return trips.getPageItems(pageNo);
   }
 
   async getTrips(pageable, where) {
     const { page, size } = pageable;
     const filter = this.createFilter(where);
-    const paginatedRoutes = new SequelizePaginationHelper(
-      TripRequest,
-      filter,
-      size
-    );
+    const paginatedRoutes = new SequelizePaginationHelper(TripRequest, filter, size);
     const { data, pageMeta } = await paginatedRoutes.getPageItems(page);
     const trips = data.map(trip => TripService.serializeTripRequest(trip));
     return { trips, ...pageMeta };
@@ -104,6 +109,16 @@ export class TripService {
     }
   }
 
+  static serializeProviderData(provider) {
+    if (provider) {
+      return {
+        name: provider.name,
+        email: provider.user.email,
+        phoneNumber: provider.user.phoneNo || '-',
+      };
+    }
+  }
+
   static serializeAddress(address) {
     if (address) {
       return address.address;
@@ -133,7 +148,7 @@ export class TripService {
     const {
       id, name, tripStatus: status, departureTime, arrivalTime, createdAt,
       tripType: type, noOfPassenger, rating, managerComment,
-      operationsComment, distance
+      operationsComment, distance, cabId, provider, approvalDate
     } = tripInfo;
     return {
       id,
@@ -156,7 +171,10 @@ export class TripService {
       rating,
       operationsComment,
       managerComment,
-      distance
+      distance,
+      cabId,
+      provider: TripService.serializeProviderData(provider) || {},
+      approvalDate
     };
   }
 
@@ -170,16 +188,13 @@ export class TripService {
       from = { [Op.gte]: moment(after, 'YYYY-MM-DD').toDate() };
       condition = from;
     }
-
     if (before) {
       to = { [Op.lte]: moment(before, 'YYYY-MM-DD').toDate() };
       condition = to;
     }
-
     if (both) {
       condition = { [Op.and]: [from, to] };
     }
-
     if (!after && !before) return {};
     return {
       [field]: condition
@@ -213,10 +228,6 @@ export class TripService {
     }
   }
 
-
-  /**
-   *this method returns a non-paginated array of trips from the database.
-   */
   async getAll(
     params = { where: {} },
     order = { order: [['createdAt', 'DESC'], ['updatedAt', 'DESC']] }
@@ -235,7 +246,6 @@ export class TripService {
     try {
       await TripRequest.update({ ...updateObject },
         { returning: true, where: { id: tripId } });
-
       const result = await this.getById(tripId, true);
       await cache.saveObject(getTripKey(tripId), result);
       return result;
