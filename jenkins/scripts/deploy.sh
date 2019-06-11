@@ -24,7 +24,6 @@ export_env(){
   export SLACK_OAUTH_TOKEN="$SLACK_OAUTH_TOKEN"
   export SLACK_BOT_OAUTH_TOKEN="$SLACK_BOT_OAUTH_TOKEN"
 
-  GIT_BRANCH="develop"
   # export production environment variables
   if [ "${GIT_BRANCH}" = "master" ]; then
     export SLACK_CLIENT_ID="$PROD_SLACK_CLIENT_ID"

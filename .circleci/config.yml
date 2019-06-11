@@ -212,9 +212,14 @@ workflows:
             # - package_vulnerability_check
             - test_and_report
           <<: *filters
-      - docker_and_deploy:
+      - approve_deployment:
           type: approval
           requires:
+            - build_artifacts
+          <<: *filters
+      - docker_and_deploy:
+          requires:
+            - approve_deployment
             - checkout_code
             # - package_vulnerability_check
             - test_and_report
