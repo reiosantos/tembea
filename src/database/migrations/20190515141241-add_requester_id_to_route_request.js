@@ -3,5 +3,5 @@ module.exports = {
     type: Sequelize.INTEGER,
     allowNull: true
   }),
-  down: queryInterface => queryInterface.removeColumn('requesterId')
+  down: queryInterface => queryInterface.removeColumn('RouteRequests', 'requesterId')
 };

@@ -157,7 +157,7 @@ const { addresses, locations, routes } = genRoutes(routeSize);
 const { users, routeBatches } = genFakerUser(50, 25, 4, 3, routeSize);
 module.exports = {
   up: queryInterface => queryInterface.bulkInsert('Locations', locations)
-    .then(queryInterface.bulkInsert('Addresses', addresses))
+    .then(() => queryInterface.bulkInsert('Addresses', addresses))
     .then(() => queryInterface.bulkInsert('Routes', routes))
     .then(() => queryInterface.bulkInsert('RouteBatches', routeBatches))
     .then(() => queryInterface.bulkInsert('Users', users)),
