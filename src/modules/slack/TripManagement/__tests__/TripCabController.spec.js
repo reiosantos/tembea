@@ -19,21 +19,10 @@ describe('TripCabController', () => {
     expect(result.text).toEqual('*Proceed to Create New Cab*');
     done();
   });
-  it('should handle create new cab submission', (done) => {
-    const data = {
-      submission: {
-        cab: 'Create New Cab'
-      }
-    };
-    const sendCreateCabSpy = jest.spyOn(TripCabController, 'sendCreateCabAttachment');
-    TripCabController.handleSelectCabDialogSubmission(data, respond);
-    expect(sendCreateCabSpy).toHaveBeenCalledTimes(1);
-    done();
-  });
   it('should handle non create new cab submission', (done) => {
     const data = {
       submission: {
-        driver: 'DriverName, 8484938389, HFKF-84748'
+        driver: '1, DriverName, 8484938389, HFKF-84748'
       }
     };
     const completeTripSpy = jest.spyOn(TripActionsController, 'completeTripRequest');

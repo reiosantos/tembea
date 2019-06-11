@@ -23,22 +23,17 @@ class TripCabController {
   }
 
   static async handleSelectCabDialogSubmission(data, respond) {
-    const { submission } = data;
-    if (submission.cab === 'Create New Cab') {
-      const result = TripCabController.sendCreateCabAttachment(data, 'operations_approval_trip', null);
-      respond(result);
-      return;
-    }
     const {
       submission: {
         driver
       }
     } = data;
     const driverDetails = driver.split(',');
-    const [driverName, driverPhoneNo, driverNumber] = driverDetails;
+    const [driverId, driverName, driverPhoneNo, driverNumber] = driverDetails;
     const modifiedCabData = { ...data };
     modifiedCabData.submission = {
       ...data.submission,
+      driverId,
       driverName,
       driverPhoneNo,
       driverNumber

@@ -56,7 +56,7 @@ describe('ProviderService', () => {
       });
     });
 
-    describe('Update Provider', async () => {
+    describe('Update Provider', () => {
       let mockProviderUpdateData;
       beforeEach(() => {
         mockProviderUpdateData = {

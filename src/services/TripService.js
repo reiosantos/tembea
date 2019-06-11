@@ -15,7 +15,7 @@ export class TripService {
   constructor() {
     this.defaultInclude = [
       'requester', 'origin', 'destination', 'rider', 'approver', 'confirmer',
-      'department', 'decliner', 'cab', 'tripDetail'
+      'department', 'decliner', 'cab', 'tripDetail', 'driver'
     ];
   }
 

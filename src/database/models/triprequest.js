@@ -94,6 +94,13 @@ module.exports = (sequelize, DataTypes) => {
     tripNotTakenReason: {
       type: DataTypes.TEXT
     },
+    driverId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'Drivers',
+        key: 'id',
+      }
+    },
   }, {});
   TripRequest.associate = (models) => {
     TripRequest.belongsTo(models.User, {
@@ -145,6 +152,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'tripDetailId',
       targetKey: 'id',
       as: 'tripDetail'
+    });
+    TripRequest.belongsTo(models.Driver, {
+      foreignKey: 'driverId',
+      targetKey: 'id',
+      as: 'driver'
     });
   };
   return TripRequest;

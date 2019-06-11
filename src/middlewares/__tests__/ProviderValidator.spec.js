@@ -24,7 +24,7 @@ describe('ProviderValidator', () => {
     jest.restoreAllMocks();
     done();
   });
-  describe('Provider_verifyProviderUpdateBody', async () => {
+  describe('Provider_verifyProviderUpdateBody', () => {
     let httpSpy;
     beforeEach(() => {
       httpSpy = jest.spyOn(HttpError, 'sendErrorResponse');
@@ -150,7 +150,7 @@ describe('ProviderValidator', () => {
     });
   });
 
-  describe('ProviderValidator_validateUserExistence', async () => {
+  describe('ProviderValidator_validateUserExistence', () => {
     let getUserSpy;
     req = {
       body: {
@@ -223,7 +223,7 @@ describe('ProviderValidator', () => {
       expect(next).toHaveBeenCalled();
     });
   });
-  describe('ProviderValidator_validateProviderExistence', async () => {
+  describe('ProviderValidator_validateProviderExistence', () => {
     it('should send error if a provider doesnt exist', async () => {
       const createReq = {
         body: {

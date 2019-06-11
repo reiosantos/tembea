@@ -463,8 +463,13 @@ class SlackNotifications {
       reason,
       tripNote,
       noOfPassengers,
+      driver,
+      cab
     } = tripInformation;
-    return [
+
+    const userAttachment = SlackNotifications.cabDriverDetailsNotification(cab, driver, departureTime, destination, pickup);
+
+    return (!(cab && driver)) ? [
       new SlackAttachmentField('Pickup Location', pickup, true),
       new SlackAttachmentField('Destination', destination, true),
       new SlackAttachmentField('Request Date', getSlackDateString(createdAt), true),
@@ -474,7 +479,39 @@ class SlackNotifications {
       new SlackAttachmentField('Passenger', passenger, true),
       new SlackAttachmentField('Passenger Phone No.', riderPhoneNumber || 'N/A', true),
       new SlackAttachmentField('Trip Notes', tripNote || 'N/A', true),
-    ];
+    ] : userAttachment;
+  }
+
+  /**
+   *
+   * @description contains the message attachement that is sent to the rider after a successfully trip request.
+   * @static
+   * @param {object} cab - The cab information
+   * @param {object} driver - The driver's information
+   * @param {*} departureTime - The trip's departure trip.
+   * @param {*} destination - The trip destination
+   * @param {} pickup
+   * @returns userAttachement
+   * @memberof SlackNotifications
+   */
+  static cabDriverDetailsNotification(cab, driver, departureTime, destination, pickup) {
+    let userAttachment = [];
+    if (cab && driver) {
+      const { driverName, driverPhoneNo } = driver;
+      const { model, regNumber } = cab;
+      userAttachment = [
+        new SlackAttachmentField('Pickup Location', pickup, true),
+        new SlackAttachmentField('Destination', destination, true),
+        new SlackAttachmentField('Driver Name', driverName, true),
+        new SlackAttachmentField('Trip Date', getSlackDateString(departureTime), true),
+        new SlackAttachmentField('Driver Contact', driverPhoneNo, true),
+        new SlackAttachmentField('Vehicle Name', model, true),
+        new SlackAttachmentField('Vehicle Reg Number', regNumber, true)
+      ];
+    }else{
+      return;
+    }
+    return userAttachment;
   }
 
   /**
@@ -518,6 +555,7 @@ class SlackNotifications {
    * @memberof SlackNotifications
    */
   static generateNotificationFields(type, tripInformation, userId) {
+    const { cab, driver } = tripInformation;
     const reason = tripInformation.operationsComment;
     const notifications = this.notificationFields(tripInformation);
     const decliner = new SlackAttachmentField(
@@ -526,8 +564,10 @@ class SlackNotifications {
       false
     );
     const commentField = new SlackAttachmentField('Reason', reason, false);
-    notifications.unshift(decliner);
-    notifications.push(commentField);
+    if (!cab && !driver) {
+      notifications.unshift(decliner);
+      notifications.push(commentField);
+    }
     return notifications;
   }
 

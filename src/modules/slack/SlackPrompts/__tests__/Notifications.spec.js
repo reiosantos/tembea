@@ -447,6 +447,12 @@ describe('SlackNotifications', () => {
           driverPhoneNo: '6789009876',
           regNumber: 'JK 321 LG'
         }
+      },
+      driver: {
+        dataValues: {
+          driverName: 'Dave',
+          driverPhoneNo: '6789009876',
+        }
       }
     };
     const declineStatusFalse = false;
