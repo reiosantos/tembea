@@ -1,18 +1,19 @@
 import DriverController from '../DriverController';
 import Response from '../../../helpers/responseHelper';
-import BugsnagHelper from '../../../helpers/bugsnagHelper';
 import { driverService } from '../../../services/DriverService';
 import ProviderService from '../../../services/ProviderService';
 import {
   createReq, expected, mockData, existingUserMock
 } from './mockData';
+import bugsnagHelper from '../../../helpers/bugsnagHelper';
+import HttpError from '../../../helpers/errorHandler';
 
 describe('DriverController', () => {
   let createDriverSpy;
+  let updateDriverSpy;
   let res;
 
   Response.sendResponse = jest.fn();
-  BugsnagHelper.log = jest.fn();
 
   beforeEach(() => {
     createDriverSpy = jest.spyOn(driverService, 'createProviderDriver');
@@ -65,6 +66,35 @@ describe('DriverController', () => {
       expect(Response.sendResponse).toHaveBeenCalled();
       expect(Response.sendResponse).toHaveBeenCalledWith(res, 500, false,
         'An error occurred in the creation of the driver');
+    });
+    describe('Update driver', () => {
+      beforeEach(() => {
+        updateDriverSpy = jest.spyOn(driverService, 'update');
+        createReq.params = { driverId: 1 };
+        jest.spyOn(driverService, 'update').mockResolvedValue({});
+      });
+      it('update a driver', async () => {
+        updateDriverSpy.mockResolvedValue({});
+        await DriverController.update(createReq, res);
+        expect(Response.sendResponse).toHaveBeenCalledWith(res, 200, true,
+          'Driver updated successfully', {});
+      });
+
+      it('should respond with an error if the driver does not exist', async () => {
+        updateDriverSpy.mockResolvedValue({ message: 'Driver not found' });
+        await DriverController.update(createReq, res);
+        expect(Response.sendResponse).toHaveBeenCalledWith(res, 404, false,
+          'Driver not found');
+      });
+
+      it('should catch errors', async () => {
+        jest.spyOn(bugsnagHelper, 'log');
+        jest.spyOn(HttpError, 'sendErrorResponse');
+        updateDriverSpy.mockRejectedValue({ error: 'Something went wrong' });
+        await DriverController.update(createReq, res);
+        expect(bugsnagHelper.log).toHaveBeenCalledWith({ error: 'Something went wrong' });
+        expect(HttpError.sendErrorResponse).toHaveBeenCalled();
+      });
     });
   });
 

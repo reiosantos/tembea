@@ -1,6 +1,7 @@
 import Response from '../../helpers/responseHelper';
 import bugsnagHelper from '../../helpers/bugsnagHelper';
 import { driverService } from '../../services/DriverService';
+import HttpError from '../../helpers/errorHandler';
 
 class DriverController {
   /**
@@ -44,6 +45,22 @@ class DriverController {
     const { locals: { driver } } = res;
     await driverService.deleteDriver(driver);
     return Response.sendResponse(res, 200, true, 'Driver successfully deleted');
+  }
+
+  static async update(req, res) {
+    try {
+      const { params: { driverId }, body } = req;
+      const driver = await driverService.update(driverId, body);
+      if (driver.message) {
+        return Response.sendResponse(res, 404, false,
+          driver.message);
+      }
+      return Response.sendResponse(res, 200, true,
+        'Driver updated successfully', driver);
+    } catch (error) {
+      bugsnagHelper.log(error);
+      HttpError.sendErrorResponse(error, res);
+    }
   }
 }
 export default DriverController;

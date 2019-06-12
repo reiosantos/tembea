@@ -2,7 +2,7 @@ import DialogPrompts from '../DialogPrompts';
 import sendDialogTryCatch from '../../../../helpers/sendDialogTryCatch';
 import UserService from '../../../../services/UserService';
 import { providerService } from '../../../../services/ProviderService';
-import DriverService from '../../../../services/DriverService';
+import { driverService } from '../../../../services/DriverService';
 import CabService from '../../../../services/CabService';
 
 jest.mock('../../../../services/TeamDetailsService', () => ({
@@ -188,7 +188,7 @@ describe('Dialog prompts test', () => {
     jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({});
     jest.spyOn(providerService, 'findProviderByUserId').mockResolvedValue({});
     jest.spyOn(CabService, 'getCabs').mockResolvedValue(cab);
-    jest.spyOn(DriverService, 'getDrivers').mockResolvedValue(driver);
+    jest.spyOn(driverService, 'getDrivers').mockResolvedValue(driver);
 
     await DialogPrompts.sendSelectCabDialog({
       actions: [{ value: 7 }],

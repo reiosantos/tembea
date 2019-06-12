@@ -3,6 +3,7 @@ import BaseService from './BaseService';
 import models from '../database/models';
 import ProviderHelper from '../helpers/providerHelper';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
+import RemoveDataValues from '../helpers/removeDataValues';
 
 const { Driver } = models;
 
@@ -45,11 +46,11 @@ class DriverService extends BaseService {
    *  { page:1, size:20 }
    * );
    */
-  static async getDrivers(where = {}) {
+  async getDrivers(where = {}) {
     const filter = {
       where
     };
-    const paginatedDrivers = new SequelizePaginationHelper(Driver, filter);
+    const paginatedDrivers = new SequelizePaginationHelper(this.model, filter);
     const { data, pageMeta } = await paginatedDrivers.getPageItems();
     const drivers = data.map(ProviderHelper.serializeDetails);
     return { drivers, ...pageMeta };
@@ -79,6 +80,70 @@ class DriverService extends BaseService {
   async deleteDriver(driver) {
     const result = await this.delete(driver);
     return result;
+  }
+
+  /**
+  * @description updates a driver in the db
+  * driverId and the driver details should be passed to the function
+  * @param {{driverId: integer}} driverId- Sequelize options.
+  * @param {{ object }} driverDetails
+  * @returns {object} An updated driver object
+  * @example DriverService.update(
+    *  1, {
+      "driverName":"Deo",
+      "driverPhoneNo":"079238983982",
+      "email":"deo.asssa@andla.om",
+      "driverNumber":"565S78324"
+    }
+    * );
+    */
+  async update(driverId, driverDetails) {
+    const {
+      driverName, driverPhoneNo, email, driverNumber
+    } = driverDetails;
+    const [, [updatedDriver]] = await this.model.update(
+      {
+        driverNumber, email, driverPhoneNo, driverName
+      },
+      {
+        returning: true,
+        where: { id: driverId }
+      }
+    );
+    if (!updatedDriver) {
+      return { message: 'Update Failed. Driver does not exist' };
+    }
+    return RemoveDataValues.removeDataValues(updatedDriver);
+  }
+
+  /**
+  * @description checks if a driver'd details already exists in the db
+  * @param {{email: string}} email- Sequelize options.
+  * @param {{ phoneNo:number }} phoneNumber
+  *  @param {{ number:number }} driverNumber
+  *  @param {{ id:number }} driverId
+  * @example DriverService.exists(
+    *  'james@andela.com',70868723, 23423423423, 1
+    * );
+    */
+  async exists(email, phoneNo, number, id) {
+    if (!id) {
+      return this.model.count({
+        where: {
+          [Op.or]: [{ driverPhoneNo: phoneNo }, { email }, { driverNumber: number }]
+        }
+      });
+    }
+    return this.model.count({
+      where: {
+        [Op.and]: [{
+          [Op.or]: [{ driverPhoneNo: phoneNo }, { email }, { driverNumber: number }],
+          id: {
+            [Op.ne]: id
+          },
+        }]
+      }
+    });
   }
 }
 

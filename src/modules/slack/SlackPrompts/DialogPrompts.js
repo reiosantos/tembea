@@ -14,7 +14,7 @@ import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import CabService from '../../../services/CabService';
 import CabsHelper from '../helpers/slackHelpers/CabsHelper';
 import ProviderService from '../../../services/ProviderService';
-import DriverService from '../../../services/DriverService';
+import { driverService } from '../../../services/DriverService';
 import ProvidersHelper from '../helpers/slackHelpers/ProvidersHelper';
 import ProviderHelper from '../../../helpers/providerHelper';
 
@@ -88,7 +88,7 @@ class DialogPrompts {
     const { callback_id: callback } = payload;
     const { where, callbackId } = await ProvidersHelper.selectCabDialogHelper(callback, payload, userId);
     const { cabs } = await CabService.getCabs(undefined, where);
-    const { drivers } = await DriverService.getDrivers(where);
+    const { drivers } = await driverService.getDrivers(where);
     const cabData = CabsHelper.toCabLabelValuePairs(cabs);
     const driverData = CabsHelper.toCabDriverValuePairs(drivers);
     const state = { tripId, timeStamp, channel };

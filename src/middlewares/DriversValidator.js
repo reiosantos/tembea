@@ -1,7 +1,10 @@
+import joi from '@hapi/joi';
 import GeneralValidator from './GeneralValidator';
-import HttpError from '../helpers/errorHandler';
 import { driverService } from '../services/DriverService';
 import { providerService } from '../services/ProviderService';
+import Response from '../helpers/responseHelper';
+import HttpError from '../helpers/errorHandler';
+import CleanData from '../helpers/cleanData';
 
 class DriversValidator {
   /**
@@ -80,6 +83,64 @@ class DriversValidator {
       return HttpError.sendErrorResponse(error, res);
     }
     next();
+  }
+
+  /**
+   * @description returns a reusable driver joi schema
+   * @returns schema
+   * @example DriversValidator.driverJoiSchema();
+   */
+  static driverJoiSchema() {
+    return joi.object().keys({
+      email: joi.string().trim().email().required(),
+      driverName: joi.string().trim().min(3).max(30)
+        .required(),
+      driverPhoneNo: joi.number().required(),
+      driverNumber: joi.string().required().min(3)
+    }).min(1).max(4);
+  }
+
+  /**
+   * @description validate driver update body middleware
+   * @returns errors or calls next
+   * @example DriversValidator.validateDriverUpdateBody(req,res,next);
+   * @param req
+   * @param res
+   * @param next
+   */
+  static async validateDriverUpdateBody(req, res, next) {
+    const schema = DriversValidator.driverJoiSchema();
+    const inputErrors = [];
+    const { error } = joi.validate(req.body, schema, { abortEarly: false });
+    if (error) {
+      let errors = [];
+      errors = error.details;
+      errors.forEach((err) => {
+        inputErrors.push(err.message);
+      });
+      return Response.sendResponse(res, 400, false, inputErrors);
+    }
+    next();
+  }
+
+  /**
+ * @description validate the initial existence of items given in the body
+ * @returns errors or calls next
+ * @example DriversValidator.validatePhoneNoAndNumberAlreadyExist(req,res,next);
+ * @param req
+ * @param res
+ * @param next
+ */
+  static async validatePhoneNoAndNumberAlreadyExists(req, res, next) {
+    const newBody = CleanData.trim(req.body);
+    const { driverPhoneNo, driverNumber, email } = newBody;
+    const { params: { driverId } } = req;
+    const existing = await driverService.exists(email, driverPhoneNo, driverNumber, driverId);
+    if (existing) {
+      return Response.sendResponse(res, 400, false,
+        'Sorry, the driver with this driver number, email or phone number  already exists');
+    }
+    return next();
   }
 }
 

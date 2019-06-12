@@ -1,10 +1,9 @@
 import express from 'express';
 import DriverController from './DriverController';
 import middlewares from '../../middlewares';
-import DriversValidator from '../../middlewares/DriversValidator';
 
 const {
-  TokenValidator, ProviderValidator
+  TokenValidator, ProviderValidator, DriversValidator
 } = middlewares;
 const driverRouter = express.Router();
 
@@ -89,6 +88,45 @@ driverRouter.delete(
   DriversValidator.validateProviderDriverIdParams,
   DriversValidator.validateIsProviderDriver,
   DriverController.deleteDriver
+);
+
+/**
+ * @swagger
+ * /providers/:providerId/drivers/:driverId:
+ *  put:
+ *    summary: updates the driver with the given id
+ *    tags:
+ *      - Provider Drivers
+ *    parameters:
+ *      - driverName: body
+ *      - driverPhoneNo: body
+ *      - driverNumber : body
+ *      - email: body
+ *        in: body
+ *        required: true
+ *        type: string
+ *        schema:
+ *          type: object
+ *          properties:
+ *            driverName:
+ *              type: string
+ *            email :
+ *              type: string
+ *            driverPhoneNo:
+ *              type: number
+ *            driverNumber:
+ *              type: string
+ *    responses:
+ *      200:
+ *        description: driver successfully updated
+ */
+driverRouter.put(
+  '/providers/:providerId/drivers/:driverId',
+  DriversValidator.validateProviderDriverIdParams,
+  DriversValidator.validateIsProviderDriver,
+  DriversValidator.validateDriverUpdateBody,
+  DriversValidator.validatePhoneNoAndNumberAlreadyExists,
+  DriverController.update
 );
 
 

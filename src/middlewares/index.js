@@ -11,6 +11,7 @@ import CleanRequestBody from './CleanRequestBody';
 import CountryValidator from './CountryValidator';
 import HomebaseValidator from './HomebaseValidator';
 import ProviderValidator from './ProviderValidator';
+import DriversValidator from './DriversValidator';
 
 const middleware = {
   UserValidator,
@@ -23,6 +24,7 @@ const middleware = {
   TripValidator,
   CabsValidator,
   CleanRequestBody,
+  DriversValidator,
   CountryValidator,
   HomebaseValidator,
   ProviderValidator
