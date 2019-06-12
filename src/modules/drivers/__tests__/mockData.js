@@ -25,3 +25,9 @@ export const existingUserMock = {
   _options: { isNewRecord: false },
   dataValues: {}
 };
+export const drivers = {
+  driverName: 'Muhwezi Deo2',
+  driverNumber: 'UB5422424344',
+  driverPhoneNo: '0705331111',
+  providerId: 1
+};

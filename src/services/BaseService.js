@@ -1,9 +1,12 @@
+import ProviderHelper from '../helpers/providerHelper';
+import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 /**
  * A class representing the base for all Services
- * This bootstrap commonly used methods accross services
+ * This bootstrap commonly used methods across services
  *
  * @class BaseService
  */
+
 export default class BaseService {
   /**
    * Creates an instance of BaseService.
@@ -18,7 +21,6 @@ export default class BaseService {
   /**
    * Fetch a specific data by a given id
    *
-   * @static
    * @param {number} id - The model's unique identifier (primary key)
    * @returns {object} The model instance
    * @memberof BaseService
@@ -55,5 +57,23 @@ export default class BaseService {
       where: { id: resourceId }
     });
     return result;
+  }
+
+  /**
+   * Gets items from the Db and paginates the data
+   * @param Model; The model being queried
+   * @param pageable: The page number
+   * @param where: The conditions to be queried
+   */
+  async getPaginatedItems(pageable = ProviderHelper.defaultPageable, where = {}) {
+    let items = [];
+    const { page, size } = pageable;
+    let filter;
+    if (where && where.providerId) filter = { where: { providerId: where.providerId } };
+    const paginatedDrivers = new SequelizePaginationHelper(this.model, filter, size);
+    const { data, pageMeta } = await paginatedDrivers.getPageItems(page);
+    const { totalPages } = pageMeta;
+    if (page <= totalPages) { items = data.map(ProviderHelper.serializeDetails); }
+    return { data: items, pageMeta };
   }
 }

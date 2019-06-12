@@ -5,7 +5,7 @@ import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import UserInputValidator from '../../../../helpers/slack/UserInputValidator';
 import models from '../../../../database/models';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
-import CabService from '../../../../services/CabService';
+import { cabService } from '../../../../services/CabService';
 import tripService from '../../../../services/TripService';
 import ProviderNotifications from '../../SlackPrompts/notifications/ProviderNotifications';
 
@@ -76,7 +76,7 @@ describe('TripActionController operations decline tests', () => {
       },
       state
     };
-    jest.spyOn(CabService, 'findOrCreateCab')
+    jest.spyOn(cabService, 'findOrCreateCab')
       .mockImplementation((driverName, driverPhoneNo, regNumber) => Promise.resolve({
         driverName, driverPhoneNo, regNumber
       }));
@@ -278,7 +278,7 @@ describe('TripActionController operations approve tests', () => {
   it('Should send notifications to provider and user on trip completion', async () => {
     const cab = { id: 1 };
     jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('xxop');
-    jest.spyOn(CabService, 'findOrCreate').mockResolvedValue(cab);
+    jest.spyOn(cabService, 'findOrCreate').mockResolvedValue(cab);
     jest.spyOn(tripService, 'updateRequest').mockResolvedValue({});
 
     const updateNotificationSpy = jest.spyOn(ProviderNotifications, 'UpdateProviderNotification').mockResolvedValue({});

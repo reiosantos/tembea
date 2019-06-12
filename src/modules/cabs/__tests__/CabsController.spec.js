@@ -3,10 +3,9 @@ import app from '../../../app';
 import Utils from '../../../utils';
 import models from '../../../database/models';
 import payloadData from '../__mocks__/cabsMocks';
-import CabService from '../../../services/CabService';
+import { cabService } from '../../../services/CabService';
 import MockData from '../../../middlewares/__mocks__/CabsValidatorMocks';
 import CabsController from '../CabsController';
-import ProviderHelper from '../../../helpers/providerHelper';
 import Response from '../../../helpers/responseHelper';
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
 import HttpError from '../../../helpers/errorHandler';
@@ -31,7 +30,7 @@ describe('CabsController_getAllCabs', () => {
         json: jest.fn(() => { })
       })).mockReturnValue({ json: jest.fn() })
     };
-    cabServiceSpy = jest.spyOn(CabService, 'getCabs');
+    cabServiceSpy = jest.spyOn(cabService, 'getPaginatedItems');
   });
 
   afterEach(() => {
@@ -41,14 +40,11 @@ describe('CabsController_getAllCabs', () => {
 
   it('Should get all cabs and return a success message', async () => {
     const {
-      successMessage, cabs, paginatedData, returnedData
+      cabs, successMessage, returnedData
     } = payloadData;
-    const paginateSpy = jest.spyOn(ProviderHelper, 'paginateData');
     cabServiceSpy.mockResolvedValue(cabs);
-    paginateSpy.mockReturnValue(paginatedData);
     jest.spyOn(Response, 'sendResponse');
     await CabsController.getAllCabs(req, res);
-    expect(ProviderHelper.paginateData).toHaveBeenCalled();
     expect(Response.sendResponse).toBeCalledWith(res, 200, true, successMessage, returnedData);
   });
 
@@ -140,7 +136,7 @@ describe('CabsController', () => {
           expect(body.message).toBe('1 of 1 page(s).');
           expect(body).toHaveProperty('data');
           expect(body.data).toHaveProperty('pageMeta');
-          expect(body.data).toHaveProperty('cabs');
+          expect(body.data).toHaveProperty('data');
           done();
         });
     });
@@ -154,8 +150,8 @@ describe('CabsController', () => {
           expect(body.message).toBe('2 of 14 page(s).');
           expect(body).toHaveProperty('data');
           expect(body.data).toHaveProperty('pageMeta');
-          expect(body.data).toHaveProperty('cabs');
-          expect(body.data.cabs.length).toBe(2);
+          expect(body.data).toHaveProperty('data');
+          expect(body.data.data.length).toBe(2);
           done();
         });
     });
@@ -244,7 +240,7 @@ describe('CabsController', () => {
     });
 
     it('should handle internal server error', (done) => {
-      jest.spyOn(CabService, 'updateCab')
+      jest.spyOn(cabService, 'updateCab')
         .mockRejectedValue(new Error('dummy error'));
       request(app)
         .put(`${apiURL}/1`)
@@ -291,7 +287,7 @@ describe('CabsController', () => {
     });
 
     it('should return a server error when something goes wrong', (done) => {
-      CabService.deleteCab = jest.fn(() => {
+      cabService.deleteCab = jest.fn(() => {
         throw Error();
       });
       request(app)
@@ -320,7 +316,7 @@ describe('CabsController', () => {
       };
     });
     it('should delete a cab successfully', async (done) => {
-      CabService.deleteCab = jest.fn(() => 1);
+      cabService.deleteCab = jest.fn(() => 1);
 
       await CabsController.deleteCab(req, res);
       expect(res.status).toHaveBeenCalledTimes(1);
@@ -333,7 +329,7 @@ describe('CabsController', () => {
     });
 
     it('should return cab does not exist', async (done) => {
-      CabService.deleteCab = jest.fn(() => 0);
+      cabService.deleteCab = jest.fn(() => 0);
 
       await CabsController.deleteCab(req, res);
       expect(res.status).toHaveBeenCalledTimes(1);
@@ -346,7 +342,7 @@ describe('CabsController', () => {
     });
 
     it('should return server error', async (done) => {
-      CabService.deleteCab = jest.fn(() => {
+      cabService.deleteCab = jest.fn(() => {
         throw Error();
       });
 

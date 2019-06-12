@@ -119,6 +119,24 @@ class ProviderValidator {
     }
     return next();
   }
+
+  /**
+   * @description Validates if the providerId is a positive integer
+   * @param  {object} req The HTTP request sent
+   * @param  {object} res The HTTP response object
+   * @param  {function} next The next middleware
+   * @return {any} The next middleware or the http response
+   */
+  static validateQueryProvider(req, res, next) {
+    const { providerId } = req.query;
+
+    if (
+      (providerId && !GeneralValidator.validateNumber(providerId))
+    ) {
+      return Response.sendResponse(res, 404, false, 'Please provide a positive integer value for providerID');
+    }
+    return next();
+  }
 }
 
 export default ProviderValidator;

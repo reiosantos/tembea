@@ -5,6 +5,7 @@ import ProviderHelper from '../helpers/providerHelper';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import RemoveDataValues from '../helpers/removeDataValues';
 
+
 const { Driver } = models;
 
 /**
@@ -23,7 +24,7 @@ class DriverService extends BaseService {
    * @returns {  object }
    * @param driverObject
    */
-  async createProviderDriver(driverObject) {
+  async create(driverObject) {
     try {
       const { driverNumber } = driverObject;
       const [driver] = await this.model.findOrCreate({

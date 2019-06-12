@@ -1,7 +1,7 @@
 import AddressService from '../services/AddressService';
 import LocationService from '../services/LocationService';
-import CabService from '../services/CabService';
 import RouteService, { routeService } from '../services/RouteService';
+import { cabService } from '../services/CabService';
 import AddressValidator from '../middlewares/AddressValidator';
 import { expectedCreateRouteObject } from '../utils/data';
 import RouteServiceHelper from './RouteServiceHelper';
@@ -129,7 +129,7 @@ class RouteHelper {
   }
 
   static async checkThatVehicleRegNumberExists(vehicleRegNumber) {
-    const cab = await CabService.findByRegNumber(vehicleRegNumber);
+    const cab = await cabService.findByRegNumber(vehicleRegNumber);
     return [!!cab, cab];
   }
 

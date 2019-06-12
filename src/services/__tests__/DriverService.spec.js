@@ -13,6 +13,7 @@ const {
 describe('Driver Service', () => {
   let testDriver;
   beforeAll(async () => {
+    SequelizePaginationHelper.mockClear();
     testDriver = Driver.create({
       driverName: 'Muhwezi Deo2',
       driverPhoneNo: '0700000011',
@@ -25,7 +26,7 @@ describe('Driver Service', () => {
     sequelize.close();
   });
   it('should create driver successfully', async () => {
-    const driver = await driverService.createProviderDriver({
+    const driver = await driverService.create({
       driverName: 'Muhwezi Deo2',
       driverPhoneNo: '070533111166',
       driverNumber: 'UB5422424344',
@@ -36,7 +37,7 @@ describe('Driver Service', () => {
     await driver.destroy({ force: true });
   });
   it('should return not create driver if driverNumber exists', async (done) => {
-    const driver = await driverService.createProviderDriver({
+    const driver = await driverService.create({
       driverName: 'Muhwezi Deo2',
       driverPhoneNo: '0700000011',
       driverNumber: 'UB54224249',
@@ -51,31 +52,42 @@ describe('Driver Service', () => {
       SequelizePaginationHelper.mockClear();
       ProviderHelper.serializeDetails = jest.fn();
     });
-    const listDrivers = {
-      data: [
-        {
-          driverName: 'Muhwezi Deo2',
-          driverPhoneNo: '070533111166',
-          driverNumber: 'UB5422424344',
-          providerId: 1
-        },
-        {
-          driverName: 'Muhwezi Deo',
-          driverPhoneNo: '070533111164',
-          driverNumber: 'UB5422424345',
-          providerId: 2
-        }]
-    };
+
     it('returns a list of drivers', async () => {
-      const getPageItems = jest.fn()
-        .mockResolvedValue(listDrivers);
+      const getPageItems = jest.fn().mockResolvedValue({
+        data: [
+          {
+            id: 1,
+            driverName: 'James Savali',
+            driverPhoneNo: '708989098',
+            driverNumber: '254234',
+            providerId: 1,
+            email: 'savali@gmail.com'
+          },
+          {
+            id: 2,
+            driverName: 'Muhwezi Deo',
+            driverPhoneNo: '908989098',
+            driverNumber: '254235',
+            providerId: 2,
+            email: 'deo@gmail.com'
+          },
+        ],
+        pageMeta: {
+          totalPages: 1,
+          page: 1,
+          totalResults: 4,
+          pageSize: 100
+        }
+      });
       SequelizePaginationHelper.mockImplementation(() => ({
         getPageItems
       }));
-      await driverService.getDrivers({
+      await driverService.getPaginatedItems(undefined, {
         providerId: 1
       });
       expect(SequelizePaginationHelper).toHaveBeenCalled();
+      expect(getPageItems).toHaveBeenCalled();
       expect(ProviderHelper.serializeDetails).toHaveBeenCalled();
     });
   });

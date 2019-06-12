@@ -1,6 +1,6 @@
 import RouteHelper from '../RouteHelper';
 import RouteService, { routeService } from '../../services/RouteService';
-import CabService from '../../services/CabService';
+import { cabService } from '../../services/CabService';
 import {
   routeBatch, batch, routeDetails, returnNullPercentage, record,
   confirmedRecord, returnedPercentage, percentagesList,
@@ -38,14 +38,14 @@ describe('Route Helpers', () => {
 
   describe('checkThatVehicleRegNumberExists', () => {
     it('should return array containing results for the check', async () => {
-      jest.spyOn(CabService, 'findByRegNumber').mockResolvedValue({ id: 1 });
+      jest.spyOn(cabService, 'findByRegNumber').mockResolvedValue({ id: 1 });
       const result = await RouteHelper.checkThatVehicleRegNumberExists('AR 3GN UMBR');
       expect(Array.isArray(result)).toBeTruthy();
       expect(result[0]).toEqual(true);
     });
 
     it('should return array containing with first element false when vehicle absent', async () => {
-      jest.spyOn(CabService, 'findByRegNumber').mockResolvedValue(null);
+      jest.spyOn(cabService, 'findByRegNumber').mockResolvedValue(null);
       const result = await RouteHelper.checkThatVehicleRegNumberExists('AR 3GN UMBR');
       expect(Array.isArray(result)).toBeTruthy();
       expect(result[0]).toEqual(false);

@@ -101,5 +101,5 @@ export default class SequelizePaginationHelper {
 }
 
 SequelizePaginationHelper.sortErrorMessage = 'Invalid sort provided. '
-  + 'It must be in the format: sort=<predicate>,<direction>, '
-  + 'where direction must be either [asc, desc] e.g. sort=id,asc';
+    + 'It must be in the format: sort=<predicate>,<direction>, '
+    + 'where direction must be either [asc, desc] e.g. sort=id,asc';

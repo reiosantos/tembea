@@ -1,4 +1,4 @@
-import { MAX_INT as all } from './constants';
+import { DEFAULT_SIZE as defaultSize, MAX_INT as all } from './constants';
 
 export default class ProviderHelper {
   /* eslint no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
@@ -51,5 +51,27 @@ export default class ProviderHelper {
       };
       return data;
     });
+  }
+
+  /**
+   * Gets provider details from request
+   * @param payload: the req.query
+   * @returns { object }
+   */
+  static getProviderDetailsFromReq(payload) {
+    let { page, size, providerId } = payload;
+    page = page || 1;
+    size = size || defaultSize;
+    providerId = providerId || null;
+    const pageable = { page, size };
+    const where = { providerId };
+
+    return {
+      page,
+      size,
+      providerId,
+      pageable,
+      where
+    };
   }
 }

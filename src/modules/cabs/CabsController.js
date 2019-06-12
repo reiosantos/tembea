@@ -1,6 +1,5 @@
-import CabService from '../../services/CabService';
-import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
-import Response from '../../helpers/responseHelper';
+import { cabService } from '../../services/CabService';
+import Response, { getPaginationMessage } from '../../helpers/responseHelper';
 import BugsnagHelper from '../../helpers/bugsnagHelper';
 import HttpError from '../../helpers/errorHandler';
 import ProviderHelper from '../../helpers/providerHelper';
@@ -13,7 +12,7 @@ class CabsController {
           regNumber, capacity, model, providerId
         }
       } = req;
-      const { _options: { isNewRecord }, dataValues } = await CabService.findOrCreateCab(
+      const { _options: { isNewRecord }, dataValues } = await cabService.findOrCreateCab(
         regNumber, capacity, model, providerId
       );
       if (isNewRecord) {
@@ -34,25 +33,18 @@ class CabsController {
     }
   }
 
+  /**
+   * @param req
+   * @param res
+   * @returns {Promise<*>}
+   */
   static async getAllCabs(req, res) {
     try {
-      let { page, size, providerId } = req.query;
-      page = page || 1;
-      size = size || defaultSize;
-      providerId = providerId || null;
-      const pageable = { page, size };
-      const where = { providerId };
-      const {
-        totalPages, cabs, pageNo,
-        totalItems: totalResults,
-        itemsPerPage: pageSize
-      } = await CabService.getCabs(pageable, where);
+      const { pageable, where } = ProviderHelper.getProviderDetailsFromReq(req.query);
+      const payload = await cabService.getPaginatedItems(pageable, where);
+      const message = getPaginationMessage(payload.pageMeta);
 
-      const message = `${pageNo} of ${totalPages} page(s).`;
-      const pageData = ProviderHelper.paginateData(
-        totalPages, page, totalResults, pageSize, cabs, 'cabs'
-      );
-      return Response.sendResponse(res, 200, true, message, pageData);
+      return Response.sendResponse(res, 200, true, message, payload);
     } catch (error) {
       BugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
@@ -63,13 +55,13 @@ class CabsController {
     const { params: { id }, body } = req;
     const { regNumber } = body;
     try {
-      const findCab = await CabService.findByRegNumber(regNumber);
+      const findCab = await cabService.findByRegNumber(regNumber);
       if (findCab !== null && findCab.id !== parseInt(id, 10)) {
         return res.status(409).send({
           success: false, message: 'Cab with registration number already exists'
         });
       }
-      const cab = await CabService.updateCab(id, body);
+      const cab = await cabService.updateCab(id, body);
       if (cab.message) {
         return res.status(404).send({ success: false, message: cab.message });
       }
@@ -85,7 +77,7 @@ class CabsController {
   static async deleteCab(req, res) {
     try {
       const { params: { id } } = req;
-      const dbResponse = await CabService.deleteCab(id);
+      const dbResponse = await cabService.deleteCab(id);
       if (dbResponse > 0) {
         const message = 'Cab successfully deleted';
         return Response.sendResponse(res, 200, true, message);

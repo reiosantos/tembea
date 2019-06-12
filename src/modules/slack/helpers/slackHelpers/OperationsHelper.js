@@ -1,5 +1,5 @@
 import RouteRequestService from '../../../../services/RouteRequestService';
-import CabService from '../../../../services/CabService';
+import { cabService } from '../../../../services/CabService';
 import OperationsNotifications from '../../SlackPrompts/notifications/OperationsRouteRequest/index';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 
@@ -40,7 +40,7 @@ class OperationsHelper {
       const {
         driverName, driverPhoneNo, regNumber: rgNum, capacity, model
       } = submission;
-      await CabService.findOrCreateCab(driverName, driverPhoneNo, rgNum, capacity, model);
+      await cabService.findOrCreateCab(driverName, driverPhoneNo, rgNum, capacity, model);
       regNumber = rgNum;
       routeCapacity = capacity;
     } else {

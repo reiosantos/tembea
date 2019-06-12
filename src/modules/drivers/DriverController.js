@@ -1,6 +1,7 @@
-import Response from '../../helpers/responseHelper';
+import Response, { getPaginationMessage } from '../../helpers/responseHelper';
 import bugsnagHelper from '../../helpers/bugsnagHelper';
 import { driverService } from '../../services/DriverService';
+import ProviderHelper from '../../helpers/providerHelper';
 import HttpError from '../../helpers/errorHandler';
 
 class DriverController {
@@ -13,7 +14,7 @@ class DriverController {
   static async addProviderDriver(req, res) {
     try {
       const { body } = req;
-      const data = await driverService.createProviderDriver(body);
+      const data = await driverService.create(body);
       if (data.errors) {
         return Response.sendResponse(res, 400, false,
           data.errors[0].message);
@@ -57,6 +58,28 @@ class DriverController {
       }
       return Response.sendResponse(res, 200, true,
         'Driver updated successfully', driver);
+    } catch (error) {
+      bugsnagHelper.log(error);
+      HttpError.sendErrorResponse(error, res);
+    }
+  }
+
+  /**
+   * @description Gets drivers in the database
+   * @param {object} req
+   * @param {object} res
+   * @returns {object} Http response object
+   */
+  static async getDrivers(req, res) {
+    try {
+      const { query } = req;
+      const payload = ProviderHelper.getProviderDetailsFromReq(query);
+      const { pageable, where } = payload;
+
+      const result = await driverService.getPaginatedItems(pageable, where);
+      const message = getPaginationMessage(result.pageMeta);
+
+      return Response.sendResponse(res, 200, true, message, result);
     } catch (error) {
       bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);

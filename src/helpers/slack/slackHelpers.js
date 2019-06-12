@@ -3,7 +3,7 @@ import WebClientSingleton from '../../utils/WebClientSingleton';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import UserService from '../../services/UserService';
 import Cache from '../../cache';
-import CabService from '../../services/CabService';
+import { cabService } from '../../services/CabService';
 
 
 class SlackHelpers {
@@ -105,7 +105,7 @@ class SlackHelpers {
       trip.confirmer = await UserService.getUserById(updatedTrip.confirmedById);
     }
     if (updatedTrip.cabId) {
-      trip.cab = await CabService.getById(updatedTrip.cabId);
+      trip.cab = await cabService.getById(updatedTrip.cabId);
     }
     if (updatedTrip.operationsComment) {
       trip.operationsComment = updatedTrip.operationsComment;

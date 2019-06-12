@@ -2,7 +2,7 @@ import RouteRequestService from '../../../../../services/RouteRequestService';
 import { mockRouteRequestData } from '../../../../../services/__mocks__';
 import OperationsNotifications from '../../../SlackPrompts/notifications/OperationsRouteRequest';
 import OperationsHelper from '../OperationsHelper';
-import CabService from '../../../../../services/CabService';
+import { cabService } from '../../../../../services/CabService';
 import cache from '../../../../../cache';
 import { bugsnagHelper } from '../../../RouteManagement/rootFile';
 
@@ -79,9 +79,9 @@ describe('operations approve request', () => {
       model: 'Toyota'
     };
 
-    jest.spyOn(CabService, 'findOrCreateCab').mockResolvedValue({ data: {} });
+    jest.spyOn(cabService, 'findOrCreateCab').mockResolvedValue({ data: {} });
     await OperationsHelper.getCabSubmissionDetails(payload, payload.submission);
-    expect(CabService.findOrCreateCab).toBeCalled();
+    expect(cabService.findOrCreateCab).toBeCalled();
     done();
   });
   it('should throw an error if route request is not updated', async () => {

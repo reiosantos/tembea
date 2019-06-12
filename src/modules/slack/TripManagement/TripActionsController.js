@@ -8,7 +8,7 @@ import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import ProviderNotifications from '../SlackPrompts/notifications/ProviderNotifications';
 import UserService from '../../../services/UserService';
 import RemoveDataValues from '../../../helpers/removeDataValues';
-import CabService from '../../../services/CabService';
+import { cabService } from '../../../services/CabService';
 
 
 class TripActionsController {
@@ -121,7 +121,7 @@ class TripActionsController {
     } = JSON.parse(payloadState);
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     const registrationNo = cabDetails.split(',')[2];
-    const cab = await CabService.findOrCreate(registrationNo);
+    const cab = await cabService.findOrCreate(registrationNo);
     const trip = await tripService.updateRequest(tripId, { cabId: cab.id, driverId });
     await ProviderNotifications.UpdateProviderNotification(channel, slackBotOauthToken, trip, timeStamp, driverDetails);
     await SendNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, trip,

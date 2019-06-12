@@ -3,7 +3,7 @@ import sendDialogTryCatch from '../../../../helpers/sendDialogTryCatch';
 import UserService from '../../../../services/UserService';
 import { providerService } from '../../../../services/ProviderService';
 import { driverService } from '../../../../services/DriverService';
-import CabService from '../../../../services/CabService';
+import { cabService } from '../../../../services/CabService';
 
 jest.mock('../../../../services/TeamDetailsService', () => ({
   getTeamDetailsBotOauthToken: async () => 'just a random token'
@@ -170,7 +170,7 @@ describe('Dialog prompts test', () => {
   });
   it('should send select cab dialog', async (done) => {
     const driver = {
-      drivers: [{
+      data: [{
         id: 2,
         driverName: 'good',
         driverPhoneNo: '09090999090',
@@ -179,7 +179,7 @@ describe('Dialog prompts test', () => {
       }]
     };
     const cab = {
-      cabs: [{
+      data: [{
         model: 'doodle',
         regNumber: '990ccc',
         capacity: 4
@@ -187,8 +187,8 @@ describe('Dialog prompts test', () => {
     };
     jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({});
     jest.spyOn(providerService, 'findProviderByUserId').mockResolvedValue({});
-    jest.spyOn(CabService, 'getCabs').mockResolvedValue(cab);
-    jest.spyOn(driverService, 'getDrivers').mockResolvedValue(driver);
+    jest.spyOn(cabService, 'getCabs').mockResolvedValue(cab);
+    jest.spyOn(driverService, 'getPaginatedItems').mockResolvedValue(driver);
 
     await DialogPrompts.sendSelectCabDialog({
       actions: [{ value: 7 }],

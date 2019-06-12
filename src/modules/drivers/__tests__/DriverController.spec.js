@@ -6,9 +6,11 @@ import {
   createReq, expected, mockData, existingUserMock
 } from './mockData';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
+import payloadData from '../__mocks__/driversMocks';
 import HttpError from '../../../helpers/errorHandler';
 
 describe('DriverController', () => {
+  bugsnagHelper.log = jest.fn();
   let createDriverSpy;
   let updateDriverSpy;
   let res;
@@ -16,7 +18,7 @@ describe('DriverController', () => {
   Response.sendResponse = jest.fn();
 
   beforeEach(() => {
-    createDriverSpy = jest.spyOn(driverService, 'createProviderDriver');
+    createDriverSpy = jest.spyOn(driverService, 'create');
     res = {
       status: jest.fn(() => ({
         json: jest.fn(() => { })
@@ -106,6 +108,51 @@ describe('DriverController', () => {
       jest.spyOn(driverService, 'deleteDriver').mockResolvedValue(1);
       await DriverController.deleteDriver({}, res);
       expect(Response.sendResponse).toHaveBeenCalled();
+    });
+  });
+
+  describe('DriversController_getAllDrivers', () => {
+    let req;
+    let driverServiceSpy;
+    beforeEach(() => {
+      req = {
+        query: {
+          page: 1, size: 3
+        }
+      };
+      res = {
+        status: jest.fn(() => ({
+          json: jest.fn(() => { })
+        })).mockReturnValue({ json: jest.fn() })
+      };
+      driverServiceSpy = jest.spyOn(driverService, 'getPaginatedItems');
+    });
+
+    afterEach(() => {
+      jest.resetAllMocks();
+      jest.restoreAllMocks();
+    });
+
+    it('Should get all drivers and return a success message', async () => {
+      const {
+        successMessage, drivers, returnedData
+      } = payloadData;
+
+      jest.spyOn(Response, 'sendResponse');
+      driverServiceSpy.mockResolvedValue(drivers);
+      await DriverController.getDrivers(req, res);
+      expect(driverService.getPaginatedItems).toHaveBeenCalled();
+      expect(Response.sendResponse).toBeCalledWith(res, 200, true, successMessage, returnedData);
+    });
+
+    it('Should catch errors', async () => {
+      const error = new Error('Something went wrong');
+      driverServiceSpy.mockRejectedValue(error);
+      jest.spyOn(bugsnagHelper, 'log');
+      jest.spyOn(HttpError, 'sendErrorResponse');
+      await DriverController.getDrivers(req, res);
+      expect(bugsnagHelper.log).toBeCalledWith(error);
+      expect(HttpError.sendErrorResponse).toBeCalledWith(error, res);
     });
   });
 });

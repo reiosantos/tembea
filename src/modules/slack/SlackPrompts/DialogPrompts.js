@@ -11,10 +11,10 @@ import createDialogForm from '../../../helpers/slack/createDialogForm';
 import sendDialogTryCatch from '../../../helpers/sendDialogTryCatch';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
-import CabService from '../../../services/CabService';
+import { cabService } from '../../../services/CabService';
+import { driverService } from '../../../services/DriverService';
 import CabsHelper from '../helpers/slackHelpers/CabsHelper';
 import ProviderService from '../../../services/ProviderService';
-import { driverService } from '../../../services/DriverService';
 import ProvidersHelper from '../helpers/slackHelpers/ProvidersHelper';
 import ProviderHelper from '../../../helpers/providerHelper';
 
@@ -87,9 +87,9 @@ class DialogPrompts {
     } = payload;
     const { callback_id: callback } = payload;
     const { where, callbackId } = await ProvidersHelper.selectCabDialogHelper(callback, payload, userId);
-    const { cabs } = await CabService.getCabs(undefined, where);
-    const { drivers } = await driverService.getDrivers(where);
+    const { data: cabs } = await cabService.getCabs(undefined, where);
     const cabData = CabsHelper.toCabLabelValuePairs(cabs);
+    const { data: drivers } = await driverService.getPaginatedItems(undefined, where);
     const driverData = CabsHelper.toCabDriverValuePairs(drivers);
     const state = { tripId, timeStamp, channel };
     const dialog = new SlackDialog(callbackId,

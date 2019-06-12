@@ -256,4 +256,32 @@ describe('ProviderValidator', () => {
       expect(next).toHaveBeenCalled();
     });
   });
+  describe('ProviderValidator_validateProviderIDQuery', async () => {
+    it('should not throw an error when the providerID is an integer', async () => {
+      const createReq = {
+        query: {
+          providerId: 1
+        }
+      };
+      await ProviderValidator.validateQueryProvider(createReq, res, next);
+      expect(next).toHaveBeenCalled();
+    });
+    it('should throw an error when the providerID is not an integer', async () => {
+      const createReq = {
+        query: {
+          providerId: 'test'
+        }
+      };
+      await ProviderValidator.validateQueryProvider(createReq, res, next);
+      expect(Response.sendResponse)
+        .toBeCalledWith(res, 404, false, 'Please provide a positive integer value for providerID');
+    });
+    it('should return next when the providerID is not provided', async () => {
+      const createReq = {
+        query: {}
+      };
+      await ProviderValidator.validateQueryProvider(createReq, res, next);
+      expect(next).toHaveBeenCalled();
+    });
+  });
 });

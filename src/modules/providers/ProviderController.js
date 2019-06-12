@@ -53,13 +53,10 @@ class ProviderController {
         name: { $iLike: `%${name}%` }
       } : null;
       const pageable = { page, size };
+      const providersData = await ProviderService.getProviders(pageable, where);
       const {
-        totalPages,
-        providers,
-        pageNo,
-        totalItems: totalResults,
-        itemsPerPage: pageSize
-      } = await ProviderService.getProviders(pageable, where);
+        totalPages, providers, pageNo, totalItems: totalResults, itemsPerPage: pageSize
+      } = providersData;
       const message = `${pageNo} of ${totalPages} page(s).`;
       const pageData = ProviderHelper.paginateData(
         totalPages, page, totalResults, pageSize, providers, 'providers'

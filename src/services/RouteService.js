@@ -7,7 +7,7 @@ import AddressService from './AddressService';
 import HttpError from '../helpers/errorHandler';
 import UserService from './UserService';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
-import CabService from './CabService';
+import { cabService } from './CabService';
 import RouteServiceHelper from '../helpers/RouteServiceHelper';
 import BaseService from './BaseService';
 
@@ -81,7 +81,7 @@ class RouteService extends BaseService {
     const destination = await AddressService.findAddress(destinationName);
     const routeDetails = await RouteService.createRoute(name, imageUrl, destination);
     const { route } = routeDetails;
-    const cabDetails = await CabService.findOrCreate(vehicleRegNumber);
+    const cabDetails = await cabService.findOrCreate(vehicleRegNumber);
 
     batchDetails.batch = RouteService.updateBatchLabel(routeDetails);
     const routeId = route.id;

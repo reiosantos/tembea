@@ -7,7 +7,7 @@ import {
 } from '../__mocks__';
 import UserService from '../../../services/UserService';
 import tripService from '../../../services/TripService';
-import CabService from '../../../services/CabService';
+import { cabService } from '../../../services/CabService';
 
 const { TripRequest, User } = models;
 
@@ -267,7 +267,7 @@ describe('slackHelpers', () => {
       expect(result.confirmer.dataValues.slackId).toEqual('UG93CNE80');
     });
     it('should add cab object to trip data', async () => {
-      jest.spyOn(CabService, 'getById').mockResolvedValue({
+      jest.spyOn(cabService, 'getById').mockResolvedValue({
         dataValues: {
           id: 2,
           driverName: 'Tembea SuperAdmin',

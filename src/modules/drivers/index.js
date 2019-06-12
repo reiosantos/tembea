@@ -3,7 +3,7 @@ import DriverController from './DriverController';
 import middlewares from '../../middlewares';
 
 const {
-  TokenValidator, ProviderValidator, DriversValidator
+  TokenValidator, ProviderValidator, DriversValidator, GeneralValidator
 } = middlewares;
 const driverRouter = express.Router();
 
@@ -129,5 +129,42 @@ driverRouter.put(
   DriverController.update
 );
 
+/**
+ * @swagger
+ * /drivers:
+ *  get:
+ *    summary: get all drivers
+ *    tags:
+ *      - Driver
+ *    parameters:
+ *      - name: providerId
+ *        in: query
+ *        description: id of the provider to filter Drivers
+ *        required: false
+ *        type: number
+ *      - name: page
+ *        in: query
+ *        required: false
+ *        description: page number (defaults to **1**)
+ *        type: number
+ *      - name: size
+ *        in: query
+ *        required: false
+ *        description: number of items per page
+ *        type: number
+ *    responses:
+ *      200:
+ *        description: response object containing an array of drivers
+ *      400:
+ *        description: invalid parameters provided in url
+ *      401:
+ *        description: unauthorized access not allowed
+ */
+driverRouter.get(
+  '/drivers',
+  GeneralValidator.validateQueryParams,
+  ProviderValidator.validateQueryProvider,
+  DriverController.getDrivers
+);
 
 export default driverRouter;

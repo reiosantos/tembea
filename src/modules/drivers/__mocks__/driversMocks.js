@@ -1,17 +1,19 @@
 const payload = {
-  regNumber: 'KCA 545',
-  capacity: '1',
-  model: 'Limo',
+  driverName: 'Muhwezi Deo2',
+  driverNumber: 'UB5422424344',
+  driverPhoneNo: '0705331111',
+  providerId: 1
 };
 
-const cabs = {
+const drivers = {
   data: [
     {
-      id: 3,
-      regNumber: 'IKR 409 KI',
-      capacity: '8',
-      model: 'toyota',
-      providerId: 3
+      id: 1,
+      driverName: 'Muhwezi Deo2',
+      driverNumber: 'UB5422424344',
+      driverPhoneNo: '0705331111',
+      providerId: 1,
+      deletedAt: null
     },
   ],
   pageMeta: {
@@ -27,20 +29,12 @@ const paginatedData = {
     totalResults: 26,
     pageSize: 100
   },
-  cabs: [
-    {
-      id: 1,
-      regNumber: 'SMK 319 JK',
-      capacity: '4',
-      model: 'subaru',
-      providerId: 1,
-      deletedAt: null
-    }]
+  drivers
 };
 
 const overloadPayload = {
-  regNumber: 'KCA 453',
-  capacity: '5',
+  driverName: 'Muhwezi Deo2',
+  driverNumber: 'UB5422424344',
   model: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.'
     + 'Lorem Ipsum has been the industrys standard dummy text ever since the 1500s,'
     + 'when an unknown printer took a galley of type and scrambled it to make a type'
@@ -50,11 +44,12 @@ const overloadPayload = {
 const returnedData = {
   data: [
     {
-      id: 3,
-      regNumber: 'IKR 409 KI',
-      capacity: '8',
-      model: 'toyota',
-      providerId: 3
+      id: 1,
+      driverName: 'Muhwezi Deo2',
+      driverNumber: 'UB5422424344',
+      driverPhoneNo: '0705331111',
+      providerId: 1,
+      deletedAt: null
     },
   ],
   pageMeta: {
@@ -63,25 +58,11 @@ const returnedData = {
 };
 
 
-const updateData = {
-  regNumber: 'KCX 505',
-  model: 'motor',
-  capacity: 4
-};
-
-const updateDatamock = {
-  regNumber: 'KCX 505 KG',
-  model: 'motor',
-  capacity: 4
-};
-
 const successMessage = '1 of 1 page(s).';
 const payloadData = {
   payload,
   overloadPayload,
-  updateData,
-  updateDatamock,
-  cabs,
+  drivers,
   paginatedData,
   successMessage,
   returnedData
