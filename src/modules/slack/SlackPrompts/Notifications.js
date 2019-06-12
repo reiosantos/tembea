@@ -20,6 +20,10 @@ import TripCompletion from '../../../services/jobScheduler/jobs/TripCompletionJo
 import CleanData from '../../../helpers/cleanData';
 import { getSlackDateString } from '../helpers/dateHelpers';
 
+const slackErrorMessage = new SlackInteractiveMessage(
+  'An error occurred while processing your request. '
+  + 'Please contact the administrator.', [], undefined, '#b52833'
+);
 
 class SlackNotifications {
   static async getDMChannelId(user, teamBotOauthToken) {
@@ -163,14 +167,9 @@ class SlackNotifications {
       await SlackNotifications.sendNotification(opsRequestMessage, slackBotOauthToken);
     } catch (error) {
       bugsnagHelper.log(error);
-      const message = new SlackInteractiveMessage(
-        'An error occurred while processing your request. '
-        + 'Please contact the administrator.', [], undefined, '#b52833'
-      );
-      respond(message);
+      respond(slackErrorMessage);
     }
   }
-
 
   static async sendOpsTripRequestNotification(payload, trip, respond) {
     try {
@@ -178,11 +177,7 @@ class SlackNotifications {
       await SlackNotifications.sendNotification(opsRequestMessage, botToken);
     } catch (error) {
       bugsnagHelper.log(error);
-      const message = new SlackInteractiveMessage(
-        'An error occurred while processing your request. '
-        + 'Please contact the administrator.', [], undefined, '#b52833'
-      );
-      respond(message);
+      respond(slackErrorMessage);
     }
   }
 
@@ -423,11 +418,7 @@ class SlackNotifications {
       });
     } catch (error) {
       bugsnagHelper.log(error);
-      const message = new SlackInteractiveMessage(
-        'An error occurred while processing your request. '
-        + 'Please contact the administrator.', [], undefined, '#b52833'
-      );
-      respond(message);
+      respond(slackErrorMessage);
     }
   }
 
@@ -667,11 +658,7 @@ class SlackNotifications {
       return SlackNotifications.sendNotification(opsRequestMessage, slackBotOauthToken);
     } catch (error) {
       bugsnagHelper.log(error);
-      const message = new SlackInteractiveMessage(
-        'An error occurred while processing your request. '
-        + 'Please contact the administrator.', [], undefined, '#b52833'
-      );
-      respond(message);
+      respond(slackErrorMessage);
     }
   }
 }

@@ -294,9 +294,9 @@ class RouteService extends BaseService {
       INNER JOIN "RouteUseRecords" AS RUR ON BUR."batchRecordId" = RUR.id
       INNER JOIN "RouteBatches" AS RB ON RUR."batchId" = RB.id
       INNER JOIN "Routes" AS R ON RB."routeId" = R.id
-      WHERE BUR.rating IS NOT NULL 
+      WHERE BUR.rating IS NOT NULL
       `;
-    const filterByDate = ` AND RUR."batchUseDate" >= '${from || previousMonthStart}' 
+    const filterByDate = ` AND RUR."batchUseDate" >= '${from || previousMonthStart}'
     AND RUR."batchUseDate" <= '${to || previousMonthEnd}'`;
     query += filterByDate;
     const results = await sequelize.query(query);

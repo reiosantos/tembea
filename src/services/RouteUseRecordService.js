@@ -41,7 +41,6 @@ class RouteUseRecordService {
     return routeUseRecord;
   }
 
-
   static async getRouteUseRecords(pageable = RouteUseRecordService.defaultPageable, where = null) {
     const { page, size } = pageable;
     let order;
@@ -134,7 +133,7 @@ class RouteUseRecordService {
       } = record;
       const totalUsers = confirmedUsers + unConfirmedUsers + skippedUsers + pendingUsers;
       const utilization = ((confirmedUsers / totalUsers) * 100).toFixed(0);
-      recordInfo.utilization = utilization;
+      recordInfo.utilization = utilization >= 0 ? utilization : '0';
       const ratingsarray = record.batch.BatchUseRecords;
       const sumOfRatings = record.batch.BatchUseRecords
         .reduce((prev, next) => prev + next.rating, 0);

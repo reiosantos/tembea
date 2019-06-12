@@ -25,13 +25,12 @@ describe('AddressService', () => {
         dataValues: {
           id: 123,
           address: 'gsg45',
-        },
-        _options: { isNewRecord: true }
+        }
       };
       jest.spyOn(LocationService, 'createLocation')
         .mockResolvedValue(mockLocationModel);
       jest.spyOn(Address, 'findOrCreate')
-        .mockResolvedValue([mockAddressModel]);
+        .mockResolvedValue([mockAddressModel, true]);
       const newRecord = {
         isNewAddress: true
       };

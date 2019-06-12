@@ -1,6 +1,7 @@
 import { Op } from 'sequelize';
 import models from '../database/models';
 import RemoveDataValues from '../helpers/removeDataValues';
+import { departmentDataAttributes } from './DepartmentService';
 
 const { TripRequest, Department } = models;
 
@@ -26,14 +27,7 @@ export default class TravelTripService {
         attributes: [],
         where: { name: { [Op.in]: [...departmentList] } }
       }],
-      attributes: [
-        'departmentId',
-        [models.sequelize.literal('department.name'), 'departmentName'],
-        [models.sequelize.fn('count', models.sequelize.col('departmentId')), 'totalTrips'],
-        [models.sequelize.fn('avg', models.sequelize.col('rating')), 'averageRating'],
-        [models.sequelize.fn('sum', models.sequelize.col('cost')), 'totalCost'],
-      ],
-      group: ['department.id', 'TripRequest.departmentId'],
+      ...departmentDataAttributes
     });
 
     return RemoveDataValues.removeDataValues(travelTrips);

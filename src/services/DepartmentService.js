@@ -9,6 +9,16 @@ import RemoveDataValues from '../helpers/removeDataValues';
 
 const { Department, User, TripRequest } = models;
 const getDeptKey = id => `dept_${id}`;
+export const departmentDataAttributes = {
+  attributes: [
+    'departmentId',
+    [models.sequelize.literal('department.name'), 'departmentName'],
+    [models.sequelize.fn('avg', models.sequelize.col('rating')), 'averageRating'],
+    [models.sequelize.fn('count', models.sequelize.col('departmentId')), 'totalTrips'],
+    [models.sequelize.fn('sum', models.sequelize.col('cost')), 'totalCost'],
+  ],
+  group: ['department.id', 'TripRequest.departmentId'],
+};
 
 class DepartmentService {
   static async createDepartment(user, name, teamId, location) {
@@ -178,14 +188,7 @@ class DepartmentService {
       include: [{
         model: Department, as: 'department', attributes: [], where
       }],
-      attributes: [
-        'departmentId',
-        [models.sequelize.literal('department.name'), 'departmentName'],
-        [models.sequelize.fn('avg', models.sequelize.col('rating')), 'averageRating'],
-        [models.sequelize.fn('count', models.sequelize.col('departmentId')), 'totalTrips'],
-        [models.sequelize.fn('sum', models.sequelize.col('cost')), 'totalCost'],
-      ],
-      group: ['department.id', 'TripRequest.departmentId'],
+      ...departmentDataAttributes
     });
     return RemoveDataValues.removeDataValues(result);
   }

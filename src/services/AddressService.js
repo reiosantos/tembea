@@ -42,21 +42,24 @@ class AddressService {
       );
     }
 
-    const [addressData] = await Address.findOrCreate({
-      where: {
-        address: { [Op.iLike]: `${address}%` }
-      },
-      defaults: {
-        address,
-        locationId: theLocation.id
-      }
-    });
+    const { data } = await AddressService.findOrCreate(address, theLocation.id);
 
     return {
-      ...addressData.dataValues,
+      ...data,
       longitude: theLocation.longitude,
       latitude: theLocation.latitude
     };
+  }
+
+  static async findOrCreate(address, locationId) {
+    const result = await Address.findOrCreate({
+      where: {
+        address: { [Op.iLike]: `${address}%` }
+      },
+      defaults: { address, locationId }
+    });
+    const [{ dataValues: data }, created] = result;
+    return { data, created };
   }
 
   /**
@@ -69,22 +72,13 @@ class AddressService {
   static async createNewAddress(longitude, latitude, address) {
     try {
       const location = await LocationService.createLocation(longitude, latitude);
-      const [addressData] = await Address.findOrCreate({
-        where: {
-          address: { [Op.iLike]: `${address}%` }
-        },
-        defaults: {
-          address,
-          locationId: location.id
-        }
-      });
-      const { _options: { isNewRecord } } = addressData;
+      const { data, created } = await AddressService.findOrCreate(address, location.id);
       const newAddressData = {
-        id: addressData.dataValues.id,
-        address: addressData.dataValues.address,
+        id: data.id,
+        address: data.address,
         longitude: location.longitude,
         latitude: location.latitude,
-        isNewAddress: isNewRecord
+        isNewAddress: created
       };
       return newAddressData;
     } catch (error) {
