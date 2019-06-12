@@ -4,7 +4,7 @@ import CabService from '../../services/CabService';
 import {
   routeBatch, batch, routeDetails, returnNullPercentage, record,
   confirmedRecord, returnedPercentage, percentagesList,
-  singlePercentageArray, returnedMaxObj, returnedMinObj, emptyRecord
+  singlePercentageArray, returnedMaxObj, returnedMinObj, emptyRecord, routeResult
 } from '../__mocks__/routeMock';
 
 describe('Route Helpers', () => {
@@ -130,6 +130,15 @@ describe('Route Helpers', () => {
       expect(resultMin).toEqual(returnedMinObj);
       expect(resultSingleRecord).toEqual(emptyRecord);
       expect(resultNull).toEqual({ emptyRecord });
+    });
+  });
+  describe('RouteHelper.pageDataObject', () => {
+    it('should return an object of the route data', () => {
+      const routesData = RouteHelper.pageDataObject(routeResult);
+      expect(routesData.pageMeta).toBeDefined();
+      expect(routesData.pageMeta.totalPages).toBe(1);
+      expect(routesData.pageMeta.totalResults).toBe(1);
+      expect(routesData.pageMeta.pageSize).toBe(100);
     });
   });
 });

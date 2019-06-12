@@ -8,6 +8,7 @@ import HttpError from '../helpers/errorHandler';
 import UserService from './UserService';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import CabService from './CabService';
+import RouteServiceHelper from '../helpers/RouteServiceHelper';
 
 
 const {
@@ -115,7 +116,7 @@ class RouteService {
   static async addUserToRoute(routeBatchId, userId) {
     const route = await RouteBatch.findByPk(routeBatchId, { include: ['riders'] });
     HttpError.throwErrorIfNull(route, 'Route route not found');
-    if (!RouteService.canJoinRoute(route)) {
+    if (!RouteServiceHelper.canJoinRoute(route)) {
       HttpError.throwErrorIfNull(null, 'Route capacity has been exhausted', 403);
     }
     const updateUserTable = UserService.getUserById(userId)
@@ -214,10 +215,6 @@ class RouteService {
     return { routes, ...pageMeta };
   }
 
-  static canJoinRoute(route) {
-    return route.riders && route.riders.length < route.capacity;
-  }
-
   static updateBatchLabel({ route, created }) {
     let batch = 'A';
     if (!created) {
@@ -233,7 +230,7 @@ class RouteService {
     return sort.map((item) => {
       const { predicate, direction } = item;
       let order = [predicate, direction];
-      if (RouteService.isCabFields(predicate)) {
+      if (RouteServiceHelper.isCabFields(predicate)) {
         order.unshift(RouteService.sort.cab);
       }
       if (predicate === 'destination') {
@@ -244,37 +241,6 @@ class RouteService {
       }
       return order;
     });
-  }
-
-  static isCabFields(predicate) {
-    return predicate === 'driverName' || predicate === 'driverPhoneNo' || predicate === 'regNumber';
-  }
-
-  static serializeRider(rider) {
-    if (!rider) return {};
-    const { slackId, id, email } = rider;
-    return { slackId, id, email };
-  }
-
-  static serializeRiders(data) {
-    if (!data) return {};
-    const riders = data.map(RouteService.serializeRider);
-    const inUse = riders.length;
-    return { inUse, riders };
-  }
-
-  static serializeRoute(route) {
-    if (!route) return {};
-    const { name, destination: { address: destination } } = route;
-    return { name, destination };
-  }
-
-  static serializeCabDetails(cabDetails) {
-    if (cabDetails) {
-      const { driverName, driverPhoneNo, regNumber } = cabDetails;
-      return { driverName, driverPhoneNo, regNumber };
-    }
-    return {};
   }
 
   /**
@@ -302,9 +268,9 @@ class RouteService {
       comments,
       routeId,
       inUse: inUse || 0,
-      ...RouteService.serializeRoute(routeData.route),
-      ...RouteService.serializeCabDetails(routeData.cabDetails),
-      ...RouteService.serializeRiders(routeData.riders),
+      ...RouteServiceHelper.serializeRoute(routeData.route),
+      ...RouteServiceHelper.serializeCabDetails(routeData.cabDetails),
+      ...RouteServiceHelper.serializeRiders(routeData.riders),
     };
   }
 

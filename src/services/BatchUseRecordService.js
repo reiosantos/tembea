@@ -2,6 +2,7 @@ import { MAX_INT as all } from '../helpers/constants';
 import models from '../database/models';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import RemoveDataValues from '../helpers/removeDataValues';
+import BatchUseRecordHelper from '../helpers/BatchUseRecordHelper';
 
 const {
   BatchUseRecord, RouteUseRecord, RouteBatch, Route, sequelize
@@ -79,11 +80,8 @@ class BatchUseRecordService {
         }]
     };
     const pagenatedData = await paginatedRoutes.getPageItems(page);
-    const { data, pageMeta } = pagenatedData;
-    const newData = data.map(BatchUseRecordService.serializeBatchRecord);
-    pagenatedData.data = newData;
-    pagenatedData.pageMeta = pageMeta;
-    return pagenatedData;
+    const data = BatchUseRecordHelper.serializePaginatedData(pagenatedData);
+    return data;
   }
 
   static async getUserRouteRecord(id) {

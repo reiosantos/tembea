@@ -50,7 +50,7 @@ class MonthlyReportSender {
     return files;
   }
 
-  async sendMail() {
+  async generateSendMailAttachment() {
     const summary = await ReportGeneratorService.getOverallTripsSummary();
     const html = await this.getTemplate({
       name: 'Kenya Travel Team',
@@ -64,6 +64,12 @@ class MonthlyReportSender {
       content: Utils.writableToReadableStream(await MonthlyReportSender.getEmailReportAttachment()),
     }];
     const files = await MonthlyReportSender.processAttachments(attachments);
+    return { html, files };
+  }
+  
+  async sendMail() {
+    const { html, files } = await this.generateSendMailAttachment();
+  
     if (process.env.TEMBEA_MAIL_ADDRESS && process.env.KENYA_TRAVEL_TEAM_EMAIL) {
       await this.emailService.sendMail({
         from: `TEMBEA <${process.env.TEMBEA_MAIL_ADDRESS}>`,
@@ -106,7 +112,6 @@ class MonthlyReportSender {
       name: department.head.name,
       email: department.head.email,
     }));
-
     return filtered;
   }
 

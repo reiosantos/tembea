@@ -134,7 +134,6 @@ const ScheduleTripInputHandlers = {
       const errors = await ScheduleTripController.validateTripDetailsForm(payloadCopy, 'destination');
       if (errors.length) return { errors };
       const updatedTripData = await TripHelper.getDestinationCoordinates(destination, tripDetails);
-
       tripData = UserInputValidator.getScheduleTripDetails(updatedTripData);
       await Cache.saveObject(getTripKey(userId), tripData);
       if (destination !== 'Others') return InteractivePrompts.sendScheduleTripResponse(tripData, respond);
@@ -144,8 +143,7 @@ const ScheduleTripInputHandlers = {
       bugsnagHelper.log(error);
       if (error instanceof GoogleMapsError && error.code === GoogleMapsError.UNAUTHENTICATED) {
         return InteractivePrompts.sendScheduleTripResponse(tripData, respond);
-      }
-      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
+      } respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     }
   },
 

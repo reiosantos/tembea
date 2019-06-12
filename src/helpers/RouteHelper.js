@@ -197,6 +197,19 @@ class RouteHelper {
     };
     return data;
   }
+
+  static pageDataObject(result) {
+    const pageData = {
+      pageMeta: {
+        totalPages: result.totalPages,
+        page: result.pageNo,
+        totalResults: result.totalItems.length,
+        pageSize: result.itemsPerPage
+      },
+      routes: result.routes
+    };
+    return pageData;
+  }
 }
 
 export default RouteHelper;

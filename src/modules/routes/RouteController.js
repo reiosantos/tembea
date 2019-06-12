@@ -38,18 +38,9 @@ class RoutesController {
       const pageable = { page, size, sort };
       const where = { name, status };
       const { ...result } = await RouteService.getRoutes(pageable, where);
-
       const message = `${result.pageNo} of ${result.totalPages} page(s).`;
-      const pageData = {
-        pageMeta: {
-          totalPages: result.totalPages,
-          page: result.pageNo,
-          totalResults: result.totalItems.length,
-          pageSize: result.itemsPerPage
-        },
-        routes: result.routes
-      };
-      return Response.sendResponse(res, 200, true, message, pageData);
+      const routeData = RouteHelper.pageDataObject(result);
+      return Response.sendResponse(res, 200, true, message, routeData);
     } catch (error) {
       BugSnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);

@@ -15,6 +15,7 @@ import JoinRouteRequestService from '../../../../services/JoinRouteRequestServic
 import PartnerService from '../../../../services/PartnerService';
 import RemoveDataValues from '../../../../helpers/removeDataValues';
 import ConfirmRouteUseJob from '../../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
+import RouteServiceHelper from '../../../../helpers/RouteServiceHelper';
 
 class JoinRouteInputHandlers {
   static async joinRoute(payload, respond) {
@@ -32,7 +33,7 @@ class JoinRouteInputHandlers {
         return;
       }
 
-      if (RouteService.canJoinRoute(route)) {
+      if (RouteServiceHelper.canJoinRoute(route)) {
         const state = JSON.stringify({ routeId, capacityFilled: false });
         JoinRouteDialogPrompts.sendFellowDetailsForm(payload, state, engagement);
         respond(new SlackInteractiveMessage('Noted'));

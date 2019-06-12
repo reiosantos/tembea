@@ -100,15 +100,13 @@ class ScheduleTripController {
       const { originId, destinationId } = await ScheduleTripController.getLocationIds(tripRequestDetails);
       const pickupName = `${pickup === 'Others' ? othersPickup : pickup}`;
       const destinationName = `${destination === 'Others' ? othersDestination : destination}`;
-      const name = `From ${pickupName} to ${destinationName} on ${dateTime}`;
-      const departureTime = Utils.formatDateForDatabase(dateTime, timezone);
       return {
         riderId: requester.id,
-        name,
+        name: `From ${pickupName} to ${destinationName} on ${dateTime}`,
         reason,
         departmentId,
         tripStatus: 'Pending',
-        departureTime,
+        departureTime: Utils.formatDateForDatabase(dateTime, timezone),
         requestedById: requester.id,
         originId,
         destinationId,
@@ -117,10 +115,7 @@ class ScheduleTripController {
         tripNote,
         distance
       };
-    } catch (error) {
-      bugsnagHelper.log(error);
-      throw error;
-    }
+    } catch (error) { bugsnagHelper.log(error); throw error; }
   }
 
   static async createRequest(payload, tripRequestDetails) {

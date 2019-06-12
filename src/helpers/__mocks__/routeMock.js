@@ -115,7 +115,27 @@ const emptyRecord = {
   users: 0
 };
 
+const routeResult = {
+  totalPages: 1,
+  pageNo: 1,
+  itemsPerPage: 100,
+  totalItems:
+   [{
+     inUse: '4',
+     id: 1003,
+     status: 'Active',
+     capacity: 5,
+     takeOff: '03:00',
+     batch: 'B',
+     comments: 'Voluptatem quos in.',
+     count: '4',
+   }],
+  routes: [
+    batch
+  ]
+};
+
 export {
   routeBatch, batch, routeDetails, returnNullPercentage, record, returnedPercentage, confirmedRecord
-  , percentagesList, singlePercentageArray, returnedMaxObj, returnedMinObj, emptyRecord
+  , percentagesList, singlePercentageArray, returnedMaxObj, returnedMinObj, emptyRecord, routeResult
 };

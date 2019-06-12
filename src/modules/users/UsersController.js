@@ -13,20 +13,10 @@ class UsersController {
     const {
       slackUrl, email, newEmail, newName, newPhoneNo
     } = req.body;
-
     try {
       const slackUserInfo = await UserService.getUserInfo(slackUrl, email, newEmail);
-      // Get the user info from the database
       let user = await UserService.getUser(email);
-      // Save the new record
-      user = await UserService.saveNewRecord(
-        user,
-        slackUserInfo,
-        newName,
-        newEmail,
-        newPhoneNo
-      );
-
+      user = await UserService.saveNewRecord(user, slackUserInfo, newName, newEmail, newPhoneNo);
       return res.status(200).json({
         success: true,
         message: 'User record updated',

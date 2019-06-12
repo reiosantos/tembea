@@ -169,16 +169,8 @@ class DialogPrompts {
         'regNumber',
         'Enter the Cab\'s registration number'
       ),
-      new SlackDialogText(
-        'Cab Model',
-        'model',
-        'Enter the Cab\'s model name'
-      ),
-      new SlackDialogText(
-        'Cab Capacity',
-        'capacity',
-        'Enter the Cab\'s capacity'
-      ),
+      new SlackDialogText('Cab Model', 'model', 'Enter the Cab\'s model name'),
+      new SlackDialogText('Cab Capacity', 'capacity', 'Enter the Cab\'s capacity'),
       new SlackDialogTextarea(
         'Justification',
         'confirmationComment',

@@ -6,6 +6,7 @@ import HttpError from '../../helpers/errorHandler';
 import UserService from '../UserService';
 import { mockRouteBatchData as routeBatch } from '../__mocks__';
 import { MAX_INT } from '../../helpers/constants';
+import RouteServiceHelper from '../../helpers/RouteServiceHelper';
 
 const {
   Route, RouteBatch, Cab, Address, sequelize, Sequelize, User,
@@ -127,7 +128,7 @@ describe('RouteService', () => {
       jest.spyOn(HttpError, 'throwErrorIfNull');
       jest.spyOn(UserService, 'getUserById');
       jest.spyOn(RouteBatch, 'findByPk');
-      jest.spyOn(RouteService, 'canJoinRoute');
+      jest.spyOn(RouteServiceHelper, 'canJoinRoute');
       jest.spyOn(sequelize, 'transaction').mockImplementation((fn) => {
         fn();
       });
@@ -145,7 +146,7 @@ describe('RouteService', () => {
         await RouteService.addUserToRoute(routeBatchId, userId);
       } catch (e) {
         expect(e.statusCode).toEqual(404);
-        expect(RouteService.canJoinRoute).not.toHaveBeenCalled();
+        expect(RouteServiceHelper.canJoinRoute).not.toHaveBeenCalled();
         expect(HttpError.throwErrorIfNull.mock.calls[0][1]).toEqual(
           'Route route not found'
         );
@@ -185,7 +186,7 @@ describe('RouteService', () => {
         await RouteService.addUserToRoute(routeBatchId, userId);
       } catch (e) {
         expect(e.statusCode).toEqual(403);
-        expect(RouteService.canJoinRoute).toHaveBeenCalled();
+        expect(RouteServiceHelper.canJoinRoute).toHaveBeenCalled();
         expect(HttpError.throwErrorIfNull.mock.calls[1][2]).toEqual(403);
         expect(HttpError.throwErrorIfNull.mock.calls[1][1]).toEqual(
           'Route capacity has been exhausted'
@@ -390,9 +391,8 @@ describe('RouteService', () => {
     it('should should perform soft delete', async () => {
       const routeBatchId = 1001;
       const spy = jest.spyOn(RouteBatch, 'destroy');
-      const result = await RouteService.deleteRouteBatch(routeBatchId);
+      await RouteService.deleteRouteBatch(routeBatchId);
 
-      expect(result).toEqual(1);
       expect(spy).toHaveBeenCalled();
       expect(spy).toBeCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(

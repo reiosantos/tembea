@@ -24,21 +24,14 @@ export class AISService {
    */
   async getUserDetails(email) {
     const uri = `${this.baseUrl}/users`;
-    const options = {
-      qs: {
-        email
-      },
-      headers: this.headers
-    };
+    const options = { qs: { email }, headers: this.headers };
     try {
       if (email.indexOf('andela.com') === -1) return {};
       const key = `AIS_DATA_${email.split('@')[0]}`;
       let result = await cache.fetch(key);
       if (result) return result;
       const aisData = await request.get(uri, options);
-      const {
-        values
-      } = JSON.parse(aisData);
+      const { values } = JSON.parse(aisData);
       ([result] = values);
       const notOnAis = !env.NODE_ENV.includes('production') && !result;
       const notOnProduction = !env.NODE_ENV.includes('production');
@@ -46,9 +39,7 @@ export class AISService {
         result = AisData(email);
         result.placement = await partnerData[Math.floor(Math.random() * partnerData.length)];
       }
-      if (notOnProduction) {
-        result.placement = await partnerData[Math.floor(Math.random() * partnerData.length)];
-      }
+      if (notOnProduction) { result.placement = await partnerData[Math.floor(Math.random() * partnerData.length)]; }
       await cache.saveObject(key, result);
       return result;
     } catch (error) {
