@@ -1,18 +1,18 @@
 import tripService from '../../../../services/TripService';
 import { isTripRescheduleTimedOut, isTripRequestApproved } from './slackValidations';
 import DialogPrompts from '../../SlackPrompts/DialogPrompts';
-import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
+import InteractivePromptSlackHelper from './InteractivePromptSlackHelper';
 
 
 export default class TripRescheduleHelper {
   static respondRescheduleError(timedOut, approved) {
     if (timedOut) {
-      return InteractivePrompts.passedTimeOutLimit();
+      return InteractivePromptSlackHelper.passedTimeOutLimit();
     }
 
     if (approved) {
-      return InteractivePrompts.rescheduleConfirmedApprovedError();
+      return InteractivePromptSlackHelper.rescheduleConfirmedApprovedError();
     }
   }
 
@@ -35,7 +35,7 @@ export default class TripRescheduleHelper {
       return rescheduleError;
     } catch (error) {
       bugsnagHelper.log(error);
-      return InteractivePrompts.sendTripError();
+      return InteractivePromptSlackHelper.sendTripError();
     }
   }
 }

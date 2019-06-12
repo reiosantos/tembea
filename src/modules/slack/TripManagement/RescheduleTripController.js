@@ -2,12 +2,12 @@ import tripService from '../../../services/TripService';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import DateDialogHelper from '../../../helpers/dateHelper';
-import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import Utils from '../../../utils';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import SlackEvents from '../events';
 import { slackEventNames } from '../events/slackEvents';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
+import InteractivePromptSlackHelper from '../helpers/slackHelpers/InteractivePromptSlackHelper';
 
 
 const web = new WebClientSingleton();
@@ -51,13 +51,13 @@ class RescheduleTripController {
         const newTrip = await tripService.updateRequest(tripId, { departureTime });
         const requestType = 'reschedule';
         SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, newTrip, respond, requestType);
-        return InteractivePrompts.sendRescheduleCompletion(newTrip, trip.rider.slackId);
+        return InteractivePromptSlackHelper.sendRescheduleCompletion(newTrip, trip.rider.slackId);
       }
 
-      return InteractivePrompts.sendTripError();
+      return InteractivePromptSlackHelper.sendTripError();
     } catch (error) {
       bugsnagHelper.log(error);
-      return InteractivePrompts.sendRescheduleError(tripId);
+      return InteractivePromptSlackHelper.sendRescheduleError(tripId);
     }
   }
 }

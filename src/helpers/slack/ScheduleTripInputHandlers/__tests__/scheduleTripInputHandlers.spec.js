@@ -17,6 +17,7 @@ import UserInputValidator from '../../UserInputValidator';
 import TripHelper from '../../../TripHelper';
 import UpdateSlackMessageHelper from '../../updatePastMessageHelper';
 import { bugsnagHelper } from '../../../../modules/slack/RouteManagement/rootFile';
+import InteractivePromptSlackHelper from '../../../../modules/slack/helpers/slackHelpers/InteractivePromptSlackHelper';
 
 jest.mock('../../../../modules/slack/events/', () => ({
   slackEvents: jest.fn(() => ({
@@ -55,7 +56,7 @@ describe('ScheduleTripInputHandlers Tests', () => {
     InteractivePrompts.sendListOfDepartments = jest.fn(() => {});
     InteractivePrompts.sendRiderSelectList = jest.fn(() => {});
     InteractivePrompts.sendAddPassengersResponse = jest.fn(() => {});
-    InteractivePrompts.sendCompletionResponse = jest.fn(() => {});
+    InteractivePromptSlackHelper.sendCompletionResponse = jest.fn(() => {});
     DialogPrompts.sendTripDetailsForm = jest.fn(() => {});
     ScheduleTripController.createTripRequest = jest.fn(() => 1);
   });

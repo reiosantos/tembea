@@ -1,7 +1,6 @@
 import SlackEvents from '../events';
 import Utils from '../../../utils';
 import { slackEventNames } from '../events/slackEvents';
-import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import Validators from '../../../helpers/slack/UserInputValidator/Validators';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
@@ -9,6 +8,7 @@ import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import AddressService from '../../../services/AddressService';
 import TripDetailsService from '../../../services/TripDetailsService';
 import tripService, { TripService } from '../../../services/TripService';
+import InteractivePromptSlackHelper from '../helpers/slackHelpers/InteractivePromptSlackHelper';
 
 class ScheduleTripController {
   static validateTravelContactDetailsForm(payload) {
@@ -147,7 +147,7 @@ class ScheduleTripController {
       const trip = await TripService.createRequest(tripRequest);
       const { forSelf } = tripRequestDetails;
       const riderSlackId = `${forSelf === 'true' ? tripRequestDetails.id : tripRequestDetails.rider}`;
-      InteractivePrompts.sendCompletionResponse(respond, trip.id, riderSlackId);
+      InteractivePromptSlackHelper.sendCompletionResponse(respond, trip.id, riderSlackId);
       SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, trip, respond);
       return true;
     } catch (error) {

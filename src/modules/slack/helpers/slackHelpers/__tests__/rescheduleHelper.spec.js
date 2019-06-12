@@ -1,7 +1,7 @@
 import tripService from '../../../../../services/TripService';
 import TripRescheduleHelper from '../rescheduleHelper';
 import DialogPrompts from '../../../SlackPrompts/DialogPrompts';
-import InteractivePrompts from '../../../SlackPrompts/InteractivePrompts';
+import InteractivePromptSlackHelper from '../InteractivePromptSlackHelper';
 
 
 jest.mock('../../../SlackPrompts/Notifications.js');
@@ -53,7 +53,7 @@ describe('Trip Reschedule Helper test', () => {
         .mockResolvedValue({
           departureTime: `${oneHourAfter.toISOString()}`
         });
-      const spy = jest.spyOn(InteractivePrompts, 'passedTimeOutLimit');
+      const spy = jest.spyOn(InteractivePromptSlackHelper, 'passedTimeOutLimit');
 
       const payload = {};
       const response = jest.fn();
@@ -69,7 +69,7 @@ describe('Trip Reschedule Helper test', () => {
         // Set departure time to two hour from the current time.
         departureTime: `${twoHourBefore.toISOString()}`
       });
-    const spy = jest.spyOn(InteractivePrompts, 'rescheduleConfirmedApprovedError');
+    const spy = jest.spyOn(InteractivePromptSlackHelper, 'rescheduleConfirmedApprovedError');
 
     const payload = {};
     const response = jest.fn();
@@ -80,7 +80,7 @@ describe('Trip Reschedule Helper test', () => {
 
   it('should handle unexpected errors', async () => {
     jest.spyOn(tripService, 'getById').mockRejectedValue();
-    const spy = jest.spyOn(InteractivePrompts, 'sendTripError');
+    const spy = jest.spyOn(InteractivePromptSlackHelper, 'sendTripError');
 
     const payload = {};
     const response = jest.fn();

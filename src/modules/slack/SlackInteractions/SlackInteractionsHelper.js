@@ -1,5 +1,5 @@
-import SlackInteractions from './index';
 import { getAction } from '../RouteManagement/rootFile';
+import SlackInteractionsHelpers from '../helpers/slackHelpers/SlackInteractionsHelpers';
 
 const handleActions = (payload, respond, inputHandlers) => {
   const callBackName = getAction(payload, 'actions');
@@ -7,7 +7,7 @@ const handleActions = (payload, respond, inputHandlers) => {
   if (routeHandler) {
     return routeHandler(payload, respond);
   }
-  respond(SlackInteractions.goodByeMessage());
+  respond(SlackInteractionsHelpers.goodByeMessage());
 };
 
 export default handleActions;

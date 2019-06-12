@@ -1,7 +1,7 @@
 import DialogPrompts from '../../../SlackPrompts/DialogPrompts';
 import ManagerActionsHelper from '../ManagerActionsHelper';
 import SlackHelpers from '../../../../../helpers/slack/slackHelpers';
-import SlackInteractions from '../../../SlackInteractions';
+import SlackInteractionsHelpers from '../SlackInteractionsHelpers';
 
 describe('ManagerActionsHelper', () => {
   let payload;
@@ -27,10 +27,10 @@ describe('ManagerActionsHelper', () => {
   it('should handle manager approve', async (done) => {
     const respond = jest.fn();
     jest.spyOn(SlackHelpers, 'isRequestApproved').mockImplementation().mockResolvedValue('mockedTrip');
-    jest.spyOn(SlackInteractions, 'approveTripRequestByManager').mockImplementation().mockReturnValue({});
+    jest.spyOn(SlackInteractionsHelpers, 'approveTripRequestByManager').mockImplementation().mockReturnValue({});
     await ManagerActionsHelper.managerApprove(payload, respond);
     expect(SlackHelpers.isRequestApproved).toHaveBeenCalled();
-    expect(SlackInteractions.approveTripRequestByManager).toHaveBeenCalled();
+    expect(SlackInteractionsHelpers.approveTripRequestByManager).toHaveBeenCalled();
 
     done();
   });

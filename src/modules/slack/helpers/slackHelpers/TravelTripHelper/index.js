@@ -10,11 +10,13 @@ import SlackEvents from '../../../events';
 import { slackEventNames } from '../../../events/slackEvents';
 import Services from '../../../../../services/UserService';
 import { LocationPrompts } from '../../../RouteManagement/rootFile';
-import TravelLocationHelper from './travelHelper';
 import GoogleMapsError from '../../../../../helpers/googleMaps/googleMapsError';
 import CleanData from '../../../../../helpers/cleanData';
 import Validators from '../../../../../helpers/slack/UserInputValidator/Validators';
 import Notifications from '../../../SlackPrompts/Notifications';
+import InteractivePromptSlackHelper from '../InteractivePromptSlackHelper';
+import travelHelper from './travelHelper';
+
 
 export const getTravelKey = id => `TRAVEL_REQUEST_${id}`;
 
@@ -87,6 +89,18 @@ class TravelTripHelper {
     }
   }
 
+  static async checkVerifiable(payload, respond) {
+    try {
+      const verifiable = await travelHelper.getPickupType(payload.submission);
+      if (verifiable) respond(verifiable);
+    } catch (err) {
+      if (err instanceof GoogleMapsError && err.code === GoogleMapsError.UNAUTHENTICATED) {
+        const message = InteractivePromptSlackHelper.openDestinationDialog();
+        respond(message);
+      }
+    }
+  }
+
   static async flightDetails(payload, respond) {
     try {
       const { user: { id } } = payload;
@@ -98,24 +112,11 @@ class TravelTripHelper {
       }
       const tripDetails = await createTravelTripDetails(payload);
       await Cache.save(getTravelKey(id), 'tripDetails', tripDetails);
-      try {
-        const verifiable = await TravelLocationHelper.getPickupType(payload.submission);
-        if (verifiable) respond(verifiable);
-      } catch (err) {
-        if (err instanceof GoogleMapsError && err.code === GoogleMapsError.UNAUTHENTICATED) {
-          const message = InteractivePrompts.openDestinationDialog();
-          respond(message);
-        }
-      }
+      await TravelTripHelper.checkVerifiable(payload, respond);
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     }
-  }
-
-  static locationNotFound(payload, respond) {
-    const value = payload.actions[0].name;
-    if (value === 'no') { LocationPrompts.errorPromptMessage(respond); }
   }
 
   static async suggestions(payload, respond) {
@@ -155,7 +156,7 @@ class TravelTripHelper {
       tripDetails.destination = destination;
       tripDetails.othersDestination = othersDestination;
       await Cache.save(getTravelKey(id), 'tripDetails', tripDetails);
-      await TravelLocationHelper.getDestinationType(payload, respond);
+      await travelHelper.getDestinationType(payload, respond);
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Please try again'));
@@ -176,22 +177,25 @@ class TravelTripHelper {
     }
   }
 
+  static sendDetails(payload, respond) {
+    if (payload.actions[0].value === 'cancel') {
+      return InteractivePromptSlackHelper.sendCancelRequestResponse(respond);
+    }
+    if (payload.actions[0].value === 'trip_note') {
+      return travelHelper.notesRequest(payload, respond);
+    }
+  }
+
   static async confirmation(payload, respond) {
     try {
+      await TravelTripHelper.sendDetails(payload, respond);
       const { user: { id } } = payload;
-      if (payload.actions[0].value === 'cancel') {
-        return InteractivePrompts.sendCancelRequestResponse(respond);
-      }
-      if (payload.actions[0].value === 'trip_note') {
-        return TravelTripHelper.notesRequest(payload, respond);
-      }
-
       const { tripDetails } = await Cache.fetch(getTravelKey(id));
       const tripRequest = await ScheduleTripController.createTravelTripRequest(
         payload, tripDetails
       );
       if (tripDetails.destination === 'To Be Decided' || tripDetails.pickup === 'To Be Decided') {
-        TravelTripHelper.riderRequest(payload, tripDetails, respond);
+        travelHelper.riderRequest(payload, tripDetails, respond);
       } else {
         return TravelTripHelper.sendCompletedResponseToOps(
           tripRequest, tripDetails, respond, payload
@@ -201,36 +205,6 @@ class TravelTripHelper {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     }
-  }
-
-  static async notesRequest(payload, respond) {
-    const { user: { id } } = payload;
-    const { tripDetails: { tripNote } } = await Cache.fetch(getTravelKey(id));
-    respond(new SlackInteractiveMessage('Noted ...'));
-    return DialogPrompts.sendTripNotesDialogForm(payload,
-      'travelTripNoteForm', 'travel_trip_tripNotesAddition',
-      'Add Trip Notes', tripNote || null);
-  }
-
-  static async riderRequest(payload, tripDetails, respond) {
-    const { team: { id: teamID }, user: { id: userID } } = payload;
-    const { pickup, destination, rider } = tripDetails;
-    await Cache.save(getTravelKey(rider), 'waitingRequester', userID);
-    const data = {
-      pickup, destination, teamID, userID, rider
-    };
-    await TravelLocationHelper.validatePickupDestination(data, respond);
-  }
-
-  static async tripNotesAddition(payload, respond) {
-    const { user: { id }, submission: { tripNote } } = payload;
-    const { tripDetails } = await Cache.fetch(getTravelKey(id));
-    const errors = [];
-    errors.push(...Validators.validateDialogSubmission(payload));
-    if (errors.length) return { errors };
-    tripDetails.tripNote = tripNote;
-    await Cache.save(getTravelKey(id), 'tripDetails', tripDetails);
-    return InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
   }
 
   static async requesterToBeDecidedNotification(payload, respond) {
@@ -246,33 +220,6 @@ class TravelTripHelper {
     respond(new SlackInteractiveMessage(message));
   }
 
-  static async riderLocationConfirmation(payload, respond) {
-    const valueName = payload.actions[0].value;
-    if (valueName === 'cancel') {
-      respond(new SlackInteractiveMessage('Thank you for using Tembea'));
-    } else {
-      const location = valueName.split('_')[0];
-      await LocationMapHelpers.callRiderLocationConfirmation(
-        payload, respond, location
-      );
-      respond(new SlackInteractiveMessage('noted...'));
-    }
-  }
-
-  static updateLocationInfo(tripDetails, confirmedLocation) {
-    let location;
-    const updatedTripDetails = { ...tripDetails };
-    if (updatedTripDetails.pickup === 'To Be Decided') {
-      updatedTripDetails.pickup = confirmedLocation;
-      location = 'Pickup';
-    } else {
-      updatedTripDetails.destination = confirmedLocation;
-      location = 'Destination';
-    }
-
-    return { updatedTripDetails, location };
-  }
-
   static async completeTravelConfirmation(payload, respond) {
     try {
       const {
@@ -280,7 +227,7 @@ class TravelTripHelper {
       } = payload;
       const { waitingRequester } = await Cache.fetch(getTravelKey(riderID));
       const { tripDetails } = await Cache.fetch(getTravelKey(waitingRequester));
-      const { location, updatedTripDetails } = TravelTripHelper.updateLocationInfo(
+      const { location, updatedTripDetails } = travelHelper.updateLocationInfo(
         tripDetails, confirmedLocation
       );
       const tripRequest = await ScheduleTripController.createTravelTripRequest(
@@ -302,7 +249,7 @@ class TravelTripHelper {
   }
 
   static async sendCompletedResponseToOps(tripRequest, tripData, respond, payload) {
-    InteractivePrompts.sendCompletionResponse(respond, tripRequest.id, tripData.rider);
+    InteractivePromptSlackHelper.sendCompletionResponse(respond, tripRequest.id, tripData.rider);
     SlackEvents.raise(
       slackEventNames.NEW_TRAVEL_TRIP_REQUEST, tripRequest, payload, respond, 'travel'
     );

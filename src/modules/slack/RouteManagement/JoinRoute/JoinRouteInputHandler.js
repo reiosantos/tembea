@@ -7,7 +7,6 @@ import JoinRouteNotifications from './JoinRouteNotifications';
 import JoinRouteHelpers from './JoinRouteHelpers';
 import FormValidators from './JoinRouteFormValidators';
 import JoinRouteInteractions from './JoinRouteInteractions';
-import SlackInteractions from '../../SlackInteractions';
 import RouteService from '../../../../services/RouteService';
 import { getFellowEngagementDetails } from '../../helpers/formHelper';
 import UserService from '../../../../services/UserService';
@@ -16,6 +15,7 @@ import PartnerService from '../../../../services/PartnerService';
 import RemoveDataValues from '../../../../helpers/removeDataValues';
 import ConfirmRouteUseJob from '../../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 import RouteServiceHelper from '../../../../helpers/RouteServiceHelper';
+import SlackInteractionsHelpers from '../../helpers/slackHelpers/SlackInteractionsHelpers';
 
 class JoinRouteInputHandlers {
   static async joinRoute(payload, respond) {
@@ -169,7 +169,7 @@ class JoinRouteInputHandlers {
     if (value === 'back') {
       return JoinRouteInteractions.sendAvailableRoutesMessage(payload, respond);
     }
-    respond(SlackInteractions.goodByeMessage());
+    respond(SlackInteractionsHelpers.goodByeMessage());
   }
 }
 export default JoinRouteInputHandlers;

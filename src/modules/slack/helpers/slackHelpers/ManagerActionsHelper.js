@@ -1,6 +1,6 @@
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
-import SlackInteractions from '../../SlackInteractions';
 import DialogPrompts from '../../SlackPrompts/DialogPrompts';
+import SlackInteractionsHelpers from './SlackInteractionsHelpers';
 
 class ManagerActionsHelper {
   static async managerDecline(payload) {
@@ -15,7 +15,7 @@ class ManagerActionsHelper {
   static async managerApprove(payload, respond) {
     const { value } = payload.actions[0];
     const trip = await SlackHelpers.isRequestApproved(value, payload.user.id);
-    SlackInteractions.approveTripRequestByManager(payload, trip, respond);
+    SlackInteractionsHelpers.approveTripRequestByManager(payload, trip, respond);
   }
 }
 

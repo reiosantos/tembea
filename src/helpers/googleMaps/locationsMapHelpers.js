@@ -8,12 +8,12 @@ import GoogleMapsPlaceDetails from '../../services/googleMaps/GoogleMapsPlaceDet
 
 import Cache from '../../cache';
 import LocationPrompts from '../../modules/slack/SlackPrompts/LocationPrompts';
-import InteractivePrompts from '../../modules/slack/SlackPrompts/InteractivePrompts';
 import DialogPrompts from '../../modules/slack/SlackPrompts/DialogPrompts';
 import bugsnagHelper from '../bugsnagHelper';
 import { SlackInteractiveMessage } from '../../modules/slack/SlackModels/SlackMessageModels';
 import GoogleMapsError from './googleMapsError';
 import { getTravelKey } from '../../modules/slack/helpers/slackHelpers/TravelTripHelper';
+import InteractivePromptSlackHelper from '../../modules/slack/helpers/slackHelpers/InteractivePromptSlackHelper';
 
 
 export default class LocationHelpers {
@@ -130,7 +130,7 @@ export default class LocationHelpers {
       };
       await LocationHelpers.sendResponse(actionName, locationData, respond, payload);
     } catch (error) {
-      InteractivePrompts.sendError();
+      InteractivePromptSlackHelper.sendError();
       bugsnagHelper.log(error);
     }
   }

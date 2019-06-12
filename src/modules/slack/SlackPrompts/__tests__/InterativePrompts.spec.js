@@ -14,6 +14,7 @@ import WebClientSingleton from '../../../../utils/WebClientSingleton';
 import BugsnagHelper from '../../../../helpers/bugsnagHelper';
 import { createTripData } from '../../SlackInteractions/__mocks__/SlackInteractions.mock';
 import PreviewScheduleTrip from '../../helpers/slackHelpers/previewScheduleTripAttachments';
+import InteractivePromptSlackHelper from '../../helpers/slackHelpers/InteractivePromptSlackHelper';
 
 jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../../slack/events/', () => ({
@@ -61,7 +62,7 @@ describe('Interactive Prompts test', () => {
 
   it('should create view open trips response', (done) => {
     const respond = jest.fn(value => value);
-    const result = InteractivePrompts.sendCompletionResponse(respond, 1, 'UH1RT223');
+    const result = InteractivePromptSlackHelper.sendCompletionResponse(respond, 1, 'UH1RT223');
     expect(result).toBe(undefined);
     expect(respond).toHaveBeenCalledWith(sendCompletionResponseMock);
 
@@ -90,7 +91,7 @@ describe('Interactive Prompts test', () => {
 
   it('should sendRescheduleCompletion response', (done) => {
     const trip = { dataValues: { id: 1 } };
-    const result = InteractivePrompts.sendRescheduleCompletion(trip);
+    const result = InteractivePromptSlackHelper.sendRescheduleCompletion(trip);
 
     expect(result).toHaveProperty('attachments');
     done();
@@ -98,14 +99,14 @@ describe('Interactive Prompts test', () => {
 
   it('should SendRescheduleError response', (done) => {
     const trip = { dataValues: { id: 23 } };
-    const result = InteractivePrompts.sendRescheduleError(trip);
+    const result = InteractivePromptSlackHelper.sendRescheduleError(trip);
 
     expect(result).toHaveProperty('attachments');
     done();
   });
 
   it('should SendTripError response', (done) => {
-    const result = InteractivePrompts.sendTripError();
+    const result = InteractivePromptSlackHelper.sendTripError();
 
     expect(result).toHaveProperty('text', 'Dang! I hit an error with this trip');
     done();
@@ -441,7 +442,7 @@ describe('LocationPrompts', () => {
   describe('InteractivePrompts_sendCancelRequestResponse', () => {
     it('should create view open schedule trips response', async () => {
       const respond = jest.fn(value => value);
-      const result = await InteractivePrompts.sendCancelRequestResponse(respond);
+      const result = await InteractivePromptSlackHelper.sendCancelRequestResponse(respond);
       expect(result).toBe(undefined);
       expect(respond).toHaveBeenCalled();
     });
@@ -458,7 +459,7 @@ describe('LocationPrompts', () => {
     });
 
     it('should create view open schedule trips response', async () => {
-      await InteractivePrompts.openDestinationDialog();
+      await InteractivePromptSlackHelper.openDestinationDialog();
       expect(optionalPropsSpy).toBeCalledWith('travel_trip_destinationSelection',
         'fallback', undefined, 'default');
     });

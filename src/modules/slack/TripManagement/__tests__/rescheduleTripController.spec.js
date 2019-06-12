@@ -1,9 +1,9 @@
 import RescheduleTripController from '../RescheduleTripController';
-import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import SlackEvents from '../../events';
 import tripService from '../../../../services/TripService';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import { updatedValue } from '../../../trips/__tests__/__mocks__';
+import InteractivePromptSlackHelper from '../../helpers/slackHelpers/InteractivePromptSlackHelper';
 
 
 jest.mock('../../../../utils/WebClientSingleton');
@@ -71,7 +71,7 @@ describe('RescheduleTripController', () => {
     jest.spyOn(SlackHelpers, 'getUserInfoFromSlack')
       .mockResolvedValue({ tz: 'Africa/Lagos' });
 
-    jest.spyOn(InteractivePrompts, 'sendRescheduleCompletion');
+    jest.spyOn(InteractivePromptSlackHelper, 'sendRescheduleCompletion');
     const payload = { id: 1, user: { id: 'AAAAAA' }, team: { id: 'AAAAAA' } };
     const respond = jest.fn();
     SlackEvents.raise = jest.fn();
@@ -79,25 +79,25 @@ describe('RescheduleTripController', () => {
 
     await RescheduleTripController.rescheduleTrip(3, '12/12/2018 22:00', payload, respond);
 
-    expect(InteractivePrompts.sendRescheduleCompletion).toHaveBeenCalled();
+    expect(InteractivePromptSlackHelper.sendRescheduleCompletion).toHaveBeenCalled();
   });
 
   it('should send trip error', async () => {
-    InteractivePrompts.sendTripError = jest.fn(() => {});
+    InteractivePromptSlackHelper.sendTripError = jest.fn(() => {});
     tripService.getById = jest.fn(() => { });
 
     await RescheduleTripController.rescheduleTrip(3000, '12/12/2018 22:00');
 
-    expect(InteractivePrompts.sendTripError.mock.calls.length).toBe(1);
+    expect(InteractivePromptSlackHelper.sendTripError.mock.calls.length).toBe(1);
   });
 
   it('should send reschedule trip error', async () => {
     const err = new Error();
-    InteractivePrompts.sendRescheduleError = jest.fn(() => {});
+    InteractivePromptSlackHelper.sendRescheduleError = jest.fn(() => {});
     tripService.getById = jest.fn(() => Promise.reject(err));
 
     await RescheduleTripController.rescheduleTrip(3, {});
 
-    expect(InteractivePrompts.sendRescheduleError.mock.calls.length).toBe(1);
+    expect(InteractivePromptSlackHelper.sendRescheduleError.mock.calls.length).toBe(1);
   });
 });

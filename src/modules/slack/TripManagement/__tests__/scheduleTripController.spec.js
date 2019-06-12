@@ -5,11 +5,11 @@ import dateHelper from '../../../../helpers/dateHelper';
 import {
   createPayload, tripRequestDetails, respondMock
 } from '../../SlackInteractions/__mocks__/SlackInteractions.mock';
-import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import SlackEvents from '../../events';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import TripDetailsService from '../../../../services/TripDetailsService';
 import tripService, { TripService } from '../../../../services/TripService';
+import InteractivePromptSlackHelper from '../../helpers/slackHelpers/InteractivePromptSlackHelper';
 
 
 jest.mock('@slack/client', () => ({
@@ -229,7 +229,7 @@ describe('ScheduleTripController Tests', () => {
         .mockResolvedValue(tripRequestDetails());
       jest.spyOn(TripService, 'createRequest')
         .mockResolvedValue({ dataValues: 'someValue' });
-      jest.spyOn(InteractivePrompts, 'sendCompletionResponse')
+      jest.spyOn(InteractivePromptSlackHelper, 'sendCompletionResponse')
         .mockImplementation(jest.fn());
       jest.spyOn(SlackEvents, 'raise').mockImplementation(jest.fn());
 

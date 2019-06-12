@@ -7,7 +7,6 @@ import {
   GoogleMapsService,
   GoogleMapsStatic,
   GoogleMapsSuggestions,
-  InteractivePrompts,
   LocationPrompts,
   Marker,
   PreviewPrompts,
@@ -22,6 +21,7 @@ import {
 import RouteInputHandlerHelper from './RouteInputHandlerHelper';
 import LocationMapHelper from '../../../helpers/googleMaps/locationsMapHelpers';
 import { getFellowEngagementDetails } from '../helpers/formHelper';
+import InteractivePromptSlackHelper from '../helpers/slackHelpers/InteractivePromptSlackHelper';
 
 const RouteInputHandlers = {
   home: async (payload, respond) => {
@@ -49,7 +49,7 @@ const RouteInputHandlers = {
       );
       respond(message);
     } catch (error) {
-      respond(InteractivePrompts.sendError());
+      respond(InteractivePromptSlackHelper.sendError());
       bugsnagHelper.log(error);
     }
   },
@@ -78,7 +78,7 @@ const RouteInputHandlers = {
       LocationPrompts
         .sendLocationConfirmationResponse(respond, staticMapUrl, address, locationGeometry);
     } catch (error) {
-      InteractivePrompts.sendError();
+      InteractivePromptSlackHelper.sendError();
       bugsnagHelper.log(error);
     }
   },

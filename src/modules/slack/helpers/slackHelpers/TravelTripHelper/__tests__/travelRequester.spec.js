@@ -2,9 +2,9 @@ import Notifications from '../../../../SlackPrompts/Notifications';
 import cache from '../../../../../../cache';
 import LocationHelpers from '../../../../../../helpers/googleMaps/locationsMapHelpers';
 import TravelTripHelper from '../index';
-import travelFunctions from '../travelHelper';
 import ScheduleTripController from '../../../../TripManagement/ScheduleTripController';
 import BugsnagHelper from '../../../../../../helpers/bugsnagHelper';
+import travelHelper from '../travelHelper';
 
 describe('TravelTripHelper', () => {
   let payload;
@@ -48,7 +48,7 @@ describe('TravelTripHelper', () => {
     it('Should call the location verify', async () => {
       const locationVerify = jest.spyOn(LocationHelpers,
         'locationVerify').mockImplementation(() => Promise.resolve());
-      await travelFunctions.getPickupType({ pickup: 'Others' }, respond);
+      await travelHelper.getPickupType({ pickup: 'Others' }, respond);
       expect(locationVerify).toHaveBeenCalledWith(
         { pickup: 'Others' }, 'pickup', 'travel_trip'
       );
@@ -57,7 +57,7 @@ describe('TravelTripHelper', () => {
     it('Should call the location verify', async () => {
       const locationVerify = jest.spyOn(LocationHelpers,
         'locationVerify').mockImplementation(() => Promise.resolve(true));
-      await travelFunctions.getDestinationType({ submission: { destination: 'Others' } }, respond);
+      await travelHelper.getDestinationType({ submission: { destination: 'Others' } }, respond);
       expect(locationVerify).toHaveBeenCalledWith(
         { destination: 'Others' }, 'destination', 'travel_trip'
       );
@@ -78,8 +78,8 @@ describe('TravelTripHelper', () => {
       };
       locationValidator = jest.spyOn(Notifications,
         'sendRiderlocationConfirmNotification').mockImplementation(() => Promise.resolve());
-      travelResponce = jest.spyOn(travelFunctions, 'responseMessage');
-      travelFunctions.validatePickupDestination(pickupData, respond);
+      travelResponce = jest.spyOn(travelHelper, 'responseMessage');
+      travelHelper.validatePickupDestination(pickupData, respond);
       expect(locationValidator).toHaveBeenCalledWith(newData, respond);
       expect(travelResponce).toHaveBeenCalled();
       expect(respond).toHaveBeenCalled();
@@ -94,8 +94,8 @@ describe('TravelTripHelper', () => {
       };
       locationValidator = jest.spyOn(Notifications,
         'sendRiderlocationConfirmNotification').mockImplementation(() => Promise.resolve());
-      travelResponce = jest.spyOn(travelFunctions, 'responseMessage');
-      travelFunctions.validatePickupDestination(destinationData, respond);
+      travelResponce = jest.spyOn(travelHelper, 'responseMessage');
+      travelHelper.validatePickupDestination(destinationData, respond);
       expect(locationValidator).toHaveBeenCalledWith(newDestinationData, respond);
       expect(travelResponce).toHaveBeenCalled();
       expect(respond).toHaveBeenCalled();
@@ -124,12 +124,12 @@ describe('TravelTripHelper', () => {
       const callRiderLocationConfirmation = jest.spyOn(LocationHelpers,
         'callRiderLocationConfirmation').mockImplementation(() => Promise.resolve());
 
-      await TravelTripHelper.riderLocationConfirmation(payload, respond);
+      await travelHelper.riderLocationConfirmation(payload, respond);
       expect(callRiderLocationConfirmation).toBeCalledWith(payload, respond, 'pickup');
       expect(respond).toHaveBeenCalled();
 
       payload.actions[0].value = 'cancel';
-      await TravelTripHelper.riderLocationConfirmation(payload, respond);
+      await travelHelper.riderLocationConfirmation(payload, respond);
       expect(respond).toHaveBeenCalled();
     });
   });

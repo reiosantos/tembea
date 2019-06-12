@@ -1,5 +1,4 @@
 import TravelTripHelper from '../index';
-import travelFunctions from '../travelHelper';
 import cache from '../../../../../../cache';
 import ScheduleTripController from '../../../../TripManagement/ScheduleTripController';
 import InteractivePrompts from '../../../../SlackPrompts/InteractivePrompts';
@@ -10,6 +9,8 @@ import Services from '../../../../../../services/UserService';
 import LocationHelpers from '../../../../../../helpers/googleMaps/locationsMapHelpers';
 import LocationPrompts from '../../../../SlackPrompts/LocationPrompts';
 import Validators from '../../../../../../helpers/slack/UserInputValidator/Validators';
+import InteractivePromptSlackHelper from '../../InteractivePromptSlackHelper';
+import travelHelper from '../travelHelper';
 
 jest.mock('../../../../events', () => ({
   slackEvents: jest.fn(() => ({
@@ -304,7 +305,7 @@ describe('TravelTripHelper', () => {
     });
 
     it('should call the respond method', () => {
-      TravelTripHelper.locationNotFound(passedData, respond);
+      travelHelper.locationNotFound(passedData, respond);
       expect(respond).toHaveBeenCalled();
     });
   });
@@ -459,7 +460,7 @@ describe('TravelTripHelper', () => {
     it('should test cancel confirmation', async () => {
       payload.actions[0].value = 'cancel';
 
-      const sendCancelRequestResponse = jest.spyOn(InteractivePrompts,
+      const sendCancelRequestResponse = jest.spyOn(InteractivePromptSlackHelper,
         'sendCancelRequestResponse');
       await TravelTripHelper.confirmation(payload, respond);
       expect(sendCancelRequestResponse).toHaveBeenCalledWith(respond);
@@ -467,7 +468,7 @@ describe('TravelTripHelper', () => {
 
     it('should test confirmation ', async () => {
       payload.user.id = 1;
-      InteractivePrompts.sendCompletionResponse = jest.fn();
+      InteractivePromptSlackHelper.sendCompletionResponse = jest.fn();
       SlackEvents.raise = jest.fn();
 
       createTravelTripRequest.mockImplementationOnce(() => ({ newPayload: 'newPayload', id: 1 }));
@@ -475,7 +476,7 @@ describe('TravelTripHelper', () => {
       await TravelTripHelper.confirmation(payload, respond);
       expect(cache.fetch).toHaveBeenCalledTimes(1);
       expect(createTravelTripRequest).toHaveBeenCalled();
-      expect(InteractivePrompts.sendCompletionResponse).toHaveBeenCalled();
+      expect(InteractivePromptSlackHelper.sendCompletionResponse).toHaveBeenCalled();
       expect(SlackEvents.raise).toHaveBeenCalled();
     });
 
@@ -498,7 +499,7 @@ describe('TravelTripHelper', () => {
         return {};
       });
 
-      const validatePickupDestination = jest.spyOn(travelFunctions,
+      const validatePickupDestination = jest.spyOn(travelHelper,
         'validatePickupDestination').mockImplementation(() => Promise.resolve());
       createTravelTripRequest.mockImplementationOnce(() => ({ newPayload: 'newPayload', id: 1 }));
 
@@ -519,7 +520,7 @@ describe('TravelTripHelper', () => {
     it('should test confirmation error handling', async () => {
       payload.user.id = 1;
       const log = jest.spyOn(BugsnagHelper, 'log');
-      InteractivePrompts.sendCompletionResponse = jest.fn();
+      InteractivePromptSlackHelper.sendCompletionResponse = jest.fn();
       SlackEvents.raise = jest.fn();
 
       createTravelTripRequest.mockRejectedValue(new Error());
@@ -579,7 +580,7 @@ describe('TravelTripHelper', () => {
       const sendPreviewTripResponse = jest.spyOn(InteractivePrompts,
         'sendPreviewTripResponse');
 
-      await TravelTripHelper.tripNotesAddition(payload, respond);
+      await travelHelper.tripNotesAddition(payload, respond);
       expect(cache.fetch).toHaveBeenCalledTimes(1);
       expect(sendPreviewTripResponse).toHaveBeenCalledTimes(1);
     });
@@ -625,7 +626,7 @@ describe('TravelTripHelper', () => {
       jest.spyOn(Validators, 'validateDialogSubmission')
         .mockReturnValue(['errors']);
 
-      const errors = await TravelTripHelper.tripNotesAddition(payload1, respond);
+      const errors = await travelHelper.tripNotesAddition(payload1, respond);
 
       expect(Validators.validateDialogSubmission).toBeCalled();
       expect(errors.errors).toEqual(['errors']);
@@ -647,7 +648,7 @@ describe('TravelTripHelper', () => {
       const tripRequest = jest.fn;
       const tripData = jest.fn;
       const sendCompletionResponseSpy = jest.spyOn(
-        InteractivePrompts, 'sendCompletionResponse'
+        InteractivePromptSlackHelper, 'sendCompletionResponse'
       ).mockImplementation(() => Promise.resolve());
       SlackEvents.raise = jest.fn();
 
