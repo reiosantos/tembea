@@ -166,7 +166,7 @@ class SlackNotifications {
       bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         'An error occurred while processing your request. '
-                + 'Please contact the administrator.', [], undefined, '#b52833'
+          + 'Please contact the administrator.', [], undefined, '#b52833'
       );
       respond(message);
     }
@@ -345,11 +345,10 @@ class SlackNotifications {
   }
 
   static async sendUserConfirmOrDeclineNotification(
-    teamId, userId, tripInformation, decline
+    teamId, userId, tripInformation, decline, opsStatus
   ) {
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-    const requester = tripInformation.requester.slackId;
-    const rider = tripInformation.rider.slackId;
+    const { requester: { slackId: requester }, rider: { slackId: rider } } = tripInformation;
     let message;
     let channelId;
     const label = !decline ? 'Confirmed Trip Request' : 'Declined Trip Request';
@@ -362,17 +361,24 @@ class SlackNotifications {
     if (requester !== rider) {
       channelId = await SlackNotifications.getDMChannelId(requester, slackBotOauthToken);
       const messageBaseOnDecline = SlackNotifications.getMessageBaseOnDeclineOrConfirm(decline);
-      message = `The trip you requested for <@${rider}> trip has been ${messageBaseOnDecline}`;
+      message = await SlackNotifications.createUserConfirmOrDeclineMessage(opsStatus, messageBaseOnDecline, rider);
       SlackNotifications.sendNotifications(channelId, attachments, message, slackBotOauthToken);
     }
-    const confirmedOrDeclined = !decline ? 'Confirmed' : 'declined';
-    message = `Your trip has been ${confirmedOrDeclined}`;
+    const confirmedOrDeclined = SlackNotifications.getMessageBaseOnDeclineOrConfirm(decline);
+    message = await SlackNotifications.createUserConfirmOrDeclineMessage(opsStatus, confirmedOrDeclined);
     channelId = await SlackNotifications.getDMChannelId(rider, slackBotOauthToken);
     SlackNotifications.sendNotifications(channelId, attachments, message, slackBotOauthToken);
-    if (confirmedOrDeclined === 'Confirmed') {
+    if (confirmedOrDeclined === 'confirmed. :smiley:') {
       TripCompletion.createScheduleForATrip(tripInformation);
     }
   }
+
+  static async createUserConfirmOrDeclineMessage(opsStatus, confirmedOrDeclined, rider) {
+    const message = `has been ${confirmedOrDeclined}${opsStatus ? ', and it is awaiting driver and vehicle assignment' : ''}`;
+    if (rider) return `The trip you requested for <@${rider}> ${message}`;
+    return `Your trip ${message}`;
+  }
+
 
   static async sendRiderlocationConfirmNotification(payload) {
     const {
@@ -432,7 +438,7 @@ class SlackNotifications {
     } = messageData;
     const attachment = new SlackAttachment(
       `Hello <@${waitingRequester}> :smiley:, <@${riderID}>`
-            + ` just confirmed the ${location} location`,
+      + ` just confirmed the ${location} location`,
       `The entered ${location} location is ${confirmedLocation}`,
       '', '', '', 'default', 'warning'
     );
@@ -508,7 +514,7 @@ class SlackNotifications {
         new SlackAttachmentField('Vehicle Name', model, true),
         new SlackAttachmentField('Vehicle Reg Number', regNumber, true)
       ];
-    }else{
+    } else {
       return;
     }
     return userAttachment;
@@ -664,7 +670,7 @@ class SlackNotifications {
       bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         'An error occurred while processing your request. '
-                + 'Please contact the administrator.', [], undefined, '#b52833'
+          + 'Please contact the administrator.', [], undefined, '#b52833'
       );
       respond(message);
     }

@@ -226,7 +226,7 @@ describe('TripActionController operations approve tests', () => {
     done();
   });
   it('should run notifiyProvider upon provider assignment', async (done) => {
-    const notifyProvider = jest.spyOn(TripActionsController, 'notifyProvider');
+    const notifyProvider = jest.spyOn(TripActionsController, 'notifyProvider').mockResolvedValue({});
     jest.spyOn(tripService, 'updateRequest').mockResolvedValue({ id: 1, name: 'Sample User' });
 
     await TripActionsController.changeTripStatusToConfirmed(opsUserId, payload, 'token');
@@ -267,10 +267,13 @@ describe('TripActionController operations approve tests', () => {
       .mockReturnValue();
     jest.spyOn(ProviderNotifications, 'sendTripNotification')
       .mockReturnValue();
-
-    await TripActionsController.notifyProvider(payload, {}, 'token');
+    jest.spyOn(InteractivePrompts, 'sendOpsDeclineOrApprovalCompletion')
+      .mockResolvedValue();
+    await TripActionsController.notifyProvider(payload, { rider: { slackId: 'AAA' } }, 'token');
     expect(SendNotifications.sendManagerConfirmOrDeclineNotification).toHaveBeenCalled();
     expect(ProviderNotifications.sendTripNotification).toHaveBeenCalled();
+    expect(SendNotifications.sendUserConfirmOrDeclineNotification).toHaveBeenCalled();
+    expect(InteractivePrompts.sendOpsDeclineOrApprovalCompletion).toHaveBeenCalled();
   });
   it('Should send notifications to provider and user on trip completion', async () => {
     const cab = { id: 1 };

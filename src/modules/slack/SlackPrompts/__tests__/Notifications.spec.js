@@ -205,6 +205,22 @@ describe('SlackNotifications', () => {
     });
   });
 
+  describe('createUserConfirmOrDeclineMessage', () => {
+    it('should send notification to user when ride has been confirmed', async (done) => {
+      const res = await SlackNotifications.createUserConfirmOrDeclineMessage(true, 'Confirmed');
+
+      expect(res).toEqual('Your trip has been Confirmed, and it is awaiting driver and vehicle assignment');
+      done();
+    });
+
+    it('should send notification to user when ride has been confirmed', async (done) => {
+      const res = await SlackNotifications.createUserConfirmOrDeclineMessage(false, 'declined');
+
+      expect(res).toEqual('Your trip has been declined');
+      done();
+    });
+  });
+
   describe('sendRequesterDeclinedNotification', () => {
     it('should send error on decline', async (done) => {
       jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockRejectedValue();
@@ -457,6 +473,7 @@ describe('SlackNotifications', () => {
     };
     const declineStatusFalse = false;
     const declineStatusTrue = true;
+    const opsStatus = true;
     const payload = {
       user: { id: 3 },
       team: { id: 'HAHJDILYR' },
@@ -467,30 +484,38 @@ describe('SlackNotifications', () => {
 
     const { user: { id: userId }, team: { id: teamId } } = payload;
     it('should send user notification when requester is equal to rider', async () => {
-      tripInfo.rider.dataValues.slackId = 3;
-      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, tripInfo, declineStatusFalse);
+      tripInfo.rider.slackId = 3;
+      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, tripInfo, declineStatusFalse, opsStatus);
       expect(res).toEqual(undefined);
     });
 
     it('should send user notification when requester is not equal to rider', async () => {
-      tripInfo.rider.dataValues.slackId = 4;
+      tripInfo.rider.slackId = 4;
       const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(
-        teamId, userId, tripInfo, declineStatusFalse
+        teamId, userId, tripInfo, declineStatusFalse, opsStatus
+      );
+      expect(res).toEqual(undefined);
+    });
+    
+    it('should send user confirmation notification when requester is not equal to rider', async () => {
+      tripInfo.rider.slackId = 4;
+      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, tripInfo, declineStatusTrue, opsStatus);
+      expect(res).toEqual(undefined);
+    });
+  
+    it('should send user confirmation notification when requester is equal to rider', async () => {
+      tripInfo.rider.slackId = 3;
+      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(
+        teamId, userId, tripInfo, declineStatusTrue, opsStatus
       );
       expect(res).toEqual(undefined);
     });
 
     it('should send user confirmation notification when requester is equal to rider', async () => {
-      tripInfo.rider.dataValues.slackId = 3;
+      tripInfo.rider.slackId = 3;
       const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(
-        teamId, userId, tripInfo, declineStatusTrue
+        teamId, userId, tripInfo, declineStatusFalse, opsStatus
       );
-      expect(res).toEqual(undefined);
-    });
-
-    it('should send user confirmation notification when requester is not equal to rider', async () => {
-      tripInfo.rider.dataValues.slackId = 4;
-      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, tripInfo, declineStatusTrue);
       expect(res).toEqual(undefined);
     });
   });
@@ -617,6 +642,20 @@ describe('SlackNotifications', () => {
       );
       expect(sendNotification).toHaveBeenCalledTimes(1);
       expect(respond).not.toHaveBeenCalled();
+    });
+    it('should test for that that is not regular', async () => {
+      sendNotification.mockImplementationOnce(fn);
+      await SlackNotifications.sendOperationsTripRequestNotification(
+        responseMock, payload, respond, 'not regular'
+      );
+      expect(sendNotification).toHaveBeenCalled();
+    });
+    it('should test throw an error', async () => {
+      sendNotification.mockImplementationOnce(fn);
+      const res = await SlackNotifications.sendOperationsTripRequestNotification(
+        responseMock, null, respond, 'not regular'
+      );
+      expect(res).toEqual(undefined);
     });
   });
 
