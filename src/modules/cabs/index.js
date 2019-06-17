@@ -112,17 +112,11 @@ cabsRouter.get(
  *        schema:
  *          type: object
  *          properties:
- *            driverName:
- *              type: string
- *            driverPhoneNo:
- *              type: string
  *            regNumber:
  *              type: string
  *            capacity:
  *              type: string
  *            model:
- *              type: string
- *            location:
  *              type: string
  *    responses:
  *      200:

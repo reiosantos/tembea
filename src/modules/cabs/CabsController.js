@@ -61,9 +61,15 @@ class CabsController {
 
   static async updateCabDetails(req, res) {
     const { params: { id }, body } = req;
+    const { regNumber } = body;
     try {
+      const findCab = await CabService.findByRegNumber(regNumber);
+      if (findCab !== null && findCab.id !== parseInt(id, 10)) {
+        return res.status(409).send({
+          success: false, message: 'Cab with registration number already exists'
+        });
+      }
       const cab = await CabService.updateCab(id, body);
-
       if (cab.message) {
         return res.status(404).send({ success: false, message: cab.message });
       }

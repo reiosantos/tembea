@@ -127,6 +127,7 @@
     "testEnvironment": "node"
   },
   "commitplease": {
+    "nohook": true,
     "style": "angular",
     "types": [
       "feat",

@@ -216,7 +216,7 @@ describe('CabsController', () => {
     it('should return 404 if cab not found', (done) => {
       request(app)
         .put(`${apiURL}/200`)
-        .send(payloadData.updateData)
+        .send(payloadData.updateDatamock)
         .set(headers)
         .expect(404, (err, res) => {
           expect(err).toBe(null);
@@ -226,6 +226,23 @@ describe('CabsController', () => {
           done();
         });
     });
+
+    it('should return 409 if there is a conflict', (done) => {
+      request(app)
+        .put(`${apiURL}/200`)
+        .send(payloadData.updateData)
+        .set(headers)
+        .expect(409, (err, res) => {
+          expect(err).toBe(null);
+          const { body, status } = res;
+          expect(body).toEqual({
+            success: false, message: 'Cab with registration number already exists'
+          });
+          expect(status).toEqual(409);
+          done();
+        });
+    });
+
     it('should handle internal server error', (done) => {
       jest.spyOn(CabService, 'updateCab')
         .mockRejectedValue(new Error('dummy error'));

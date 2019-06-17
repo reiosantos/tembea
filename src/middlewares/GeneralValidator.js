@@ -28,7 +28,7 @@ class GeneralValidator {
    */
   static validateEmptyReqBodyProp(body, ...props) {
     return props
-      .filter(prop => body[prop] !== undefined && !body[prop].trim().length)
+      .filter(prop => body[prop] !== undefined && !body[prop].toString().trim().length)
       .map(prop => `Please provide a value for ${prop}.`);
   }
 

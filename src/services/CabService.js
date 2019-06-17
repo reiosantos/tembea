@@ -32,7 +32,10 @@ export default class CabService {
   }
 
   static async findByRegNumber(regNumber) {
-    const cabDetails = await Cab.findOne({ where: { regNumber } });
+    const cabDetails = await Cab.findOne({
+      where: { regNumber },
+      paranoid: false,
+    });
     return cabDetails;
   }
 

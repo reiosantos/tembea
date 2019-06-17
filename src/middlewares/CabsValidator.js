@@ -35,7 +35,7 @@ class CabsValidator {
 
   static validateCapacity(req) {
     const { body: { capacity } } = req;
-    const isValid = capacity ? GeneralValidator.validateNumber(capacity) : true;
+    const isValid = capacity ? GeneralValidator.validateNumber(capacity) : false;
     return { isValid };
   }
 
