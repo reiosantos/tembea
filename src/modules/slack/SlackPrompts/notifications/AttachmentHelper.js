@@ -1,7 +1,6 @@
 import moment from 'moment';
 import { SlackAttachment, SlackAttachmentField } from '../../SlackModels/SlackMessageModels';
 import Utils from '../../../../utils/index';
-import Cache from '../../../../cache';
 import { convertIsoString } from '../../RouteManagement/ManagerController';
 
 export default class AttachmentHelper {
@@ -15,7 +14,7 @@ export default class AttachmentHelper {
       emoji = ':cry:';
       title = 'Your route request was denied. See below for more information :point_down:';
       color = '#ff0000';
-    } else if (status === statusText) {
+    } else if (status === statusText || status === 'Approved') {
       action = statusText.toLowerCase();
       emoji = ':grin:';
       title = '';
@@ -85,14 +84,13 @@ export default class AttachmentHelper {
 
   static async engagementAttachmentFields(routeRequest) {
     const {
-      fellow, workHours
+      fellow, workHours, partnerName, startDate, endDate
     } = AttachmentHelper.destructEngagementDetails(routeRequest);
-    const { email, name, slackId } = fellow;
-    const [start, end, partner] = await Cache.fetch(`userDetails${slackId}`);
+    const { email, name } = fellow;
     const fellowName = Utils.getNameFromEmail(email) || name;
     const nameField = new SlackAttachmentField('Fellows Name', fellowName, true);
-    const partnerField = new SlackAttachmentField('Partner', partner, true);
-    const engagementDateFields = (AttachmentHelper.engagementDateFields(start, end));
+    const partnerField = new SlackAttachmentField('Partner', partnerName, true);
+    const engagementDateFields = (AttachmentHelper.engagementDateFields(startDate, endDate));
     const { from, to } = Utils.formatWorkHours(workHours);
     const workHourLabelField = new SlackAttachmentField('Work Hours', null, false);
     const fromField = new SlackAttachmentField('_From_', from, true);
@@ -112,7 +110,7 @@ export default class AttachmentHelper {
   static engagementDateFields(startDate, endDate) {
     let fields = [];
     let result;
-    if (startDate.charAt(2) === '/') {
+    if (startDate && startDate.charAt(2) === '/') {
       result = this.formatStartAndEndDates(startDate, endDate);
     }
     if (startDate && endDate) {

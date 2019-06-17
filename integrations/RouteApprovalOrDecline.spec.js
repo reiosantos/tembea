@@ -1,6 +1,6 @@
+import faker from 'faker';
 import request from 'supertest';
 import app from '../src/app';
-import model from '../src/database/models';
 import Utils from '../src/utils';
 import {
   mockDeclinedRouteRequest,
@@ -10,197 +10,170 @@ import {
   mockDataInvalidTakeOffTime,
   mockDataCorrectRouteRequest
 } from '../src/services/__mocks__';
+import { createRouteRequest } from './support/helpers';
 
-const { RouteRequest } = model;
-
-describe('Decline route request', () => {
+describe('Route Request Approval/Decline', () => {
   let validToken;
   let reqHeaders;
-  describe('/api/v1/routes/requests/status/:requestId', () => {
-    beforeAll(async () => {
-      await RouteRequest.bulkCreate([
-        {
-          id: 2,
-          distance: 12.764,
-          busStopDistance: 1.34,
-          routeImageUrl: 'https://image.com',
-          status: 'Pending',
-          engagementId: 1,
-          managerId: 1,
-          busStopId: 1,
-          homeId: 1
-        }, {
-          id: 3,
-          distance: 12.764,
-          busStopDistance: 1.34,
-          routeImageUrl: 'https://image.com',
-          status: 'Confirmed',
-          engagementId: 1,
-          managerId: 1,
-          busStopId: 1,
-          homeId: 1
-        }
-      ]);
-      validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
-      reqHeaders = {
-        Accept: 'application/json',
-        Authorization: validToken
-      };
+
+  let mockRouteRequest;
+  let mockRouteRequestTwo;
+
+  beforeAll(async () => {
+    validToken = Utils.generateToken('30m', {
+      userInfo: { roles: ['Super Admin'], email: 'john.smith@gmail.com' }
+    });
+    reqHeaders = {
+      Accept: 'application/json',
+      Authorization: validToken
+    };
+
+    const generateData = () => ({
+      distance: faker.finance.amount(1, 20, 2),
+      opsComment: faker.lorem.sentence(),
+      managerComment: faker.lorem.sentence(),
+      busStopDistance: faker.finance.amount(1, 10, 1),
+      routeImageUrl: 'https://image.jpg',
+      status: 'Confirmed',
+      engagementId: 1,
+      managerId: 1,
+      busStopId: 1,
+      homeId: 1,
     });
 
-    afterAll(async () => {
-      await RouteRequest.destroy({
-        where: {
-          distance: 12.764
-        }
+    let routeRequestData = generateData();
+    mockRouteRequest = await createRouteRequest(routeRequestData);
+    routeRequestData = generateData();
+    mockRouteRequestTwo = await createRouteRequest(routeRequestData);
+  });
+
+  describe('Decline route request', () => {
+    describe('/api/v1/routes/requests/status/:requestId', () => {
+      // beforeAll(() => {
+      //   validToken = Utils.generateToken('30m', {
+      //     userInfo: { roles: ['Super Admin'], email: 'john.smith@gmail.com' }
+      //   });
+      //   reqHeaders = {
+      //     Accept: 'application/json',
+      //     Authorization: validToken
+      //   };
+      // });
+  
+      it('should respond with a missing request param response', (done) => {
+        request(app)
+          .put('/api/v1/routes/requests/status/1')
+          .set(reqHeaders)
+          .send(mockDataMissingTeamUrl)
+          .expect(
+            400,
+            {
+              success: false,
+              message: 'Some properties are missing',
+              errors: ['Please provide teamUrl.']
+            },
+            done
+          );
       });
-    });
-
-    it('should respond with a missing request param response', (done) => {
-      request(app)
-        .put('/api/v1/routes/requests/status/1')
-        .set(reqHeaders)
-        .send(mockDataMissingTeamUrl)
-        .expect(
-          400,
-          {
-            success: false,
-            message: 'Some properties are missing',
-            errors: ['Please provide teamUrl.']
-          },
-          done
+  
+      it('should respond with an invalid request', (done) => {
+        request(app)
+          .put('/api/v1/routes/requests/status/1')
+          .set(reqHeaders)
+          .send(mockDataInvalidComment)
+          .expect(
+            400,
+            {
+              success: false,
+              message: 'comment can only contain words and [,."\' -]',
+            },
+            done
+          );
+      });
+  
+      it('should respond with pending route request response', async () => {
+        const response = await request(app)
+          .put('/api/v1/routes/requests/status/3')
+          .set(reqHeaders)
+          .send(mockDeclinedRouteRequest);
+        expect(response.status).toEqual(409);
+        expect(response.body.message).toEqual(
+          'This request needs to be confirmed by the manager first'
         );
-    });
-
-    it('should respond with an invalid request', (done) => {
-      request(app)
-        .put('/api/v1/routes/requests/status/1')
-        .set(reqHeaders)
-        .send(mockDataInvalidComment)
-        .expect(
-          400,
-          {
-            success: false,
-            message: 'comment can only contain words and [,."\' -]',
-          },
-          done
+      });
+  
+      it('should invalid token', async () => {
+        const response = await request(app)
+          .put('/api/v1/routes/requests/status/3')
+          .set('Content-Type', 'application/json')
+          .set('Authorization', 'XXXXXXXXXXX')
+          .send(mockDeclinedRouteRequest);
+  
+        expect(response.body.message).toEqual(
+          'Failed to authenticate token! Valid token required'
         );
-    });
-
-    it('should respond with pending route request response', async () => {
-      const response = await request(app)
-        .put('/api/v1/routes/requests/status/2')
-        .set(reqHeaders)
-        .send(mockDeclinedRouteRequest);
-      expect(response.status).toEqual(403);
-      expect(response.body.message).toEqual(
-        'This request needs to be confirmed by the manager first'
-      );
-    });
-
-    it('should invalid token', async () => {
-      const response = await request(app)
-        .put('/api/v1/routes/requests/status/3')
-        .set('Content-Type', 'application/json')
-        .set('Authorization', 'XXXXXXXXXXX')
-        .send(mockDeclinedRouteRequest);
-
-      expect(response.body.message).toEqual(
-        'Failed to authenticate token! Valid token required'
-      );
-    });
-
-    it('should decline request', async () => {
-      const response = await request(app)
-        .put('/api/v1/routes/requests/status/3')
-        .set(reqHeaders)
-        .send(mockDeclinedRouteRequest);
-
-      expect(response.body.message).toEqual(
-        'This route request has been updated'
-      );
+      });
+  
+      it('should decline request', async () => {
+        const response = await request(app)
+          .put(`/api/v1/routes/requests/status/${mockRouteRequest.id}`)
+          .set(reqHeaders)
+          .send(mockDeclinedRouteRequest);
+  
+        expect(response.body.message).toEqual(
+          'This route request has been updated'
+        );
+      });
     });
   });
-});
-
-describe('Approve a route request', () => {
-  let validToken;
-  let reqHeaders;
-  describe('/api/v1/routes/requests/:requestId', () => {
-    beforeAll(async () => {
-      await RouteRequest.bulkCreate([
-        {
-          id: 2,
-          distance: 12.764,
-          busStopDistance: 1.34,
-          routeImageUrl: 'https://image.com',
-          status: 'Pending',
-          engagementId: 1,
-          managerId: 1,
-          busStopId: 1,
-          homeId: 1
-        }, {
-          id: 4,
-          distance: 12.764,
-          busStopDistance: 1.34,
-          routeImageUrl: 'https://image.com',
-          status: 'Confirmed',
-          engagementId: 1,
-          managerId: 1,
-          busStopId: 1,
-          homeId: 1
-        },
-      ]);
-      validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
-      reqHeaders = { Accept: 'application/json', Authorization: validToken };
-    });
-
-    afterAll(async () => {
-      await RouteRequest.destroy({
-        where: {
-          distance: 12.764
-        }
+  
+  describe('Approve a route request', () => {
+    describe('/api/v1/routes/requests/:requestId', () => {
+      // beforeAll(() => {
+      //   validToken = Utils.generateToken('30m', {
+      //     userInfo: { roles: ['Super Admin'], email: 'john.smith@gmail.com' }
+      //   });
+      //   reqHeaders = { Accept: 'application/json', Authorization: validToken };
+      // });
+  
+      it('should return a 409 response if request is pending', (done) => {
+        request(app)
+          .put('/api/v1/routes/requests/status/1')
+          .set(reqHeaders)
+          .send(mockDataInvalidCapacity)
+          .expect(
+            409,
+            {
+              success: false,
+              message: 'This request needs to be confirmed by the manager first',
+            },
+            done
+          );
       });
-    });
-
-    it('should respond with an invalid request for invalid provider value', (done) => {
-      request(app)
-        .put('/api/v1/routes/requests/status/1')
-        .set(reqHeaders)
-        .send(mockDataInvalidCapacity)
-        .expect(
-          403,
-          {
-            success: false,
-            message: 'This request needs to be confirmed by the manager first',
-          },
-          done
-        );
-    });
-
-    it('should respond with an invalid request for invalid provider type', (done) => {
-      request(app)
-        .put('/api/v1/routes/requests/status/1')
-        .set(reqHeaders)
-        .send(mockDataInvalidTakeOffTime)
-        .expect(
-          400,
-          {
-            success: false,
-            message: 'Take off time must be in the right format e.g 11:30',
-          },
-          done
-        );
-    });
-    it('should approve request', (done) => {
-      request(app)
-        .put('/api/v1/routes/requests/status/4')
-        .set(reqHeaders)
-        .send(mockDataCorrectRouteRequest)
-        .expect(
-          201,
-          done
-        );
+  
+      it('should respond with an invalid request for invalid time format', (done) => {
+        request(app)
+          .put('/api/v1/routes/requests/status/1')
+          .set(reqHeaders)
+          .send(mockDataInvalidTakeOffTime)
+          .expect(
+            400,
+            {
+              success: false,
+              message: 'Take off time must be in the right format e.g 11:30',
+            },
+            done
+          );
+      });
+      it('should approve request', (done) => {
+        request(app)
+          .put(`/api/v1/routes/requests/status/${mockRouteRequestTwo.id}`)
+          .set(reqHeaders)
+          .send(mockDataCorrectRouteRequest)
+          .expect(
+            201,
+            done
+          );
+      });
     });
   });
 });

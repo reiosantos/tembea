@@ -37,7 +37,10 @@ describe('JoinRouteHelpers', () => {
     engagement: {
       ...engagementDetails,
       partner: { name },
-      fellow: { email: 'AAA.BBB@CCC.DDD', name: 'ZZZZZZ', slackId: 'PPPPPP' }
+      fellow: { email: 'AAA.BBB@CCC.DDD', name: 'ZZZZZZ', slackId: 'PPPPPP' },
+      workHours: '18:00-00:00',
+      startDate: '22/01/2019',
+      endDate: '22/12/2019'
     }
   };
   let routeBatch;
@@ -108,13 +111,16 @@ describe('JoinRouteHelpers', () => {
       const engData = { ...engagementData, id: 1, submission: undefined };
       const result = await JoinRouteHelpers.getJoinRouteRequest(engData);
       expect(fetchJoinRequest).toBeCalledWith(1);
-      expect(result).toEqual(engagementData.submission);
+      expect(result).toEqual({
+        ...engagementData.submission,
+        endDate: '22/12/2019',
+        partnerName: undefined,
+        startDate: '22/01/2019'
+      });
     });
   });
   describe('engagementFields', () => {
     it('should return a list of slack attachment fields', async () => {
-      const engagementData = ['12/01/2018', '12/12/2022', 'Safaricom'];
-      jest.spyOn(Cache, 'fetch').mockResolvedValue(engagementData);
       const nameSpy = jest.spyOn(AttachmentHelper, 'engagementAttachmentFields');
       const result = await JoinRouteHelpers.engagementFields(joinRequestMock, null);
       expect(result).toBeInstanceOf(Array);
@@ -136,8 +142,6 @@ describe('JoinRouteHelpers', () => {
   describe('joinRouteAttachments', () => {
     it('should return an attachment with JoinRoute details', async () => {
       const fieldsOrActionsSpy = jest.spyOn(SlackAttachment.prototype, 'addFieldsOrActions');
-      const engagementData = ['12/01/2018', '12/12/2022', 'Safaricom'];
-      jest.spyOn(Cache, 'fetch').mockResolvedValue(engagementData);
       const formatTimeSpy = jest.spyOn(Utils, 'formatTime');
       const result = await JoinRouteHelpers.joinRouteAttachments(joinRequestMock);
       expect(fieldsOrActionsSpy).toBeCalledTimes(1);

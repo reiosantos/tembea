@@ -29,11 +29,10 @@ describe('OperationsNotifications', () => {
     const data = { routeRequestId: mockRouteRequestData.id, teamId: 'AFJEV' };
     let requestData;
     beforeEach(() => {
-      requestData = { ...mockRouteRequestData, status: 'Confirmed' };
-      jest.spyOn(RouteRequestService, 'getRouteRequest').mockResolvedValue(requestData);
-      jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue({});
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({ botToken: 'XXXX' });
       jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue({});
-      jest.spyOn(OpsAttachmentHelper, 'getOperationDeclineAttachment');
+      jest.spyOn(OpsAttachmentHelper, 'getOperationDeclineAttachment').mockResolvedValue({});
+      jest.spyOn(OpsAttachmentHelper, 'getOperationCompleteAttachment').mockResolvedValue({});
       jest.spyOn(ManagerAttachmentHelper, 'getManagerCompleteAttachment');
       jest.spyOn(SlackNotifications, 'sendNotification').mockReturnValue({});
       jest.spyOn(bugsnagHelper, 'log');
@@ -45,18 +44,22 @@ describe('OperationsNotifications', () => {
     describe('sendOpsDeclineMessageToFellow', () => {
       it('should send ops decline notification to fellow', async (done) => {
         // should change to ops comment
-        beforeEach(() => {
-          requestData = {
-            ...mockRouteRequestData,
-            status: 'Declined',
-            opsComment: 'no route'
+        requestData = {
+          id: 12,
+          status: 'Declined',
+          managerComment: 'ZZZZZZZ',
+          opsComment: 'XXXXXX',
+          routeImageUrl: 'Pending',
+          distance: 3.02,
+          busStopDistance: 1.02,
+          engagement: { fellow: { slackId: '345qq' } },
+          manager: { slackId: '345qq' }
+        };
 
-          };
-        });
-        RouteRequestService.getRouteRequest.mockResolvedValue(requestData);
-        await OperationsNotifications.sendOpsDeclineMessageToFellow(data, 'TEMBEA');
+        jest.spyOn(RouteRequestService, 'getRouteRequest').mockResolvedValue(requestData);
+        await OperationsNotifications.sendOpsDeclineMessageToFellow(1, '', 'andela-tembea.slack.com');
         expect(RouteRequestService.getRouteRequest).toHaveBeenCalled();
-        expect(TeamDetailsService.getTeamDetailsBotOauthToken).toHaveBeenCalled();
+        expect(TeamDetailsService.getTeamDetailsByTeamUrl).toHaveBeenCalled();
         expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
         expect(OpsAttachmentHelper.getOperationDeclineAttachment).toHaveBeenCalledTimes(2);
         expect(SlackNotifications.sendNotification).toHaveBeenCalled();
@@ -64,7 +67,7 @@ describe('OperationsNotifications', () => {
       });
 
       it('should catch errors', async (done) => {
-        RouteRequestService.getRouteRequest
+        jest.spyOn(RouteRequestService, 'getRouteRequest')
           .mockRejectedValue(new Error('Failed'));
         await OperationsNotifications.sendOpsDeclineMessageToFellow(data);
         expect(bugsnagHelper.log.mock.calls[0][0].message).toEqual('Failed');
@@ -109,6 +112,63 @@ describe('OperationsNotifications', () => {
         expect(ManagerAttachmentHelper.getManagerCompleteAttachment).toHaveBeenCalled();
         done();
       });
+
+      it('should complete approve new route action', async () => {
+        requestData = {
+          ...mockRouteRequestData,
+          status: 'Approved',
+          opsComment: 'okay'
+        };
+
+        const submission = { routeName: 'the dojo', takeOff: '10:00' };
+        await OperationsNotifications
+          .completeOperationsApprovedAction(requestData, channelId, timestamp, 1, botToken, submission, false);
+
+        expect(OpsAttachmentHelper.getOperationCompleteAttachment).toHaveBeenCalled();
+      });
+
+      it('should send ops update approve notification', async () => {
+        requestData = {
+          ...mockRouteRequestData,
+          status: 'Approved',
+          opsComment: 'okay',
+          opsReviewer: { slackId: 'abc123' }
+        };
+
+        const payload = {
+          channel: channelId,
+          team: 1,
+          message_ts: timestamp,
+          actions: []
+        };
+        jest.spyOn(OperationsNotifications, 'completeOperationsApprovedAction');
+
+        await OperationsNotifications
+          .updateOpsStatusNotificationMessage(payload, requestData, botToken);
+        expect(OperationsNotifications.completeOperationsApprovedAction).toHaveBeenCalled();
+      });
+
+      it('should send ops update decline notification', async () => {
+        requestData = {
+          ...mockRouteRequestData,
+          status: 'Declined',
+          opsComment: 'not okay',
+          opsReviewer: { slackId: 'abc123' }
+        };
+
+        const payload = {
+          channel: channelId,
+          team: 1,
+          message_ts: timestamp,
+          actions: [{ action: 'random action' }]
+        };
+        jest.spyOn(OperationsNotifications, 'completeOperationsDeclineAction');
+
+        await OperationsNotifications
+          .updateOpsStatusNotificationMessage(payload, requestData, botToken);
+        expect(OperationsNotifications.completeOperationsDeclineAction).toHaveBeenCalled();
+      });
+
       it('should handle errors', async (done) => {
         await OperationsNotifications.completeOperationsDeclineAction();
         jest.spyOn(bugsnagHelper, 'log');

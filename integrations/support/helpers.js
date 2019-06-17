@@ -4,6 +4,7 @@ const {
   User,
   Provider,
   Driver,
+  RouteRequest,
 } = models;
 
 export const createModel = async (Model, payload) => {
@@ -16,3 +17,7 @@ export const createUser = async userPayload => createModel(User, userPayload);
 export const createProvider = async providerPayload => createModel(Provider, providerPayload);
 
 export const createDriver = async driverPayload => createModel(Driver, driverPayload);
+
+export const createRouteRequest = async requestPayload => createModel(
+  RouteRequest, requestPayload
+);

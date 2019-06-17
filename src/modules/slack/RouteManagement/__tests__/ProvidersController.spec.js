@@ -123,7 +123,7 @@ describe('Provider Controller', () => {
     it('should send user update notification', async () => {
       jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('moooon');
       jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue();
-      await ProvidersController.sendUserUpdatedRouteMessage(user, route, cab, "moon-token");
+      await ProvidersController.sendUserUpdatedRouteMessage(user, route, cab, 'moon-token');
       expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
       expect(SlackNotifications.sendNotification).toHaveBeenCalled();
     });

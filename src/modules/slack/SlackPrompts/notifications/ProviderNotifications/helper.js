@@ -12,7 +12,7 @@ import { getSlackDateString } from '../../../helpers/dateHelpers';
 class ProviderAttachmentHelper {
   static createProviderRouteAttachment(routeRequest, channelID, submission) {
     const { status } = routeRequest;
-    const data = AttachmentHelper.getStatusLabels(status, 'Approved');
+    const data = AttachmentHelper.getStatusLabels(status, 'Confirmed');
     if (!data) return;
     const {
       title, color
@@ -20,7 +20,7 @@ class ProviderAttachmentHelper {
     const attachment = new SlackAttachment(title);
     const routeAttachment = AttachmentHelper.routeRequestAttachment(routeRequest);
     const routeInformation = ProviderAttachmentHelper.routeInfoAttachment(submission);
-    const { id: routeRequestId } = routeRequest.dataValues;
+    const { id: routeRequestId } = routeRequest;
     const routeInfo = JSON.stringify(submission);
     routeInformation.addFieldsOrActions('actions', [
       new SlackButtonAction('Accept', 'Accept', `accept_request_${routeRequestId}_${routeInfo}`)
@@ -122,7 +122,7 @@ class ProviderAttachmentHelper {
     const greeting = managerStatus ? `Hi, <@${manager.slackId}>` : 'Hi there';
     return SlackNotifications.createDirectMessage(
       channelID,
-      `${greeting}, the route request you confirmed for 
+      `${greeting}, the route request you confirmed for
       <@${fellow.slackId}> has been ${action} ${emoji}`,
       attachments
     );

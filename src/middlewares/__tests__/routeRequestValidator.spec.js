@@ -1,6 +1,4 @@
 import RouteRequestValidator from '../RouteRequestValidator';
-import RouteRequestService from '../../services/RouteRequestService';
-import HttpError from '../../helpers/errorHandler';
 
 describe('RouteRequestValidator', () => {
   describe('validateParams', () => {
@@ -83,11 +81,10 @@ describe('RouteRequestValidator', () => {
     it('should respond with invalid slackURL', () => {
       const req = {
         params: {
-          requestId: 1
+          routeId: 1
         },
         body: {
           newOpsStatus: 'decline',
-          reviewerEmail: 'test@andela.com',
           comment: 'some comment',
           teamUrl: 'stuffslack.com'
         }
@@ -104,11 +101,10 @@ describe('RouteRequestValidator', () => {
     it('should call validateApprovalBody', () => {
       const req = {
         params: {
-          requestId: 1
+          routeId: 1
         },
         body: {
           newOpsStatus: 'approve',
-          reviewerEmail: 'test@andela.com',
           comment: 'some comment',
           teamUrl: 'stuff.slack.com',
           routeName: 'sample route',
@@ -123,14 +119,13 @@ describe('RouteRequestValidator', () => {
       expect(RouteRequestValidator.validateApprovalBody).toHaveBeenCalledWith(req, res, next);
     });
 
-    it('should call the next middleware the params are valid', () => {
+    it('should call the next middleware if the params are valid', () => {
       const req = {
         params: {
-          requestId: 1
+          routeId: 1
         },
         body: {
           newOpsStatus: 'decline',
-          reviewerEmail: 'test@andela.com',
           comment: 'some comment',
           teamUrl: 'stuff.slack.com'
         }
@@ -167,6 +162,22 @@ describe('RouteRequestValidator', () => {
       expect(res.status).toBeCalledWith(400);
     });
 
+    it('should validate request body for approval request', () => {
+      const req = {
+        params: {
+          requestId: 1
+        },
+        body: {
+          newOpsStatus: 'approve',
+          comment: 'some comment'
+        }
+      };
+
+      RouteRequestValidator.validateRequestBody(req, res, next);
+
+      expect(res.status).toBeCalledWith(400);
+    });
+
     it('should call next middleware if checks passed', () => {
       const req = {
         params: {
@@ -188,85 +199,7 @@ describe('RouteRequestValidator', () => {
       expect(next).toHaveBeenCalled();
     });
   });
-  describe('validateRoute', () => {
-    const res = {
-      status: () => ({
-        json: () => {}
-      })
-    };
-    const req = {
-      params: {
-        requestId: 1,
-        newOpsStatus: 'decline'
-      }
-    };
-    const next = jest.fn();
 
-    beforeEach(() => {
-      jest.spyOn(res, 'status');
-      jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation();
-    });
-
-    it('should call getRouteRequest with id of 1', async () => {
-      await RouteRequestValidator.validateRouteStatus(req, res, next);
-
-      expect(RouteRequestService.getRouteRequest).toHaveBeenCalledWith(1);
-    });
-
-    it('should respond with 409 if route has been approved', async () => {
-      jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
-        status: 'Approved'
-      }));
-
-      await RouteRequestValidator.validateRouteStatus(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(409);
-      expect(next).toHaveBeenCalledTimes(0);
-    });
-
-    it('should respond with 409 if route has been declined', async () => {
-      jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
-        status: 'Declined'
-      }));
-
-      await RouteRequestValidator.validateRouteStatus(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(409);
-      expect(next).toHaveBeenCalledTimes(0);
-    });
-
-    it('should respond with 403 if route has been confirmed', async () => {
-      jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
-        status: 'Pending'
-      }));
-
-      await RouteRequestValidator.validateRouteStatus(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(403);
-      expect(next).toHaveBeenCalledTimes(0);
-    });
-
-    it('should call the next middleware if no error was found', async () => {
-      jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
-        status: 'Confirmed'
-      }));
-
-      await RouteRequestValidator.validateRouteStatus(req, res, next);
-
-      expect(next).toHaveBeenCalled();
-    });
-
-    it('should handle error successfully', async () => {
-      jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => {
-        throw new Error('Just a test error');
-      });
-      jest.spyOn(HttpError, 'sendErrorResponse').mockImplementation();
-
-      await RouteRequestValidator.validateRouteStatus(req, res, next);
-
-      expect(HttpError.sendErrorResponse).toHaveBeenCalled();
-    });
-  });
   describe('validateApprovalBody', () => {
     const res = {
       status: () => ({

@@ -4,7 +4,7 @@ module.exports = {
     botId: 'XXXXXX',
     botToken: 'XXXXXXX',
     teamName: 'Team 1',
-    teamUrl: 'randomurl',
+    teamUrl: 'https://andela-tembea.slack.com',
     webhookConfigUrl: 'randomurl',
     userId: 'XXXXXX',
     userToken: 'XXXXXXX',

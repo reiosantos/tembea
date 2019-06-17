@@ -188,6 +188,26 @@ class RouteHelper {
     return RouteServiceHelper.serializeRouteBatch(batch);
   }
 
+  /**
+   * @description This validator checks to ensure that the route request status can be modified
+   * @param  {Object} req The request object
+   * @param  {Object} res The response object
+   * @param  {function} next The next middleware
+   */
+  static validateRouteStatus(routeRequest) {
+    const { status } = routeRequest;
+
+    if (status === 'Approved' || status === 'Declined') {
+      return `This request has already been ${status.toLowerCase()}`;
+    }
+
+    if (status !== 'Confirmed') {
+      return 'This request needs to be confirmed by the manager first';
+    }
+
+    return true;
+  }
+
   static batchObject(routeBatch, batch) {
     const { takeOff, capacity, status } = routeBatch;
     const data = {

@@ -15,6 +15,7 @@ import AddressService from '../../services/AddressService';
 import RouteRequestService from '../../services/RouteRequestService';
 import UserService from '../../services/UserService';
 import RouteHelper from '../../helpers/RouteHelper';
+import RemoveDataValues from '../../helpers/removeDataValues';
 import RouteNotifications from '../slack/SlackPrompts/notifications/RouteNotifications';
 import TeamDetailsService from '../../services/TeamDetailsService';
 
@@ -167,22 +168,25 @@ class RoutesController {
    */
   static async updateRouteRequestStatus(req, res) {
     try {
-      const { params: { requestId } } = req;
-      const { body } = req;
-      const {
-        routeRequest, updatedRouteRequest
-      } = await RoutesController.getUpdatedRouteRequest(requestId, body);
-      if (updatedRouteRequest.status === 'Approved') {
-        const submission = RoutesController.saveRoute(routeRequest, body);
-        RoutesController.sendNotificationToProvider(requestId, submission);
-      } else {
-        RoutesController.sendDeclineNotificationToFellow(requestId, body.teamUrl);
+      const { params: { routeId }, body } = req;
+      let routeRequest = await RouteRequestService.getRouteRequest(routeId);
+      if (!(routeRequest && routeRequest.dataValues)) {
+        return Response.sendResponse(res, 404, false, 'Route request not found.');
       }
+
+      routeRequest = RemoveDataValues.removeDataValues(routeRequest);
+      req.body.reviewerEmail = req.currentUser.userInfo.email;
+      const checkStatus = RouteHelper.validateRouteStatus(routeRequest);
+      if (checkStatus !== true) {
+        return Response.sendResponse(res, 409, false, checkStatus);
+      }
+
+      const updated = await RoutesController.getUpdatedRouteRequest(routeId, body);
+      await RoutesController.sendRouteRequestNotifications(updated, body, routeRequest, routeId);
 
       return res.status(201).json({
         success: true,
-        message: 'This route request has been updated',
-        data: updatedRouteRequest.dataValues
+        message: 'This route request has been updated'
       });
     } catch (error) {
       BugSnagHelper.log(error);
@@ -190,37 +194,34 @@ class RoutesController {
     }
   }
 
-  static async getUpdatedRouteRequest(requestId, body) {
+  static async getUpdatedRouteRequest(routeId, body) {
     try {
-      const routeRequest = await RouteRequestService.getRouteRequest(requestId);
-      if (!routeRequest) {
-        HttpError.throwErrorIfNull(null, 'Route request not found');
-      }
-      const updateData = {};
-      updateData.status = body.newOpsStatus.trim().toLowerCase() === 'approve'
-        ? 'Approved' : 'Declined';
-      updateData.opsComment = body.comment.trim();
-      const reviewer = await UserService.getUserByEmail(body.reviewerEmail);
-      updateData.opsReviewerId = reviewer.dataValues.id;
+      let reviewer = await UserService.getUserByEmail(body.reviewerEmail);
+      reviewer = RemoveDataValues.removeDataValues(reviewer);
+
+      const updateData = {
+        status: body.newOpsStatus === 'approve' ? 'Approved' : 'Declined',
+        opsComment: body.comment,
+        opsReviewerId: reviewer.id
+      };
+
       const updatedRouteRequest = await RouteRequestService.updateRouteRequest(
-        requestId, updateData
+        routeId, updateData
       );
-      return { routeRequest, updatedRouteRequest };
+      return RemoveDataValues.removeDataValues(updatedRouteRequest);
     } catch (error) {
       BugSnagHelper.log(error);
       return HttpError.sendErrorResponse(error);
     }
   }
 
-  /**
-   * @description creates a string from the provider object values
-   * @param  {object} provider The provider object
-   * @returns {string} The string containing the values from the provider object
-   */
-  static formatProviderDetails(provider) {
-    const formattedProvider = { ...provider };
-    delete formattedProvider.user;
-    return Object.values(formattedProvider).toString();
+  static async sendRouteRequestNotifications(updated, body, routeRequest, routeId) {
+    const submission = RoutesController.formatRoute(routeRequest, body);
+    if (updated.status === 'Approved') {
+      await RoutesController.sendNotificationToProvider(routeRequest, body.teamUrl, submission);
+    } else {
+      await RoutesController.sendDeclineNotificationToFellow(routeId, body.teamUrl);
+    }
   }
 
   /**
@@ -229,32 +230,25 @@ class RoutesController {
    * @param  {object} body The request body containing update info
    * @returns {object} The submission containing route info
    */
-  static saveRoute(routeRequest, body) {
-    const data = {
-      destinationName: routeRequest.home.address,
-      name: body.routeName.trim().toLowerCase(),
-      takeOff: body.takeOff.trim(),
-      provider: this.formatProviderDetails(body.provider)
-    };
 
+  static formatRoute(routeRequest, body) {
     const submission = {
-      routeName: data.name,
-      takeOffTime: data.takeOff,
+      routeName: body.routeName,
+      takeOffTime: body.takeOff,
       teamUrl: body.teamUrl,
-      Provider: data.provider
+      provider: body.provider
     };
 
     return submission;
   }
 
-  static async sendDeclineNotificationToFellow(requestId, teamUrl) {
-    SlackEvents.raise(slackEventNames.OPERATIONS_DECLINE_ROUTE_REQUEST, requestId, '', teamUrl);
+  static sendDeclineNotificationToFellow(routeId, teamUrl) {
+    SlackEvents.raise(slackEventNames.OPERATIONS_DECLINE_ROUTE_REQUEST, routeId, '', teamUrl);
   }
 
-  static async sendNotificationToProvider(requestId, submission) {
-    const route = await RouteRequestService.getRouteRequest(requestId);
+  static async sendNotificationToProvider(routeRequest, teamUrl, submission) {
     SlackEvents.raise(
-      slackEventNames.SEND_PROVIDER_APPROVED_ROUTE_REQUEST, route, '', submission
+      slackEventNames.SEND_PROVIDER_APPROVED_ROUTE_REQUEST, routeRequest, teamUrl, submission
     );
   }
 

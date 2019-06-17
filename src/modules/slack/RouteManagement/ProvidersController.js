@@ -137,7 +137,7 @@ class ProvidersController {
     }
   }
 
-  static async sendUserUpdatedRouteMessage(user, route, cab , slackBotOauthToken) {
+  static async sendUserUpdatedRouteMessage(user, route, cab, slackBotOauthToken) {
     const channelId = await SlackNotifications.getDMChannelId(user.slackId, slackBotOauthToken);
     const attachment = new SlackAttachment();
     const routeFields = await ProviderAttachmentHelper.providerRouteFields(route);

@@ -28,6 +28,9 @@ describe('ProviderNotifications', () => {
     routeCapacity: 12,
     takeOffTime: '12:30',
     regNumber: 'JKEO284',
+    provider: {
+      providerUserId: 1
+    },
     driverNumber: 78978768,
     driverId: 2,
     driverPhoneNo: 9808787797998,
@@ -178,7 +181,7 @@ describe('ProviderNotifications', () => {
     it('should return provider notification', async () => {
       jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl');
       await ProviderNotifications.sendRouteRequestNotification(
-        routeRequest, '', routeDetails
+        routeRequest, '', submission
       );
       expect(TeamDetailsService.getTeamDetailsByTeamUrl).toBeCalled();
       expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
@@ -217,7 +220,7 @@ describe('ProviderNotifications', () => {
       ProviderAttachmentHelper.createProviderRouteAttachment(routeRequest, chanelId, submission);
 
       expect(AttachmentHelper.getStatusLabels).toHaveBeenCalledWith(
-        routeRequest.status, 'Approved'
+        routeRequest.status, 'Confirmed'
       );
       expect(ProviderAttachmentHelper.routeInfoAttachment).toHaveBeenCalledWith(submission);
       expect(SlackNotifications.createDirectMessage).toHaveBeenCalled();

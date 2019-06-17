@@ -142,13 +142,11 @@ export const mockRouteBatchData = {
 export const mockDataMissingTeamUrl = {
   newOpsStatus: 'decline',
   comment: 'some comment',
-  reviewerEmail: 'test.buddy2@andela.com',
   provider: providerUserDetails
 };
 export const mockDeclinedRouteRequest = {
   newOpsStatus: 'decline',
   comment: 'some comment',
-  reviewerEmail: 'test.buddy2@andela.com',
   teamUrl: 'tembea.slack.com',
   provider: providerUserDetails,
   routeName: 'sample route',
@@ -172,7 +170,6 @@ export const mockDataInvalidComment = {
 export const mockDataInvalidCapacity = {
   newOpsStatus: 'approve',
   comment: 'comment',
-  reviewerEmail: 'test.buddy2@andela.com',
   teamUrl: 'tembea.slack.com',
   routeName: 'ParksWay',
   takeOff: '2:30',
@@ -193,10 +190,8 @@ export const mockDataInvalidTakeOffTime = {
 export const mockDataCorrectRouteRequest = {
   newOpsStatus: 'approve',
   comment: 'some comment',
-  reviewerEmail: 'test.buddy2@andela.com',
   teamUrl: 'tembea.slack.com',
   routeName: 'ParksWay',
-  capacity: '2',
   takeOff: '9:30',
   provider: providerUserDetails
 };

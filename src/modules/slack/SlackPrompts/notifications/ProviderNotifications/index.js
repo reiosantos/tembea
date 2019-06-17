@@ -14,31 +14,29 @@ import ProviderService from '../../../../../services/ProviderService';
 import { driverService } from '../../../../../services/DriverService';
 import CabsHelper from '../../../helpers/slackHelpers/CabsHelper';
 import { cabService } from '../../../../../services/CabService';
+import RemoveDataValues from '../../../../../helpers/removeDataValues';
 
 /**
- * A class representing provider notifications
+ * A class representing provider notification
  *
  * @class ProviderNotifications
  */
 export default class ProviderNotifications {
   static async sendRouteRequestNotification(
-    routeRequest, slackBotOauthToken, routeDetails
+    routeRequest, teamUrl, submission
   ) {
     try {
-      const provider = (routeDetails.Provider).split(',');
-      const providerUser = await UserService.getUserById(provider[2]);
-      if (!slackBotOauthToken) {
-        const { botToken } = await (
-          TeamDetailsService.getTeamDetailsByTeamUrl(routeDetails.teamUrl));
-        slackBotOauthToken = botToken; // eslint-disable-line no-param-reassign
-      }
+      let providerUser = await UserService.getUserById(submission.provider.providerUserId);
+      providerUser = RemoveDataValues.removeDataValues(providerUser);
+      const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
       const channelID = await SlackNotifications.getDMChannelId(
-        providerUser.slackId, slackBotOauthToken
+        providerUser.slackId, botToken
       );
       const message = await ProviderAttachmentHelper.createProviderRouteAttachment(
-        routeRequest, channelID, routeDetails
+        routeRequest, channelID, submission
       );
-      return SlackNotifications.sendNotification(message, slackBotOauthToken);
+
+      return SlackNotifications.sendNotification(message, botToken);
     } catch (error) {
       BugsnagHelper.log(error);
     }

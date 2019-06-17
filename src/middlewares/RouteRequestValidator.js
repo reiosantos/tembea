@@ -1,6 +1,3 @@
-import RouteRequestService from '../services/RouteRequestService';
-import HttpError from '../helpers/errorHandler';
-import BugsnagHelper from '../helpers/bugsnagHelper';
 import GeneralValidator from './GeneralValidator';
 
 class RouteRequestValidator {
@@ -34,7 +31,7 @@ class RouteRequestValidator {
    * @param  {function} next The next middleware
    */
   static validateParams(req, res, next) {
-    if (!/^[1-9]\d*$/.test(req.params.requestId)) {
+    if (!/^[1-9]\d*$/.test(req.params.routeId)) {
       return RouteRequestValidator.sendResponse(res, 400, 'Request Id can only be a number');
     }
     const status = req.body.newOpsStatus.trim();
@@ -45,10 +42,6 @@ class RouteRequestValidator {
     if (!/^[\w,".'\n !-]+$/.test(req.body.comment.trim())) {
       return RouteRequestValidator.sendResponse(res,
         'comment can only contain words and [,."\' -]');
-    }
-    if (!/^[.\w-']+@andela\.com$/.test(req.body.reviewerEmail.trim())) {
-      return RouteRequestValidator.sendResponse(res,
-        'reviewerEmail must be an andela email');
     }
     if (!/^[\w-]+\.slack\.com$/.test(req.body.teamUrl.trim())) {
       return RouteRequestValidator.sendResponse(res,
@@ -76,15 +69,15 @@ class RouteRequestValidator {
    * @param  {Function} next The next middleware
    */
   static validateRequestBody(req, res, next) {
-    const { comment } = req.body;
+    const { newOpsStatus } = req.body;
     let messages;
-    if (comment && comment === 'approve') {
+    if (newOpsStatus && newOpsStatus === 'approve') {
       messages = GeneralValidator.validateReqBody(req.body,
-        'newOpsStatus', 'comment', 'reviewerEmail', 'teamUrl', 'routeName', 'takeOff', 'provider');
+        'newOpsStatus', 'comment', 'teamUrl', 'routeName', 'takeOff', 'provider');
       RouteRequestValidator.checkMissingProperties(messages, res, next);
     } else {
       messages = GeneralValidator.validateReqBody(req.body,
-        'newOpsStatus', 'comment', 'reviewerEmail', 'teamUrl');
+        'newOpsStatus', 'comment', 'teamUrl');
       RouteRequestValidator.checkMissingProperties(messages, res, next);
     }
   }
@@ -100,41 +93,6 @@ class RouteRequestValidator {
         'Some properties are missing', messages);
     }
     next();
-  }
-
-  /**
-   * @description This validator checks to ensure that the route request status can be modified
-   * @param  {Object} req The request object
-   * @param  {Object} res The response object
-   * @param  {function} next The next middleware
-   */
-  static async validateRouteStatus(req, res, next) {
-    const { requestId } = req.params;
-
-    try {
-      const { status } = await RouteRequestService.getRouteRequest(requestId);
-
-      if (status === 'Approved' || status === 'Declined') {
-        HttpError.throwErrorIfNull(
-          null,
-          `This request has already been ${status.toLowerCase()}`,
-          409
-        );
-      }
-
-      if (status !== 'Confirmed') {
-        HttpError.throwErrorIfNull(
-          null,
-          'This request needs to be confirmed by the manager first',
-          403
-        );
-      }
-
-      return next();
-    } catch (error) {
-      BugsnagHelper.log(error);
-      HttpError.sendErrorResponse(error, res);
-    }
   }
 }
 

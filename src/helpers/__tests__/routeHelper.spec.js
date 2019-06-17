@@ -1,13 +1,22 @@
 import RouteHelper from '../RouteHelper';
 import RouteService, { routeService } from '../../services/RouteService';
 import { cabService } from '../../services/CabService';
+import AddressService from '../../services/AddressService';
 import {
-  routeBatch, batch, routeDetails, returnNullPercentage, record,
+  routeBatch, batch, returnNullPercentage, record,
   confirmedRecord, returnedPercentage, percentagesList,
   singlePercentageArray, returnedMaxObj, returnedMinObj, emptyRecord, routeResult
 } from '../__mocks__/routeMock';
+import AddressValidator from '../../middlewares/AddressValidator';
+
+let status;
 
 describe('Route Helpers', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+  
   describe('checkTimeFormat', () => {
     it('should fail if time format does not match requirement', () => {
       const message = RouteHelper.checkTimeFormat('12:1', 'timeFormat');
@@ -15,6 +24,13 @@ describe('Route Helpers', () => {
     });
   });
 
+  describe('checkRequestProps', () => {
+    it('should return missing values', () => {
+      const result = RouteHelper.checkRequestProps(routeBatch);
+      expect(result).toEqual(', destination, routeName, takeOffTime, vehicle');
+    });
+  });
+
   describe('checkNumberValues', () => {
     it('should fail if value is not a non-zero integer', () => {
       const message = RouteHelper.checkNumberValues('string', 'someField');
@@ -26,6 +42,15 @@ describe('Route Helpers', () => {
     it('should fail if value is not a non-zero integer', () => {
       const message = RouteHelper.checkNumberValues('string', 'someField');
       expect(message).toEqual(['someField must be a non-zero integer greater than zero']);
+    });
+  });
+
+  describe('checkThatAddressAlreadyExists', () => {
+    it('should return true if adress exists', async () => {
+      jest.spyOn(AddressService, 'findAddress').mockResolvedValue(true);
+      const existingAddress = await RouteHelper.checkThatAddressAlreadyExists({ lng: 10, lat: 10 });
+      expect(AddressService.findAddress).toHaveBeenCalledWith({ lng: 10, lat: 10 });
+      expect(existingAddress).toEqual(true);
     });
   });
 
@@ -33,6 +58,12 @@ describe('Route Helpers', () => {
     it('should fail if object does not contain either lat, lng, or both', () => {
       const message = RouteHelper.checkCoordinates({});
       expect(message).toEqual(['destination.coordinates must have lat & lng properties']);
+    });
+
+    it('should pass if required props are available', () => {
+      jest.spyOn(AddressValidator, 'validateProps');
+      RouteHelper.checkCoordinates({ lat: 20, lng: 20 });
+      expect(AddressValidator.validateProps).toHaveBeenCalledWith(20, 20, []);
     });
   });
 
@@ -68,6 +99,22 @@ describe('Route Helpers', () => {
     });
   });
 
+  describe('verifyPropValues', () => {
+    it('should return array of errors if props are missing', () => {
+      const errors = RouteHelper.verifyPropValues({
+        capacity: 1,
+        destination: { address: '', coordinates: '' },
+        routeName: 'the dojo',
+        takeOffTime: '10:00',
+        vehicle: ''
+      });
+      expect(errors).toEqual(['Enter a value for vehicle',
+        'Enter a value for destination.address',
+        'Enter a value for destination.coordinates'
+      ]);
+    });
+  });
+
 
   describe('duplicateRouteBatch', () => {
     it('should return the newly created batch object', async () => {
@@ -90,16 +137,18 @@ describe('Route Helpers', () => {
   });
 
   describe('getNewBatchDetails', () => {
-    it('should get the batch object', async () => {
-      jest.spyOn(RouteService, 'createRoute').mockReturnValue(routeDetails);
-      jest.spyOn(RouteService, 'updateBatchLabel').mockReturnValue('B');
-      jest.spyOn(RouteService, 'createBatch').mockReturnValue(batch);
+    it('should get the details for updated route batch', async () => {
+      jest.spyOn(RouteService, 'createRoute').mockResolvedValue({});
+      jest.spyOn(RouteService, 'updateBatchLabel').mockResolvedValue({});
+      jest.spyOn(RouteHelper, 'batchObject').mockResolvedValue({});
+      jest.spyOn(RouteService, 'createBatch').mockResolvedValue({});
 
-
-      const result = await RouteHelper.getNewBatchDetails(routeBatch);
-      expect(result.batch).toBe('B');
-      expect(result.inUse).toBe(0);
-      expect(result).toBe(batch);
+      await RouteHelper.getNewBatchDetails(routeBatch);
+      
+      expect(RouteService.createRoute).toHaveBeenCalled();
+      expect(RouteService.updateBatchLabel).toHaveBeenCalled();
+      expect(RouteHelper.batchObject).toHaveBeenCalled();
+      expect(RouteService.createBatch).toHaveBeenCalled();
     });
   });
 
@@ -139,6 +188,28 @@ describe('Route Helpers', () => {
       expect(routesData.pageMeta.totalPages).toBe(1);
       expect(routesData.pageMeta.totalResults).toBe(1);
       expect(routesData.pageMeta.pageSize).toBe(100);
+    });
+  });
+
+  describe('validateRouteStatus', () => {
+    it('should throw error if request is already approved', () => {
+      status = RouteHelper.validateRouteStatus({ status: 'Approved' });
+      expect(status).toEqual('This request has already been approved');
+    });
+
+    it('should throw error if request is already declined', () => {
+      status = RouteHelper.validateRouteStatus({ status: 'Declined' });
+      expect(status).toEqual('This request has already been declined');
+    });
+
+    it('should throw error if request is pending', () => {
+      status = RouteHelper.validateRouteStatus({ status: 'Pending' });
+      expect(status).toEqual('This request needs to be confirmed by the manager first');
+    });
+
+    it('should return true if request is confirmed', () => {
+      status = RouteHelper.validateRouteStatus({ status: 'Confirmed' });
+      expect(status).toEqual(true);
     });
   });
 });

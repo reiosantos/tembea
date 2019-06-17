@@ -6,6 +6,7 @@ import InteractivePrompts from '../../InteractivePrompts';
 import RouteRequestService from '../../../../../services/RouteRequestService';
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
 import ProviderNotifications from '../ProviderNotifications';
+import RemoveDataValues from '../../../../../helpers/removeDataValues';
 
 export default class OperationsNotifications {
   /**
@@ -18,7 +19,8 @@ export default class OperationsNotifications {
    */
   static async sendOpsDeclineMessageToFellow(routeRequestId, teamId, teamUrl) {
     try {
-      const routeRequest = await RouteRequestService.getRouteRequest(routeRequestId);
+      let routeRequest = await RouteRequestService.getRouteRequest(routeRequestId);
+      routeRequest = RemoveDataValues.removeDataValues(routeRequest);
       let slackBotOauthToken;
       if (teamId) {
         slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
@@ -26,14 +28,13 @@ export default class OperationsNotifications {
         const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
         slackBotOauthToken = botToken;
       }
-      const { fellow } = routeRequest.engagement;
-      const fellowChannelID = await SlackNotifications.getDMChannelId(fellow.slackId,
+      const { engagement: { fellow }, manager } = routeRequest;
+      const fellowChannelID = await SlackNotifications.getDMChannelId(fellow.slackId, slackBotOauthToken);
+      const managerChannelID = await SlackNotifications.getDMChannelId(manager.slackId,
         slackBotOauthToken);
-      const managerChannelID = await SlackNotifications.getDMChannelId(routeRequest.manager.slackId,
-        slackBotOauthToken);
-      const fellowMessage = OpsAttachmentHelper.getOperationDeclineAttachment(routeRequest,
+      const fellowMessage = await OpsAttachmentHelper.getOperationDeclineAttachment(routeRequest,
         fellowChannelID, 'fellow');
-      const managerMessage = OpsAttachmentHelper.getOperationDeclineAttachment(
+      const managerMessage = await OpsAttachmentHelper.getOperationDeclineAttachment(
         routeRequest, managerChannelID
       );
       SlackNotifications.sendNotification(fellowMessage, slackBotOauthToken);

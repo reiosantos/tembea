@@ -227,10 +227,8 @@ routesRouter.get('/routes/requests',
  *          required:
  *            - teamUrl
  *            - newOpsStatus
- *            - reviewerEmail
  *            - comment
  *            - routeName
- *            - capacity
  *            - takeOff
  *            - cabRegNumber
  *            - provider
@@ -245,31 +243,17 @@ routesRouter.get('/routes/requests',
  *              enum:
  *                - approve
  *                - decline
- *            reviewerEmail:
- *              type: string
  *            comment:
  *              type: string
  *            routeName:
  *              type: string
  *              description: this is **required** if route is to be approved
- *            capacity:
- *              type: number
- *              example: 6
  *            takeOff:
  *              type: string
  *              example: "10:00"
- *            cabRegNumber:
- *              type: string
  *            provider:
  *              type: object
- *              example:
- *                   - id: 1,
- *                   - name: "Uber Kenya"
- *                   - providerUserId: 1
- *                   - user:
- *                     - name: "New Name"
- *                     - phoneNo": "2349782037189"
- *                     - email: "me.you@test.com"
+ *              example: { "id": 1, "name": "Uber Kenya", "providerUserId": 1, "user": { "name": "New Name", "phoneNo": "2349782037189", "email": "me.you@test.com" } }
  *    responses:
  *      200:
  *        description: route request status updated successfully
@@ -283,11 +267,10 @@ routesRouter.get('/routes/requests',
  *        description: route request has already been approved
  */
 routesRouter.put(
-  '/routes/requests/status/:requestId',
+  '/routes/requests/status/:routeId',
   CleanRequestBody.trimAllInputs,
   RouteRequestValidator.validateRequestBody,
   RouteRequestValidator.validateParams,
-  RouteRequestValidator.validateRouteStatus,
   RoutesController.updateRouteRequestStatus
 );
 

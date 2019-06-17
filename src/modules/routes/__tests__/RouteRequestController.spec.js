@@ -1,10 +1,14 @@
 import RoutesController from '../RouteController';
-import { RouteRequestService } from '../../slack/RouteManagement/rootFile';
+import RouteRequestService from '../../../services/RouteRequestService';
+import UserService from '../../../services/UserService';
+import Response from '../../../helpers/responseHelper';
 import HttpError from '../../../helpers/errorHandler';
+import BugsnagHelper from '../../../helpers/bugsnagHelper';
 
 describe('RoutesController', () => {
   const declineReq = {
-    params: { requestId: 1 },
+    params: { routeId: 1 },
+    currentUser: { userInfo: { email: 'john.smith@gmail.com' } },
     body: {
       newOpsStatus: 'decline',
       comment: 'stuff',
@@ -13,7 +17,8 @@ describe('RoutesController', () => {
   };
 
   const approveReq = {
-    params: { requestId: 1 },
+    params: { routeId: 1 },
+    currentUser: { userInfo: { email: 'john.smith@gmail.com' } },
     body: {
       newOpsStatus: 'approve',
       comment: 'stuff',
@@ -34,10 +39,14 @@ describe('RoutesController', () => {
   };
 
   const submission = {
-    routeName: 'highway',
+    provider: {
+      id: 1,
+      name: 'Andela Cabs',
+      providerUserId: 15,
+    },
+    routeName: 'HighWay',
     takeOffTime: '10:00AM',
-    Provider: '1,Andela Cabs,15',
-    teamUrl: 'tester@andela.com'
+    teamUrl: 'tester@andela.com',
   };
 
   describe('updateRouteRequestStatus', () => {
@@ -49,87 +58,98 @@ describe('RoutesController', () => {
 
     beforeEach(() => {
       jest.spyOn(res, 'status');
-      jest.spyOn(RoutesController, 'saveRoute');
+      jest.spyOn(RoutesController, 'formatRoute');
       jest.spyOn(RoutesController, 'sendNotificationToProvider');
-      jest.spyOn(RouteRequestService, 'updateRouteRequest').mockImplementation();
+      jest.spyOn(RoutesController, 'sendDeclineNotificationToFellow');
+      jest.spyOn(RoutesController, 'getUpdatedRouteRequest');
+      jest.spyOn(RouteRequestService, 'updateRouteRequest');
+      jest.spyOn(HttpError, 'sendErrorResponse');
+      jest.spyOn(BugsnagHelper, 'log');
     });
 
     afterEach(() => {
       jest.restoreAllMocks();
     });
 
+    it('should return a 500 response on network error', async () => {
+      RouteRequestService.getRouteRequest = jest.fn(() => {
+        throw Error('random error');
+      });
+
+      await RoutesController.updateRouteRequestStatus(approveReq, res);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
+      expect(BugsnagHelper.log).toHaveBeenCalled();
+    });
+
     it('should change the status of the route request to declined', async () => {
       jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
         dataValues: {
-          status: 'Pending'
+          status: 'Confirmed'
         },
-        status: 'Pending'
+        status: 'Confirmed'
       }));
+      jest.spyOn(UserService, 'getUserByEmail').mockResolvedValue({ id: 9, name: 'John smith' });
       await RoutesController.updateRouteRequestStatus(declineReq, res);
 
-      expect(RouteRequestService.getRouteRequest).toHaveBeenCalledTimes(1);
+      expect(RouteRequestService.getRouteRequest).toHaveBeenCalled();
+      expect(RoutesController.getUpdatedRouteRequest).toHaveBeenCalled();
       expect(RouteRequestService.updateRouteRequest).toHaveBeenCalledWith(1, {
         opsComment: 'stuff',
         opsReviewerId: 9,
         status: 'Declined',
       });
+      expect(RoutesController.sendDeclineNotificationToFellow).toHaveBeenCalled();
     });
 
     it('should change the status of the route request to approved', async () => {
       jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
+        dataValues: {
+          status: 'Confirmed'
+        },
         status: 'Confirmed'
       }));
-      jest.spyOn(RouteRequestService, 'updateRouteRequest').mockImplementation(() => ({
-        status: 'Approved'
-      }));
-      jest.spyOn(RoutesController, 'saveRoute').mockImplementation(() => ({
-        routeName: approveReq.body.routeName,
-        Provider: approveReq.body.provider
-      }));
+
+      jest.spyOn(UserService, 'getUserByEmail').mockResolvedValue({ id: 9, name: 'John smith' });
 
       await RoutesController.updateRouteRequestStatus(approveReq, res);
-
-      expect(RoutesController.saveRoute).toHaveBeenCalled();
       expect(RouteRequestService.getRouteRequest).toHaveBeenCalled();
       expect(RouteRequestService.updateRouteRequest).toHaveBeenCalledWith(1, {
         opsComment: 'stuff',
         opsReviewerId: 9,
         status: 'Approved',
       });
+      expect(RoutesController.sendNotificationToProvider).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(201);
+    });
+
+    it('should throw an error if route has already been approved or declined', async () => {
+      jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
+        dataValues: {
+          status: 'Approved'
+        },
+        status: 'Approved'
+      }));
+      jest.spyOn(Response, 'sendResponse');
+
+      await RoutesController.updateRouteRequestStatus(approveReq, res);
+      expect(Response.sendResponse).toHaveBeenCalled();
+      expect(Response.sendResponse)
+        .toHaveBeenCalledWith(res, 409, false, 'This request has already been approved');
     });
 
     it('should throw an error if no route request us found', async () => {
       jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => null);
-      jest.spyOn(HttpError, 'sendErrorResponse').mockImplementation(() => {});
+      jest.spyOn(Response, 'sendResponse').mockImplementation(() => {});
 
       await RoutesController.updateRouteRequestStatus(declineReq, res);
 
-      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(2);
+      expect(Response.sendResponse).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('sendNotificationToProvider', () => {
-    it('should send notification to provider', async () => {
-      jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => mockRouteRequest);
-      await RoutesController.sendNotificationToProvider(1, submission);
-
-      expect(RouteRequestService.getRouteRequest).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe('formatProviderDetails', () => {
-    it('should return formatted provider details', () => {
-      const providerInfo = { id: 1, name: 'John Cabs', providerUserId: 16 };
-      const result = RoutesController.formatProviderDetails(providerInfo);
-
-      expect(result).toEqual('1,John Cabs,16');
-    });
-  });
-
-  describe('saveRoute', () => {
+  describe('formatRoute', () => {
     it('should return proper submission data', () => {
-      const result = RoutesController.saveRoute(mockRouteRequest, approveReq.body);
+      const result = RoutesController.formatRoute(mockRouteRequest, approveReq.body);
 
       expect(result).toEqual(submission);
     });
