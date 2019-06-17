@@ -6,6 +6,7 @@ import RouteService from '../../../../../services/RouteService';
 import { SlackAttachmentField, SlackAttachment, SlackButtonAction } from '../../../SlackModels/SlackMessageModels';
 import RemoveDataValues from '../../../../../helpers/removeDataValues';
 import { bugsnagHelper } from '../../../RouteManagement/rootFile';
+import RouteServiceHelper from '../../../../../helpers/RouteServiceHelper';
 
 class RouteNotifications {
   static async sendRouteNotificationToRouteRiders(teamUrl, routeInfo) {
@@ -15,7 +16,7 @@ class RouteNotifications {
     const { botToken: teamBotOauthToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
     const isDeactivation = (status && status.toLowerCase() === 'inactive') || deleted;
     const details = await RouteService.getRouteBatchByPk(routeInfo.id);
-    const updatedDetails = details && await RouteService.serializeRouteBatch(details);
+    const updatedDetails = details && await RouteServiceHelper.serializeRouteBatch(details);
     const text = isDeactivation
       ? `Sorry, Your route to *${address}* is no longer available :disappointed:`
       : `Your route to *${address}* has been updated.`;

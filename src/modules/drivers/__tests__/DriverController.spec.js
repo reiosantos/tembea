@@ -1,7 +1,7 @@
 import DriverController from '../DriverController';
 import Response from '../../../helpers/responseHelper';
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
-import DriverService from '../../../services/DriverService';
+import { driverService } from '../../../services/DriverService';
 import ProviderService from '../../../services/ProviderService';
 import {
   createReq, expected, mockData, existingUserMock
@@ -15,7 +15,7 @@ describe('DriverController', () => {
   BugsnagHelper.log = jest.fn();
 
   beforeEach(() => {
-    createDriverSpy = jest.spyOn(DriverService, 'createProviderDriver');
+    createDriverSpy = jest.spyOn(driverService, 'createProviderDriver');
     res = {
       status: jest.fn(() => ({
         json: jest.fn(() => { })
@@ -65,6 +65,17 @@ describe('DriverController', () => {
       expect(Response.sendResponse).toHaveBeenCalled();
       expect(Response.sendResponse).toHaveBeenCalledWith(res, 500, false,
         'An error occurred in the creation of the driver');
+    });
+  });
+
+  describe('DriverController.deleteDriver', () => {
+    it('should successfully delete a driver', async () => {
+      const driver = { dataValues: { id: 2, providerId: 1 } };
+      res.locals = { driver };
+
+      jest.spyOn(driverService, 'deleteDriver').mockResolvedValue(1);
+      await DriverController.deleteDriver({}, res);
+      expect(Response.sendResponse).toHaveBeenCalled();
     });
   });
 });

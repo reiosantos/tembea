@@ -34,4 +34,36 @@ export default class RouteServiceHelper {
   static canJoinRoute(route) {
     return route.riders && route.riders.length < route.capacity;
   }
+
+  /**
+   * Extracts required fields for a complete route/batch resource
+   *
+   * @static
+   * @param {*} routeData - The route/batch resource
+   * @returns {{
+   *  regNumber:string, takeOff:string, driverPhoneNo:string, inUse:string, name: string,
+   *  destination:string, batch:string, driverName:string, id:number, status:string,
+   *  capacity:number, riders: Array<{email:string,slackId:string,id:number}>
+   * }}
+   * @memberof RouteServiceHelper
+   */
+  static serializeRouteBatch(routeData) {
+    const {
+      id, status, takeOff, capacity, batch, comments, inUse, imageUrl, routeId,
+    } = routeData;
+    return {
+      id,
+      status,
+      imageUrl,
+      takeOff,
+      capacity,
+      batch,
+      comments,
+      routeId,
+      inUse: inUse || 0,
+      ...RouteServiceHelper.serializeRoute(routeData.route),
+      ...RouteServiceHelper.serializeCabDetails(routeData.cabDetails),
+      ...RouteServiceHelper.serializeRiders(routeData.riders),
+    };
+  }
 }

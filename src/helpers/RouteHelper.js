@@ -1,9 +1,10 @@
 import AddressService from '../services/AddressService';
 import LocationService from '../services/LocationService';
 import CabService from '../services/CabService';
-import RouteService from '../services/RouteService';
+import RouteService, { routeService } from '../services/RouteService';
 import AddressValidator from '../middlewares/AddressValidator';
 import { expectedCreateRouteObject } from '../utils/data';
+import RouteServiceHelper from './RouteServiceHelper';
 
 class RouteHelper {
   static checkRequestProps(createRouteRequest) {
@@ -133,7 +134,7 @@ class RouteHelper {
   }
 
   static async checkThatRouteNameExists(name) {
-    const route = await RouteService.getRouteByName(name);
+    const route = await routeService.getRouteByName(name);
     return [!!route, route];
   }
 
@@ -184,7 +185,7 @@ class RouteHelper {
     batch.cabDetails = cabDetails;
     batch.route = route;
 
-    return RouteService.serializeRouteBatch(batch);
+    return RouteServiceHelper.serializeRouteBatch(batch);
   }
 
   static batchObject(routeBatch, batch) {

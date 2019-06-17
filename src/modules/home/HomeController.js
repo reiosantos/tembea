@@ -73,26 +73,18 @@ export default class HomeController {
 
   static convertJSONResponseToTeamDetailsObj(jsonResponse) {
     // get tokens and other data
-    const botId = jsonResponse.bot.bot_user_id;
-    const botToken = jsonResponse.bot.bot_access_token;
-    const teamId = jsonResponse.team_id;
-    const teamName = jsonResponse.team_name;
-    const userId = jsonResponse.user_id;
-    const userToken = jsonResponse.access_token;
-    const webhookConfigUrl = jsonResponse.incoming_webhook.url;
     const urlObject = url.parse(jsonResponse.incoming_webhook.configuration_url);
     const teamUrl = `https://${urlObject.host}`;
-    const opsChannelId = jsonResponse.incoming_webhook.channel_id;
     return {
-      botId,
-      botToken,
-      teamId,
-      teamName,
-      userId,
-      userToken,
-      webhookConfigUrl,
+      botId: jsonResponse.bot.bot_user_id,
+      botToken: jsonResponse.bot.bot_access_token,
+      teamId: jsonResponse.team_id,
+      teamName: jsonResponse.team_name,
+      userId: jsonResponse.user_id,
+      userToken: jsonResponse.access_token,
+      webhookConfigUrl: jsonResponse.incoming_webhook.url,
+      opsChannelId: jsonResponse.incoming_webhook.channel_id,
       teamUrl,
-      opsChannelId
     };
   }
 }

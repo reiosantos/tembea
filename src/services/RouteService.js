@@ -9,13 +9,17 @@ import UserService from './UserService';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import CabService from './CabService';
 import RouteServiceHelper from '../helpers/RouteServiceHelper';
-
+import BaseService from './BaseService';
 
 const {
   Route, RouteBatch, Cab, Address, User, sequelize, Sequelize
 } = models;
 
-class RouteService {
+class RouteService extends BaseService {
+  constructor() {
+    super(Route);
+  }
+  
   static get sort() {
     return {
       cab: { model: Cab, as: 'cabDetails' },
@@ -85,7 +89,7 @@ class RouteService {
     batch.cabDetails = cabDetails;
     route.destination = destination;
     batch.route = route;
-    return RouteService.serializeRouteBatch(batch);
+    return RouteServiceHelper.serializeRouteBatch(batch);
   }
 
   static async createBatch(batchDetails, routeId, cabId, driverId) {
@@ -139,8 +143,8 @@ class RouteService {
     return route;
   }
 
-  static async getRouteByName(name) {
-    const route = await Route.findOne({ where: { name } });
+  async getRouteByName(name) {
+    const route = await this.findOne(name);
     return route;
   }
 
@@ -211,7 +215,7 @@ class RouteService {
       group: [...RouteService.defaultRouteGroupBy]
     };
     const { data, pageMeta } = await paginatedRoutes.getPageItems(page);
-    const routes = data.map(RouteService.serializeRouteBatch);
+    const routes = data.map(RouteServiceHelper.serializeRouteBatch);
     return { routes, ...pageMeta };
   }
 
@@ -241,37 +245,6 @@ class RouteService {
       }
       return order;
     });
-  }
-
-  /**
-   * @private
-   * @param routeData
-   * @return {
-   *    {
-   *      regNumber:string, takeOff:string, driverPhoneNo:string, inUse:string, name: string,
-   *      destination:string, batch:string, driverName:string, id:number, status:string,
-   *      capacity:number, riders: Array<{email:string,slackId:string,id:number}>
-   *    }
-   *  }
-   */
-  static serializeRouteBatch(routeData) {
-    const {
-      id, status, takeOff, capacity, batch, comments, inUse, imageUrl, routeId,
-    } = routeData;
-    return {
-      id,
-      status,
-      imageUrl,
-      takeOff,
-      capacity,
-      batch,
-      comments,
-      routeId,
-      inUse: inUse || 0,
-      ...RouteServiceHelper.serializeRoute(routeData.route),
-      ...RouteServiceHelper.serializeCabDetails(routeData.cabDetails),
-      ...RouteServiceHelper.serializeRiders(routeData.riders),
-    };
   }
 
   /**
@@ -329,4 +302,5 @@ class RouteService {
   }
 }
 
+export const routeService = new RouteService();
 export default RouteService;

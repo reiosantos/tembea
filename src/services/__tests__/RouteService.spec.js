@@ -1,4 +1,4 @@
-import RouteService from '../RouteService';
+import RouteService, { routeService } from '../RouteService';
 import models from '../../database/models/index';
 import Cache from '../../cache';
 import AddressService from '../AddressService';
@@ -243,7 +243,7 @@ describe('RouteService', () => {
     it('should return route details from the db', async () => {
       const mockRouteDetails = { id: 1, name: 'Yaba', imgUrl: 'images://an-img.png' };
       jest.spyOn(Route, 'findOne').mockResolvedValue(mockRouteDetails);
-      const routeDetails = await RouteService.getRouteByName('Yaba');
+      const routeDetails = await routeService.getRouteByName('Yaba');
       expect(routeDetails).toEqual(mockRouteDetails);
     });
   });
@@ -337,7 +337,7 @@ describe('RouteService', () => {
 
   describe('RouteService_serializeData', () => {
     it('should combine all route info into one object', () => {
-      const res = RouteService.serializeRouteBatch(routeBatch);
+      const res = RouteServiceHelper.serializeRouteBatch(routeBatch);
       expect(res).toHaveProperty('capacity');
       expect(res).toHaveProperty('driverPhoneNo');
       expect(res).toHaveProperty('regNumber');

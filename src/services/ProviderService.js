@@ -3,10 +3,15 @@ import models from '../database/models';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import ProviderHelper from '../helpers/providerHelper';
 import ProviderValidator from '../middlewares/ProviderValidator';
+import BaseService from './BaseService';
 
 const { Provider, User } = models;
 
-class ProviderService {
+class ProviderService extends BaseService {
+  constructor() {
+    super(Provider);
+  }
+  
   /**
    * @description Returns a list of providers from db
    * page and size variables can also be passed on the url
@@ -96,10 +101,31 @@ class ProviderService {
     return provider;
   }
 
-  static async findProviderByUserId(providerUserId) {
-    const provider = await Provider.findOne({ where: { providerUserId } });
+  /**
+   * Find a specific provider by a given user id (owner)
+   *
+   * @param {number} providerUserId - The provider's owner id
+   * @returns {object} The model instance
+   * @memberof ProviderService
+   */
+  async findProviderByUserId(providerUserId) {
+    const provider = await this.findOne(providerUserId);
+    return provider;
+  }
+
+  /**
+   * Get a specific provider by id
+   *
+   * @static
+   * @param {number} id - The provider's unique identifier
+   * @returns {object} The provider object
+   * @memberof ProviderService
+   */
+  async getProviderById(id) {
+    const provider = await this.findById(id);
     return provider;
   }
 }
 
+export const providerService = new ProviderService();
 export default ProviderService;

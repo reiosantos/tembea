@@ -1,6 +1,6 @@
 import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
 import ProviderHelper from '../../helpers/providerHelper';
-import ProviderService from '../ProviderService';
+import ProviderService, { providerService } from '../ProviderService';
 import UserService from '../UserService';
 import { mockGetCabsData, mockCreatedProvider, mockReturnedProvider } from '../__mocks__';
 import models from '../../database/models';
@@ -128,7 +128,7 @@ describe('ProviderService', () => {
         }
       };
       jest.spyOn(Provider, 'findOne').mockReturnValue(mockResponse);
-      const results = await ProviderService.findProviderByUserId(16);
+      const results = await providerService.findProviderByUserId(16);
       expect(results).toBeDefined();
       expect(results).toEqual(mockResponse);
     });

@@ -1,20 +1,31 @@
 import { Op } from 'sequelize';
+import BaseService from './BaseService';
 import models from '../database/models';
 import ProviderHelper from '../helpers/providerHelper';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 
 const { Driver } = models;
 
-class DriverService {
+/**
+ * A class representing the Driver service
+ *
+ * @class DriverService
+ * @extends {BaseService}
+ */
+class DriverService extends BaseService {
+  constructor() {
+    super(Driver);
+  }
+
   /**
    *@description Adds a driver
    * @returns {  object }
    * @param driverObject
    */
-  static async createProviderDriver(driverObject) {
+  async createProviderDriver(driverObject) {
     try {
       const { driverNumber } = driverObject;
-      const [driver] = await Driver.findOrCreate({
+      const [driver] = await this.model.findOrCreate({
         where: { driverNumber: { [Op.like]: `${driverNumber}%` } },
         defaults: { ...driverObject }
       });
@@ -43,5 +54,33 @@ class DriverService {
     const drivers = data.map(ProviderHelper.serializeDetails);
     return { drivers, ...pageMeta };
   }
+
+  /**
+   * Get a specific driver by id
+   *
+   * @static
+   * @param {number} id - The driver's unique identifier
+   * @returns {object} The driver object
+   * @memberof DriverService
+   */
+  async getDriverById(id) {
+    const driver = await this.findById(id);
+    return driver;
+  }
+
+  /**
+   * Delete a specific driver information
+   *
+   * @static
+   * @param {object|number} driverId - The specified driver object or unique identifier
+   * @returns {object} An object containing the affected row
+   * @memberof DriverService
+   */
+  async deleteDriver(driver) {
+    const result = await this.delete(driver);
+    return result;
+  }
 }
+
+export const driverService = new DriverService();
 export default DriverService;

@@ -27,6 +27,10 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'providerUserId',
       as: 'user'
     });
+    Provider.hasMany(models.Driver, {
+      foreignKey: 'providerId',
+      as: 'drivers'
+    });
   };
   return Provider;
 };

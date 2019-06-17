@@ -1,5 +1,5 @@
 import UserService from '../../../../services/UserService';
-import ProviderService from '../../../../services/ProviderService';
+import { providerService } from '../../../../services/ProviderService';
 
 export default class ProvidersHelper {
   static toProviderLabelPairValues(providers) {
@@ -30,7 +30,7 @@ export default class ProvidersHelper {
       callbackId = `${callbackId}_route`;
     } else {
       const { id } = await UserService.getUserBySlackId(userId);
-      const provider = await ProviderService.findProviderByUserId(id);
+      const provider = await providerService.findProviderByUserId(id);
       where = { providerId: provider.id };
       callbackId = `${callbackId}_trip`;
     }

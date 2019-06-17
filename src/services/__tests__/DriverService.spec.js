@@ -1,4 +1,4 @@
-import DriverService from '../DriverService';
+import DriverService, { driverService } from '../DriverService';
 import models from '../../database/models';
 import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
 import ProviderHelper from '../../helpers/providerHelper';
@@ -24,7 +24,7 @@ describe('Driver Service', () => {
     sequelize.close();
   });
   it('should create driver successfully', async () => {
-    const driver = await DriverService.createProviderDriver({
+    const driver = await driverService.createProviderDriver({
       driverName: 'Muhwezi Deo2',
       driverPhoneNo: '070533111166',
       driverNumber: 'UB5422424344',
@@ -35,7 +35,7 @@ describe('Driver Service', () => {
     await driver.destroy({ force: true });
   });
   it('should return not create driver if driverNumber exists', async (done) => {
-    const driver = await DriverService.createProviderDriver({
+    const driver = await driverService.createProviderDriver({
       driverName: 'Muhwezi Deo2',
       driverPhoneNo: '0700000011',
       driverNumber: 'UB54224249',
