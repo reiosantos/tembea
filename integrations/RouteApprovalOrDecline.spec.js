@@ -4,7 +4,6 @@ import model from '../src/database/models';
 import Utils from '../src/utils';
 import {
   mockDeclinedRouteRequest,
-  mockDataMissingParams,
   mockDataMissingTeamUrl,
   mockDataInvalidComment,
   mockDataInvalidCapacity,
@@ -57,7 +56,7 @@ describe('Decline route request', () => {
       });
     });
 
-    it('should respond with an missing request param response', (done) => {
+    it('should respond with a missing request param response', (done) => {
       request(app)
         .put('/api/v1/routes/requests/status/1')
         .set(reqHeaders)
@@ -118,7 +117,7 @@ describe('Decline route request', () => {
         .send(mockDeclinedRouteRequest);
 
       expect(response.body.message).toEqual(
-        'Cannot read property \'trim\' of undefined'
+        'This route request has been updated'
       );
     });
   });
@@ -164,25 +163,6 @@ describe('Approve a route request', () => {
       });
     });
 
-    it('should respond with a missing request param response', (done) => {
-      request(app)
-        .put('/api/v1/routes/requests/status/1')
-        .set(reqHeaders)
-        .send(mockDataMissingParams)
-        .expect(
-          400,
-          {
-            success: false,
-            message: 'Some properties are missing for approval',
-            errors: [
-              'Please provide routeName.',
-              'Please provide takeOff.',
-              'Please provide provider.'
-            ]
-          },
-          done
-        );
-    });
     it('should respond with an invalid request for invalid provider value', (done) => {
       request(app)
         .put('/api/v1/routes/requests/status/1')

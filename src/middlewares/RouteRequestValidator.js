@@ -61,12 +61,6 @@ class RouteRequestValidator {
   }
 
   static validateApprovalBody(req, res, next) {
-    const messages = GeneralValidator.validateReqBody(req.body,
-      'routeName', 'takeOff', 'provider', 'comment');
-    if (messages.length > 0) {
-      return RouteRequestValidator.sendResponseWithErrors(res,
-        'Some properties are missing for approval', messages);
-    }
     const { takeOff } = req.body;
     if (!/^([0-1]?[0-9]|[2][0-3]):([0-5][0-9])$/.test(takeOff.trim())) {
       return RouteRequestValidator.sendResponse(res,
@@ -82,14 +76,29 @@ class RouteRequestValidator {
    * @param  {Function} next The next middleware
    */
   static validateRequestBody(req, res, next) {
-    const messages = GeneralValidator.validateReqBody(req.body,
-      'newOpsStatus', 'comment', 'reviewerEmail', 'teamUrl');
+    const { comment } = req.body;
+    let messages;
+    if (comment && comment === 'approve') {
+      messages = GeneralValidator.validateReqBody(req.body,
+        'newOpsStatus', 'comment', 'reviewerEmail', 'teamUrl', 'routeName', 'takeOff', 'provider');
+      RouteRequestValidator.checkMissingProperties(messages, res, next);
+    } else {
+      messages = GeneralValidator.validateReqBody(req.body,
+        'newOpsStatus', 'comment', 'reviewerEmail', 'teamUrl');
+      RouteRequestValidator.checkMissingProperties(messages, res, next);
+    }
+  }
 
+  /**
+   * @description This method checks for error messages from the general validator
+   * @param  {array} messages The array containing error messages
+   * @param  {Object} res The response object
+   */
+  static checkMissingProperties(messages, res, next) {
     if (messages.length > 0) {
       return RouteRequestValidator.sendResponseWithErrors(res,
         'Some properties are missing', messages);
     }
-
     next();
   }
 

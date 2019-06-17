@@ -172,7 +172,7 @@ class RoutesController {
       const {
         routeRequest, updatedRouteRequest
       } = await RoutesController.getUpdatedRouteRequest(requestId, body);
-      if (routeRequest.status === 'Confirmed') {
+      if (updatedRouteRequest.status === 'Approved') {
         const submission = RoutesController.saveRoute(routeRequest, body);
         RoutesController.sendNotificationToProvider(requestId, submission);
       } else {
@@ -231,7 +231,7 @@ class RoutesController {
    */
   static saveRoute(routeRequest, body) {
     const data = {
-      destinationName: routeRequest.home.dataValues.address,
+      destinationName: routeRequest.home.address,
       name: body.routeName.trim().toLowerCase(),
       takeOff: body.takeOff.trim(),
       provider: this.formatProviderDetails(body.provider)

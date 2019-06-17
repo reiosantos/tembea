@@ -77,27 +77,25 @@ describe('RoutesController', () => {
 
     it('should change the status of the route request to approved', async () => {
       jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
-        dataValues: {
-          status: 'Confirmed'
-        },
         status: 'Confirmed'
       }));
+      jest.spyOn(RouteRequestService, 'updateRouteRequest').mockImplementation(() => ({
+        status: 'Approved'
+      }));
+      jest.spyOn(RoutesController, 'saveRoute').mockImplementation(() => ({
+        routeName: approveReq.body.routeName,
+        Provider: approveReq.body.provider
+      }));
+
       await RoutesController.updateRouteRequestStatus(approveReq, res);
 
-      expect(RoutesController.saveRoute).toHaveBeenCalledTimes(1);
-      expect(RouteRequestService.getRouteRequest).toHaveBeenCalledTimes(1);
+      expect(RoutesController.saveRoute).toHaveBeenCalled();
+      expect(RouteRequestService.getRouteRequest).toHaveBeenCalled();
       expect(RouteRequestService.updateRouteRequest).toHaveBeenCalledWith(1, {
         opsComment: 'stuff',
         opsReviewerId: 9,
         status: 'Approved',
       });
-    });
-
-    it('should send the right status code', async () => {
-      jest.spyOn(res, 'status');
-
-      await RoutesController.updateRouteRequestStatus(declineReq, res);
-
       expect(res.status).toHaveBeenCalledWith(201);
     });
 

@@ -110,13 +110,16 @@ describe('RouteRequestValidator', () => {
           newOpsStatus: 'approve',
           reviewerEmail: 'test@andela.com',
           comment: 'some comment',
-          teamUrl: 'stuff.slack.com'
+          teamUrl: 'stuff.slack.com',
+          routeName: 'sample route',
+          takeOff: '10:00',
+          provider: 'Uber Kenya'
         }
       };
       jest.spyOn(RouteRequestValidator, 'validateApprovalBody');
 
       RouteRequestValidator.validateParams(req, res, next);
-      expect(next).toHaveBeenCalledTimes(0);
+      expect(next).toHaveBeenCalledTimes(1);
       expect(RouteRequestValidator.validateApprovalBody).toHaveBeenCalledWith(req, res, next);
     });
 
@@ -134,7 +137,7 @@ describe('RouteRequestValidator', () => {
       };
 
       RouteRequestValidator.validateParams(req, res, next);
-      expect(next).toHaveBeenCalledTimes(1);
+      expect(next).toHaveBeenCalled();
     });
   });
   describe('validateRequestBody', () => {
@@ -173,7 +176,10 @@ describe('RouteRequestValidator', () => {
           newOpsStatus: 'decline',
           reviewerEmail: 'test@andela.com',
           comment: 'some comment',
-          teamUrl: 'tembea.slack.com'
+          teamUrl: 'tembea.slack.com',
+          routeName: 'sample route',
+          takeOff: '10:00',
+          provider: 'Uber Kenya'
         }
       };
 
@@ -277,7 +283,8 @@ describe('RouteRequestValidator', () => {
         body: {
           newOpsStatus: 'approve',
           comment: 'stuff',
-          reviewerId: '2'
+          reviewerId: '2',
+          takeOff: '10--00'
         }
       };
       jest.spyOn(res, 'status');
@@ -327,7 +334,7 @@ describe('RouteRequestValidator', () => {
       };
 
       RouteRequestValidator.validateApprovalBody(req, res, next);
-      expect(next).toHaveBeenCalledTimes(1);
+      expect(next).toHaveBeenCalled();
     });
   });
 });

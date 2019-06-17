@@ -233,6 +233,7 @@ routesRouter.get('/routes/requests',
  *            - capacity
  *            - takeOff
  *            - cabRegNumber
+ *            - provider
  *          properties:
  *            teamUrl:
  *              type: string
@@ -259,6 +260,16 @@ routesRouter.get('/routes/requests',
  *              example: "10:00"
  *            cabRegNumber:
  *              type: string
+ *            provider:
+ *              type: object
+ *              example:
+ *                   - id: 1,
+ *                   - name: "Uber Kenya"
+ *                   - providerUserId: 1
+ *                   - user:
+ *                     - name: "New Name"
+ *                     - phoneNo": "2349782037189"
+ *                     - email: "me.you@test.com"
  *    responses:
  *      200:
  *        description: route request status updated successfully

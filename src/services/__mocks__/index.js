@@ -150,7 +150,9 @@ export const mockDeclinedRouteRequest = {
   comment: 'some comment',
   reviewerEmail: 'test.buddy2@andela.com',
   teamUrl: 'tembea.slack.com',
-  provider: providerUserDetails
+  provider: providerUserDetails,
+  routeName: 'sample route',
+  takeOff: '10:00'
 };
 export const mockDataMissingParams = {
   newOpsStatus: 'approve',
@@ -163,7 +165,9 @@ export const mockDataInvalidComment = {
   comment: 'some = comment',
   reviewerEmail: 'test.buddy2@andela.com',
   teamUrl: 'tembea.slack.com',
-  provider: providerUserDetails
+  provider: providerUserDetails,
+  routeName: 'sample route',
+  takeOff: '10:00'
 };
 export const mockDataInvalidCapacity = {
   newOpsStatus: 'approve',
