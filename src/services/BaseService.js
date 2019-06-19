@@ -39,7 +39,7 @@ export default class BaseService {
    * @memberof BaseService
    */
   async findOne(attribute) {
-    const result = await this.model.findOne({ where: { attribute } });
+    const result = await this.model.findOne({ where: attribute });
     return result;
   }
 

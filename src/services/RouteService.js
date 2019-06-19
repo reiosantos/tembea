@@ -19,7 +19,7 @@ class RouteService extends BaseService {
   constructor() {
     super(Route);
   }
-  
+
   static get sort() {
     return {
       cab: { model: Cab, as: 'cabDetails' },
@@ -144,7 +144,7 @@ class RouteService extends BaseService {
   }
 
   async getRouteByName(name) {
-    const route = await this.findOne(name);
+    const route = await this.findOne({ name });
     return route;
   }
 

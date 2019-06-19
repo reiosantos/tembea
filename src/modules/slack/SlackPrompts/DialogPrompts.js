@@ -117,7 +117,7 @@ class DialogPrompts {
       message_ts: timeStamp,
       channel: { id: channel }
     } = payload;
-    const { providers } = await ProviderService.getProviders();
+    const providers = await ProviderService.getViableProviders();
     const providerData = ProviderHelper.generateProvidersLabel(providers);
     const state = {
       tripId, timeStamp, channel, isAssignProvider: true
@@ -190,7 +190,7 @@ class DialogPrompts {
       new SlackDialogText('Route\'s take-off time', 'takeOffTime', 'Enter take-off time',
         false, 'The time should be in the format (HH:mm), eg. 01:30')
     ]);
-    const { providers } = await ProviderService.getProviders();
+    const providers = await ProviderService.getViableProviders();
     const providersData = ProvidersHelper.toProviderLabelPairValues(providers);
     dialog.addElements([
       new SlackDialogSelectElementWithOptions('Select A Provider',

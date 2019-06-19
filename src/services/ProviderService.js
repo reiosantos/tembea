@@ -5,13 +5,15 @@ import ProviderHelper from '../helpers/providerHelper';
 import ProviderValidator from '../middlewares/ProviderValidator';
 import BaseService from './BaseService';
 
-const { Provider, User } = models;
+const {
+  Provider, User, Cab, Driver
+} = models;
 
 class ProviderService extends BaseService {
   constructor() {
     super(Provider);
   }
-  
+
   /**
    * @description Returns a list of providers from db
    * page and size variables can also be passed on the url
@@ -109,7 +111,7 @@ class ProviderService extends BaseService {
    * @memberof ProviderService
    */
   async findProviderByUserId(providerUserId) {
-    const provider = await this.findOne(providerUserId);
+    const provider = await this.findOne({ providerUserId });
     return provider;
   }
 
@@ -124,6 +126,25 @@ class ProviderService extends BaseService {
   async getProviderById(id) {
     const provider = await this.findById(id);
     return provider;
+  }
+
+  static async getViableProviders() {
+    const providers = await Provider.findAll({
+      include: [{
+        model: Cab,
+        as: 'vehicles'
+      }, {
+        model: Driver,
+        as: 'drivers'
+      }, {
+        model: User,
+        as: 'user',
+        attributes: ['name', 'phoneNo', 'email', 'slackId']
+      }],
+    });
+    return providers.filter(
+      provider => provider.dataValues.vehicles.length > 0 && provider.dataValues.drivers.length > 0
+    );
   }
 }
 

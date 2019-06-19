@@ -132,5 +132,15 @@ describe('ProviderService', () => {
       expect(results).toBeDefined();
       expect(results).toEqual(mockResponse);
     });
+    it('should get viable providers in providers drop down', async () => {
+      const dummyProviders = [{
+        dataValues: {
+          vehicles: [{}], drivers: [{}]
+        }
+      }];
+      jest.spyOn(Provider, 'findAll').mockResolvedValue(dummyProviders);
+      await ProviderService.getViableProviders();
+      expect(Provider.findAll).toBeCalled();
+    });
   });
 });

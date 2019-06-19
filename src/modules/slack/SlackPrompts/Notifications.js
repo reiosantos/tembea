@@ -166,7 +166,7 @@ class SlackNotifications {
       bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         'An error occurred while processing your request. '
-          + 'Please contact the administrator.', [], undefined, '#b52833'
+        + 'Please contact the administrator.', [], undefined, '#b52833'
       );
       respond(message);
     }
@@ -181,7 +181,7 @@ class SlackNotifications {
       bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         'An error occurred while processing your request. '
-          + 'Please contact the administrator.', [], undefined, '#b52833'
+        + 'Please contact the administrator.', [], undefined, '#b52833'
       );
       respond(message);
     }
@@ -368,7 +368,7 @@ class SlackNotifications {
     message = await SlackNotifications.createUserConfirmOrDeclineMessage(opsStatus, confirmedOrDeclined);
     channelId = await SlackNotifications.getDMChannelId(rider, slackBotOauthToken);
     SlackNotifications.sendNotifications(channelId, attachments, message, slackBotOauthToken);
-    if (confirmedOrDeclined === 'confirmed. :smiley:') {
+    if (confirmedOrDeclined === 'confirmed :smiley:') {
       TripCompletion.createScheduleForATrip(tripInformation);
     }
   }
@@ -401,7 +401,7 @@ class SlackNotifications {
       'fallback', undefined, 'default');
     const channelId = await SlackNotifications.getDMChannelId(rider, slackBotOauthToken);
     const letterMessage = `You are hereby Requested by <@${userID}> to provide `
-            + `your ${location} location`;
+      + `your ${location} location`;
     SlackNotifications.sendNotifications(channelId, attachment, letterMessage, slackBotOauthToken);
   }
 
@@ -426,7 +426,7 @@ class SlackNotifications {
       bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         'An error occurred while processing your request. '
-                + 'Please contact the administrator.', [], undefined, '#b52833'
+        + 'Please contact the administrator.', [], undefined, '#b52833'
       );
       respond(message);
     }
@@ -670,7 +670,7 @@ class SlackNotifications {
       bugsnagHelper.log(error);
       const message = new SlackInteractiveMessage(
         'An error occurred while processing your request. '
-          + 'Please contact the administrator.', [], undefined, '#b52833'
+        + 'Please contact the administrator.', [], undefined, '#b52833'
       );
       respond(message);
     }

@@ -1,9 +1,10 @@
 import DialogPrompts from '../DialogPrompts';
 import sendDialogTryCatch from '../../../../helpers/sendDialogTryCatch';
 import UserService from '../../../../services/UserService';
-import { providerService } from '../../../../services/ProviderService';
 import { driverService } from '../../../../services/DriverService';
 import { cabService } from '../../../../services/CabService';
+import ProviderService, { providerService } from '../../../../services/ProviderService';
+import ProviderHelper from '../../../../helpers/providerHelper';
 
 jest.mock('../../../../services/TeamDetailsService', () => ({
   getTeamDetailsBotOauthToken: async () => 'just a random token'
@@ -143,6 +144,13 @@ describe('Dialog prompts test', () => {
         timeStamp: '123848', channelId: 'XXXXXX', routeRequestId: '1'
       }
     });
+    jest.spyOn(ProviderService, 'getViableProviders').mockResolvedValue(
+      [{
+        name: 'label',
+        providerUserId: 1,
+        user: { slackId: 'DDD' }
+      }]
+    );
     await DialogPrompts.sendOperationsNewRouteApprovalDialog({
       trigger_id: 'XXXXXXX',
       team: { id: 'TEAMID1' }
@@ -245,6 +253,14 @@ describe('sendBusStopForm dialog', () => {
   });
   describe('DialogPrompts > sendSelectProviderDialog', () => {
     it('should send select provider dialog', async () => {
+      jest.spyOn(ProviderService, 'getViableProviders').mockResolvedValue(
+        [{
+          name: 'label',
+          providerUserId: 1,
+          user: { slackId: 'DDD' }
+        }]
+      );
+      jest.spyOn(ProviderHelper, 'generateProvidersLabel');
       await DialogPrompts.sendSelectProviderDialog({
         actions: [{ value: 7 }],
         message_ts: '3703484984.4849',
