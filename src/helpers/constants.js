@@ -102,3 +102,6 @@ export const DEFAULT_ADDRESSES = [
     updatedAt: '2019-05-08 10:00:00.326000'
   }
 ];
+
+export const providerErrorMessage = ':warning:Unsuccessful request. None of the available providers has a cab and a driver. '
+  + 'Kindly update this information to proceed with approval';

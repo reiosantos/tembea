@@ -29,6 +29,8 @@ import CleanData from '../../../helpers/cleanData';
 import OpsTripActions from '../TripManagement/OpsTripActions';
 import ProvidersController from '../RouteManagement/ProvidersController';
 import TripCabController from '../TripManagement/TripCabController';
+import SlackNotifications from '../SlackPrompts/Notifications';
+import { providerErrorMessage } from '../../../helpers/constants';
 
 class SlackInteractions {
   static launch(data, respond) {
@@ -304,8 +306,19 @@ class SlackInteractions {
    * @memberof SlackInteractions
    */
   static async handleSelectProviderAction(data) {
-    if (data.actions && data.actions[0].name === 'confirmTrip') {
-      await DialogPrompts.sendSelectProviderDialog(data);
+    try {
+      if (data.actions && data.actions[0].name === 'confirmTrip') {
+        await DialogPrompts.sendSelectProviderDialog(data);
+      }
+    } catch (error) {
+      const {
+        channel: { id: channel },
+        team: { id: teamId }
+      } = data;
+      const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+      await SlackNotifications.sendNotification(
+        SlackNotifications.createDirectMessage(channel, providerErrorMessage), slackBotOauthToken
+      );
     }
     if (data.actions && data.actions[0].name === 'declineRequest') {
       await DialogPrompts.sendOperationsDeclineDialog(data);

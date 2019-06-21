@@ -746,7 +746,7 @@ describe('SlackInteractions', () => {
       });
     });
 
-    describe('SlackInteractions > handleSelectProviderAction', async () => {
+    describe('SlackInteractions > handleSelectProviderAction', () => {
       it('should call selectProviderDialog with payload data for confirmTrip actions', () => {
         const data = {
           actions: [
@@ -755,8 +755,8 @@ describe('SlackInteractions', () => {
             }
           ]
         };
-        const sendSelectProviderDialogSpy = jest.spyOn(DialogPrompts, 'sendSelectProviderDialog').mockResolvedValue({});
-        SlackInteractions.handleSelectProviderAction(data, respond);
+        const sendSelectProviderDialogSpy = jest.spyOn(DialogPrompts, 'sendSelectProviderDialog');
+        SlackInteractions.handleSelectProviderAction(data);
         expect(sendSelectProviderDialogSpy).toHaveBeenCalled();
       });
       it('should call identify difference between trip and route request and call trip controller', () => {

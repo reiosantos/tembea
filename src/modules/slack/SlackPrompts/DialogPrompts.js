@@ -184,7 +184,7 @@ class DialogPrompts {
 
   static async sendOperationsNewRouteApprovalDialog(payload, state) {
     const dialog = new SlackDialog('operations_route_approvedRequest',
-      'Approve Route Request', 'Submit', false, state);
+      'Approve Route Request', 'Submit', false, JSON.stringify(state));
     dialog.addElements([
       new SlackDialogText('Route\'s name', 'routeName', 'Enter route\'s name'),
       new SlackDialogText('Route\'s take-off time', 'takeOffTime', 'Enter take-off time',

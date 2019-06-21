@@ -7,6 +7,8 @@ import ManagerFormValidator from '../../../helpers/slack/UserInputValidator/mana
 import OperationsNotifications from '../SlackPrompts/notifications/OperationsRouteRequest/index';
 import CleanData from '../../../helpers/cleanData';
 import OperationsHelper from '../helpers/slackHelpers/OperationsHelper';
+import SlackNotifications from '../SlackPrompts/Notifications';
+import { providerErrorMessage } from '../../../helpers/constants';
 
 const handlers = {
   decline: async (payload) => {
@@ -77,14 +79,14 @@ const handlers = {
       );
       return;
     }
-    const state = {
-      approve: {
-        timeStamp,
-        channelId,
-        routeRequestId
-      }
-    };
-    await DialogPrompts.sendOperationsNewRouteApprovalDialog(payload, JSON.stringify(state));
+    const state = { approve: { timeStamp, channelId, routeRequestId } };
+    try {
+      await DialogPrompts.sendOperationsNewRouteApprovalDialog(payload, state);
+    } catch (error) {
+      await SlackNotifications.sendNotification(
+        SlackNotifications.createDirectMessage(channelId, providerErrorMessage), botToken
+      );
+    }
   },
   approvedRequest: async (data, respond) => {
     try {
