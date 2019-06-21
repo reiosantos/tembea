@@ -1,11 +1,27 @@
-#### What does this PR do?
+#### Description
 
-#### Description of Task to be completed?
+#### Type of change
 
-#### How should this be manually tested?
+Please select the relevant option
 
-#### What are the relevant pivotal tracker stories?
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Others (cosmetics, styling, improvements)
+- [ ] This change requires a documentation update
 
-#### Any background context you want to add?
+#### How Has This Been Tested?
 
-#### Screenshots
+- [ ] Unit
+- [ ] Integration
+- [ ] End-to-end
+
+#### How to Test
+
+Give instructions on how reviewers can verify your work
+
+#### Any background context you want to add
+
+#### JIRA
+
+[Finishes|Delivers|Fixes TEM-###]

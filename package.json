@@ -46,7 +46,10 @@
     "eslint": "^5.8.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
+    "eslint-staged": "^1.0.1",
+    "husky": "^2.4.1",
     "jest": "^24.8.0",
+    "lint-staged": "^8.2.1",
     "nock": "^10.0.2",
     "nodemon": "^1.18.7",
     "nsp": "^3.2.1",
@@ -140,5 +143,19 @@
       "chore"
     ],
     "scope": "\\S+.*"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "ignore": [],
+    "linters": {
+      "src/**/*.js": [
+        "yarn eslint-staged ./src --fix",
+        "git add"
+      ]
+    }
   }
 }
