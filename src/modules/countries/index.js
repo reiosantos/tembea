@@ -3,7 +3,7 @@ import CountriesController from './countriesController';
 import middlewares from '../../middlewares';
 
 const {
-  GeneralValidator, DepartmentValidator, CountryValidator, TokenValidator
+  DepartmentValidator, CountryValidator, TokenValidator, GeneralValidator
 } = middlewares;
 const countryRouter = express.Router();
 
@@ -39,7 +39,6 @@ countryRouter.use(
 countryRouter.post(
   '/countries',
   CountryValidator.validateCountryReqBody,
-  CountryValidator.validateCountryName,
   CountryValidator.validateCountryExistence,
   CountryValidator.setToActiveIfDeleted,
   CountriesController.addCountry
@@ -76,7 +75,6 @@ countryRouter.put(
   CountryValidator.validateUpdateReqBody,
   CountryValidator.validateNamedCountryExists,
   CountryValidator.validateIfCountryNameIsTaken,
-  CountryValidator.validateNewCountry,
   CountriesController.updateCountry
 );
 
@@ -111,7 +109,6 @@ countryRouter.put(
 countryRouter.delete(
   '/countries',
   DepartmentValidator.validateDeleteProps,
-  DepartmentValidator.validateDeletePropsValues,
   CountriesController.deleteCountry
 );
 /**
@@ -141,7 +138,6 @@ countryRouter.delete(
 countryRouter.get(
   '/countries',
   GeneralValidator.validateQueryParams,
-  CountryValidator.validateNameQueryParam,
   CountriesController.getAllCountries
 );
 

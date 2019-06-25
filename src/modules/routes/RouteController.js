@@ -168,8 +168,9 @@ class RoutesController {
    */
   static async updateRouteRequestStatus(req, res) {
     try {
-      const { params: { routeId }, body } = req;
-      let routeRequest = await RouteRequestService.getRouteRequest(routeId);
+      const { params: { requestId }, body } = req;
+      let routeRequest = await RouteRequestService.getRouteRequest(requestId);
+
       if (!(routeRequest && routeRequest.dataValues)) {
         return Response.sendResponse(res, 404, false, 'Route request not found.');
       }
@@ -181,8 +182,8 @@ class RoutesController {
         return Response.sendResponse(res, 409, false, checkStatus);
       }
 
-      const updated = await RoutesController.getUpdatedRouteRequest(routeId, body);
-      await RoutesController.sendRouteRequestNotifications(updated, body, routeRequest, routeId);
+      const updated = await RoutesController.getUpdatedRouteRequest(requestId, body);
+      await RoutesController.sendRouteRequestNotifications(updated, body, routeRequest, requestId);
 
       return res.status(201).json({
         success: true,

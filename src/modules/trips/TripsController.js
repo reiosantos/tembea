@@ -4,7 +4,6 @@ import tripService, { TripService } from '../../services/TripService';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import UserService from '../../services/UserService';
 import TripActionsController from '../slack/TripManagement/TripActionsController';
-import GeneralValidator from '../../middlewares/GeneralValidator';
 import HttpError from '../../helpers/errorHandler';
 import TripHelper from '../../helpers/TripHelper';
 import TravelTripService from '../../services/TravelTripService';
@@ -110,6 +109,7 @@ class TripsController {
     if (tripHasProvider && !action) {
       await TripsController.updateProviderAndNotify(trip, res, { tripId, providerId, payload });
     }
+    
     const actionSuccessMessage = action === 'confirm' ? 'trip confirmed' : 'trip declined';
     let derivedPayload;
     try {
@@ -157,25 +157,13 @@ class TripsController {
         confirmationComment: comment,
       };
     }
-    const messages = GeneralValidator.validateReqBody(
-      reqBody,
-      'driverName',
-      'driverPhoneNo',
-      'regNumber',
-      'slackUrl'
-    );
-    if (messages.length) {
-      const error = new Error();
-      error.customMessage = messages;
-      throw error;
-    }
     return {
       confirmationComment: comment, driverName, driverPhoneNo, regNumber
     };
   }
 
   /**
-   ** @description gets the Travel trips,cost, count and average
+   * @description gets the Travel trips,cost, count and average
    *  rating for specified period by department
    * @param  {object} req The http request object
    * @param  {object} res The http response object

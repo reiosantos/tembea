@@ -46,7 +46,6 @@ fellowsRouter.use('/fellows',
 fellowsRouter.get(
   '/fellowActivity',
   GeneralValidator.validateQueryParams,
-  GeneralValidator.validateFellowId,
   FellowController.getFellowRouteActivity
 );
 

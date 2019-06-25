@@ -31,8 +31,8 @@ describe('/Addresses post request for adding new address', () => {
           400,
           {
             success: false,
-            message: 'Incomplete address information. '
-              + 'Compulsory properties; address, latitude, longitude.'
+            message: 'Validation error occurred, see error object for details',
+            error: { latitude: 'Please provide latitude' }
           },
           done
         );
@@ -54,7 +54,8 @@ describe('/Addresses post request for adding new address', () => {
           400,
           {
             success: false,
-            message: ['Invalid longitude should be between -180 and 180']
+            message: 'Validation error occurred, see error object for details',
+            error: { longitude: 'longitude should be a number' }
           },
           done
         );
@@ -139,9 +140,10 @@ describe('/Addresses update addresses', () => {
           400,
           {
             success: false,
-            message: 'Incomplete update information.'
-              + '\nOptional properties (at least one); newLongitude, newLatitude or a newAddress.'
-              + '\nCompulsory property; address.'
+            message: 'Validation error occurred, see error object for details',
+            error: {
+              value: '"value" must contain at least one of [newLongitude, newLatitude, newAddress]'
+            }
           },
           done
         );
@@ -163,29 +165,10 @@ describe('/Addresses update addresses', () => {
           400,
           {
             success: false,
-            message: ['Invalid longitude should be between -180 and 180']
-          },
-          done
-        );
-    });
-
-    it('should respond unsuccessfully for invalid properties', (done) => {
-      request(app)
-        .put('/api/v1/addresses')
-        .send({
-          newLongitude: '1234invalid',
-          newLatitude: 9,
-          address: 'dojo'
-        })
-        .set({
-          Accept: 'application/json',
-          authorization: validToken
-        })
-        .expect(
-          400,
-          {
-            success: false,
-            message: ['Invalid longitude should be between -180 and 180']
+            message: 'Validation error occurred, see error object for details',
+            error: {
+              newLongitude: 'newLongitude should be a number'
+            }
           },
           done
         );
@@ -317,7 +300,11 @@ describe('/Addresses get addresses', () => {
         400,
         {
           success: false,
-          message: 'Please provide a positive integer value'
+          message: {
+            errorMessage: 'Validation error occurred, see error object for details',
+            page: 'page should be a number',
+            size: 'size should be a number'
+          }
         },
         done
       );

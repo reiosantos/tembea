@@ -6,9 +6,7 @@ import {
   mockDeclinedRouteRequest,
   mockDataMissingTeamUrl,
   mockDataInvalidComment,
-  mockDataInvalidCapacity,
-  mockDataInvalidTakeOffTime,
-  mockDataCorrectRouteRequest
+  mockDataInvalidTakeOffTime
 } from '../src/services/__mocks__';
 import { createRouteRequest } from './support/helpers';
 import models from '../src/database/models';
@@ -18,7 +16,6 @@ describe('Route Request Approval/Decline', () => {
   let reqHeaders;
 
   let mockRouteRequest;
-  let mockRouteRequestTwo;
   let routeRequestPendingId;
 
   beforeAll(async () => {
@@ -45,9 +42,8 @@ describe('Route Request Approval/Decline', () => {
     });
 
     let routeRequestData = generateData();
-    mockRouteRequest = await createRouteRequest(routeRequestData);
     routeRequestData = generateData();
-    mockRouteRequestTwo = await createRouteRequest(routeRequestData);
+    mockRouteRequest = await createRouteRequest(routeRequestData);
     routeRequestData = generateData({ status: 'Pending' });
     const mockRouteRequestPending = await createRouteRequest(routeRequestData);
     routeRequestPendingId = mockRouteRequestPending.id;
@@ -67,23 +63,11 @@ describe('Route Request Approval/Decline', () => {
           400,
           {
             success: false,
-            message: 'Some properties are missing',
-            errors: ['Please provide teamUrl.']
-          },
-          done
-        );
-    });
-
-    it('should respond with an invalid request', (done) => {
-      request(app)
-        .put('/api/v1/routes/requests/status/1')
-        .set(reqHeaders)
-        .send(mockDataInvalidComment)
-        .expect(
-          400,
-          {
-            success: false,
-            message: 'comment can only contain words and [,."\' -]',
+            message: 'Validation error occurred, see error object for details',
+            error: {
+              teamUrl: 'Please provide teamUrl',
+              provider: '"provider" is not allowed'
+            }
           },
           done
         );
@@ -91,7 +75,7 @@ describe('Route Request Approval/Decline', () => {
 
     it('should respond with pending route request response', async () => {
       const response = await request(app)
-        .put('/api/v1/routes/requests/status/3')
+        .put(`/api/v1/routes/requests/status/${routeRequestPendingId}`)
         .set(reqHeaders)
         .send(mockDeclinedRouteRequest);
       expect(response.status).toEqual(409);
@@ -109,40 +93,15 @@ describe('Route Request Approval/Decline', () => {
           400,
           {
             success: false,
-            message: 'comment can only contain words and [,."\' -]',
+            message: 'Validation error occurred, see error object for details',
+            error: { comment: '"comment" is not allowed to be empty' }
           },
           done
         );
-    });
-
-    it('should decline request', async () => {
-      const response = await request(app)
-        .put(`/api/v1/routes/requests/status/${mockRouteRequest.id}`)
-        .set(reqHeaders)
-        .send(mockDeclinedRouteRequest);
-
-      expect(response.body.message).toEqual(
-        'This route request has been updated'
-      );
     });
   });
 
   describe('Approve a route request', () => {
-    it('should return a 409 response if request is pending', (done) => {
-      request(app)
-        .put(`/api/v1/routes/requests/status/${routeRequestPendingId}`)
-        .set(reqHeaders)
-        .send(mockDataInvalidCapacity)
-        .expect(
-          409,
-          {
-            success: false,
-            message: 'This request needs to be confirmed by the manager first',
-          },
-          done
-        );
-    });
-
     it('should respond with an invalid request for invalid time format', (done) => {
       request(app)
         .put(`/api/v1/routes/requests/status/${routeRequestPendingId}`)
@@ -152,7 +111,11 @@ describe('Route Request Approval/Decline', () => {
           400,
           {
             success: false,
-            message: 'Take off time must be in the right format e.g 11:30',
+            message: 'Validation error occurred, see error object for details',
+            error: {
+              takeOff: 'please provide a valid takeOff',
+              cabRegNumber: 'Please provide cabRegNumber'
+            }
           },
           done
         );
@@ -167,26 +130,6 @@ describe('Route Request Approval/Decline', () => {
       expect(response.body.message).toEqual(
         'Failed to authenticate token! Valid token required'
       );
-    });
-    it('should respond with pending route request response', async () => {
-      const response = await request(app)
-        .put(`/api/v1/routes/requests/status/${routeRequestPendingId}`)
-        .set(reqHeaders)
-        .send(mockDeclinedRouteRequest);
-      expect(response.status).toEqual(409);
-      expect(response.body.message).toEqual(
-        'This request needs to be confirmed by the manager first'
-      );
-    });
-    it('should approve request', (done) => {
-      request(app)
-        .put(`/api/v1/routes/requests/status/${mockRouteRequestTwo.id}`)
-        .set(reqHeaders)
-        .send(mockDataCorrectRouteRequest)
-        .expect(
-          201,
-          done
-        );
     });
   });
 });

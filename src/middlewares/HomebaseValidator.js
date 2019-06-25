@@ -1,7 +1,7 @@
 import Response from '../helpers/responseHelper';
 import CountryHelper from '../helpers/CountryHelper';
-import DepartmentValidator from './DepartmentValidator';
-import HomebaseHelper from '../helpers/HomebaseHelper';
+import GeneralValidator from './GeneralValidator';
+import { newHomeBaseSchema } from './ValidationSchemas';
 
 class HomebaseValidator {
   /**
@@ -30,22 +30,8 @@ class HomebaseValidator {
      * @param  {function} next The next middleware
      * @return {any} The next middleware or the http response
      */
-  static validateNames(req, res, next) {
-    const messages = HomebaseHelper.validateProps(req.body, 'countryName', 'homebaseName');
-    DepartmentValidator.checkLengthOfMessageArray(messages, res, next);
-  }
-
-  /**
-   * @description This middleware checks that passed query params are valid
-   * @param  {object} req The HTTP request sent
-   * @param  {object} res The HTTP response object
-   * @param  {function} next The next middleware
-   * @return {any} The next middleware or the http response
-   */
-  static validatePassedQueryParams(req, res, next) {
-    const messages = HomebaseHelper.validateProps(req.query,
-      'country', 'name');
-    DepartmentValidator.checkLengthOfMessageArray(messages, res, next);
+  static validateHomeBase(req, res, next) {
+    return GeneralValidator.joiValidation(req, res, next, req.body, newHomeBaseSchema);
   }
 }
 

@@ -23,7 +23,7 @@ const aisRouter = express.Router();
  */
 aisRouter.get(
   '/ais',
-  UserValidator.validateEmail,
+  UserValidator.getUserRoles,
   AISController.getUserDataByEmail
 );
 

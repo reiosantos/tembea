@@ -2,7 +2,6 @@ import AddressService from '../services/AddressService';
 import LocationService from '../services/LocationService';
 import RouteService, { routeService } from '../services/RouteService';
 import { cabService } from '../services/CabService';
-import AddressValidator from '../middlewares/AddressValidator';
 import { expectedCreateRouteObject } from '../utils/data';
 import RouteServiceHelper from './RouteServiceHelper';
 
@@ -68,50 +67,12 @@ class RouteHelper {
     return prev[attribute] > current[attribute] ? prev : current;
   }
 
-  static verifyPropValues(createRouteRequest) {
-    const errors = [];
-    const {
-      capacity, destination: { address, coordinates }, routeName, takeOffTime, vehicle
-    } = createRouteRequest;
-
-    errors.push(...RouteHelper.checkThatPropValueIsSet(routeName, 'routeName'));
-    errors.push(...RouteHelper.checkThatPropValueIsSet(vehicle, 'vehicle'));
-    errors.push(...RouteHelper.checkThatPropValueIsSet(address, 'destination.address'));
-    errors.push(...RouteHelper.checkTimeFormat(takeOffTime, 'takeOffTime'));
-    errors.push(...RouteHelper.checkNumberValues(capacity, 'capacity'));
-    errors.push(...RouteHelper.checkCoordinates(coordinates));
-
-    return errors;
-  }
-
-  static checkThatPropValueIsSet(value, field) {
-    if (!value || !value.trim().replace(/[^a-zA-Z-]/g, '')) {
-      return [`Enter a value for ${field}`];
-    }
-    if (!value || !value.trim().length) return [`Enter a value for ${field}`];
-    return [];
-  }
-
-  static checkTimeFormat(value, field) {
-    const takeOffTimeFormat = new RegExp('^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$');
-    if (takeOffTimeFormat.test(value)) return [];
-    return [`${field} is invalid`];
-  }
-
   static checkNumberValues(value, field) {
     const isInter = Number.isInteger(parseInt(value, 10));
     const isGreaterThanZero = parseInt(value, 10) > 0;
 
     if (isInter && isGreaterThanZero) return [];
     return [`${field} must be a non-zero integer greater than zero`];
-  }
-
-  static checkCoordinates(coordinates) {
-    if (!coordinates) return ['Enter a value for destination.coordinates'];
-    if (!coordinates.lat || !coordinates.lng) {
-      return ['destination.coordinates must have lat & lng properties'];
-    }
-    return AddressValidator.validateProps(coordinates.lng, coordinates.lat, []);
   }
 
   static async checkThatAddressAlreadyExists(address) {
@@ -176,6 +137,7 @@ class RouteHelper {
     const {
       route, route: { name, imageUrl, destination }, cabDetails, routeId, cabId
     } = routeBatch;
+
     const routeDetails = await RouteService.createRoute(name, imageUrl, destination);
     const updatedBatch = RouteService.updateBatchLabel(routeDetails);
     const newBatchObject = RouteHelper.batchObject(routeBatch, updatedBatch);

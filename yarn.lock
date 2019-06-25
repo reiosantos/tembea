@@ -1022,10 +1022,10 @@
     retry "^0.12.0"
     ws "^5.2.0"
 
-"@slack/interactive-messages@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@slack/interactive-messages/-/interactive-messages-1.0.2.tgz#b7a32a98514e64537d85e8618d2736f915066606"
-  integrity sha512-NMlzBiMYjaD1/ozeVH4xbSmqGr5caDmbAw20u/rEI541EomBV8IaKsLp/iUVmDkxBBgNQCYbUf1LPKL4lNAYZA==
+"@slack/interactive-messages@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@slack/interactive-messages/-/interactive-messages-1.1.1.tgz#c1d58850a1203c7a89f6011c0df2655b7625a0c6"
+  integrity sha512-FIyj/sBmCjQ4B4Tt1z6MNdFmgvyT5CK2U2VrWGcdqdynxQk8tlN/AA/C0SSc5wIr/WNYck1c90ZawQJTlw3YsQ==
   dependencies:
     axios "^0.18.0"
     debug "^3.1.0"

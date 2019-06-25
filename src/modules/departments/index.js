@@ -4,7 +4,7 @@ import middlewares from '../../middlewares';
 
 const departmentRouter = express.Router();
 const {
-  DepartmentValidator, UserValidator, GeneralValidator, TokenValidator, CleanRequestBody
+  DepartmentValidator, TokenValidator, GeneralValidator
 } = middlewares;
 
 departmentRouter.use(
@@ -44,10 +44,7 @@ departmentRouter.use(
  */
 departmentRouter.put(
   '/departments',
-  CleanRequestBody.trimAllInputs,
-  DepartmentValidator.validateEmptyRequestBodyProps,
   DepartmentValidator.validateUpdateBody,
-  DepartmentValidator.validateNewHeadEmail,
   DepartmentsController.updateDepartment
 );
 
@@ -86,10 +83,7 @@ departmentRouter.put(
  */
 departmentRouter.post(
   '/departments',
-  CleanRequestBody.trimAllInputs,
   DepartmentValidator.validateAddBody,
-  UserValidator.validateEmail,
-  DepartmentValidator.validateDepartmentBody,
   DepartmentsController.addDepartment
 );
 
@@ -153,9 +147,7 @@ departmentRouter.get(
  */
 departmentRouter.delete(
   '/departments',
-  CleanRequestBody.trimAllInputs,
   DepartmentValidator.validateDeleteProps,
-  DepartmentValidator.validateDeletePropsValues,
   DepartmentsController.deleteRecord
 );
 

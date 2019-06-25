@@ -48,7 +48,6 @@ providerRouter.use(
 providerRouter.get(
   '/providers',
   GeneralValidator.validateQueryParams,
-  GeneralValidator.validateSearchParams,
   ProviderController.getAllProviders
 );
 
@@ -87,8 +86,7 @@ providerRouter.get(
  */
 providerRouter.patch(
   '/providers/:id',
-  ProviderValidator.validateReqBody,
-  ProviderValidator.verifyProviderUpdateBody,
+  ProviderValidator.verifyProviderUpdate,
   ProviderController.updateProvider
 );
 
@@ -149,7 +147,7 @@ providerRouter.delete(
  */
 providerRouter.post(
   '/providers',
-  ProviderValidator.validateReqBody,
+  ProviderValidator.validateNewProvider,
   ProviderValidator.validateUserExistence,
   ProviderValidator.validateProvider,
   ProviderController.addProvider

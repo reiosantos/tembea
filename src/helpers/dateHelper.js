@@ -1,3 +1,5 @@
+import moment from 'moment-timezone';
+
 class TimeElementGenerator {
   static getYearElement() {
     const thisYear = new Date().getFullYear();
@@ -74,7 +76,7 @@ class TimeElementGenerator {
   }
 }
 
-class DateDialogHelper {
+export default class DateDialogHelper {
   static generateDialogElements() {
     return [
       TimeElementGenerator.getYearElement(),
@@ -133,6 +135,32 @@ class DateDialogHelper {
     const [date, time] = dateTime.trim().split(' ');
     return `${DateDialogHelper.changeDateFormat(date)} ${time || ''}`;
   }
-}
 
-module.exports = DateDialogHelper;
+  /**
+   * Transform datetime from 'DD/MM/YYYY HH:MM' to ISO format
+   *
+   * @static
+   * @param {string} input
+   * @param {string} tzOffset
+   * @returns
+   * @memberof DateDialogHelper
+   */
+  static transformDate(input, tzOffset) {
+    let date; let time; let hour; let minute;
+
+    try {
+      if (input) ([date, time] = input.trim().split(' '));
+      const dateValue = moment.utc(date, 'DD/MM/YYYY', true);
+
+      if (time) ([hour, minute] = time.split(':'));
+
+      dateValue.add(hour || 0, 'hours')
+        .add(minute || 0, 'minutes');
+
+      const momentDate = tzOffset ? moment.parseZone(moment.tz(dateValue, tzOffset)) : dateValue;
+      return momentDate.toDate().toISOString();
+    } catch (err) {
+      return null;
+    }
+  }
+}

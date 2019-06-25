@@ -1,13 +1,11 @@
 import RouteHelper from '../RouteHelper';
 import RouteService, { routeService } from '../../services/RouteService';
 import { cabService } from '../../services/CabService';
-import AddressService from '../../services/AddressService';
 import {
   routeBatch, batch, returnNullPercentage, record,
   confirmedRecord, returnedPercentage, percentagesList,
   singlePercentageArray, returnedMaxObj, returnedMinObj, emptyRecord, routeResult
 } from '../__mocks__/routeMock';
-import AddressValidator from '../../middlewares/AddressValidator';
 
 let status;
 
@@ -16,54 +14,22 @@ describe('Route Helpers', () => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
   });
-  
-  describe('checkTimeFormat', () => {
-    it('should fail if time format does not match requirement', () => {
-      const message = RouteHelper.checkTimeFormat('12:1', 'timeFormat');
-      expect(message).toEqual(['timeFormat is invalid']);
+
+  describe('checkNumberValues', () => {
+    it('should fail if value is not a non-zero integer', () => {
+      const message = RouteHelper.checkNumberValues('string', 'someField');
+      expect(message).toEqual(['someField must be a non-zero integer greater than zero']);
     });
   });
 
   describe('checkRequestProps', () => {
-    it('should return missing values', () => {
-      const result = RouteHelper.checkRequestProps(routeBatch);
-      expect(result).toEqual(', destination, routeName, takeOffTime, vehicle');
-    });
-  });
-
-  describe('checkNumberValues', () => {
-    it('should fail if value is not a non-zero integer', () => {
-      const message = RouteHelper.checkNumberValues('string', 'someField');
-      expect(message).toEqual(['someField must be a non-zero integer greater than zero']);
-    });
-  });
-
-  describe('checkNumberValues', () => {
-    it('should fail if value is not a non-zero integer', () => {
-      const message = RouteHelper.checkNumberValues('string', 'someField');
-      expect(message).toEqual(['someField must be a non-zero integer greater than zero']);
-    });
-  });
-
-  describe('checkThatAddressAlreadyExists', () => {
-    it('should return true if adress exists', async () => {
-      jest.spyOn(AddressService, 'findAddress').mockResolvedValue(true);
-      const existingAddress = await RouteHelper.checkThatAddressAlreadyExists({ lng: 10, lat: 10 });
-      expect(AddressService.findAddress).toHaveBeenCalledWith({ lng: 10, lat: 10 });
-      expect(existingAddress).toEqual(true);
-    });
-  });
-
-  describe('checkCoordinates', () => {
-    it('should fail if object does not contain either lat, lng, or both', () => {
-      const message = RouteHelper.checkCoordinates({});
-      expect(message).toEqual(['destination.coordinates must have lat & lng properties']);
-    });
-
-    it('should pass if required props are available', () => {
-      jest.spyOn(AddressValidator, 'validateProps');
-      RouteHelper.checkCoordinates({ lat: 20, lng: 20 });
-      expect(AddressValidator.validateProps).toHaveBeenCalledWith(20, 20, []);
+    it('should return missing fields', () => {
+      const fields = RouteHelper.checkRequestProps({
+        vehicle: 'APP 519 DT',
+        routeName: 'Yaba',
+        destination: ''
+      });
+      expect(fields).toEqual(', capacity, takeOffTime');
     });
   });
 
@@ -98,23 +64,6 @@ describe('Route Helpers', () => {
       expect(result[0]).toEqual(false);
     });
   });
-
-  describe('verifyPropValues', () => {
-    it('should return array of errors if props are missing', () => {
-      const errors = RouteHelper.verifyPropValues({
-        capacity: 1,
-        destination: { address: '', coordinates: '' },
-        routeName: 'the dojo',
-        takeOffTime: '10:00',
-        vehicle: ''
-      });
-      expect(errors).toEqual(['Enter a value for vehicle',
-        'Enter a value for destination.address',
-        'Enter a value for destination.coordinates'
-      ]);
-    });
-  });
-
 
   describe('duplicateRouteBatch', () => {
     it('should return the newly created batch object', async () => {
@@ -161,6 +110,7 @@ describe('Route Helpers', () => {
       });
     });
   });
+
   describe('findPercentageUsage, findMaxOrMin', () => {
     it('should calculate and return dormant routes', () => {
       const result = RouteHelper.findPercentageUsage(record, [], []);

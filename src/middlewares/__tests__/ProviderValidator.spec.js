@@ -1,12 +1,11 @@
+/* eslint-disable no-useless-escape */
 import ProviderValidator from '../ProviderValidator';
 import HttpError from '../../helpers/errorHandler';
-import GeneralValidator from '../GeneralValidator';
 import UserService from '../../services/UserService';
 import Response from '../../helpers/responseHelper';
-import ProviderService, { providerService } from '../../services/ProviderService';
-import { messages } from '../../helpers/constants';
+import ProviderService from '../../services/ProviderService';
 
-const { VALIDATION_ERROR } = messages;
+const errorMessage = 'Validation error occurred, see error object for details';
 
 describe('ProviderValidator', () => {
   let res;
@@ -26,37 +25,32 @@ describe('ProviderValidator', () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
-  describe('Provider_verifyProviderUpdateBody', () => {
+  describe('Provider_verifyProviderUpdate', () => {
     let httpSpy;
     beforeEach(() => {
       httpSpy = jest.spyOn(HttpError, 'sendErrorResponse');
     });
-    it('should validate update parameters ', async () => {
+    it('should validate update parameters ', () => {
       const error = { message: { invalidParameter: 'Id should be a valid integer' } };
       req = {
         params: { id: 'notValid' },
         body: {}
       };
       httpSpy.mockReturnValue(error);
-      jest.spyOn(GeneralValidator, 'validateNumber');
-      await ProviderValidator.verifyProviderUpdateBody(req, res, next);
-      expect(GeneralValidator.validateNumber).toBeCalled();
+      ProviderValidator.verifyProviderUpdate(req, res, next);
       expect(httpSpy).toBeCalled();
     });
 
-    it('should validate empty request body', async () => {
+    it('should validate empty request body', () => {
       req = {
         params: { id: 1 },
         body: {}
       };
-      jest.spyOn(GeneralValidator, 'validateReqBody');
-      await ProviderValidator.verifyProviderUpdateBody(req, res, next);
-      expect(GeneralValidator.validateReqBody).toBeCalled();
-      expect(GeneralValidator.validateReqBody).toBeCalledWith({}, 'name', 'email');
+      ProviderValidator.verifyProviderUpdate(req, res, next);
       expect(httpSpy).toBeCalled();
     });
 
-    it('should validate empty request body values', async () => {
+    it('should validate empty request body values', () => {
       req = {
         params: { id: 1 },
         body: {
@@ -64,31 +58,19 @@ describe('ProviderValidator', () => {
           email: 'me@email.com'
         }
       };
-      jest.spyOn(GeneralValidator, 'validateEmptyReqBodyProp');
-      await ProviderValidator.verifyProviderUpdateBody(req, res, next);
-      expect(GeneralValidator.validateEmptyReqBodyProp).toBeCalled();
-      expect(GeneralValidator.validateEmptyReqBodyProp).toBeCalledWith(
-        {
-          name: '',
-          email: 'me@email.com'
-        }, 'name', 'email'
-      );
+
+      ProviderValidator.verifyProviderUpdate(req, res, next);
       expect(httpSpy).toBeCalled();
     });
 
-    it('should return next if valid update body ', async () => {
+    it('should return next if valid update body ', () => {
       req = {
         params: { id: 1 },
         body: { email: 'me@email.com' }
       };
-      jest.spyOn(GeneralValidator, 'validateEmptyReqBodyProp');
-      jest.spyOn(GeneralValidator, 'validateReqBody');
-      jest.spyOn(GeneralValidator, 'validateNumber');
-      await ProviderValidator.verifyProviderUpdateBody(req, res, next);
+
+      ProviderValidator.verifyProviderUpdate(req, res, next);
       expect(httpSpy).not.toBeCalled();
-      expect(GeneralValidator.validateNumber).toBeCalled();
-      expect(GeneralValidator.validateReqBody).toBeCalled();
-      expect(GeneralValidator.validateEmptyReqBodyProp).toBeCalled();
       expect(next).toBeCalled();
     });
     it('should return update object successfully', async () => {
@@ -119,31 +101,30 @@ describe('ProviderValidator', () => {
     });
   });
 
-  describe('ProviderValidator_validateReqBody', () => {
-    it('returns error if there are missing params in request', () => {
-      const error = new HttpError(VALIDATION_ERROR, 400, {
-        name: '"name" is not allowed to be empty'
-      });
-      req = {
-        body: {
-          email: 'allan@andela.com',
-          name: ''
-        }
-      };
-      ProviderValidator.validateReqBody(req, res, next);
-      expect(HttpError.sendErrorResponse).toHaveBeenCalledWith(error, res);
-    });
-
+  describe('ProviderValidator_validateNewProvider', () => {
     it('validates the PATCH method', () => {
-      const error = new HttpError(VALIDATION_ERROR, 400, {
-        name: '"value" must have at least 1 children'
-      });
       req = {
         method: 'PATCH',
         body: {}
       };
-      ProviderValidator.validateReqBody(req, res, next);
-      expect(HttpError.sendErrorResponse).toHaveBeenCalledWith(error, res);
+      ProviderValidator.validateNewProvider(req, res, next);
+      expect(HttpError.sendErrorResponse)
+        .toHaveBeenCalledWith({
+          statusCode: 400,
+          message: errorMessage,
+          error: { email: 'Please provide email', name: 'Please provide name' }
+        }, res);
+    });
+
+    it('returns next', () => {
+      req = {
+        body: {
+          email: 'allan@andela.com',
+          name: 'all'
+        }
+      };
+      ProviderValidator.validateNewProvider(req, res, next);
+      expect(next).toHaveBeenCalled();
     });
   });
 
@@ -189,8 +170,14 @@ describe('ProviderValidator', () => {
         }
       };
       await ProviderValidator.validateDriverRequestBody(createReq, res, next);
-      expect(Response.sendResponse).toHaveBeenCalledWith(res, 400,
-        false, ['"driverPhoneNo" is required', '"providerId" is required']);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledWith({
+        statusCode: 400,
+        message: errorMessage,
+        error: {
+          driverPhoneNo: 'Please provide driverPhoneNo',
+          providerId: 'Please provide providerId'
+        }
+      }, res);
     });
     it('should throw errors if a field is empty', async () => {
       const createReq = {
@@ -203,8 +190,11 @@ describe('ProviderValidator', () => {
         }
       };
       await ProviderValidator.validateDriverRequestBody(createReq, res, next);
-      expect(Response.sendResponse).toHaveBeenCalledWith(res, 400,
-        false, ['"driverName" is not allowed to be empty']);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledWith({
+        statusCode: 400,
+        message: errorMessage,
+        error: { driverName: '\"driverName\" is not allowed to be empty' }
+      }, res);
     });
     it('should call next if request body is valid', async () => {
       const createReq = {
@@ -250,76 +240,6 @@ describe('ProviderValidator', () => {
         email: 'test@test.com'
       });
       await ProviderValidator.validateProviderExistence(createReq, res, next);
-      expect(next).toHaveBeenCalled();
-    });
-  });
-  describe('ProviderValidator_validateProviderIDQuery', () => {
-    it('should not throw an error when the providerID is an integer', async () => {
-      const createReq = {
-        query: {
-          providerId: 1
-        }
-      };
-      await ProviderValidator.validateQueryProvider(createReq, res, next);
-      expect(next).toHaveBeenCalled();
-    });
-    it('should throw an error when the providerID is not an integer', async () => {
-      const createReq = {
-        query: {
-          providerId: 'test'
-        }
-      };
-      await ProviderValidator.validateQueryProvider(createReq, res, next);
-      expect(Response.sendResponse)
-        .toBeCalledWith(res, 404, false, 'Please provide a positive integer value for providerID');
-    });
-    it('should return next when the providerID is not provided', async () => {
-      const createReq = {
-        query: {}
-      };
-      await ProviderValidator.validateQueryProvider(createReq, res, next);
-      expect(next).toHaveBeenCalled();
-    });
-  });
-  describe('ProviderValidator_validateProvider', () => {
-    let getUserByEmailSpy;
-    let findProviderByUserIdSpy;
-
-    beforeEach(() => {
-      req = {
-        body: {
-          name: 'Mock Provider',
-          email: 'provider@test.com'
-        }
-      };
-      
-      getUserByEmailSpy = jest.spyOn(UserService, 'getUserByEmail');
-      findProviderByUserIdSpy = jest.spyOn(providerService, 'findProviderByUserId');
-    });
-    
-    it('should validate the existence of a provider with given user id', async () => {
-      const mockProviderUser = {
-        id: 1,
-        email: 'provider@test.com',
-      };
-      getUserByEmailSpy.mockResolvedValue(mockProviderUser);
-      findProviderByUserIdSpy.mockResolvedValue(mockProviderUser);
-
-      await ProviderValidator.validateProvider(req, res, next);
-      expect(Response.sendResponse).toBeCalledWith(
-        res, 409, false, `Provider with email '${mockProviderUser.email}' already exists`,
-      );
-    });
-    it('should call next upon successful validation', async () => {
-      const mockPrviderData = {
-        name: 'Mock Provider',
-        providerUserId: 1,
-      };
-      getUserByEmailSpy.mockResolvedValue({ id: 1 });
-      findProviderByUserIdSpy.mockResolvedValue();
-
-      await ProviderValidator.validateProvider(req, res, next);
-      expect(res.locals).toHaveProperty('providerData', mockPrviderData);
       expect(next).toHaveBeenCalled();
     });
   });

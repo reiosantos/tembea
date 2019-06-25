@@ -1,14 +1,27 @@
 import Response from '../helpers/responseHelper';
-import { validateTime } from '../helpers/dateHelper';
 import GeneralValidator from './GeneralValidator';
 import RouteHelper from '../helpers/RouteHelper';
+import JoiHelper from '../helpers/JoiHelper';
+import { newRouteSchema, updateRouteSchema, deleteRouteSchema } from './ValidationSchemas';
 
 class RouteValidator {
-  static validateRouteBatchStatus(req, res, next) {
-    const { body: { status } } = req;
-    const acceptedStatus = ['Active', 'Inactive'];
-    if (status && !acceptedStatus.includes(status)) {
-      const message = 'status can either \'Active\' or \'Inactive\'.';
+  static validateNewRoute(req, res, next) {
+    if (req.query) {
+      const { action, batchId } = req.query;
+      if (action === 'duplicate' && parseInt(batchId, 10)) return next();
+    }
+
+    const validateRoute = JoiHelper.validateSubmission(req.body, newRouteSchema);
+    if (validateRoute.errorMessage) {
+      return Response.sendResponse(res, 400, false, validateRoute);
+    }
+    req.body = validateRoute;
+    next();
+  }
+
+  static validateIdParam(res, id, name, next) {
+    if (!id || !GeneralValidator.validateNumber(id)) {
+      const message = `Please provide a positive integer value for ${name}`;
       return Response.sendResponse(res, 400, false, message);
     }
     return next();
@@ -32,36 +45,8 @@ class RouteValidator {
     }
   }
 
-  static validateIdParam(res, id, name, next) {
-    if (!id || !GeneralValidator.validateNumber(id)) {
-      const message = `Please provide a positive integer value for ${name}`;
-      return Response.sendResponse(res, 400, false, message);
-    }
-    return next();
-  }
-
-  static verifyAllPropsExist(req, res, next) {
-    if (!req.query.action) {
-      const missingProps = RouteHelper.checkRequestProps(req.body);
-      const message = `The following fields are missing: ${missingProps.slice(2)}`;
-      if (missingProps.length) {
-        return Response.sendResponse(res, 400, false, message);
-      }
-      return next();
-    }
-    return next();
-  }
-
-  static verifyPropsValuesAreSetAndValid(req, res, next) {
-    if (!req.query.action) {
-      const errors = RouteHelper.verifyPropValues(req.body);
-      const message = 'Your request contain errors';
-      if (errors.length) {
-        return Response.sendResponse(res, 400, false, message, errors);
-      }
-      return next();
-    }
-    return next();
+  static validateDelete(req, res, next) {
+    return GeneralValidator.joiValidation(req, res, next, req.body, deleteRouteSchema);
   }
 
   static async validateDestinationAddress(req, res, next) {
@@ -90,25 +75,23 @@ class RouteValidator {
     return next();
   }
 
+  static validateRouteUpdate(req, res, next) {
+    return GeneralValidator.joiValidation(req, res, next, req.body, updateRouteSchema);
+  }
+
   static async validateRouteBatchUpdateFields(req, res, next) {
     const { validateNumber } = GeneralValidator;
     const {
       body: {
-        takeOff, batch: _batch, name: _name, capacity, inUse, regNumber: _regNumber
+        batch, name, inUse, regNumber
       }
     } = req;
-
-    const [
-      batch, name, regNumber
-    ] = [_batch, _name, _regNumber].map(e => e && e.trim());
 
     let errors = [];
     const [cabExists, cabDetails] = await RouteHelper.checkThatVehicleRegNumberExists(regNumber);
     const [routeExists, route] = await RouteHelper.checkThatRouteNameExists(name);
 
-    errors = [...errors, (capacity && !validateNumber(capacity) && ('capacity should be a positive integer'))];
     errors = [...errors, (inUse && !validateNumber(inUse)) && 'inUse should be a positive integer'];
-    errors = [...errors, (takeOff && !validateTime(takeOff)) && 'takeOff should be a valid time format (hh:mm)'];
     errors = [...errors, (regNumber && !cabExists) && `No cab with reg number '${regNumber}' exists in the db`];
     errors = [...errors, (name && !routeExists) && `The route '${name}' does not exist in the db`];
     errors = errors.filter(e => !!e);

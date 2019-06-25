@@ -1,14 +1,25 @@
 import AddressValidator from '../AddressValidator';
+import HttpError from '../../helpers/errorHandler';
 
-describe('AddressValidator_validateProps', () => {
+let res;
+let next;
+describe('AddressValidator_validateAddressBody', () => {
+  beforeEach(() => {
+    res = {
+      status: jest.fn(() => ({
+        json: jest.fn()
+      }))
+    };
+    next = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
   it('should return error for invalid longitude and latitude', (done) => {
-    const messages = [];
-
-    AddressValidator.validateProps('invalid', '-11invalid', messages);
-    expect(messages).toEqual([
-      'Invalid longitude should be between -180 and 180',
-      'Invalid latitude should be between -86 and 86'
-    ]);
+    jest.spyOn(HttpError, 'sendErrorResponse');
+    AddressValidator.validateAddressBody({ body: {} }, res, next);
+    expect(HttpError.sendErrorResponse).toHaveBeenCalled();
     done();
   });
 });

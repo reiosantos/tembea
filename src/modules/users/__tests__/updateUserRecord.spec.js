@@ -4,6 +4,8 @@ import app from '../../../app';
 import Utils from '../../../utils';
 import models from '../../../database/models';
 
+const errorMessage = 'Validation error occurred, see error object for details';
+
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
     users: {
@@ -60,7 +62,11 @@ describe('/User update', () => {
       })
       .expect(400, {
         success: false,
-        message: 'Please provide a valid email for the user',
+        message: errorMessage,
+        error: {
+          slackUrl: 'Please provide slackUrl',
+          email: 'Please provide email'
+        }
       }, done);
   });
 
@@ -79,7 +85,11 @@ describe('/User update', () => {
       })
       .expect(400, {
         success: false,
-        message: 'Please provide a valid email for the user',
+        message: errorMessage,
+        error: {
+          slackUrl: 'Please provide slackUrl',
+          email: 'please provide a valid email address'
+        }
       }, done);
   });
 
@@ -95,9 +105,11 @@ describe('/User update', () => {
       })
       .expect(400, {
         success: false,
-        message: 'Incomplete update information.'
-        + '\nOptional properties (at least one); newName, newPhoneNo or a newEmail.'
-        + '\nCompulsory property; slackUrl.'
+        message: errorMessage,
+        error: {
+          slackUrl: 'Please provide slackUrl',
+          value: '"value" must contain at least one of [newEmail, newName, newPhoneNo]'
+        }
       }, done);
   });
 
@@ -117,12 +129,13 @@ describe('/User update', () => {
       })
       .expect(400, {
         success: false,
-        messages: [
-          'Invalid newName.',
-          'Invalid newPhoneNo.',
-          'Invalid newEmail.',
-          'Invalid slackUrl. e.g: ACME.slack.com'
-        ],
+        message: errorMessage,
+        error: {
+          slackUrl: 'please provide a valid slackUrl',
+          newEmail: 'please provide a valid email address',
+          newName: 'please provide a valid newName',
+          newPhoneNo: 'please provide a valid newPhoneNo'
+        }
       }, done);
   });
 

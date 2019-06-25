@@ -4,14 +4,10 @@ import Utils from '../../../utils';
 import models from '../../../database/models';
 import payloadData from '../__mocks__/cabsMocks';
 import { cabService } from '../../../services/CabService';
-import MockData from '../../../middlewares/__mocks__/CabsValidatorMocks';
 import CabsController from '../CabsController';
 import Response from '../../../helpers/responseHelper';
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
 import HttpError from '../../../helpers/errorHandler';
-import { messages } from '../../../helpers/constants';
-
-const { VALIDATION_ERROR } = messages;
 
 const { Cab } = models;
 
@@ -162,7 +158,11 @@ describe('CabsController', () => {
           400,
           {
             success: false,
-            message: 'Please provide a positive integer value'
+            message: {
+              errorMessage: 'Validation error occurred, see error object for details',
+              page: 'page should be a number',
+              size: 'size should be a number'
+            }
           },
           done
         );
@@ -170,25 +170,28 @@ describe('CabsController', () => {
   });
 
   describe('updateCabDetails', () => {
-    it('should fail to update if paramter is not a valid interger', (done) => {
+    it('should fail to update if parameter is not a valid integer', (done) => {
       request(app)
         .put(`${apiURL}/udd`)
         .send(payloadData.updateData)
         .set(headers)
         .expect(400, {
           success: false,
-          message: VALIDATION_ERROR,
-          error: { message: '"id" must be a number' }
+          message: 'Validation error occurred, see error object for details',
+          error: { id: 'id should be a number' }
         }, done);
     });
 
     it('should fail to update if no data is provided', (done) => {
-      const { noInputsError } = MockData;
       request(app)
         .put(`${apiURL}/1`)
         .send({})
         .set(headers)
-        .expect(400, noInputsError, done);
+        .expect(400, {
+          success: false,
+          message: 'Validation error occurred, see error object for details',
+          error: { regNumber: 'Please provide regNumber' }
+        }, done);
     });
 
     it('should update cab details successfully', (done) => {

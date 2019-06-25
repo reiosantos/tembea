@@ -28,34 +28,6 @@ module.exports = {
       createdAt: '2019-01-22 22:59:23.326000',
       updatedAt: '2019-01-22 22:59:23.326000'
     },
-    {
-      distance: 12.764,
-      opsComment: 'not yet okay',
-      managerComment: 'okay',
-      busStopDistance: 1.34,
-      routeImageUrl: 'https://image.com',
-      status: 'Pending',
-      engagementId: 1,
-      managerId: 1,
-      busStopId: 1,
-      homeId: 1,
-      createdAt: '2019-01-22 22:59:23.326000',
-      updatedAt: '2019-01-22 22:59:23.326000'
-    },
-    {
-      distance: 12.764,
-      opsComment: 'okay',
-      managerComment: 'okay',
-      busStopDistance: 1.34,
-      routeImageUrl: 'https://image.com',
-      status: 'Confirmed',
-      engagementId: 1,
-      managerId: 1,
-      busStopId: 1,
-      homeId: 1,
-      createdAt: '2019-01-22 22:59:23.326000',
-      updatedAt: '2019-01-22 22:59:23.326000'
-    }
   ]),
 
   down: queryInterface => queryInterface.bulkDelete('RouteRequests', null, {})

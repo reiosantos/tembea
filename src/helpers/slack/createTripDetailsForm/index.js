@@ -12,7 +12,7 @@ export const toLabelValuePairs = arr => arr.map(val => ({
 
 const addressHint = 'e.g: Jomo Kenyatta Airport';
 
-const dateHint = `Enter date in Day/Month/Year format,
+export const dateHint = `Enter date in Day/Month/Year format,
     leave a space and enter time in Hour:Minutes format. e.g 22/12/2019 22:00`;
 
 const travelPickupLocations = [...pickupLocations, ...extraTravelOptions];

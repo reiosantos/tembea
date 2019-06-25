@@ -1,4 +1,5 @@
 import RouteRequestValidator from '../RouteRequestValidator';
+import HttpError from '../../helpers/errorHandler';
 
 describe('RouteRequestValidator', () => {
   describe('validateParams', () => {
@@ -26,58 +27,6 @@ describe('RouteRequestValidator', () => {
       expect(next).toHaveBeenCalledTimes(0);
     });
 
-    it('should return 400 when the newOpsStatus is invalid', () => {
-      const req = {
-        params: {
-          requestId: 1,
-        },
-        body: {
-          newOpsStatus: 'decliner'
-        }
-      };
-
-      RouteRequestValidator.validateParams(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(next).toHaveBeenCalledTimes(0);
-    });
-
-    it('should return 400 if comment has a forbidden character', () => {
-      const req = {
-        params: {
-          requestId: 1
-        },
-        body: {
-          newOpsStatus: 'decline',
-          reviewerId: ' 2',
-          comment: 'some = comment'
-        }
-      };
-
-      RouteRequestValidator.validateParams(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(next).toHaveBeenCalledTimes(0);
-    });
-
-    it('should return 400 if reviewerEmail is invalid', () => {
-      const req = {
-        params: {
-          requestId: 1
-        },
-        body: {
-          newOpsStatus: 'decline',
-          reviewerEmail: 'ope@slack.com',
-          comment: 'some comment'
-        }
-      };
-
-      RouteRequestValidator.validateParams(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(next).toHaveBeenCalledTimes(0);
-    });
-
     it('should respond with invalid slackURL', () => {
       const req = {
         params: {
@@ -90,15 +39,14 @@ describe('RouteRequestValidator', () => {
         }
       };
 
-      RouteRequestValidator.validateParams(req, res, next);
-      jest.spyOn(RouteRequestValidator, 'sendResponse');
+      jest.spyOn(HttpError, 'sendErrorResponse');
+      RouteRequestValidator.validateRequestBody(req, res, next);
 
-      RouteRequestValidator.validateParams(req, res, next);
       expect(next).toHaveBeenCalledTimes(0);
-      expect(RouteRequestValidator.sendResponse).toHaveBeenCalledWith(res, 'teamUrl must be in the format "*.slack.com"');
+      expect(HttpError.sendErrorResponse).toHaveBeenCalled();
     });
 
-    it('should call validateApprovalBody', () => {
+    it('should call validateRouteStatus', () => {
       const req = {
         params: {
           routeId: 1
@@ -109,42 +57,33 @@ describe('RouteRequestValidator', () => {
           teamUrl: 'stuff.slack.com',
           routeName: 'sample route',
           takeOff: '10:00',
-          provider: 'Uber Kenya'
-        }
-      };
-      jest.spyOn(RouteRequestValidator, 'validateApprovalBody');
-
-      RouteRequestValidator.validateParams(req, res, next);
-      expect(next).toHaveBeenCalledTimes(1);
-      expect(RouteRequestValidator.validateApprovalBody).toHaveBeenCalledWith(req, res, next);
-    });
-
-    it('should call the next middleware if the params are valid', () => {
-      const req = {
-        params: {
-          routeId: 1
-        },
-        body: {
-          newOpsStatus: 'decline',
-          comment: 'some comment',
-          teamUrl: 'stuff.slack.com'
+          cabRegNumber: 'ABC 123',
+          provider: {
+            id: 1,
+            name: 'Andela Kenya',
+            providerUserId: 15,
+            user: {}
+          }
         }
       };
 
-      RouteRequestValidator.validateParams(req, res, next);
+      jest.spyOn(RouteRequestValidator, 'validateParams');
+
+      RouteRequestValidator.validateRequestBody(req, res, next);
       expect(next).toHaveBeenCalled();
     });
   });
+
   describe('validateRequestBody', () => {
+    const next = jest.fn();
     const res = {
       status: () => ({
         json: () => {}
       })
     };
-    const next = jest.fn();
 
     beforeEach(() => {
-      jest.spyOn(res, 'status');
+      jest.spyOn(HttpError, 'sendErrorResponse');
     });
 
     it('should respond with a 400 status code when some properties are missing', () => {
@@ -159,7 +98,7 @@ describe('RouteRequestValidator', () => {
 
       RouteRequestValidator.validateRequestBody(req, res, next);
 
-      expect(res.status).toBeCalledWith(400);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalled();
     });
 
     it('should validate request body for approval request', () => {
@@ -172,6 +111,7 @@ describe('RouteRequestValidator', () => {
           comment: 'some comment'
         }
       };
+      jest.spyOn(res, 'status');
 
       RouteRequestValidator.validateRequestBody(req, res, next);
 
@@ -185,12 +125,8 @@ describe('RouteRequestValidator', () => {
         },
         body: {
           newOpsStatus: 'decline',
-          reviewerEmail: 'test@andela.com',
           comment: 'some comment',
           teamUrl: 'tembea.slack.com',
-          routeName: 'sample route',
-          takeOff: '10:00',
-          provider: 'Uber Kenya'
         }
       };
 
@@ -220,10 +156,10 @@ describe('RouteRequestValidator', () => {
           takeOff: '10--00'
         }
       };
-      jest.spyOn(res, 'status');
-      RouteRequestValidator.validateApprovalBody(req, res, next);
+      jest.spyOn(HttpError, 'sendErrorResponse');
+      RouteRequestValidator.validateRequestBody(req, res, next);
 
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalled();
     });
 
     it('should ensure takeOff time is correct', () => {
@@ -242,32 +178,10 @@ describe('RouteRequestValidator', () => {
           provider: {}
         }
       };
-      jest.spyOn(RouteRequestValidator, 'sendResponse');
+      jest.spyOn(HttpError, 'sendErrorResponse');
 
-      RouteRequestValidator.validateApprovalBody(req, res, next);
-      expect(RouteRequestValidator.sendResponse).toHaveBeenCalledWith(
-        res, 'Take off time must be in the right format e.g 11:30'
-      );
-    });
-
-    it('should call the next middleware', () => {
-      const req = {
-        params: {
-          requestId: 1
-        },
-        body: {
-          newOpsStatus: 'approve',
-          comment: 'stuff',
-          reviewerId: '2',
-          routeName: 'Yaba',
-          capacity: '2',
-          takeOff: '19:00',
-          provider: {}
-        }
-      };
-
-      RouteRequestValidator.validateApprovalBody(req, res, next);
-      expect(next).toHaveBeenCalled();
+      RouteRequestValidator.validateRequestBody(req, res, next);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalled();
     });
   });
 });

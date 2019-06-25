@@ -28,8 +28,6 @@ import models from '../../../database/models';
 
 const assertRouteInfo = (body) => {
   expect(body)
-    .toHaveProperty('id');
-  expect(body)
     .toHaveProperty('status');
   expect(body)
     .toHaveProperty('takeOff');
@@ -256,7 +254,6 @@ describe('RoutesController', () => {
       capacity: 4,
     };
     it('should fail if props are missing', (done) => {
-      const message = 'The following fields are missing: vehicle';
       const newData = { ...data };
       delete newData.vehicle;
       request(app)
@@ -268,27 +265,13 @@ describe('RoutesController', () => {
           const { body } = res;
           expect(body).toHaveProperty('message');
           expect(body).toHaveProperty('success');
-          expect(body).toEqual({ message, success: false });
-          done();
-        });
-    });
-
-    it('should fail if prop values are invalid', (done) => {
-      const message = 'Your request contain errors';
-      const errorMessage = ['Enter a value for vehicle'];
-      const newData = { ...data, vehicle: '' };
-
-      request(app)
-        .post('/api/v1/routes')
-        .set('Content-Type', 'application/json')
-        .set('Authorization', validToken)
-        .send(newData)
-        .expect(200, (err, res) => {
-          const { body } = res;
-          expect(body).toHaveProperty('message');
-          expect(body).toHaveProperty('success');
-          expect(body).toHaveProperty('data');
-          expect(body).toEqual({ message, success: false, data: errorMessage });
+          expect(body).toEqual({
+            message: {
+              errorMessage: 'Validation error occurred, see error object for details',
+              vehicle: 'Please provide vehicle',
+            },
+            success: false
+          });
           done();
         });
     });

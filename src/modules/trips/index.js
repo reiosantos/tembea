@@ -2,9 +2,7 @@ import { Router } from 'express';
 import middlewares from '../../middlewares';
 import TripsController from './TripsController';
 
-const {
-  GeneralValidator, TripValidator, TokenValidator, CleanRequestBody
-} = middlewares;
+const { TripValidator, TokenValidator } = middlewares;
 
 const tripsRouter = Router();
 
@@ -70,16 +68,9 @@ tripsRouter.use('/trips',
  */
 tripsRouter.get(
   '/trips',
-  GeneralValidator.validateQueryParams,
   TripValidator.validateGetTripsParam,
   TripsController.getTrips
 );
-
-const tripValidator = [
-  CleanRequestBody.trimAllInputs,
-  TripValidator.validateAll,
-  TripValidator.validateEachInput
-];
 
 /**
  * @swagger
@@ -133,7 +124,7 @@ const tripValidator = [
  */
 tripsRouter.put(
   '/trips/:tripId',
-  ...tripValidator,
+  TripValidator.validateAll,
   TripsController.updateTrip
 );
 

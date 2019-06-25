@@ -64,7 +64,11 @@ describe('Get department records', () => {
         400,
         {
           success: false,
-          message: 'Please provide a positive integer value'
+          message: {
+            errorMessage: 'Validation error occurred, see error object for details',
+            page: 'page should be a number',
+            size: 'size should be a number'
+          }
         },
         done
       );

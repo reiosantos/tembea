@@ -51,17 +51,17 @@ describe('/Departments update', () => {
       }, done);
   });
 
-  it('should return a user not found when the email does not exist in the database', (done) => {
+  it('should return a department not found when the name does not exist', (done) => {
     request(app)
       .put('/api/v1/departments')
       .send({
-        name: 'TDD',
+        name: 'abcd',
       })
       .set({
         Accept: 'application/json',
         authorization: validToken
       })
-      .expect(400, done);
+      .expect(404, done);
   });
 
   it('should return a provide valid email when the email is not valid', (done) => {
@@ -77,7 +77,8 @@ describe('/Departments update', () => {
       })
       .expect(400, {
         success: false,
-        message: 'Please provide a valid email'
+        message: 'Validation error occurred, see error object for details',
+        error: { newHeadEmail: 'please provide a valid email address' }
       }, done);
   });
 
@@ -94,7 +95,8 @@ describe('/Departments update', () => {
       })
       .expect(400, {
         success: false,
-        message: ['Please provide a value for newHeadEmail.']
+        message: 'Validation error occurred, see error object for details',
+        error: { newHeadEmail: 'please provide a valid email address' }
       }, done);
   });
 

@@ -75,7 +75,7 @@ describe('TripController', () => {
           comment: 'ns',
           slackUrl: 'sokoolworkspace.slack.com'
         },
-        params: { tripId: 15 },
+        params: { tripId: 3 },
         query: { action: 'confirm' }
       };
       reqDecline = {
@@ -86,7 +86,7 @@ describe('TripController', () => {
           comment: 'ns',
           slackUrl: 'sokoolworkspace.slack.com'
         },
-        params: { tripId: 15 },
+        params: { tripId: 3 },
         query: { action: 'decline' }
       };
       req2 = {
@@ -95,7 +95,7 @@ describe('TripController', () => {
           comment: 'ns',
           slackUrl: 'sokoolworkspace.slack.com'
         },
-        params: { tripId: 15 },
+        params: { tripId: 3 },
         query: { action: 'confirm' }
       };
       res = {
@@ -232,7 +232,7 @@ describe('TripController', () => {
           .mockResolvedValue({ text: 'failed' });
         await TripsController.updateTrip(req2, res);
         expect(res.status).toHaveBeenCalledTimes(1);
-        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.status).toHaveBeenCalledWith(200);
         expect(res.status().json).toHaveBeenCalledTimes(1);
       });
     });
@@ -279,46 +279,58 @@ describe('TripController', () => {
       it('should update a trip\'s provider', async () => {
         const request = {
           query: { action: undefined },
-          params: { tripId: 1 },
+          params: { tripId: 3 },
           body: { slackUrl: '', providerId: 1 }
         };
         await TripsController.updateTrip(request, res);
         expect(TripsController.updateProviderAndNotify).toHaveBeenCalled();
       });
-    });
-  });
-
-  describe('TripController_getTravelTrips', () => {
-    let request;
-    const { response: res, mockedTravelTrips } = mocked;
-
-    beforeEach(() => {
-      request = {
-        body: {
-          startDate: '2018-11-15 00:0',
-          endDate: '2019-11-15 03:00',
-          departmentList: ['People', 'D0 Programs']
-        }
-      };
-
-      jest.spyOn(TravelTripService, 'getCompletedTravelTrips').mockResolvedValue(
-        mockedTravelTrips.data
-      );
-    });
-    afterEach(() => {
-      jest.resetAllMocks();
-      jest.restoreAllMocks();
-    });
-
-    describe('TripController_getTravelTrips_Success', () => {
-      it('Should get all Travel trips', async () => {
-        await TripsController.getTravelTrips(request, res);
-        expect(res.status).toHaveBeenCalled();
+      it('updateTrip() with missing data', async () => {
+        jest
+          .spyOn(TripsController, 'getCommonPayloadParam')
+          .mockResolvedValue(payload);
+        jest
+          .spyOn(TripActionsController, 'changeTripStatus')
+          .mockResolvedValue({ text: 'failed' });
+        await TripsController.updateTrip(req2, res);
+        expect(res.status).toHaveBeenCalledTimes(1);
         expect(res.status).toHaveBeenCalledWith(200);
-        expect(res.status().json).toHaveBeenCalledWith({
-          ...mockedTravelTrips,
-          success: true,
-          message: 'Request was successful',
+        expect(res.status().json).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('TripController_getTravelTrips', () => {
+      let request;
+      const { response: resMock, mockedTravelTrips } = mocked;
+
+      beforeEach(() => {
+        request = {
+          body: {
+            startDate: '2018-11-15 00:0',
+            endDate: '2019-11-15 03:00',
+            departmentList: ['People', 'D0 Programs']
+          }
+        };
+
+        jest.spyOn(TravelTripService, 'getCompletedTravelTrips').mockResolvedValue(
+          mockedTravelTrips.data
+        );
+      });
+      afterEach(() => {
+        jest.resetAllMocks();
+        jest.restoreAllMocks();
+      });
+
+      describe('TripController_getTravelTrips_Success', () => {
+        it('Should get all Travel trips', async () => {
+          await TripsController.getTravelTrips(request, resMock);
+          expect(resMock.status).toHaveBeenCalled();
+          expect(resMock.status).toHaveBeenCalledWith(200);
+          expect(resMock.status().json).toHaveBeenCalledWith({
+            ...mockedTravelTrips,
+            success: true,
+            message: 'Request was successful',
+          });
         });
       });
     });

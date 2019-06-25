@@ -2,9 +2,7 @@ import express from 'express';
 import UsersController from './UsersController';
 import middlewares from '../../middlewares';
 
-const {
-  GeneralValidator, UserValidator, TokenValidator, CleanRequestBody
-} = middlewares;
+const { UserValidator, TokenValidator, GeneralValidator } = middlewares;
 const userRouter = express.Router();
 
 userRouter.use(
@@ -52,10 +50,7 @@ userRouter.use(
  */
 userRouter.put(
   '/users',
-  CleanRequestBody.trimAllInputs,
-  UserValidator.validateEmail,
   UserValidator.validateUpdateBody,
-  UserValidator.validateUpdateInfo,
   UsersController.updateRecord
 );
 
@@ -91,9 +86,7 @@ userRouter.put(
  */
 userRouter.post(
   '/users',
-  CleanRequestBody.trimAllInputs,
-  UserValidator.validateEmail,
-  UserValidator.validateUserBody,
+  UserValidator.validateNewBody,
   UsersController.newUserRecord
 );
 

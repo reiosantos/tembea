@@ -1,6 +1,7 @@
-import GeneralValidator from './GeneralValidator';
 import AddressService from '../services/AddressService';
 import LocationService from '../services/LocationService';
+import { newAddressSchema, updateAddressSchema } from './ValidationSchemas';
+import GeneralValidator from './GeneralValidator';
 import Response from '../helpers/responseHelper';
 
 class AddressValidator {
@@ -12,28 +13,7 @@ class AddressValidator {
    * @return {any} The next middleware or the http responds
    */
   static validateAddressBody(req, res, next) {
-    const messages = GeneralValidator.validateReqBody(req.body, 'longitude', 'latitude', 'address');
-
-    if (messages.length === 0) {
-      return next();
-    }
-    const message = 'Incomplete address information. '
-      + 'Compulsory properties; address, latitude, longitude.';
-
-    return Response.sendResponse(res, 400, false, message);
-  }
-
-  static validateAddressInfo(req, res, next) {
-    const longitude = req.body.longitude || req.body.newLongitude;
-    const latitude = req.body.latitude || req.body.newLatitude;
-    let messages = [];
-
-    messages = AddressValidator.validateProps(longitude, latitude, messages);
-    if (messages.length > 0) {
-      return Response.sendResponse(res, 400, false, messages);
-    }
-
-    return next();
+    return GeneralValidator.joiValidation(req, res, next, req.body, newAddressSchema);
   }
 
   /**
@@ -44,40 +24,7 @@ class AddressValidator {
    * @return {any} The next middleware or the http responds
    */
   static validateAddressUpdateBody(req, res, next) {
-    const messages = GeneralValidator.validateReqBody(
-      req.body,
-      'newLongitude',
-      'newLatitude',
-      'newAddress'
-    );
-    const messages1 = GeneralValidator.validateReqBody(req.body, 'address');
-
-    if (messages.length < 3 && messages1.length === 0) {
-      return next();
-    }
-    const message = 'Incomplete update information.'
-      + '\nOptional properties (at least one); newLongitude, newLatitude or a newAddress.'
-      + '\nCompulsory property; address.';
-
-    return Response.sendResponse(res, 400, false, message);
-  }
-
-  static validateProps(longitude, latitude, messages) {
-    if (longitude) {
-      AddressValidator.validateLongitudeLatitude(longitude, -180, 180, 'longitude', messages);
-    }
-
-    if (latitude) {
-      AddressValidator.validateLongitudeLatitude(latitude, -86, 86, 'latitude', messages);
-    }
-    return messages;
-  }
-
-  static validateLongitudeLatitude(value, min, max, invalid, messages) {
-    // eslint-disable-next-line no-restricted-globals
-    if (isNaN(value) || (value < min || value > max)) {
-      return messages.push(`Invalid ${invalid} should be between ${min} and ${max}`);
-    }
+    return GeneralValidator.joiValidation(req, res, next, req.body, updateAddressSchema);
   }
 
   static async validateLocation(req, res, next) {

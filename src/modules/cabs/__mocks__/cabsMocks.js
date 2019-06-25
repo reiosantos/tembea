@@ -68,14 +68,12 @@ const updateData = {
   regNumber: 'KCX 505',
   model: 'motor',
   capacity: 4,
-  providerId: 3
 };
 
 const updateDatamock = {
   regNumber: 'KCX 505 KG',
   model: 'motor',
   capacity: 4,
-  providerId: 3
 };
 
 const successMessage = '1 of 1 page(s).';

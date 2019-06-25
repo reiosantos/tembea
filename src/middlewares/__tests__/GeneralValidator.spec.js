@@ -3,7 +3,7 @@ import Response from '../../helpers/responseHelper';
 import HttpError from '../../helpers/errorHandler';
 import BugsnagHelper from '../../helpers/bugsnagHelper';
 import TeamDetailsService from '../../services/TeamDetailsService';
-
+import { querySchema } from '../ValidationSchemas';
 
 describe('General Validator', () => {
   afterEach(() => {
@@ -241,66 +241,7 @@ describe('General Validator', () => {
       expect(result.success).toEqual(false);
     });
   });
-
-  describe('ValidateFellowId', () => {
-    const next = jest.fn();
-    let req;
-    const res = {
-      status() {
-        return this;
-      },
-      json() {
-        return {
-          success: false,
-          message: 'Please provide a positive integer value'
-        };
-      }
-    };
-    afterEach(() => {
-      jest.restoreAllMocks();
-    });
-    it('should pass validation(return next)', () => {
-      req = {
-        query: { id: 4 },
-      };
-      GeneralValidator.validateFellowId(req, res, next);
-      expect(next).toBeCalled();
-    });
-    it('should return 400 if params is not a number', () => {
-      req = {
-        query: {
-          id: 'mbsh'
-        }
-      };
-      const result = GeneralValidator.validateFellowId(req, res, next);
-      const str = 'Please provide a positive integer value';
-      expect(result.message).toEqual(str);
-      expect(result.success).toEqual(false);
-    });
-  });
-  describe('ValidateUpdateBody', () => {
-    const res = {
-      status: jest
-        .fn(() => ({
-          json: jest.fn(() => { })
-        }))
-        .mockReturnValue({ json: jest.fn() })
-    };
-    let httpErrorSpy;
-    beforeEach(() => {
-      httpErrorSpy = jest.spyOn(HttpError, 'sendErrorResponse');
-    });
-
-    it('should return errors errors if validation fails', async () => {
-      httpErrorSpy.mockReturnValue('Invalid Param');
-      jest.spyOn(GeneralValidator, 'validateNumber');
-      const results = await GeneralValidator.validateUpdateBody('notValid',
-        {}, res, ['name'], '2');
-      expect(HttpError.sendErrorResponse).toBeCalled();
-      expect(GeneralValidator.validateNumber).toBeCalled();
-      expect(results).toEqual('Invalid Param');
-    });
-  });
+  
   describe('validateSlackUrl', () => {
     it('should call next middleware upon successful validation', async () => {
       jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({
@@ -333,6 +274,17 @@ describe('General Validator', () => {
       await GeneralValidator.validateSlackUrl(req, {});
       expect(BugsnagHelper.log).toHaveBeenCalled();
       expect(HttpError.sendErrorResponse).toHaveBeenCalled();
+    });
+  });
+
+  describe('joiValidation', () => {
+    const next = jest.fn();
+    const req = {};
+    const res = {};
+    const data = { page: 1 };
+    it('should validate request queries', () => {
+      GeneralValidator.joiValidation(req, res, next, data, querySchema, false, true);
+      expect(next).toHaveBeenCalled();
     });
   });
 });

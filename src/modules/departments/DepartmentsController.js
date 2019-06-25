@@ -20,10 +20,10 @@ class DepartmentController {
     } = req.body;
     try {
       const department = await DepartmentService.updateDepartment(
-        name ? name.trim() : name,
-        newName ? newName.trim() : newName,
-        newHeadEmail ? newHeadEmail.trim() : newHeadEmail,
-        location ? location.trim() : location
+        name,
+        newName,
+        newHeadEmail,
+        location
       );
       return res
         .status(200)
@@ -47,7 +47,7 @@ class DepartmentController {
     try {
       const [user, { teamId }] = await Promise.all([UserService.getUser(email), TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl)]);
       const [dept, created] = await DepartmentService.createDepartment(user, name, teamId, location);
-      
+
       if (created) {
         return res.status(201)
           .json({

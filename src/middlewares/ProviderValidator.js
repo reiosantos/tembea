@@ -1,11 +1,21 @@
-import joi from '@hapi/joi';
-import GeneralValidator from './GeneralValidator';
 import Response from '../helpers/responseHelper';
 import UserService from '../services/UserService';
 import ProviderService, { providerService } from '../services/ProviderService';
-import HttpError from '../helpers/errorHandler';
+import GeneralValidator from './GeneralValidator';
+import { updateProviderSchema, newProviderSchema, newDriverSchema } from './ValidationSchemas';
 
 class ProviderValidator {
+  /**
+   * @description validate request body for creating a provider
+   * @returns errors or calls next
+   * @param req
+   * @param res
+   * @param next
+   */
+  static validateNewProvider(req, res, next) {
+    return GeneralValidator.joiValidation(req, res, next, req.body, newProviderSchema);
+  }
+
   /**
    * @description validate provider update body middleware
    * @returns errors or calls next
@@ -14,9 +24,9 @@ class ProviderValidator {
    * @param res
    * @param next
    */
-  static async verifyProviderUpdateBody(req, res, next) {
-    const { body, params: { id } } = req;
-    await GeneralValidator.validateUpdateBody(id, body, res, ['name', 'email'], 2, next);
+  static verifyProviderUpdate(req, res, next) {
+    return GeneralValidator
+      .joiValidation(req, res, next, { ...req.params, ...req.body }, updateProviderSchema, true);
   }
 
   static async createUpdateBody(body) {
@@ -50,63 +60,14 @@ class ProviderValidator {
   }
 
   /**
-   * @description This middleware validates an email address passed in the request
-   * @param  {object} req The HTTP request sent
-   * @param  {object} res The HTTP response object
-   * @param  {function} next The next middleware
-   * @return {any} The next middleware or the http response
-   */
-  static validateReqBody(req, res, next) {
-    let schema;
-    schema = joi.object().keys({
-      email: joi.string().trim().email().required(),
-      name: joi.string().trim().required(),
-      isDirectMessage: joi.boolean(),
-      channelId: joi.string().alphanum().trim().allow(null, ''),
-    }).with('channelId', 'isDirectMessage');
-    if (req.method === 'PATCH') {
-      schema = joi.object().keys({
-        email: joi.string().trim().email(),
-        name: joi.string().trim()
-      }).min(1);
-    }
-
-    const { error, value } = joi.validate(req.body, schema, { abortEarly: false });
-
-    if (error) {
-      const validationError = HttpError.formatValidationError(error);
-      return HttpError.sendErrorResponse(validationError, res);
-    }
-    req.body = value;
-    return next();
-  }
-
-  /**
-   * @description This middleware create driver body passed in the request
+   * @description This middleware validates driver body passed in the request
    * @param  {object} req The HTTP request sent
    * @param  {object} res The HTTP response object
    * @param  {function} next The next middleware
    * @return {any} The next middleware or the http response
    */
   static validateDriverRequestBody(req, res, next) {
-    const errorArray = [];
-    const schema = joi.object().keys({
-      driverPhoneNo: joi.number().required().min(3),
-      driverName: joi.string().trim().required(),
-      driverNumber: joi.string().trim().required().min(3),
-      providerId: joi.number().required(),
-      email: joi.string().trim().email()
-    });
-    const { error, value } = joi.validate(req.body, schema, { abortEarly: false });
-    if (error) {
-      const errors = error.details;
-      errors.forEach((err) => {
-        errorArray.push(err.message);
-      });
-      return Response.sendResponse(res, 400, false, errorArray);
-    }
-    req.body = value;
-    return next();
+    return GeneralValidator.joiValidation(req, res, next, req.body, newDriverSchema);
   }
 
   /**
@@ -121,24 +82,6 @@ class ProviderValidator {
     const provider = await ProviderService.findProviderByPk(providerId);
     if (!provider) {
       return Response.sendResponse(res, 404, false, 'Provider doesnt exist');
-    }
-    return next();
-  }
-
-  /**
-   * @description Validates if the providerId is a positive integer
-   * @param  {object} req The HTTP request sent
-   * @param  {object} res The HTTP response object
-   * @param  {function} next The next middleware
-   * @return {any} The next middleware or the http response
-   */
-  static validateQueryProvider(req, res, next) {
-    const { providerId } = req.query;
-
-    if (
-      (providerId && !GeneralValidator.validateNumber(providerId))
-    ) {
-      return Response.sendResponse(res, 404, false, 'Please provide a positive integer value for providerID');
     }
     return next();
   }

@@ -3,7 +3,7 @@ import middlewares from '../../middlewares';
 import CabsController from './CabsController';
 
 const {
-  TokenValidator, CabsValidator, GeneralValidator, CleanRequestBody
+  TokenValidator, CabsValidator, GeneralValidator
 } = middlewares;
 
 const cabsRouter = Router();
@@ -54,7 +54,6 @@ cabsRouter.use(
 
 cabsRouter.post(
   '/cabs',
-  CleanRequestBody.trimAllInputs,
   CabsValidator.validateAllInputs,
   CabsController.createCab
 );
@@ -129,9 +128,7 @@ cabsRouter.get(
  */
 cabsRouter.put(
   '/cabs/:id',
-  CabsValidator.validateIdParam,
-  CleanRequestBody.trimAllInputs,
-  CabsValidator.validateAllInputs,
+  CabsValidator.validateCabUpdateBody,
   CabsController.updateCabDetails
 );
 

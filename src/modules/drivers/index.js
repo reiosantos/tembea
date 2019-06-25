@@ -46,6 +46,8 @@ driverRouter.use(
  *              type: number
  *            driverNumber:
  *              type: string
+ *            providerId:
+ *              type: string
  *    responses:
  *      201:
  *        description: driver created successfully
@@ -163,7 +165,6 @@ driverRouter.put(
 driverRouter.get(
   '/drivers',
   GeneralValidator.validateQueryParams,
-  ProviderValidator.validateQueryProvider,
   DriverController.getDrivers
 );
 

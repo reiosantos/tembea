@@ -6,7 +6,8 @@ const id = 12;
 const providerUserDetails = {
   id: 1,
   name: 'Andela Kenya',
-  providerUserId: 15
+  providerUserId: 15,
+  user: {}
 };
 const fellow = {
   id: 1,
@@ -148,9 +149,6 @@ export const mockDeclinedRouteRequest = {
   newOpsStatus: 'decline',
   comment: 'some comment',
   teamUrl: 'tembea.slack.com',
-  provider: providerUserDetails,
-  routeName: 'sample route',
-  takeOff: '10:00'
 };
 export const mockDataMissingParams = {
   newOpsStatus: 'approve',
@@ -160,12 +158,8 @@ export const mockDataMissingParams = {
 };
 export const mockDataInvalidComment = {
   newOpsStatus: 'decline',
-  comment: 'some = comment',
-  reviewerEmail: 'test.buddy2@andela.com',
+  comment: '',
   teamUrl: 'tembea.slack.com',
-  provider: providerUserDetails,
-  routeName: 'sample route',
-  takeOff: '10:00'
 };
 export const mockDataInvalidCapacity = {
   newOpsStatus: 'approve',
@@ -173,16 +167,15 @@ export const mockDataInvalidCapacity = {
   teamUrl: 'tembea.slack.com',
   routeName: 'ParksWay',
   takeOff: '2:30',
-  provider: {}
+  cabRegNumber: 'ABC 123',
+  provider: providerUserDetails
 };
 
 export const mockDataInvalidTakeOffTime = {
   newOpsStatus: 'approve',
   comment: 'comment',
-  reviewerEmail: 'test.buddy2@andela.com',
   teamUrl: 'tembea.slack.com',
   routeName: 'ParksWay',
-  capacity: '2',
   takeOff: 'Take Off',
   provider: providerUserDetails
 };
@@ -193,6 +186,7 @@ export const mockDataCorrectRouteRequest = {
   teamUrl: 'tembea.slack.com',
   routeName: 'ParksWay',
   takeOff: '9:30',
+  cabRegNumber: 'ABC 123',
   provider: providerUserDetails
 };
 

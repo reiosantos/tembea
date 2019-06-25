@@ -7,17 +7,17 @@ import BugsnagHelper from '../../../helpers/bugsnagHelper';
 
 describe('RoutesController', () => {
   const declineReq = {
-    params: { routeId: 1 },
+    params: { requestId: 1 },
     currentUser: { userInfo: { email: 'john.smith@gmail.com' } },
     body: {
       newOpsStatus: 'decline',
       comment: 'stuff',
-      reviewerEmail: 'test.buddy2@andela.com'
+      teamUrl: 'tembea.slack.com'
     }
   };
 
   const approveReq = {
-    params: { routeId: 1 },
+    params: { requestId: 1 },
     currentUser: { userInfo: { email: 'john.smith@gmail.com' } },
     body: {
       newOpsStatus: 'approve',

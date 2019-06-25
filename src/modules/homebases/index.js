@@ -3,7 +3,7 @@ import HomebaseController from './HomebaseController';
 import middlewares from '../../middlewares';
 
 const {
-  TokenValidator, GeneralValidator, HomebaseValidator
+  TokenValidator, HomebaseValidator, GeneralValidator
 } = middlewares;
 const homebaseRouter = express.Router();
 
@@ -34,7 +34,7 @@ homebaseRouter.use(
  *          properties:
  *            homebaseName:
  *              type: string
- *            countryName :
+ *            countryName:
  *              type: string
  *    responses:
  *      201:
@@ -42,7 +42,7 @@ homebaseRouter.use(
  */
 homebaseRouter.post(
   '/homebases',
-  HomebaseValidator.validateNames,
+  HomebaseValidator.validateHomeBase,
   HomebaseValidator.validateCountryExists,
   HomebaseController.addHomeBase
 );
@@ -65,6 +65,16 @@ homebaseRouter.post(
  *        required: false
  *        description: number of items per page
  *        type: number
+ *      - name: country
+ *        in: query
+ *        required: false
+ *        description: country name
+ *        type: string
+ *      - name: name
+ *        in: query
+ *        required: false
+ *        description: name of homebase
+ *        type: string
  *    responses:
  *      200:
  *        description: success response object containing all found homebases
@@ -74,7 +84,6 @@ homebaseRouter.post(
 homebaseRouter.get(
   '/homebases',
   GeneralValidator.validateQueryParams,
-  HomebaseValidator.validatePassedQueryParams,
   HomebaseController.getHomebases
 );
 

@@ -3,9 +3,8 @@ import app from '../../../app';
 import Utils from '../../../utils';
 import {
   noUserPayload, noEmailPayload, invalidEmailPayload,
-  invalidDeptNamePayload, numericDeptNamePayload,
-  missingDeptNamePayload, validDeptPayload, existingDeptPayload,
-  numericLocationPayload, missingDeptLocationPayload, invalidLocationPayload
+  invalidDeptNamePayload,
+  missingDeptNamePayload, validDeptPayload, existingDeptPayload, invalidLocationPayload
 } from '../__mocks__/addDepartments';
 import models from '../../../database/models';
 
@@ -43,7 +42,8 @@ describe('/Departments create', () => {
       })
       .expect(400, {
         success: false,
-        messages: ['Please provide email.'],
+        message: 'Validation error occurred, see error object for details',
+        error: { email: 'Please provide email' }
       }, done);
   });
 
@@ -72,21 +72,8 @@ describe('/Departments create', () => {
       })
       .expect(400, {
         success: false,
-        messages: ['Please provide name.'],
-      }, done);
-  });
-
-  it('should respond with department name cannot contain numeric values', (done) => {
-    request(app)
-      .post('/api/v1/departments')
-      .send(numericDeptNamePayload)
-      .set({
-        Accept: 'application/json',
-        authorization: validToken
-      })
-      .expect(400, {
-        success: false,
-        messages: ['Department name cannot contain numeric values only.'],
+        message: 'Validation error occurred, see error object for details',
+        error: { name: '"name" is not allowed to be empty' }
       }, done);
   });
 
@@ -100,7 +87,8 @@ describe('/Departments create', () => {
       })
       .expect(400, {
         success: false,
-        messages: ['Please provide name.'],
+        message: 'Validation error occurred, see error object for details',
+        error: { name: 'Please provide name' }
       }, done);
   });
 
@@ -129,20 +117,6 @@ describe('/Departments create', () => {
       }, done);
   });
 
-  it('should respond with department location cannot contain numeric values', (done) => {
-    request(app)
-      .post('/api/v1/departments')
-      .send(numericLocationPayload)
-      .set({
-        Accept: 'application/json',
-        authorization: validToken
-      })
-      .expect(400, {
-        success: false,
-        messages: ['Department location cannot contain numeric values only.'],
-      }, done);
-  });
-
   it('should respond with invalid department location name', (done) => {
     request(app)
       .post('/api/v1/departments')
@@ -153,21 +127,8 @@ describe('/Departments create', () => {
       })
       .expect(400, {
         success: false,
-        messages: ['Please provide a valid department location.'],
-      }, done);
-  });
-
-  it('should respond with a no location provided error', (done) => {
-    request(app)
-      .post('/api/v1/departments')
-      .send(missingDeptLocationPayload)
-      .set({
-        Accept: 'application/json',
-        authorization: validToken
-      })
-      .expect(400, {
-        success: false,
-        messages: ['Please provide location.'],
+        message: 'Validation error occurred, see error object for details',
+        error: { location: '"location" is not allowed to be empty' }
       }, done);
   });
 });

@@ -1,128 +1,45 @@
 import moment from 'moment';
-import joi from '@hapi/joi';
 import GeneralValidator from './GeneralValidator';
-import UserInputValidator from '../helpers/slack/UserInputValidator';
 import HttpError from '../helpers/errorHandler';
 import tripService, { TripService } from '../services/TripService';
+import { getTripsSchema, tripUpdateSchema, travelTripSchema } from './ValidationSchemas';
+import JoiHelper from '../helpers/JoiHelper';
 import Response from '../helpers/responseHelper';
 import TripHelper from '../helpers/TripHelper';
 
 
 class TripValidator {
   static async validateAll(req, res, next) {
-    const {
-      query: { action },
-      params: { tripId }
-    } = req;
-  
-    let messages = GeneralValidator.validateReqBody(req.body, 'comment', 'slackUrl');
-    messages = TripValidator.validateTripAction(req, messages);
+    const { query: { action }, params: { tripId } } = req;
 
-    if (!tripId) {
-      messages.push('Add tripId to the url');
+    const validateParams = JoiHelper
+      .validateSubmission({ ...req.body, tripId, action }, tripUpdateSchema);
+    if (validateParams.errorMessage) {
+      return HttpError.sendErrorResponse({ statusCode: 400, message: validateParams }, res);
+    }
+    const regex = /https?:\/\//i;
+    req.body = validateParams;
+    delete req.body.action;
+    delete req.body.tripId;
+    req.body.slackUrl = req.body.slackUrl.replace(regex, '').trim();
+
+    const isTrip = await TripService.checkExistence(tripId);
+    if (!isTrip) {
+      return HttpError.sendErrorResponse({ statusCode: 404, message: 'Trip Does not exist' }, res);
     }
 
     const trip = await tripService.getById(tripId);
     if (TripHelper.notConfirmingOrDecliningTrip(req.body, trip, action)) return next();
-
-    const isTrip = await TripService.checkExistence(tripId);
-
-    if (!isTrip) {
-      messages.push('Trip Does not exist');
-    }
-    if (messages.length) {
-      return HttpError.sendErrorResponse({ message: messages }, res);
-    }
     next();
-  }
-
-  /**
-   * @static
-   * @param {object} req request object
-   * @param {array<string>} messages array of validation messages
-   * @returns {array<string>} Returns the array of validation messages
-   * @description Validates a request based on the action and
-   * if trip has been assigned provider
-   */
-  static validateTripAction(req, messages) {
-    let newMessages = [...messages];
-    const { query: { action }, body: { isAssignProvider } } = req;
-    const tripIsToBeAssignedDriver = action === 'confirm' && !isAssignProvider;
-    if (tripIsToBeAssignedDriver) {
-      newMessages = [
-        ...newMessages,
-        ...GeneralValidator.validateReqBody(req.body, 'driverName', 'driverPhoneNo', 'regNumber'),
-      ];
-    }
-    return newMessages;
-  }
- 
-  static validateEachInput(req, res, next) {
-    const {
-      params: { tripId },
-      query: { action },
-      body
-    } = req;
-    const { slackUrl, isAssignProvider } = body;
-    const messages = [
-      ...TripValidator.validateTripId(tripId),
-      ...TripValidator.validateSlackUrl(slackUrl),
-    ];
-
-    if (action === 'confirm' && !isAssignProvider) {
-      messages.push(...UserInputValidator.validateCabDetails({ submission: body }));
-    }
-
-    if (messages.length) {
-      return HttpError.sendErrorResponse({ message: messages }, res);
-    }
-    const regex = /https?:\/\//i;
-    const trimmedSlackUrl = body.slackUrl.replace(regex, '');
-    req.body.slackUrl = trimmedSlackUrl.trim();
-    next();
-  }
-
-  /**
-   * Validates and returns an error for invalid tripId value
-   *
-   * @static
-   * @param {string|number} value - Trip id value
-   * @returns {{ name: string, error: string }} - The error object
-   * @memberof TripValidator
-   */
-  static validateTripId(value) {
-    return !GeneralValidator.validateNumber(value)
-      ? [{
-        name: 'tripId',
-        error: 'Invalid tripId in the url it must be a number. eg: api/v1/trips/12/confirm'
-      }] : [];
-  }
-
-  /**
-   * Validates and returns an error for invalid slackUrl value
-   *
-   * @static
-   * @param {string} value - Slack url value
-   * @returns {{ name: string, error: string }} - The error object
-   * @memberof TripValidator
-   */
-  static validateSlackUrl(value) {
-    return !GeneralValidator.validateTeamUrl(value)
-      ? [{
-        name: 'slackUrl',
-        error: 'Invalid slackUrl. e.g: ACME.slack.com'
-      }] : [];
   }
 
   static validateGetTripsParam(req, res, next) {
     const errors = [];
-    const { query: { status } } = req;
-    const acceptedStatus = ['Confirmed', 'Pending', 'Approved', 'Completed',
-      'DeclinedByManager', 'DeclinedByOps', 'InTransit', 'Cancelled'];
-    if (status && !acceptedStatus.includes(status)) {
-      errors.push('Status can be either \'Approved\','
-        + ' \'Confirmed\' , \'Pending\',  \' Completed\','
-        + ' \'DeclinedByManager\', \'DeclinedByOps\', \'InTransit\' or \'Cancelled\'');
+    const { query: { status, page, size } } = req;
+
+    const validateParams = JoiHelper.validateSubmission({ status, page, size }, getTripsSchema);
+    if (validateParams.errorMessage) {
+      return Response.sendResponse(res, 400, false, 'Validation Error', { errors: validateParams });
     }
     const departureTime = TripHelper.cleanDateQueryParam(req.query, 'departureTime');
     const requestedOn = TripHelper.cleanDateQueryParam(req.query, 'requestedOn');
@@ -197,27 +114,7 @@ class TripValidator {
   }
 
   static async validateTravelTrip(req, res, next) {
-    const messagesObject = {
-      startDate: joi.date().iso().label('start Date').required(),
-      endDate: joi.date().iso().greater(joi.ref('startDate'))
-        .label('end Date')
-        .required(),
-      departmentList:
-          joi.array()
-            .items(joi.string().trim().label('Departments'))
-            .min(1)
-            .required()
-    };
-    const schema = joi.object().keys(messagesObject);
-    const { error, value } = joi.validate(req.body, schema, { abortEarly: false });
-
-    if (error) {
-      const travelTripErrors = HttpError.formatValidationError(error);
-
-      return HttpError.sendErrorResponse(travelTripErrors, res);
-    }
-    req.body = value;
-    return next();
+    return GeneralValidator.joiValidation(req, res, next, req.body, travelTripSchema);
   }
 }
 

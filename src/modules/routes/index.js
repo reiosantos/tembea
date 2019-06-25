@@ -5,7 +5,7 @@ import RoutesUsageController from './RouteUsageController';
 import middlewares from '../../middlewares';
 
 const {
-  GeneralValidator, RouteValidator, RouteRequestValidator, CleanRequestBody
+  GeneralValidator, RouteValidator, RouteRequestValidator
 } = middlewares;
 const routesRouter = express.Router();
 
@@ -83,6 +83,16 @@ routesRouter.get(
  *    tags:
  *      - Routes
  *    parameters:
+ *      - name: action
+ *        in: query
+ *        required: false
+ *        description: optional parameter used for duplicating a route
+ *        type: string
+ *      - name: batchId
+ *        in: query
+ *        required: false
+ *        description: id of route to be duplicated
+ *        type: number
  *      - name: body
  *        in: body
  *        required: true
@@ -118,9 +128,7 @@ routesRouter.get(
  */
 routesRouter.post(
   '/routes',
-  CleanRequestBody.trimAllInputs,
-  RouteValidator.verifyAllPropsExist,
-  RouteValidator.verifyPropsValuesAreSetAndValid,
+  RouteValidator.validateNewRoute,
   RouteValidator.validateDestinationAddress,
   RouteValidator.validateDestinationCoordinates,
   RoutesController.createRoute
@@ -182,11 +190,8 @@ routesRouter.post(
  */
 routesRouter.put(
   '/routes/:routeId',
-  CleanRequestBody.trimAllInputs,
   RouteValidator.validateRouteIdParam,
-  GeneralValidator.validateTeamUrlInRequestBody,
-  GeneralValidator.validateAllProvidedReqBody,
-  RouteValidator.validateRouteBatchStatus,
+  RouteValidator.validateRouteUpdate,
   RouteValidator.validateRouteBatchUpdateFields,
   RoutesController.updateRouteBatch
 );
@@ -267,8 +272,7 @@ routesRouter.get('/routes/requests',
  *        description: route request has already been approved
  */
 routesRouter.put(
-  '/routes/requests/status/:routeId',
-  CleanRequestBody.trimAllInputs,
+  '/routes/requests/status/:requestId',
   RouteRequestValidator.validateRequestBody,
   RouteRequestValidator.validateParams,
   RoutesController.updateRouteRequestStatus
@@ -310,8 +314,7 @@ routesRouter.put(
  */
 routesRouter.delete(
   '/routes/:routeBatchId',
-  CleanRequestBody.trimAllInputs,
-  GeneralValidator.validateTeamUrlInRequestBody,
+  RouteValidator.validateDelete,
   RouteValidator.validateRouteIdParam,
   RoutesController.deleteRouteBatch
 );
@@ -363,7 +366,7 @@ routesRouter.get(
  */
 routesRouter.delete(
   '/routes/fellows/:userId',
-  GeneralValidator.validateTeamUrlInRequestBody,
+  RouteValidator.validateDelete,
   RouteValidator.validateRouteIdParam,
   RoutesController.deleteFellowFromRoute
 );

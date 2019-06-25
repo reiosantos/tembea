@@ -1,11 +1,11 @@
 import request from 'supertest';
 import '@slack/client';
 import app from '../../../app';
-import UserValidator from '../../../middlewares/UserValidator';
 import HttpError from '../../../helpers/errorHandler';
 import Utils from '../../../utils';
 import models from '../../../database/models';
 
+const errorMessage = 'Validation error occurred, see error object for details';
 let validToken;
 
 beforeAll(() => {
@@ -45,13 +45,14 @@ describe('/User create', () => {
         400,
         {
           success: false,
-          message: 'Please provide a valid email for the user'
+          message: errorMessage,
+          error: { email: 'Please provide email' }
         },
         done
       );
   });
 
-  it('should respond with invalid email', (done) => {
+  it('should respond with invalid email and slack url', (done) => {
     request(app)
       .post('/api/v1/users')
       .send({
@@ -65,7 +66,11 @@ describe('/User create', () => {
         400,
         {
           success: false,
-          message: 'Please provide a valid email for the user'
+          message: errorMessage,
+          error: {
+            slackUrl: 'Please provide slackUrl',
+            email: 'please provide a valid email address'
+          }
         },
         done
       );
@@ -85,7 +90,8 @@ describe('/User create', () => {
         400,
         {
           success: false,
-          message: 'Compulsory property; slackUrl e.g: ACME.slack.com'
+          message: errorMessage,
+          error: { slackUrl: 'Please provide slackUrl' }
         },
         done
       );
@@ -106,7 +112,8 @@ describe('/User create', () => {
         400,
         {
           success: false,
-          message: 'Compulsory property; slackUrl e.g: ACME.slack.com'
+          message: errorMessage,
+          error: { slackUrl: 'please provide a valid slackUrl' }
         },
         done
       );
@@ -174,20 +181,6 @@ describe('/User create user who does not exist', () => {
         slackUrl: 'ACME.slack.com'
       })
       .expect(200, done);
-  });
-
-  it('should validate info', (done) => {
-    const messages = [];
-
-    UserValidator.validateProps(
-      '11111',
-      messages,
-      'Invalid newPhoneNo.',
-      'email@email.com',
-      'ACME.slack.com'
-    );
-    expect(messages).toEqual(['Invalid newName.', 'Invalid newPhoneNo.']);
-    done();
   });
 
   it('should return an error', async () => {

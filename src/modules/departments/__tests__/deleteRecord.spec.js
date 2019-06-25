@@ -62,7 +62,8 @@ describe('Delete department record', () => {
         400,
         {
           success: false,
-          message: 'Kindly provide one of the two; id or name'
+          message: 'Validation error occurred, see error object for details',
+          error: { value: '"value" must have at least 1 children' }
         },
         done
       );
@@ -83,7 +84,8 @@ describe('Delete department record', () => {
         400,
         {
           success: false,
-          message: 'Kindly provide one of the two; id or name'
+          message: 'Validation error occurred, see error object for details',
+          error: { value: '"value" must have less than or equal to 1 children' }
         },
         done
       );
@@ -103,27 +105,8 @@ describe('Delete department record', () => {
         400,
         {
           success: false,
-          message: 'Id can contain only positive integers'
-        },
-        done
-      );
-  });
-
-  it('should return a 400 if invalid data is sent', (done) => {
-    request(app)
-      .delete('/api/v1/departments')
-      .send({
-        name: '=some@funny%name'
-      })
-      .set({
-        Accept: 'application/json',
-        authorization: validToken
-      })
-      .expect(
-        400,
-        {
-          success: false,
-          message: 'Name can contain only letters dashes and spaces'
+          message: 'Validation error occurred, see error object for details',
+          error: { id: 'id should not be less than 1' }
         },
         done
       );

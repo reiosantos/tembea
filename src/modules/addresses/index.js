@@ -3,13 +3,10 @@ import AddressController from './AddressController';
 import middlewares from '../../middlewares';
 
 const {
-  GeneralValidator, AddressValidator, TokenValidator, CleanRequestBody
+  AddressValidator, TokenValidator, GeneralValidator
 } = middlewares;
 
 const addressRouter = express.Router();
-const addressValidators = [CleanRequestBody.trimAllInputs,
-  AddressValidator.validateLocation,
-  AddressValidator.validateAddressInfo];
 
 addressRouter.use(
   '/addresses',
@@ -55,8 +52,8 @@ addressRouter.use(
  */
 addressRouter.post(
   '/addresses',
-  ...addressValidators,
   AddressValidator.validateAddressBody,
+  AddressValidator.validateLocation,
   AddressValidator.validateaddress,
   AddressController.addNewAddress
 );
@@ -94,9 +91,7 @@ addressRouter.post(
  */
 addressRouter.put(
   '/addresses',
-  CleanRequestBody.trimAllInputs,
   AddressValidator.validateAddressUpdateBody,
-  AddressValidator.validateAddressInfo,
   AddressValidator.validateUpdateaddress,
   AddressValidator.validateLocation,
   AddressController.updateAddress

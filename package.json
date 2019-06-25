@@ -69,7 +69,7 @@
     "@google/maps": "^0.5.5",
     "@hapi/joi": "^15.0.3",
     "@slack/client": "^4.8.0",
-    "@slack/interactive-messages": "^1.0.2",
+    "@slack/interactive-messages": "^1.1.1",
     "axios": "^0.18.0",
     "bcryptjs": "^2.4.3",
     "cls-hooked": "^4.2.2",

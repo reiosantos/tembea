@@ -1,23 +1,26 @@
 import DepartmentValidator from '../DepartmentValidator';
 import HttpError from '../../helpers/errorHandler';
-import { response as res } from '../../modules/countries/__mocks__';
 
 describe('Department Validator', () => {
-  describe('validateDeleteProps', () => {
-    afterEach(() => {
-      jest.restoreAllMocks();
-      jest.resetAllMocks();
-    });
-    it('should throw an error when wrong data is sent to validateDeletePropsValues', (done) => {
-      HttpError.sendErrorResponse = jest.fn(() => {});
-      DepartmentValidator.validateDeletePropsValues('no', 'no', () => {});
-      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      done();
-    });
+  let res;
+  let next;
+  beforeEach(() => {
+    res = {
+      status: jest.fn(() => ({
+        json: jest.fn()
+      }))
+    };
+    next = jest.fn();
+  });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  describe('validateDeleteProps', () => {
     it('should throw an error when wrong data is sent to validateDeleteProps', (done) => {
       HttpError.sendErrorResponse = jest.fn(() => {});
-      DepartmentValidator.validateDeleteProps('no', 'no', () => {});
+      DepartmentValidator.validateDeleteProps({ body: {} }, res, next);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
       done();
     });
@@ -38,7 +41,7 @@ describe('Department Validator', () => {
           departments: ['people', 'tdd']
         }
       };
-      const next = jest.fn();
+
       await DepartmentValidator.validateDepartmentTrips(req, res, next);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
     });
@@ -52,7 +55,7 @@ describe('Department Validator', () => {
           departments: ['people', 'tdd']
         }
       };
-      const next = jest.fn();
+
       await DepartmentValidator.validateDepartmentTrips(req, res, next);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
     });
@@ -65,7 +68,7 @@ describe('Department Validator', () => {
           departments: ['people', 'tdd']
         }
       };
-      const next = jest.fn();
+
       await DepartmentValidator.validateDepartmentTrips(req, res, next);
       expect(next).toBeCalled();
     });

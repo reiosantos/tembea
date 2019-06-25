@@ -1,3 +1,5 @@
+import DateDialogHelper from '../helpers/dateHelper';
+
 const moment = require('moment');
 const momenttz = require('moment-timezone');
 const fs = require('fs');
@@ -7,7 +9,6 @@ const http = require('http');
 const jwt = require('jsonwebtoken');
 const uuid = require('uuid/v4');
 const url = require('url');
-const DateHelpers = require('../helpers/dateHelper');
 
 moment.updateLocale('en', {
   weekdaysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -31,7 +32,7 @@ class Utils {
 
   static formatDateForDatabase(dateStr, timezone = 'Africa/Nairobi') {
     if (!dateStr || typeof dateStr !== 'string') return dateStr;
-    const formattedDate = DateHelpers.changeDateFormat(dateStr);
+    const formattedDate = DateDialogHelper.changeDateFormat(dateStr);
     return momenttz.tz(formattedDate, 'MM/DD/YYYY HH:mm', timezone).toISOString();
   }
 

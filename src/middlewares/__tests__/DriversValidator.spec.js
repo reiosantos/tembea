@@ -124,7 +124,7 @@ describe('DriversValidator Middleware', () => {
       it('should validate driver update body', async () => {
         req.body = dummyDriver;
         await DriversValidator.validateDriverUpdateBody(req, res, next);
-        expect(Response.sendResponse).toHaveBeenCalled();
+        expect(HttpError.sendErrorResponse).toHaveBeenCalled();
       });
       it('should call next if update body is ok', async () => {
         req.body = dummyRightDriverData;

@@ -5,17 +5,15 @@ import CountryHelper from '../../helpers/CountryHelper';
 import Response from '../../helpers/responseHelper';
 import mockDeletedCountry from '../__mocks__/CountryValidatorMocks';
 
+const errorMessage = 'Validation error occurred, see error object for details';
+
 describe('CountryValidator', () => {
-  let validateEmptyReqBodySpy;
   let res;
   let validReq;
   let invalidRequest;
   let next;
-  let error = [];
   let req;
   let message;
-  let validateStringSpy;
-  let validateReqBodySpy;
 
   beforeEach(() => {
     res = {
@@ -37,8 +35,6 @@ describe('CountryValidator', () => {
     next = jest.fn();
     HttpError.sendErrorResponse = jest.fn();
     Response.sendResponse = jest.fn();
-    validateEmptyReqBodySpy = jest.spyOn(GeneralValidator, 'validateEmptyReqBodyProp');
-    validateReqBodySpy = jest.spyOn(GeneralValidator, 'validateReqBody');
   });
   afterEach((done) => {
     jest.resetAllMocks();
@@ -48,102 +44,41 @@ describe('CountryValidator', () => {
 
   describe('validateCountryReqBody', () => {
     it('test with valid request data', () => {
-      validateEmptyReqBodySpy.mockReturnValue(error);
       CountryValidator.validateCountryReqBody(validReq, res, next);
       expect(next).toHaveBeenCalled();
     });
 
     it('test with invalid request data', () => {
-      error = ['Country name must be supplied'];
-      validateEmptyReqBodySpy.mockReturnValue(error);
       CountryValidator.validateCountryReqBody(invalidRequest, res, next);
-      expect(validateEmptyReqBodySpy).toHaveBeenCalledWith(invalidRequest.body, 'name');
-      expect(Response.sendResponse).toHaveBeenCalledWith(res, 400, false, error);
-    });
-  });
-
-  describe('validateCountryName', () => {
-    beforeEach(() => {
-      req = { body: { name: 'Kenya#' } };
-      message = 'Please provide a valid country name';
-      validateStringSpy = jest.spyOn(CountryHelper, 'validateString');
-    });
-
-    it('test with valid country name', () => {
-      validateStringSpy.mockReturnValue(true);
-      CountryValidator.validateCountryName(req, res, next);
-      expect(next).toHaveBeenCalled();
-    });
-
-    it('test with invalid country name', () => {
-      validateStringSpy.mockReturnValue(false);
-      CountryValidator.validateCountryName(req, res, next);
-      expect(validateStringSpy).toHaveBeenCalledWith('Kenya#');
-      expect(Response.sendResponse).toHaveBeenCalledWith(res, 400, false, message);
-    });
-  });
-
-  describe('validateNewCountry', () => {
-    beforeEach(() => {
-      req = { body: { newName: 'Kenya#' } };
-      message = 'Please provide a valid country name';
-      validateStringSpy = jest.spyOn(CountryHelper, 'validateString');
-    });
-
-    it('test with valid country name', () => {
-      validateStringSpy.mockReturnValue(true);
-      CountryValidator.validateNewCountry(req, res, next);
-      expect(next).toHaveBeenCalled();
-    });
-
-    it('test with invalid country name', () => {
-      validateStringSpy.mockReturnValue(false);
-      CountryValidator.validateNewCountry(req, res, next);
-      expect(validateStringSpy).toHaveBeenCalledWith('Kenya#');
-      expect(Response.sendResponse).toHaveBeenCalledWith(res, 400, false, message);
-    });
-  });
-
-  describe('validateNameQueryParam', () => {
-    beforeEach(() => {
-      req = { query: { name: '#Kenya' } };
-      validateStringSpy = jest.spyOn(CountryHelper, 'validateString');
-      message = 'Please provide a valid string value for the country name';
-    });
-
-    it('test with valid query param', () => {
-      validateStringSpy.mockReturnValue(true);
-      CountryValidator.validateNameQueryParam(req, res, next);
-      expect(next).toHaveBeenCalled();
-    });
-
-    it('test with invalid query param', () => {
-      validateStringSpy.mockReturnValue(false);
-      CountryValidator.validateNameQueryParam(req, res, next);
-      expect(validateStringSpy).toHaveBeenCalledWith('#Kenya');
-      expect(Response.sendResponse).toHaveBeenCalledWith(res, 400, false, message);
+      expect(HttpError.sendErrorResponse)
+        .toHaveBeenCalledWith({
+          statusCode: 400,
+          message: errorMessage,
+          error: { name: 'please provide a valid name' }
+        }, res);
     });
   });
 
   describe('validateUpdateReqBody', () => {
     beforeEach(() => {
-      error = ['Property `name` cannot be empty'];
       req = { body: { name: '', newName: 'Kenya' } };
-      message = `Incomplete update information. 
-    Compulsory properties; name and newName must be filled`;
+      message = 'name is not allowed to be empty\nplease provide a valid name\n';
     });
 
     it('test with valid request body', () => {
       req = { body: { name: 'Uganda', newName: 'Kenya' } };
-      validateReqBodySpy.mockReturnValue([]);
       CountryValidator.validateUpdateReqBody(req, res, next);
       expect(next).toHaveBeenCalled();
     });
 
     it('test with request body missing name/newName', () => {
-      validateReqBodySpy.mockReturnValue(error);
       CountryValidator.validateUpdateReqBody(req, res, next);
-      expect(Response.sendResponse).toHaveBeenCalledWith(res, 400, false, message);
+      expect(HttpError.sendErrorResponse)
+        .toHaveBeenCalledWith({
+          statusCode: 400,
+          message: errorMessage,
+          error: { name: 'please provide a valid name' }
+        }, res);
     });
   });
 
