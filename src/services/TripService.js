@@ -23,7 +23,7 @@ export class TripService {
         model: Provider, as: 'provider', include: [{ model: User, as: 'user' }]
       },
       {
-        model: models.Cab, as: 'cab', attributes: ['regNumber', 'model']
+        model: models.Cab, as: 'cab', attributes: ['regNumber', 'model', 'providerId']
       }, {
         model: models.Driver, as: 'driver', attributes: ['driverName', 'driverPhoneNo']
       }

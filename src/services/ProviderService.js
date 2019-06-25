@@ -4,6 +4,7 @@ import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import ProviderHelper from '../helpers/providerHelper';
 import ProviderValidator from '../middlewares/ProviderValidator';
 import BaseService from './BaseService';
+import RemoveDataValues from '../helpers/removeDataValues';
 
 const {
   Provider, User, Cab, Driver
@@ -145,6 +146,23 @@ class ProviderService extends BaseService {
     return providers.filter(
       provider => provider.dataValues.vehicles.length > 0 && provider.dataValues.drivers.length > 0
     );
+  }
+
+  /**
+   * @description Returns a user and its provider detail of the specified slackId
+   * @param slackId {string}
+   * @returns {object} the user details
+    */
+  static async getProviderBySlackId(slackId) {
+    const user = Provider.findOne({
+      include: [{
+        model: User,
+        where: { slackId },
+        as: 'user',
+        attributes: ['slackId', 'id']
+      }]
+    });
+    return RemoveDataValues.removeDataValues(user);
   }
 }
 

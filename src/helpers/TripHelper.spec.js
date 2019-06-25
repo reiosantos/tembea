@@ -114,7 +114,7 @@ describe('Trip approval Date test', () => {
     const date = newApprovalDateFormat.split('T')[0];
     const year = new Date().getFullYear();
     const month = new Date().getMonth() + 1;
-    const day = new Date().getDate();
+    const day = '01';
     expect(date).toEqual(`${year}-0${month}-${day}`);
   });
 });

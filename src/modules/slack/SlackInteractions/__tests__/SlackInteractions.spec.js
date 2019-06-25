@@ -29,6 +29,7 @@ import TripCabController from '../../TripManagement/TripCabController';
 import ProvidersController from '../../RouteManagement/ProvidersController';
 import SlackInteractionsHelpers from '../../helpers/slackHelpers/SlackInteractionsHelpers';
 import InteractivePromptSlackHelper from '../../helpers/slackHelpers/InteractivePromptSlackHelper';
+import ProviderService from '../../../../services/ProviderService';
 
 describe('SlackInteractions', () => {
   let payload1;
@@ -834,6 +835,19 @@ describe('SlackInteractions', () => {
         await SlackInteractionsHelpers.handleOpsAction(OpsTripActionDataMock, respond);
         expect(handleSelectProviderAction).toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('handleSelectCabActions', () => {
+    beforeEach(() => {
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('xyz');
+    });
+    const payload = { user: { id: 1 }, actions: [{ value: 1 }], channel: { id: 1 } };
+    it('Should call user cancellation function if trip has been canceled', async () => {
+      jest.spyOn(ProviderService, 'getProviderBySlackId').mockResolvedValue({ id: 1 });
+      jest.spyOn(tripService, 'getById').mockResolvedValue({ providerId: '16' });
+      SlackInteractions.handleSelectCabActions(payload);
+      expect(ProviderService.getProviderBySlackId).toHaveBeenCalled();
     });
   });
 });

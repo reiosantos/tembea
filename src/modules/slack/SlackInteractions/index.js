@@ -25,6 +25,7 @@ import SlackNotifications from '../SlackPrompts/Notifications';
 import { providerErrorMessage } from '../../../helpers/constants';
 import SlackInteractionsHelpers from '../helpers/slackHelpers/SlackInteractionsHelpers';
 import InteractivePromptSlackHelper from '../helpers/slackHelpers/InteractivePromptSlackHelper';
+import ProviderService from '../../../services/ProviderService';
 
 class SlackInteractions {
   static launch(data, respond) {
@@ -146,8 +147,16 @@ class SlackInteractions {
     }
   }
 
-  static async handleSelectCabActions(data) {
-    await DialogPrompts.sendSelectCabDialog(data);
+  static async handleSelectCabActions(payload, respond) {
+    const { user: { id: slackId }, actions } = payload;
+    const { id: providerId } = await ProviderService.getProviderBySlackId(slackId);
+    const tripId = actions[0].value;
+    const { providerId: assignedProviderId } = await tripService.getById(tripId);
+
+    if (providerId === assignedProviderId) {
+      return DialogPrompts.sendSelectCabDialog(payload);
+    }
+    return respond(new SlackInteractiveMessage(':x: This trip has been assigned to another provider'));
   }
 
   /**
