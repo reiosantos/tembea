@@ -2,7 +2,9 @@ import CabsValidator from '../CabsValidator';
 import MockData from '../__mocks__/CabsValidatorMocks';
 import HttpError from '../../helpers/errorHandler';
 import GeneralValidator from '../GeneralValidator';
+import { messages } from '../../helpers/constants';
 
+const { VALIDATION_ERROR } = messages;
 
 describe('CabsValidator', () => {
   let res;
@@ -36,10 +38,10 @@ describe('CabsValidator', () => {
     });
 
     it('should return errors if some inputs have been left out', async () => {
-      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(errorMessages, res);
-      const response = await CabsValidator.validateAllInputs(incompleteReq, res, next);
+      CabsValidator.validateAllInputs(incompleteReq, res, next);
+      const error = new HttpError(VALIDATION_ERROR, 400, errorMessages);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(response).toEqual(errorMessages);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledWith(error, res);
     });
 
     it('should return capacity should be a number greater than zero', async () => {
@@ -50,10 +52,10 @@ describe('CabsValidator', () => {
     });
 
     it('should return empty inputs errors', async () => {
-      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(emptyInputError, res);
-      const response = await CabsValidator.validateAllInputs(emptySpacesReq, res, next);
+      CabsValidator.validateAllInputs(emptySpacesReq, res, next);
+      const error = new HttpError(VALIDATION_ERROR, 400, emptyInputError);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(response).toEqual(emptyInputError);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledWith(error, res);
     });
   });
   describe('validateCabUpdateBody', () => {

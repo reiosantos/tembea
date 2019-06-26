@@ -2,6 +2,7 @@ const payload = {
   regNumber: 'KCA 545',
   capacity: '1',
   model: 'Limo',
+  providerId: 3,
 };
 
 const cabs = {
@@ -17,7 +18,6 @@ const cabs = {
   pageMeta: {
     totalPages: 1, pageNo: 1, totalItems: 5, itemsPerPage: 100
   }
-
 };
 
 const paginatedData = {
@@ -45,6 +45,7 @@ const overloadPayload = {
     + 'Lorem Ipsum has been the industrys standard dummy text ever since the 1500s,'
     + 'when an unknown printer took a galley of type and scrambled it to make a type'
     + 'specimen book. It has survived not',
+  providerId: 3
 };
 
 const returnedData = {
@@ -66,13 +67,15 @@ const returnedData = {
 const updateData = {
   regNumber: 'KCX 505',
   model: 'motor',
-  capacity: 4
+  capacity: 4,
+  providerId: 3
 };
 
 const updateDatamock = {
   regNumber: 'KCX 505 KG',
   model: 'motor',
-  capacity: 4
+  capacity: 4,
+  providerId: 3
 };
 
 const successMessage = '1 of 1 page(s).';

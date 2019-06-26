@@ -110,7 +110,7 @@ describe('CabsController', () => {
         .set(headers)
         .expect(409, {
           success: false,
-          message: 'Cab registration or drivers number already exists'
+          message: 'Cab with registration number already exists'
         }, done);
     });
 

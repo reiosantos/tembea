@@ -1,8 +1,9 @@
 class HttpError extends Error {
-  constructor(message, code = 500) {
+  constructor(message, code = 500, error) {
     super();
     this.message = message;
     this.statusCode = code;
+    this.error = error;
   }
 
   static throwErrorIfNull(data, message, code = 404) {
@@ -11,12 +12,13 @@ class HttpError extends Error {
     }
   }
 
-  static sendErrorResponse(error, res) {
-    const code = error.statusCode || 500;
-    const { message } = error;
+  static sendErrorResponse(errorInstance, res) {
+    const code = errorInstance.statusCode || 500;
+    const { message, error } = errorInstance;
     res.status(code).json({
       success: false,
-      message
+      message,
+      error,
     });
   }
 }

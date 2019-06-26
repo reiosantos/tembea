@@ -23,7 +23,7 @@ class CabsController {
         });
       }
       const recordConflictError = {
-        message: 'Cab registration or drivers number already exists',
+        message: 'Cab with registration number already exists',
         statusCode: 409
       };
       HttpError.sendErrorResponse(recordConflictError, res);

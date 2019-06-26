@@ -1,24 +1,31 @@
+import joi from '@hapi/joi';
 import GeneralValidator from './GeneralValidator';
 import HttpError from '../helpers/errorHandler';
+import { messages } from '../helpers/constants';
+
+const { VALIDATION_ERROR } = messages;
 
 class CabsValidator {
   static validateAllInputs(req, res, next) {
-    const inputErrors = GeneralValidator.validateReqBody(
-      req.body, 'regNumber', 'capacity', 'model'
-    );
-    if (inputErrors.length > 0) {
-      return HttpError.sendErrorResponse({ message: { inputErrors } }, res);
+    const schema = joi.object().keys({
+      model: joi.string().trim().required(),
+      regNumber: joi.string().trim().required().min(3),
+      capacity: joi.number().required().positive(),
+      providerId: joi.number().required().positive(),
+    });
+    const { error, value } = joi.validate(req.body, schema, { abortEarly: false });
+    if (error) {
+      const { details: errorDetails } = error;
+      const inputErrors = {};
+      errorDetails.forEach((err) => {
+        const { context: { key }, message } = err;
+        inputErrors[key] = message;
+      });
+      const validationError = new HttpError(VALIDATION_ERROR, 400, inputErrors);
+      return HttpError.sendErrorResponse(validationError, res);
     }
-    const { capacity } = req.body;
-    const modifiedBodyData = { ...req.body };
-    modifiedBodyData.capacity = (typeof capacity === 'number') ? `${capacity}` : capacity;
-    const checkEmptyInputData = GeneralValidator.validateEmptyReqBodyProp(
-      modifiedBodyData, 'regNumber', 'capacity', 'model',
-    );
-    if (checkEmptyInputData.length > 0) {
-      return HttpError.sendErrorResponse({ message: { checkEmptyInputData } }, res);
-    }
-    CabsValidator.checkInputValuesValidity(req, res, next);
+    req.body = value;
+    return next();
   }
 
   static checkInputValuesValidity(req, res, next) {

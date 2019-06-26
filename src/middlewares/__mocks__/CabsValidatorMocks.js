@@ -3,6 +3,7 @@ const correctReq = {
     regNumber: 'KCA 5432',
     capacity: '3',
     model: 'Aventador',
+    providerId: 1,
   }
 };
 
@@ -31,12 +32,14 @@ const emptySpacesReq = {
 };
 
 const errorMessages = {
-  message: {
-    inputErrors: [
-      'Please provide regNumber.',
-      'Please provide model.'
-    ]
-  }
+  model: '"model" is required',
+  regNumber: '"regNumber" is required',
+  providerId: '"providerId" is required'
+};
+
+const emptyInputError = {
+  model: '"model" is not allowed to be empty',
+  providerId: '"providerId" is required'
 };
 
 
@@ -114,5 +117,6 @@ export default {
   noValueErrors,
   validUpdateBody,
   invalidInput,
-  emptyValueInBody
+  emptyValueInBody,
+  emptyInputError,
 };

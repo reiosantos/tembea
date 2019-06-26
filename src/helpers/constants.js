@@ -4,6 +4,10 @@ export const SLACK_DEFAULT_SIZE = 10;
 
 export const MAX_INT = 4294967295;
 
+export const messages = {
+  VALIDATION_ERROR: 'Validation error occurred, see error object for details',
+};
+
 export const TRIP_LIST_TYPE = Object.freeze({
   PAST: 'history',
   UPCOMING: 'upcoming'
