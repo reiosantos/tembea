@@ -10,7 +10,7 @@ import RemoveDataValues from '../helpers/removeDataValues';
 import WhereClauseHelper from '../helpers/WhereClauseHelper';
 
 const {
-  TripRequest, Department, Provider, User
+  TripRequest, Department, Provider, User,
 } = models;
 const getTripKey = pk => `tripDetail_${pk}`;
 
@@ -18,14 +18,14 @@ export class TripService {
   constructor() {
     this.defaultInclude = [
       'requester', 'origin', 'destination', 'rider', 'approver', 'confirmer',
-      'department', 'decliner', 'cab', 'tripDetail', 'driver',
+      'department', 'decliner', 'tripDetail',
       {
-        model: Provider,
-        as: 'provider',
-        include: [{
-          model: User,
-          as: 'user'
-        }]
+        model: Provider, as: 'provider', include: [{ model: User, as: 'user' }]
+      },
+      {
+        model: models.Cab, as: 'cab', attributes: ['regNumber', 'model']
+      }, {
+        model: models.Driver, as: 'driver', attributes: ['driverName', 'driverPhoneNo']
       }
     ];
   }
@@ -79,7 +79,6 @@ export class TripService {
   createFilter(where, defaultInclude = this.defaultInclude) {
     const { departmentName: name } = where;
     let include = [...defaultInclude];
-
     if (name && this.defaultInclude.indexOf('department') > -1) {
       include.splice(include.indexOf('department'), 1);
       const department = {
@@ -143,7 +142,7 @@ export class TripService {
 
   static serializeTripRequest(trip) {
     const {
-      requester, origin, destination, rider, department, approver, confirmer, decliner, ...tripInfo
+      requester, origin, destination, rider, department, approver, confirmer, decliner, cab, driver, ...tripInfo
     } = trip;
     const {
       id, name, tripStatus: status, departureTime, arrivalTime, createdAt,
@@ -174,7 +173,9 @@ export class TripService {
       distance,
       cabId,
       provider: TripService.serializeProviderData(provider) || {},
-      approvalDate
+      approvalDate,
+      cab,
+      driver
     };
   }
 
@@ -259,6 +260,5 @@ export class TripService {
     return trip;
   }
 }
-
 const tripService = new TripService();
 export default tripService;
