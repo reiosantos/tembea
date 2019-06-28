@@ -3,7 +3,6 @@ import UserTripBookingController from './user-trip-booking-controller';
 
 describe('paymentRequest', () => {
   it('save payment request', async () => {
-
     const [payload, res] = [{
       submission: {
         price: 300
@@ -21,4 +20,4 @@ describe('paymentRequest', () => {
 
     expect(UserTripHelpers.savePayment).toHaveBeenCalled();
   });
-})
+});

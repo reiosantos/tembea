@@ -221,11 +221,11 @@ describe('TripActionController operations approve tests', () => {
     );
   });
   it('should run notifiyProvider upon provider assignment', async () => {
-    const notifyProvider = jest.spyOn(TripActionsController, 'notifyProvider').mockResolvedValue({});
+    const notifyAll = jest.spyOn(TripActionsController, 'notifyAll').mockResolvedValue({});
     jest.spyOn(tripService, 'updateRequest').mockResolvedValue({ id: 1, name: 'Sample User' });
 
     await TripActionsController.changeTripStatusToConfirmed(opsUserId, payload, 'token');
-    expect(notifyProvider).toHaveBeenCalled();
+    expect(notifyAll).toHaveBeenCalled();
   });
 
   it('should run the catchBlock on changeTripStatusToConfirmed error ', async () => {
@@ -255,14 +255,14 @@ describe('TripActionController operations approve tests', () => {
     expect(validateCabDetailsSpy).toHaveBeenCalledWith(payload);
     expect(result.length).toBe(1);
   });
-  it('should run notifyProvider', async () => {
+  it('should run notifyAll', async () => {
     jest.spyOn(SendNotifications, 'sendManagerConfirmOrDeclineNotification')
       .mockReturnValue();
     jest.spyOn(ProviderNotifications, 'sendTripNotification')
       .mockReturnValue();
     jest.spyOn(InteractivePrompts, 'sendOpsDeclineOrApprovalCompletion')
       .mockResolvedValue();
-    await TripActionsController.notifyProvider(payload, { rider: { slackId: 'AAA' } }, 'token');
+    await TripActionsController.notifyAll(payload, { rider: { slackId: 'AAA' } }, 'token');
     expect(SendNotifications.sendManagerConfirmOrDeclineNotification).toHaveBeenCalled();
     expect(ProviderNotifications.sendTripNotification).toHaveBeenCalled();
     expect(SendNotifications.sendUserConfirmOrDeclineNotification).toHaveBeenCalled();
@@ -279,5 +279,34 @@ describe('TripActionController operations approve tests', () => {
     await TripActionsController.completeTripRequest(payload);
     expect(updateNotificationSpy).toHaveBeenCalled();
     expect(sendUserNotificationSpy).toHaveBeenCalled();
+  });
+
+  describe('#getTripNotificationDetails', () => {
+    let mock;
+    beforeEach(async () => {
+      mock = jest.spyOn(TripActionsController, 'getTripNotificationDetails').mockResolvedValue({
+        ops: {
+          id: 'OpsId'
+        },
+        slackBotOauthToken: 'my Slack OAuth token'
+      });
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+      jest.resetAllMocks();
+    });
+
+    it('should update trip notification details', async () => {
+      const details = await mock({
+        user: { id: 1 }, team: { id: 1 }
+      });
+      expect(details).toEqual({
+        ops: {
+          id: 'OpsId'
+        },
+        slackBotOauthToken: 'my Slack OAuth token'
+      });
+    });
   });
 });

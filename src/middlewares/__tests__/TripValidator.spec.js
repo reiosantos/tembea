@@ -1,7 +1,8 @@
 import TripValidator from '../TripValidator';
 import HttpError from '../../helpers/errorHandler';
 import GeneralValidator from '../GeneralValidator';
-import { TripService } from '../../services/TripService';
+import tripService, { TripService } from '../../services/TripService';
+import { tripRequestDetails } from '../../modules/slack/SlackInteractions/__mocks__/SlackInteractions.mock';
 
 
 describe('Trip Validator', () => {
@@ -60,6 +61,7 @@ describe('Trip Validator', () => {
           'Please provide driverPhoneNo.'
         ]
       };
+      jest.spyOn(tripService, 'getById').mockResolvedValue(tripRequestDetails);
     });
     it('should call validateAll with all values for confirm with non existing trip', async () => {
       HttpError.sendErrorResponse = jest.fn(() => { });
@@ -123,6 +125,14 @@ describe('Trip Validator', () => {
         expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
         expect(HttpError.sendErrorResponse).toHaveBeenCalledWith({ message: ['Add tripId to the url'] }, res);
       });
+    });
+
+    it('should call next middleware', async () => {
+      req.params.tripId = 1;
+      await TripValidator.validateAll(req, res, next);
+      req.query.action = Boolean(null);
+      req.body.providerId = 1;
+      expect(next).toHaveBeenCalledTimes(1);
     });
   });
   describe('validateEachInput method', () => {
@@ -369,5 +379,29 @@ describe('Travel Trip Validator', () => {
     expect(req.body.departmentList[1]).toBe('TDD');
     expect(req.body.departmentList[0]).toBe('people');
     expect(next).toHaveBeenCalledTimes(1);
+  });
+});
+  
+describe('validateAction', () => {
+  const req = {
+    body: { isAssignProvider: false },
+    query: { action: 'confirm' }
+  };
+  
+  const messages = [];
+  it('should validate trip\'s action', () => {
+    const validationMessages = TripValidator.validateTripAction(req, messages);
+    expect(validationMessages.length).toBeGreaterThan(0);
+    expect(validationMessages).toEqual([
+      'Please provide driverName.',
+      'Please provide driverPhoneNo.',
+      'Please provide regNumber.',
+    ]);
+  });
+
+  it('should validate trip\'s action', () => {
+    req.body.isAssignProvider = true;
+    const validationMessages = TripValidator.validateTripAction(req, messages);
+    expect(validationMessages.length).toEqual(0);
   });
 });

@@ -26,6 +26,21 @@ class TripActionsController {
     }
   }
 
+  /**
+   * @method getTripNotificationDetails
+   * @param {object} opsDetails
+   * @return {object} Returns details that are useful for
+   * notifying the Ops team head
+   */
+  static async getTripNotificationDetails(opsDetails) {
+    const { user: { id: userId }, team: { id: teamId } } = opsDetails;
+    const [ops, slackBotOauthToken] = await Promise.all([
+      SlackHelpers.findOrCreateUserBySlackId(userId, teamId),
+      TeamDetailsService.getTeamDetailsBotOauthToken(teamId)
+    ]);
+    return { ops, slackBotOauthToken };
+  }
+
   static async changeTripStatus(payload) {
     try {
       const { user: { id: userId }, team: { id: teamId } } = payload;
@@ -51,11 +66,10 @@ class TripActionsController {
 
   static async changeTripStatusToConfirmed(opsUserId, payload, slackBotOauthToken) {
     const {
-      submission: { confirmationComment, selectedProviderId, providerId }, state: payloadState
+      submission: { confirmationComment, selectedProviderId, providerId }, channel,
+      state: payloadState
     } = payload;
-    const {
-      tripId, isAssignProvider, timeStamp, channel
-    } = JSON.parse(payloadState);
+    const { tripId, isAssignProvider, timeStamp } = JSON.parse(payloadState);
     if (selectedProviderId) {
       const { slackId: providerUserSlackId } = RemoveDataValues.removeDataValues(
         await UserService.getUserById(selectedProviderId)
@@ -72,8 +86,8 @@ class TripActionsController {
         providerId,
         approvalDate
       });
-      await this.notifyProvider(payload, trip, slackBotOauthToken, timeStamp, channel);
       TripCompletionJob.createScheduleForATrip(trip);
+      await this.notifyAll(payload, trip, slackBotOauthToken, timeStamp, channel);
     }
     return 'success';
   }
@@ -87,7 +101,7 @@ class TripActionsController {
    * @param {string} slackBotOauthToken -  Slackbot auth token
    * @memberof TripActionsController
    */
-  static async notifyProvider(payload, trip, slackBotOauthToken, timeStamp, channel) {
+  static async notifyAll(payload, trip, slackBotOauthToken, timeStamp, channel) {
     const {
       submission: { providerUserSlackId, providerName },
       team: { id: teamId },

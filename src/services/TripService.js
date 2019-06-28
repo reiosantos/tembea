@@ -17,8 +17,8 @@ const getTripKey = pk => `tripDetail_${pk}`;
 export class TripService {
   constructor() {
     this.defaultInclude = [
-      'requester', 'origin', 'destination', 'rider', 'approver', 'confirmer',
-      'department', 'decliner', 'tripDetail',
+      'requester', 'origin', 'destination', 'rider', 'approver', 'confirmer', 'department',
+      'decliner', 'tripDetail',
       {
         model: Provider, as: 'provider', include: [{ model: User, as: 'user' }]
       },

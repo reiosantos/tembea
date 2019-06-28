@@ -148,7 +148,7 @@ class InteractivePrompts {
       InteractivePromptsHelpers.addOpsNotificationTripFields(tripInformation));
 
     try {
-      await InteractivePrompts.messageUpdate(channel,
+      await InteractivePrompts.messageUpdate(channel.id,
         (decline ? 'Trip request declined.' : 'Trip request approved'),
         timeStamp,
         [tripDetailsAttachment, confirmationDetailsAttachment],

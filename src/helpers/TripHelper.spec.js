@@ -39,6 +39,32 @@ describe('TripHelper', () => {
     expect(result)
       .toEqual(undefined);
   });
+
+  describe('#tripHasProvider', () => {
+    it('should return true', () => {
+      const tripHasProvider = TripHelper.tripHasProvider(tripRequestDetails);
+      expect(tripHasProvider).toEqual(true);
+    });
+
+    it('should return false', () => {
+      const trip = { providerId: null };
+      const tripHasProvider = TripHelper.tripHasProvider(trip);
+      expect(tripHasProvider).toEqual(false);
+    });
+  });
+
+  describe('#notConfirmingOrDecliningTrip', () => {
+    const reqBody = { providerId: 1 };
+    it('should return true', () => {
+      expect(TripHelper.notConfirmingOrDecliningTrip(reqBody, tripRequestDetails)).toEqual(true);
+    });
+
+    it('should return false', () => {
+      expect(TripHelper.notConfirmingOrDecliningTrip(
+        reqBody, tripRequestDetails, 'decline'
+      )).toEqual(false);
+    });
+  });
 });
 
 describe('TripHelper for Schedule Trip', () => {

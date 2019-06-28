@@ -145,7 +145,8 @@ export const tripRequestDetails = () => ({
   requestedById: 4,
   originId: 1,
   destinationId: 1,
-  tripType: 'Regular Trip'
+  tripType: 'Regular Trip',
+  providerId: 1
 });
 
 export const createPayloadWithEmbassyTime = (value = 'value', name = 'name') => ({

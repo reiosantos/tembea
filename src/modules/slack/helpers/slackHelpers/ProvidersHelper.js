@@ -36,4 +36,18 @@ export default class ProvidersHelper {
     }
     return { where, callbackId };
   }
+
+  /**
+   * @method getProviderUserDetails
+   * @param {number} providerId
+   * @returns {object} Returns provider user-specific details
+   * @description This helper method is needed for notification purposes.
+   */
+  static async getProviderUserDetails(providerId) {
+    const { providerUserId, name: providerName } = await providerService.getProviderById(providerId);
+    const {
+      slackId: providerUserSlackId
+    } = await UserService.getUserById(providerUserId);
+    return { providerUserSlackId, providerName };
+  }
 }

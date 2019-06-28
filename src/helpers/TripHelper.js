@@ -81,4 +81,25 @@ export default class TripHelper {
       new Date(parseInt(approvalDateInMs, 10)), 'YYYY-MM-DD HH:mm:ss'
     ).toISOString();
   }
+
+  /**
+   * @method tripHasProvider
+   * @param {object} trip
+   * @returns {boolean} Returns true if trip has Provider, false otherwise
+   */
+  static tripHasProvider(trip) {
+    return trip.providerId !== null;
+  }
+
+  /**
+   * @method notConfirmingOrDecliningTrip
+   * @param {Object} reqBody
+   * @param {Object} trip
+   * @param {String} action
+   * @return {boolean} Returns true if the request is neither
+   * for declining or confirming trip
+   */
+  static notConfirmingOrDecliningTrip(reqBody, trip, action) {
+    return TripHelper.tripHasProvider(trip) && !action;
+  }
 }

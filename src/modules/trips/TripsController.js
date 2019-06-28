@@ -8,6 +8,8 @@ import GeneralValidator from '../../middlewares/GeneralValidator';
 import HttpError from '../../helpers/errorHandler';
 import TripHelper from '../../helpers/TripHelper';
 import TravelTripService from '../../services/TravelTripService';
+import ProviderNotifications from '../slack/SlackPrompts/notifications/ProviderNotifications';
+import SlackProviderHelper from '../slack/helpers/slackHelpers/ProvidersHelper';
 
 class TripsController {
   static async getTrips(req, res) {
@@ -48,35 +50,77 @@ class TripsController {
   }
 
   /**
+   * @method updateProviderAndNotify
+   * @param {object} trip
+   * @param {Response} res
+   * @param {object} opts
+   * @returns {object} Returns the HTTP response object
+   * @description This method intercepts the `updateTrip` function
+   * to update the provider and send a notification
+   */
+  static async updateProviderAndNotify(trip, res, opts) {
+    const { tripId, providerId, payload } = opts;
+    await tripService.updateRequest(tripId, { providerId });
+    const { slackBotOauthToken } = await TripActionsController.getTripNotificationDetails(payload);
+    const { providerUserSlackId, providerName } = await SlackProviderHelper.getProviderUserDetails(providerId);
+
+    await ProviderNotifications.sendTripNotification(
+      providerUserSlackId, providerName, slackBotOauthToken, trip
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'The Provider for this trip was updated successfully',
+    });
+  }
+
+  static appendPropsToPayload(payload, req) {
+    const { body: { comment, isAssignProvider }, query: { action } } = req;
+    const derivedPayload = Object.assign({}, payload);
+    if (action === 'confirm') {
+      try {
+        derivedPayload.submission = TripsController.getConfirmationSubmission(req.body);
+        const state = JSON.parse(derivedPayload.state);
+        state.isAssignProvider = isAssignProvider;
+        derivedPayload.state = JSON.stringify(state);
+      } catch (err) {
+        throw err;
+      }
+    }
+    if (action === 'decline') {
+      derivedPayload.submission = { opsDeclineComment: comment };
+    }
+    return derivedPayload;
+  }
+
+  /**
    * @description Updates the trip status
    * @param  {object} req The http request object
    * @param  {object} res The http response object
    * @returns {object} The http response object
    */
   static async updateTrip(req, res) {
-    const { params: { tripId }, query: { action }, body: { slackUrl, isAssignProvider } } = req;
-    const payload = await TripsController.getCommonPayloadParam(req.currentUser, slackUrl, tripId);
-    let actionSuccessMessage = '';
-    if (action === 'confirm') {
-      actionSuccessMessage = 'trip confirmed';
-      try {
-        payload.submission = TripsController.getConfirmationSubmission(req.body);
-        const state = JSON.parse(payload.state);
-        state.isAssignProvider = isAssignProvider;
-        payload.state = JSON.stringify(state);
-      } catch (err) {
-        return HttpError.sendErrorResponse({ success: false, message: err.customMessage }, res);
-      }
+    const {
+      params: { tripId }, query: { action }, body: { slackUrl, providerId }, currentUser
+    } = req;
+    const payload = await TripsController.getCommonPayloadParam(currentUser, slackUrl, tripId);
+
+    const trip = await tripService.getById(tripId, true);
+    const tripHasProvider = TripHelper.tripHasProvider(trip);
+    if (tripHasProvider && !action) {
+      await TripsController.updateProviderAndNotify(trip, res, { tripId, providerId, payload });
     }
-    if (action === 'decline') {
-      actionSuccessMessage = 'trip declined';
-      payload.submission = { opsDeclineComment: req.body.comment };
+    const actionSuccessMessage = action === 'confirm' ? 'trip confirmed' : 'trip declined';
+    let derivedPayload;
+    try {
+      derivedPayload = TripsController.appendPropsToPayload(payload, req);
+    } catch (err) {
+      return HttpError.sendErrorResponse({ success: false, message: err.customMessage }, res);
     }
-    const result = await TripActionsController.changeTripStatus(payload);
-    if (result !== 'success') {
-      return res.status(200).json({ success: false, message: result.text });
-    }
-    return res.status(200).json({ success: true, message: actionSuccessMessage });
+
+    const result = await TripActionsController.changeTripStatus(derivedPayload);
+    const responseMessage = result === 'success' ? actionSuccessMessage : result.text;
+    return res.status(200).json({ success: result === 'success', message: responseMessage });
   }
 
   static async getSlackIdFromReq(user) {

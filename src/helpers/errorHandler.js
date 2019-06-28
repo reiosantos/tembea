@@ -19,7 +19,7 @@ class HttpError extends Error {
   static sendErrorResponse(errorInstance, res) {
     const code = errorInstance.statusCode || 500;
     const { message, error } = errorInstance;
-    res.status(code).json({
+    return res.status(code).json({
       success: false,
       message,
       error,

@@ -11,7 +11,6 @@ class TeamDetailsService {
     if (fetchedValue) {
       return fetchedValue;
     }
-
     try {
       const dataValues = await TeamDetails.findByPk(teamId);
       await cache.saveObject(getTeamDetailsKey(teamId), dataValues);

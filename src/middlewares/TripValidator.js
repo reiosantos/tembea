@@ -3,7 +3,7 @@ import joi from '@hapi/joi';
 import GeneralValidator from './GeneralValidator';
 import UserInputValidator from '../helpers/slack/UserInputValidator';
 import HttpError from '../helpers/errorHandler';
-import { TripService } from '../services/TripService';
+import tripService, { TripService } from '../services/TripService';
 import Response from '../helpers/responseHelper';
 import TripHelper from '../helpers/TripHelper';
 
@@ -12,20 +12,18 @@ class TripValidator {
   static async validateAll(req, res, next) {
     const {
       query: { action },
-      body: { isAssignProvider }
+      params: { tripId }
     } = req;
+  
     let messages = GeneralValidator.validateReqBody(req.body, 'comment', 'slackUrl');
-    if (action === 'confirm' && !isAssignProvider) {
-      messages = [
-        ...messages,
-        ...GeneralValidator.validateReqBody(req.body, 'driverName', 'driverPhoneNo', 'regNumber'),
-      ];
-    }
+    messages = TripValidator.validateTripAction(req, messages);
 
-    const { params: { tripId } } = req;
     if (!tripId) {
       messages.push('Add tripId to the url');
     }
+
+    const trip = await tripService.getById(tripId);
+    if (TripHelper.notConfirmingOrDecliningTrip(req.body, trip, action)) return next();
 
     const isTrip = await TripService.checkExistence(tripId);
 
@@ -38,6 +36,27 @@ class TripValidator {
     next();
   }
 
+  /**
+   * @static
+   * @param {object} req request object
+   * @param {array<string>} messages array of validation messages
+   * @returns {array<string>} Returns the array of validation messages
+   * @description Validates a request based on the action and
+   * if trip has been assigned provider
+   */
+  static validateTripAction(req, messages) {
+    let newMessages = [...messages];
+    const { query: { action }, body: { isAssignProvider } } = req;
+    const tripIsToBeAssignedDriver = action === 'confirm' && !isAssignProvider;
+    if (tripIsToBeAssignedDriver) {
+      newMessages = [
+        ...newMessages,
+        ...GeneralValidator.validateReqBody(req.body, 'driverName', 'driverPhoneNo', 'regNumber'),
+      ];
+    }
+    return newMessages;
+  }
+ 
   static validateEachInput(req, res, next) {
     const {
       params: { tripId },
@@ -102,8 +121,8 @@ class TripValidator {
       'DeclinedByManager', 'DeclinedByOps', 'InTransit', 'Cancelled'];
     if (status && !acceptedStatus.includes(status)) {
       errors.push('Status can be either \'Approved\','
-          + ' \'Confirmed\' , \'Pending\',  \' Completed\','
-          + ' \'DeclinedByManager\', \'DeclinedByOps\', \'InTransit\' or \'Cancelled\'');
+        + ' \'Confirmed\' , \'Pending\',  \' Completed\','
+        + ' \'DeclinedByManager\', \'DeclinedByOps\', \'InTransit\' or \'Cancelled\'');
     }
     const departureTime = TripHelper.cleanDateQueryParam(req.query, 'departureTime');
     const requestedOn = TripHelper.cleanDateQueryParam(req.query, 'requestedOn');
