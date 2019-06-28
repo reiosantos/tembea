@@ -5,7 +5,17 @@ import ProvidersController from '../ProvidersController';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import ConfirmRouteUseJob from '../../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 import RouteService from '../../../../services/RouteService';
-import { providersPayload, state } from '../__mocks__/providersController.mock';
+import {
+  providersPayload,
+  state,
+  reassignDriverPayload,
+  route,
+  driver,
+  user
+} from '../__mocks__/providersController.mock';
+import { driverService } from '../../../../services/DriverService';
+import TeamDetailsService from '../../../../services/TeamDetailsService';
+import SlackNotifications from '../../SlackPrompts/Notifications';
 
 describe('Provider Controller', () => {
   let respond;
@@ -86,5 +96,43 @@ describe('Provider Controller', () => {
     expect(bugsnagHelper.log).toHaveBeenCalled();
     expect(respond.mock.calls[0][0].text).toEqual('Unsuccessful request. Kindly Try again');
     done();
+  });
+});
+
+describe('reassignDriver', () => {
+  beforeEach(() => {
+    jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue(route);
+    jest.spyOn(driverService, 'getDriverById').mockResolvedValue();
+    jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('xoop-token');
+    jest.spyOn(ProviderNotifications, 'updateProviderReasignDriverMessage').mockResolvedValue({});
+    jest.spyOn(ProvidersController, 'sendUserRouteUpdateMessage').mockResolvedValue({});
+  });
+  afterEach(async () => {
+    jest.restoreAllMocks();
+  });
+  it('Should reassign driver to a route', async () => {
+    jest.spyOn(ProviderNotifications, 'updateProviderReasignDriverMessage').mockResolvedValue({});
+    await ProvidersController.providerReassignDriver(reassignDriverPayload);
+    expect(ProviderNotifications.updateProviderReasignDriverMessage).toHaveBeenCalled();
+    expect(ProvidersController.sendUserRouteUpdateMessage).toHaveBeenCalled();
+  });
+  it('Should enter catch block', async () => {
+    jest.spyOn(bugsnagHelper, 'log');
+    jest.spyOn(ProviderNotifications, 'updateProviderReasignDriverMessage').mockRejectedValue();
+    await ProvidersController.providerReassignDriver(reassignDriverPayload);
+    expect(bugsnagHelper.log).toHaveBeenCalled();
+  });
+});
+
+describe('Send user notification', () => {
+  it('Should send user update notification', async () => {
+    jest.spyOn(TeamDetailsService, 'getSlackBotTokenByUserId').mockResolvedValue('xoop-token');
+    jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('xxxoop');
+    jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue();
+
+    await ProvidersController.sendUserRouteUpdateMessage(user, route, driver);
+    expect(TeamDetailsService.getSlackBotTokenByUserId).toHaveBeenCalled();
+    expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
+    expect(SlackNotifications.sendNotification).toHaveBeenCalled();
   });
 });

@@ -160,6 +160,17 @@ class BatchUseRecordService {
       routeUseRecord: { ...BatchUseRecordService.serializeRouteBatch(batchData.batchRecord) },
     };
   }
+
+  static async findActiveRouteWithDriver(driverId) {
+    const routes = await RouteBatch.findAll({
+      where: { driverId },
+      include: [{
+        model: Route,
+        as: 'route',
+      }]
+    });
+    return routes;
+  }
 }
 
 export default BatchUseRecordService;

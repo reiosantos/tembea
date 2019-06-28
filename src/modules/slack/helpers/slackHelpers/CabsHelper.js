@@ -43,6 +43,17 @@ export default class CabsHelper {
     });
   }
 
+  static driverLabel(drivers) {
+    return drivers.map((val) => {
+      const { id } = val;
+      const text = {
+        text: CabsHelper.generateDriverLabel(val),
+        value: id
+      };
+      return text;
+    });
+  }
+
   static toCabDriverValuePairs(drivers) {
     return drivers.map((val) => {
       const {

@@ -2,9 +2,10 @@ import models from '../../database/models';
 import BatchUseRecordService from '../BatchUseRecordService';
 import { MAX_INT as all } from '../../helpers/constants';
 import { routeData, data } from '../__mocks__';
+import { route } from '../../modules/slack/RouteManagement/__mocks__/providersController.mock';
 
 
-const { BatchUseRecord, } = models;
+const { BatchUseRecord, RouteBatch } = models;
 
 describe('BatchUseRecordService', () => {
   beforeEach(() => {
@@ -148,6 +149,14 @@ describe('BatchUseRecordService', () => {
       const results = await BatchUseRecordService.getRoutesUsage();
       expect(sequelizeSpy).toBeCalled();
       expect(results).toEqual(mockData);
+    });
+  });
+
+  describe('findActiveRouteWithDriver', () => {
+    it('Should get all routes given driver id', async () => {
+      jest.spyOn(RouteBatch, 'findAll').mockResolvedValue([route]);
+      await BatchUseRecordService.findActiveRouteWithDriver(1);
+      expect(RouteBatch.findAll).toBeCalled();
     });
   });
 });

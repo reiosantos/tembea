@@ -8,6 +8,7 @@ import RateTripController from '../TripManagement/RateTripController';
 import TripInteractions from '../SlackPrompts/notifications/TripNotifications/TripInteractions';
 import TripCabController from '../TripManagement/TripCabController';
 import SlackInteractionsHelpers from '../helpers/slackHelpers/SlackInteractionsHelpers';
+import ProvidersController from '../RouteManagement/ProvidersController';
 
 const slackInteractionsRouter = createMessageAdapter(process.env.SLACK_SIGNING_SECRET);
 
@@ -75,5 +76,7 @@ slackInteractionsRouter.action({ callbackId: 'route_skipped' },
   JoinRouteInteractions.handleRouteSkipped);
 slackInteractionsRouter.action({ callbackId: 'rate_route' },
   RateTripController.rate);
+slackInteractionsRouter.action({ callbackId: 'reassign_driver' },
+  ProvidersController.providerReassignDriver);
 
 export default slackInteractionsRouter;

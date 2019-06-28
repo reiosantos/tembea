@@ -76,6 +76,32 @@ class ProviderAttachmentHelper {
     ];
   }
 
+  static providerRouteFields(routeInformation) {
+    const {
+      route: { name },
+      batch,
+      takeOff,
+    } = routeInformation;
+
+    return [
+      new SlackAttachmentField('*_`Route Information`_*', null, false),
+      new SlackAttachmentField('Route Name', name, true),
+      new SlackAttachmentField('Route Batch', batch, true),
+      new SlackAttachmentField('Take Off Time', takeOff, true),
+    ];
+  }
+
+  static driverFields(driverInformation) {
+    const { driverName, driverPhoneNo } = driverInformation;
+
+    return [
+      new SlackAttachmentField('*_`Driver Information`_*', null, false),
+      new SlackAttachmentField('DriverName', driverName, true),
+      new SlackAttachmentField('Driver Contact', driverPhoneNo, true),
+    ];
+  }
+
+
   static async getManagerApproveAttachment(routeRequest, channelID, submission, managerStatus) {
     const { engagement: { fellow }, manager, status } = routeRequest;
     const data = AttachmentHelper.getStatusLabels(status, 'Approved');

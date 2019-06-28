@@ -3,6 +3,8 @@ import bugsnagHelper from '../../helpers/bugsnagHelper';
 import { driverService } from '../../services/DriverService';
 import ProviderHelper from '../../helpers/providerHelper';
 import HttpError from '../../helpers/errorHandler';
+import BatchUseRecordService from '../../services/BatchUseRecordService';
+import { SlackEvents, slackEventNames } from '../slack/events/slackEvents';
 
 class DriverController {
   /**
@@ -44,7 +46,9 @@ class DriverController {
    */
   static async deleteDriver(req, res) {
     const { locals: { driver } } = res;
+    const routes = await BatchUseRecordService.findActiveRouteWithDriver(driver.id);
     await driverService.deleteDriver(driver);
+    if (routes[0]) await SlackEvents.raise(slackEventNames.UPDATE_ROUTE_DRIVER, driver, routes);
     return Response.sendResponse(res, 200, true, 'Driver successfully deleted');
   }
 

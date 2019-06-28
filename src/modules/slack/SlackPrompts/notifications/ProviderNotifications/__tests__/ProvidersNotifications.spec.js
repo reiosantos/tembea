@@ -7,9 +7,14 @@ import SlackAttachment from '../../OperationsRouteRequest/__mocks__/SlackAttachm
 import AttachmentHelper from '../../AttachmentHelper';
 import bugsnagHelper from '../../../../../../helpers/bugsnagHelper';
 import responseData from '../../../__mocks__/NotificationResponseMock';
-import { mockRouteRequestData } from '../../../../../../services/__mocks__';
+import { mockRouteRequestData, mockExistingProvider } from '../../../../../../services/__mocks__';
 import InteractivePrompts from '../../../InteractivePrompts';
 import Cache from '../../../../../../cache';
+import UserService from '../../../../../../services/UserService';
+import { driverService } from '../../../../../../services/DriverService';
+import {
+  driver, user, route, reassignDriverPayload
+} from '../../../../RouteManagement/__mocks__/providersController.mock';
 
 describe('ProviderNotifications', () => {
   const routeDetails = { Provider: '1, chirchir, 2', teamUrl: 'ewww.asasa.s' };
@@ -291,5 +296,52 @@ describe('Provider notifications', () => {
       channel, botToken, trip, timeStamp, driverDetails
     );
     expect(providerFieldMock).toHaveBeenCalled();
+  });
+});
+
+describe('sendProviderReasignDriverMessage', () => {
+  it('Should send provider update notification', async () => {
+    jest.spyOn(ProviderService, 'findProviderByPk').mockResolvedValue(mockExistingProvider);
+    jest.spyOn(UserService, 'getUserById').mockResolvedValue(user);
+    jest.spyOn(TeamDetailsService, 'getSlackBotTokenByUserId').mockResolvedValue('xoop-ou99');
+    jest.spyOn(driverService, 'getPaginatedItems').mockResolvedValue({ data: [driver] });
+    jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('CATX99');
+    jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue({});
+
+    await ProviderNotifications.sendProviderReasignDriverMessage(driver, [route]);
+    expect(ProviderService.findProviderByPk).toHaveBeenCalled();
+    expect(TeamDetailsService.getSlackBotTokenByUserId).toHaveBeenCalled();
+    expect(UserService.getUserById).toHaveBeenCalled();
+    expect(driverService.getPaginatedItems).toHaveBeenCalled();
+    expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
+    expect(SlackNotifications.sendNotification).toHaveBeenCalled();
+  });
+});
+
+describe('updateProviderReasignDriverMessage', () => {
+  it('Should update provider reassign message', async () => {
+    const {
+      channel: { id: channelId },
+      original_message: { ts: timestamp }
+    } = reassignDriverPayload;
+    jest.spyOn(InteractivePrompts, 'messageUpdate').mockResolvedValue();
+
+    await ProviderNotifications.updateProviderReasignDriverMessage(
+      channelId, 'xoob', timestamp, route, driver
+    );
+    expect(InteractivePrompts.messageUpdate).toHaveBeenCalled();
+  });
+  it('Should throw an error', async () => {
+    const {
+      channel: { id: channelId },
+      original_message: { ts: timestamp }
+    } = reassignDriverPayload;
+    jest.spyOn(InteractivePrompts, 'messageUpdate').mockRejectedValue();
+    jest.spyOn(bugsnagHelper, 'log');
+
+    await ProviderNotifications.updateProviderReasignDriverMessage(
+      channelId, 'xoob', timestamp, route, driver
+    );
+    expect(bugsnagHelper.log).toHaveBeenCalled();
   });
 });

@@ -43,6 +43,15 @@ class TeamDetailsService {
     }
   }
 
+  static async getSlackBotTokenByUserId(userId) {
+    const {
+      botToken: slackBotOauthToken
+    } = await TeamDetails.findOne({
+      where: { userId }
+    });
+    return slackBotOauthToken;
+  }
+
   static async getTeamDetailsBotOauthToken(teamId) {
     const {
       botToken: slackBotOauthToken

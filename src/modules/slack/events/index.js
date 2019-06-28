@@ -45,6 +45,9 @@ slackEvents.handle(slackEventNames.OPERATIONS_DECLINE_ROUTE_REQUEST,
 slackEvents.handle(slackEventNames.NOTIFY_ROUTE_RIDERS,
   RouteNotifications.sendRouteNotificationToRouteRiders);
 
+slackEvents.handle(slackEventNames.UPDATE_ROUTE_DRIVER,
+  ProviderNotifications.sendProviderReasignDriverMessage);
+
 SlackEvents.handle(slackEventNames.MANAGER_RECEIVE_JOIN_ROUTE,
   JoinRouteNotifications.sendManagerJoinRequest);
 

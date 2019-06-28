@@ -1,7 +1,8 @@
 import SlackNotifications from '../../Notifications';
 import {
   SlackButtonAction,
-  SlackAttachment
+  SlackAttachment,
+  SlackSelectAction
 } from '../../../SlackModels/SlackMessageModels';
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
 import UserService from '../../../../../services/UserService';
@@ -9,6 +10,8 @@ import ProviderAttachmentHelper from './helper';
 import { InteractivePrompts } from '../../../RouteManagement/rootFile';
 import BugsnagHelper from '../../../../../helpers/bugsnagHelper';
 import ProviderService from '../../../../../services/ProviderService';
+import { driverService } from '../../../../../services/DriverService';
+import CabsHelper from '../../../helpers/slackHelpers/CabsHelper';
 
 /**
  * A class representing provider notifications
@@ -199,6 +202,52 @@ export default class ProviderNotifications {
       return await SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (error) {
       BugsnagHelper.log(error);
+    }
+  }
+
+  static async sendProviderReasignDriverMessage(driver, routes) {
+    const { providerId, driverName } = driver;
+    const provider = await ProviderService.findProviderByPk(providerId);
+    const user = await UserService.getUserById(provider.providerUserId);
+    const slackBotOauthToken = await TeamDetailsService.getSlackBotTokenByUserId(user.slackId);
+    const where = { providerId: provider.id };
+    const { data: drivers } = await driverService.getPaginatedItems(undefined, where);
+    const driverData = CabsHelper.driverLabel(drivers);
+    const directMessageId = await SlackNotifications.getDMChannelId(user.slackId, slackBotOauthToken);
+
+    routes.forEach((route) => {
+      const { id } = route;
+      const attachment = new SlackAttachment('Assign another driver to route');
+      const fields = ProviderAttachmentHelper.providerRouteFields(route);
+
+      attachment.addFieldsOrActions('actions', [
+        new SlackSelectAction(`${id}`, 'Select Driver', driverData)]);
+      attachment.addFieldsOrActions('fields', fields);
+      attachment.addOptionalProps('reassign_driver', 'fallback', '#FFCCAA', 'default');
+
+      const message = SlackNotifications.createDirectMessage(directMessageId,
+        `Your driver *${driverName}* has been deleted by the Operations team. :slightly_frowning_face:`,
+        [attachment]);
+      return SlackNotifications.sendNotification(message, slackBotOauthToken);
+    });
+  }
+
+  static async updateProviderReasignDriverMessage(channel, botToken, timeStamp, route, driver) {
+    const message = 'Driver update complete. Thank you! :smiley:';
+    const attachment = new SlackAttachment();
+    attachment.addOptionalProps('', '', '#3c58d7');
+    const routeFields = await ProviderAttachmentHelper.providerRouteFields(route);
+    const driverFields = await ProviderAttachmentHelper.driverFields(driver);
+    attachment.addFieldsOrActions('fields', routeFields);
+    attachment.addFieldsOrActions('fields', driverFields);
+    try {
+      await InteractivePrompts.messageUpdate(channel,
+        message,
+        timeStamp,
+        [attachment],
+        botToken);
+    } catch (err) {
+      BugsnagHelper.log(err);
     }
   }
 }
