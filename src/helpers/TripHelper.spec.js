@@ -109,12 +109,9 @@ describe('TripHelper for Schedule Trip', () => {
 
 describe('Trip approval Date test', () => {
   it('should return a new trip approval date format', () => {
-    const approvalDate = new Date().getTime() / 1000;
-    const newApprovalDateFormat = TripHelper.convertApprovalDateFormat(approvalDate);
-    const date = newApprovalDateFormat.split('T')[0];
-    const year = new Date().getFullYear();
-    const month = new Date().getMonth() + 1;
-    const day = '01';
-    expect(date).toEqual(`${year}-0${month}-${day}`);
+    const timeStampInSeconds = 1562017616.481;
+    const newApprovalDateFormat = TripHelper.convertApprovalDateFormat(timeStampInSeconds);
+    const [date] = newApprovalDateFormat.split('T');
+    expect(date).toEqual('2019-07-01');
   });
 });
