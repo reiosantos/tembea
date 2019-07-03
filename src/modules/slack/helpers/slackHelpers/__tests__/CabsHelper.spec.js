@@ -31,4 +31,16 @@ describe('ManagerActionsHelper', () => {
     expect(valuePairsData).toEqual(expectedData);
     done();
   });
+
+  it('it should convert an array of cab details into cab text value pairs', (done) => {
+    const valuePairsData = CabsHelper.toCabLabelValuePairs(cabsMock, true);
+    const expectedData = [
+      {
+        text: `${cabMock.model.toUpperCase()} - ${cabMock.regNumber} - Seats up to ${cabMock.capacity} people`,
+        value: [cabMock.capacity, cabMock.model, cabMock.regNumber].toString()
+      }
+    ];
+    expect(valuePairsData).toEqual(expectedData);
+    done();
+  });
 });

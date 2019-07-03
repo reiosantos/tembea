@@ -6,12 +6,7 @@ import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import ConfirmRouteUseJob from '../../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 import RouteService from '../../../../services/RouteService';
 import {
-  providersPayload,
-  state,
-  reassignDriverPayload,
-  route,
-  driver,
-  user
+  providersPayload, state, route, cab, reassignCabPayload, reassignDriverPayload, user, driver
 } from '../__mocks__/providersController.mock';
 import { driverService } from '../../../../services/DriverService';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
@@ -96,6 +91,42 @@ describe('Provider Controller', () => {
     expect(bugsnagHelper.log).toHaveBeenCalled();
     expect(respond.mock.calls[0][0].text).toEqual('Unsuccessful request. Kindly Try again');
     done();
+  });
+
+  describe('reassigned cab', () => {
+    beforeEach(() => {
+      jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue(route);
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('moon-token');
+      jest.spyOn(ProviderNotifications, 'updateProviderReAssignCabMessage').mockResolvedValue({});
+      jest.spyOn(ProvidersController, 'sendUserUpdatedRouteMessage').mockResolvedValue({});
+    });
+    afterEach(async () => {
+      jest.restoreAllMocks();
+    });
+  
+    it('should reassign a cab to route', async () => {
+      await ProvidersController.handleCabReAssigmentNotification(reassignCabPayload);
+      expect(ProviderNotifications.updateProviderReAssignCabMessage).toHaveBeenCalled();
+      expect(ProvidersController.sendUserUpdatedRouteMessage).toHaveBeenCalled();
+    });
+  
+    it('should fail when reassigning a cab to a route', async () => {
+      respond = jest.fn;
+      jest.spyOn(bugsnagHelper, 'log');
+      jest.spyOn(ProviderNotifications, 'updateProviderReAssignCabMessage').mockRejectedValue();
+      await ProvidersController.handleCabReAssigmentNotification(reassignCabPayload, respond);
+      expect(bugsnagHelper.log).toHaveBeenCalled();
+    });
+  });
+
+  describe('Send new cab details to user', () => {
+    it('should send user update notification', async () => {
+      jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('moooon');
+      jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue();
+      await ProvidersController.sendUserUpdatedRouteMessage(user, route, cab, "moon-token");
+      expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
+      expect(SlackNotifications.sendNotification).toHaveBeenCalled();
+    });
   });
 });
 

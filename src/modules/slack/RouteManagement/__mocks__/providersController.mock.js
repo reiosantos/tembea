@@ -43,29 +43,60 @@ const reassignDriverPayload = {
   }
 };
 
+const reassignCabPayload = {
+  type: 'interactive_message',
+  actions:
+   [{ name: '1005', type: 'select', selected_options: [{ value: '4,prado,APD 519 DT' }] }],
+  callback_id: 'cab_reassign',
+  team: { id: 'TE2K8PGF8', domain: 'andela-tembea' },
+  channel: { id: 'DJHPQ75RP', name: 'directmessage' },
+  user: { id: 'UJMKKFC5N', name: 'segun.oluwadare' },
+  action_ts: '1562073571.892214',
+  message_ts: '1562073459.000100',
+  attachment_id: '1',
+  token: '3YJkyjPNvGpwB7Jo2v3alB9e',
+  is_app_unfurl: false,
+  original_message:
+   {
+     type: 'message',
+     subtype: 'bot_message',
+     text:
+      'Hi *Uber Kenya*, a vehicle of model *subaru* and a Registration Number: *SMI 319 JK* has been deleted by Andela Operations team.*',
+     ts: '1562073459.000100',
+     username: 'Tembea App',
+     bot_id: 'BJQ1S9EP8',
+   }
+};
+
 const route = {
-  id: 1007,
-  inUse: 4,
+  id: 1018,
+  inUse: 2,
   takeOff: '03:00',
-  batch: 'A',
-  capacity: 4,
+  batch: 'D',
+  capacity: 6,
   status: 'Active',
-  comments: 'Voluptatem blanditiis aliquam blanditiis ipsa impedit.',
-  routeId: 1001,
-  cabId: 1,
-  driverId: '5',
-  route: { name: 'prank' },
+  comments: 'Sunt deserunt consequatur.',
+  routeId: 1003,
+  cabId: 17,
+  driverId: 3,
   riders: [[{
-    name: 'Adaeze',
+    name: 'Segun',
     slackId: 'xyxxx',
-    routeBatch: 1008
+    routeBatch: 1022
   }]],
+  route: {
+    name: 'Segun'
+  }
 };
 
 const user = {
-  name: 'Adaeze',
-  slackId: 'xyxxx',
-  routeBatch: 1008
+  id: 15,
+  name: 'Segun Oluwadare',
+  slackId: 'UJMKKFC5N',
+  phoneNo: null,
+  email: 'segun.oluwadare@andela.com',
+  defaultDestinationId: null,
+  routeBatchId: 1022,
 };
 
 const driver = {
@@ -75,11 +106,15 @@ const driver = {
   driverPhoneNo: '09090009099',
 };
 
+const cab = {
+  id: 17,
+  regNumber: 'SMR 313 JK',
+  capacity: '4',
+  model: 'Mitsubishi Mirage',
+  providerId: 1,
+};
+
+
 export {
-  providersPayload,
-  route,
-  state,
-  reassignDriverPayload,
-  driver,
-  user
+  providersPayload, state, reassignCabPayload, reassignDriverPayload, route, cab, user, driver
 };

@@ -47,7 +47,7 @@ class DriverController {
   static async deleteDriver(req, res) {
     const { locals: { driver } } = res;
     const { slackUrl } = req.body;
-    const routes = await BatchUseRecordService.findActiveRouteWithDriver(driver.id);
+    const routes = await BatchUseRecordService.findActiveRouteWithDriverOrCabId({ driverId: driver.id });
     await driverService.deleteDriver(driver);
     if (routes[0]) {
       await SlackEvents.raise(slackEventNames.UPDATE_ROUTE_DRIVER, driver, routes, slackUrl);

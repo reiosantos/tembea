@@ -3,6 +3,8 @@ import Response, { getPaginationMessage } from '../../helpers/responseHelper';
 import BugsnagHelper from '../../helpers/bugsnagHelper';
 import HttpError from '../../helpers/errorHandler';
 import ProviderHelper from '../../helpers/providerHelper';
+import { SlackEvents, slackEventNames } from '../slack/events/slackEvents';
+import BatchUseRecordService from '../../services/BatchUseRecordService';
 
 class CabsController {
   static async createCab(req, res) {
@@ -76,8 +78,13 @@ class CabsController {
 
   static async deleteCab(req, res) {
     try {
-      const { params: { id } } = req;
+      const { params: { id }, body: { slackUrl } } = req;
+      const cab = await cabService.findById(id);
+      const routeBatchData = await BatchUseRecordService.findActiveRouteWithDriverOrCabId({ cabId: id });
       const dbResponse = await cabService.deleteCab(id);
+      if (routeBatchData && routeBatchData.length) {
+        SlackEvents.raise(slackEventNames.SEND_PROVIDER_VEHICLE_REMOVAL_NOTIFICATION, cab, routeBatchData, slackUrl);
+      }
       if (dbResponse > 0) {
         const message = 'Cab successfully deleted';
         return Response.sendResponse(res, 200, true, message);

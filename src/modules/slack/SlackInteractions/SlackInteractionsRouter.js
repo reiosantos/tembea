@@ -78,5 +78,6 @@ slackInteractionsRouter.action({ callbackId: 'rate_route' },
   RateTripController.rate);
 slackInteractionsRouter.action({ callbackId: 'reassign_driver' },
   ProvidersController.providerReassignDriver);
-
+slackInteractionsRouter.action({ callbackId: 'cab_reassign' },
+  ProvidersController.handleCabReAssigmentNotification);
 export default slackInteractionsRouter;

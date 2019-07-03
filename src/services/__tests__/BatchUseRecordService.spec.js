@@ -152,10 +152,10 @@ describe('BatchUseRecordService', () => {
     });
   });
 
-  describe('findActiveRouteWithDriver', () => {
+  describe('findActiveRouteWithDriverOrCabId', () => {
     it('Should get all routes given driver id', async () => {
       jest.spyOn(RouteBatch, 'findAll').mockResolvedValue([route]);
-      await BatchUseRecordService.findActiveRouteWithDriver(1);
+      await BatchUseRecordService.findActiveRouteWithDriverOrCabId({ driverId: 1 });
       expect(RouteBatch.findAll).toBeCalled();
     });
   });

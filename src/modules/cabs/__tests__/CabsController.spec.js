@@ -307,7 +307,8 @@ describe('CabsController', () => {
       req = {
         params: {
           id: 1
-        }
+        },
+        body: 'segun-andela.slack.com'
       };
       res = {
         status: jest.fn(() => ({

@@ -13,8 +13,9 @@ import Cache from '../../../../../../cache';
 import UserService from '../../../../../../services/UserService';
 import { driverService } from '../../../../../../services/DriverService';
 import {
-  driver, user, route, reassignDriverPayload
+  driver, user, route, reassignDriverPayload, cab, reassignCabPayload
 } from '../../../../RouteManagement/__mocks__/providersController.mock';
+import { cabService } from '../../../../../../services/CabService';
 
 describe('ProviderNotifications', () => {
   const routeDetails = { Provider: '1, chirchir, 2', teamUrl: 'ewww.asasa.s' };
@@ -341,6 +342,68 @@ describe('updateProviderReasignDriverMessage', () => {
 
     await ProviderNotifications.updateProviderReasignDriverMessage(
       channelId, 'xoob', timestamp, route, driver
+    );
+    expect(bugsnagHelper.log).toHaveBeenCalled();
+  });
+});
+
+describe('provider cab reassignnment', () => {
+  beforeEach(() => {
+    jest.spyOn(ProviderService, 'findProviderByPk').mockResolvedValue(mockExistingProvider);
+    jest.spyOn(UserService, 'getUserById').mockResolvedValue({ slackId: 'kdjfj' });
+    jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue('xoxb-47865');
+    jest.spyOn(cabService, 'getCabs').mockResolvedValue({ data: [cab] });
+    jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('UDWHS123');
+    jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue();
+  });
+  afterEach(async () => {
+    jest.restoreAllMocks();
+  });
+
+
+  it('should notify the provider of the cab deletion', async () => {
+    await ProviderNotifications.sendVehicleRemovalProviderNotification(cab, [route], 'segun-andela.slack.com');
+    expect(ProviderService.findProviderByPk).toHaveBeenCalled();
+    expect(UserService.getUserById).toHaveBeenCalled();
+    expect(TeamDetailsService.getTeamDetailsByTeamUrl).toHaveBeenCalled();
+    expect(cabService.getCabs).toHaveBeenCalled();
+    expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
+    expect(SlackNotifications.sendNotification).toHaveBeenCalled();
+  });
+
+  it('should enter the catch block', async () => {
+    jest.spyOn(bugsnagHelper, 'log');
+    jest.spyOn(ProviderService, 'findProviderByPk').mockRejectedValue({});
+    await ProviderNotifications.sendVehicleRemovalProviderNotification(cab, [route]);
+    expect(bugsnagHelper.log).toHaveBeenCalled();
+  });
+});
+
+describe('updateProviderReAssignCabMessage ', () => {
+  it('Should update provider reassign message', async () => {
+    const {
+      channel: { id: channelId },
+      original_message: { ts: timestamp }
+    } = reassignCabPayload;
+    jest.spyOn(InteractivePrompts, 'messageUpdate').mockResolvedValue();
+
+    await ProviderNotifications.updateProviderReAssignCabMessage(
+      channelId, 'moon', timestamp, route, cab
+    );
+    expect(InteractivePrompts.messageUpdate).toHaveBeenCalled();
+  });
+
+  it('Should throw an error', async () => {
+    const {
+      channel: { id: channelId },
+      original_message: { ts: timestamp }
+    } = reassignCabPayload;
+
+    jest.spyOn(InteractivePrompts, 'messageUpdate').mockRejectedValue();
+    jest.spyOn(bugsnagHelper, 'log');
+
+    await ProviderNotifications.updateProviderReAssignCabMessage(
+      channelId, 'moon', timestamp, route, cab
     );
     expect(bugsnagHelper.log).toHaveBeenCalled();
   });

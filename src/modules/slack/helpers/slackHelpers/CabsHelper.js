@@ -31,17 +31,24 @@ export default class CabsHelper {
    * @return {Array}
    * @param cabs
    */
-  static toCabLabelValuePairs(cabs) {
+  static toCabLabelValuePairs(cabs, hasText = false) {
     return cabs.map((val) => {
       const { capacity, model, regNumber } = val;
       const valueDetails = [capacity, model, regNumber].toString();
-      const data = {
+      let data = {
         label: CabsHelper.generateCabLabel(val),
         value: valueDetails
       };
+      if (hasText) {
+        data = {
+          text: CabsHelper.generateCabLabel(val),
+          value: valueDetails
+        };
+      }
       return data;
     });
   }
+  
 
   static driverLabel(drivers) {
     return drivers.map((val) => {

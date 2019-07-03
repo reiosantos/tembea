@@ -161,15 +161,17 @@ class BatchUseRecordService {
     };
   }
 
-  static async findActiveRouteWithDriver(driverId) {
-    const routes = await RouteBatch.findAll({
-      where: { driverId, status: 'Active' },
+
+  static async findActiveRouteWithDriverOrCabId(driverIdOrCabId) {
+    const id = { status: 'Active', ...driverIdOrCabId };
+    const result = await RouteBatch.findAll({
+      where: id,
       include: [{
         model: Route,
         as: 'route',
       }]
     });
-    return routes;
+    return result ? RemoveDataValues.removeDataValues(result) : result;
   }
 }
 

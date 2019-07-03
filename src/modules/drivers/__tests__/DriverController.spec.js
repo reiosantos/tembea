@@ -107,7 +107,7 @@ describe('DriverController', () => {
       const driver = { dataValues: { id: 2, providerId: 1 } };
       const req = { body: { slackUrl: 'adaeze-tembea.slack.com' } };
       res.locals = { driver };
-      jest.spyOn(BatchUseRecordService, 'findActiveRouteWithDriver').mockResolvedValue([route]);
+      jest.spyOn(BatchUseRecordService, 'findActiveRouteWithDriverOrCabId').mockResolvedValue([route]);
       jest.spyOn(driverService, 'deleteDriver').mockResolvedValue(1);
       await DriverController.deleteDriver(req, res);
       expect(Response.sendResponse).toHaveBeenCalled();

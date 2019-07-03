@@ -8,6 +8,7 @@ import SlackNotifications from '../SlackPrompts/Notifications';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import ProviderAttachmentHelper from '../SlackPrompts/notifications/ProviderNotifications/helper';
 import { driverService } from '../../../services/DriverService';
+import { cabService } from '../../../services/CabService';
 
 class ProvidersController {
   static async saveRoute(updatedRequest, submission, userId) {
@@ -110,6 +111,42 @@ class ProvidersController {
     const message = SlackNotifications.createDirectMessage(directMessageId,
       'A new driver has been assigned to your route. :smiley:', [attachment]);
     return SlackNotifications.sendNotification(message, botToken);
+  }
+
+
+  static async handleCabReAssigmentNotification(payload, respond) {
+    const {
+      team: { id: teamId },
+      channel: { id: channelId },
+      original_message: { ts: timestamp },
+    } = payload;
+    try {
+      const regNumber = payload.actions[0].selected_options[0].value.split(',')[2];
+      const { dataValues: cab } = await cabService.findByRegNumber(regNumber);
+      const routeBatchId = payload.actions[0].name;
+      const route = await RouteService.updateRouteBatch(routeBatchId, { cabId: cab.id });
+      const { riders: users } = route;
+      const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+      await ProviderNotifications.updateProviderReAssignCabMessage(channelId, slackBotOauthToken, timestamp, route, cab);
+      await users.forEach(user => ProvidersController.sendUserUpdatedRouteMessage(user, route, cab, slackBotOauthToken));
+    } catch (error) {
+      bugsnagHelper.log(error);
+      respond(
+        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
+      );
+    }
+  }
+
+  static async sendUserUpdatedRouteMessage(user, route, cab , slackBotOauthToken) {
+    const channelId = await SlackNotifications.getDMChannelId(user.slackId, slackBotOauthToken);
+    const attachment = new SlackAttachment();
+    const routeFields = await ProviderAttachmentHelper.providerRouteFields(route);
+    const cabFields = await ProviderAttachmentHelper.cabFields(cab);
+    attachment.addFieldsOrActions('fields', routeFields);
+    attachment.addFieldsOrActions('fields', cabFields);
+    const message = SlackNotifications.createDirectMessage(channelId,
+      '*A new cab has been assigned to your route* :smiley:', [attachment]);
+    return SlackNotifications.sendNotification(message, slackBotOauthToken);
   }
 }
 

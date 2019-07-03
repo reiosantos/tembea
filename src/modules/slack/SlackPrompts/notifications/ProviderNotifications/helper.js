@@ -183,6 +183,16 @@ class ProviderAttachmentHelper {
     attachments.addFieldsOrActions('fields', fields);
     return attachments;
   }
+
+  static cabFields(cabInfo) {
+    const { model, regNumber, capacity } = cabInfo;
+    return [
+      new SlackAttachmentField('*_`Cab Information`_*', null, false),
+      new SlackAttachmentField('Model', model, true),
+      new SlackAttachmentField('Registration Number', regNumber, true),
+      new SlackAttachmentField('Capacity', capacity, true),
+    ];
+  }
 }
 
 export default ProviderAttachmentHelper;
