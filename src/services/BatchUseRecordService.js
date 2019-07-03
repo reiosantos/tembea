@@ -163,7 +163,7 @@ class BatchUseRecordService {
 
   static async findActiveRouteWithDriver(driverId) {
     const routes = await RouteBatch.findAll({
-      where: { driverId },
+      where: { driverId, status: 'Active' },
       include: [{
         model: Route,
         as: 'route',

@@ -8,6 +8,8 @@ import {
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import payloadData from '../__mocks__/driversMocks';
 import HttpError from '../../../helpers/errorHandler';
+import BatchUseRecordService from '../../../services/BatchUseRecordService';
+import { route } from '../../slack/RouteManagement/__mocks__/providersController.mock';
 
 describe('DriverController', () => {
   bugsnagHelper.log = jest.fn();
@@ -103,10 +105,11 @@ describe('DriverController', () => {
   describe('DriverController.deleteDriver', () => {
     it('should successfully delete a driver', async () => {
       const driver = { dataValues: { id: 2, providerId: 1 } };
+      const req = { body: { slackUrl: 'adaeze-tembea.slack.com' } };
       res.locals = { driver };
-
+      jest.spyOn(BatchUseRecordService, 'findActiveRouteWithDriver').mockResolvedValue([route]);
       jest.spyOn(driverService, 'deleteDriver').mockResolvedValue(1);
-      await DriverController.deleteDriver({}, res);
+      await DriverController.deleteDriver(req, res);
       expect(Response.sendResponse).toHaveBeenCalled();
     });
   });

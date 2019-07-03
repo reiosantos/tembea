@@ -79,13 +79,6 @@ describe('Team details service', () => {
     }
   });
 
-  describe('getSlackBotTokenByUserId', () => {
-    it('Should get bot token by user id', async () => {
-      const teadDetails = await TeamDetailsService.getSlackBotTokenByUserId('XXXXXX');
-      expect(teadDetails).toBeDefined();
-    });
-  });
-
   describe('TeamDetailsService_getAllTeams', () => {
     beforeEach(() => {
       jest.spyOn(TeamDetails, 'findAll').mockImplementation().mockResolvedValue([{

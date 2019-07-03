@@ -303,14 +303,14 @@ describe('sendProviderReasignDriverMessage', () => {
   it('Should send provider update notification', async () => {
     jest.spyOn(ProviderService, 'findProviderByPk').mockResolvedValue(mockExistingProvider);
     jest.spyOn(UserService, 'getUserById').mockResolvedValue(user);
-    jest.spyOn(TeamDetailsService, 'getSlackBotTokenByUserId').mockResolvedValue('xoop-ou99');
+    jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue('xoop-ou99');
     jest.spyOn(driverService, 'getPaginatedItems').mockResolvedValue({ data: [driver] });
     jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('CATX99');
     jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue({});
 
-    await ProviderNotifications.sendProviderReasignDriverMessage(driver, [route]);
+    await ProviderNotifications.sendProviderReasignDriverMessage(driver, [route], 'adaeze.slack.com');
     expect(ProviderService.findProviderByPk).toHaveBeenCalled();
-    expect(TeamDetailsService.getSlackBotTokenByUserId).toHaveBeenCalled();
+    expect(TeamDetailsService.getTeamDetailsByTeamUrl).toHaveBeenCalled();
     expect(UserService.getUserById).toHaveBeenCalled();
     expect(driverService.getPaginatedItems).toHaveBeenCalled();
     expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();

@@ -126,12 +126,10 @@ describe('reassignDriver', () => {
 
 describe('Send user notification', () => {
   it('Should send user update notification', async () => {
-    jest.spyOn(TeamDetailsService, 'getSlackBotTokenByUserId').mockResolvedValue('xoop-token');
     jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('xxxoop');
     jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue();
 
-    await ProvidersController.sendUserRouteUpdateMessage(user, route, driver);
-    expect(TeamDetailsService.getSlackBotTokenByUserId).toHaveBeenCalled();
+    await ProvidersController.sendUserRouteUpdateMessage(user, route, driver, 'xoob-try');
     expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
     expect(SlackNotifications.sendNotification).toHaveBeenCalled();
   });

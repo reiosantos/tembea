@@ -205,31 +205,39 @@ export default class ProviderNotifications {
     }
   }
 
-  static async sendProviderReasignDriverMessage(driver, routes) {
+  static async sendProviderReasignDriverMessage(driver, routes, slackUrl) {
     const { providerId, driverName } = driver;
     const provider = await ProviderService.findProviderByPk(providerId);
     const user = await UserService.getUserById(provider.providerUserId);
-    const slackBotOauthToken = await TeamDetailsService.getSlackBotTokenByUserId(user.slackId);
+    const { botToken: teamBotOauthToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl);
     const where = { providerId: provider.id };
     const { data: drivers } = await driverService.getPaginatedItems(undefined, where);
     const driverData = CabsHelper.driverLabel(drivers);
-    const directMessageId = await SlackNotifications.getDMChannelId(user.slackId, slackBotOauthToken);
+    const directMessageId = await SlackNotifications.getDMChannelId(user.slackId, teamBotOauthToken);
 
-    routes.forEach((route) => {
-      const { id } = route;
-      const attachment = new SlackAttachment('Assign another driver to route');
-      const fields = ProviderAttachmentHelper.providerRouteFields(route);
+    const sendNotifucations = routes.map(route => ProviderNotifications.providerMessagePerRoute(
+      route, driverData, directMessageId, driverName, teamBotOauthToken
+    ));
 
-      attachment.addFieldsOrActions('actions', [
-        new SlackSelectAction(`${id}`, 'Select Driver', driverData)]);
-      attachment.addFieldsOrActions('fields', fields);
-      attachment.addOptionalProps('reassign_driver', 'fallback', '#FFCCAA', 'default');
+    await Promise.all(sendNotifucations);
+  }
 
-      const message = SlackNotifications.createDirectMessage(directMessageId,
-        `Your driver *${driverName}* has been deleted by the Operations team. :slightly_frowning_face:`,
-        [attachment]);
-      return SlackNotifications.sendNotification(message, slackBotOauthToken);
-    });
+  static async providerMessagePerRoute(
+    route, driverData, directMessageId, driverName, teamBotOauthToken
+  ) {
+    const { id } = route;
+    const attachment = new SlackAttachment('Assign another driver to route');
+    const fields = ProviderAttachmentHelper.providerRouteFields(route);
+
+    attachment.addFieldsOrActions('actions', [
+      new SlackSelectAction(`${id}`, 'Select Driver', driverData)]);
+    attachment.addFieldsOrActions('fields', fields);
+    attachment.addOptionalProps('reassign_driver', 'fallback', '#FFCCAA', 'default');
+
+    const message = SlackNotifications.createDirectMessage(directMessageId,
+      `Your driver *${driverName}* has been deleted by the Operations team. :slightly_frowning_face:`,
+      [attachment]);
+    return SlackNotifications.sendNotification(message, teamBotOauthToken);
   }
 
   static async updateProviderReasignDriverMessage(channel, botToken, timeStamp, route, driver) {

@@ -87,19 +87,19 @@ class ProvidersController {
       await ProviderNotifications.updateProviderReasignDriverMessage(
         channelId, botToken, timestamp, route, driver
       );
-      riders.forEach(user => ProvidersController.sendUserRouteUpdateMessage(
-        user, route, driver
+      const sendNotifications = riders.map(user => ProvidersController.sendUserRouteUpdateMessage(
+        user, route, driver, botToken
       ));
+      await Promise.all(sendNotifications);
     } catch (error) {
       bugsnagHelper.log(error);
     }
   }
 
-  static async sendUserRouteUpdateMessage(user, route, driver) {
+  static async sendUserRouteUpdateMessage(user, route, driver, botToken) {
     const { slackId } = user;
-    const slackBotOauthToken = await TeamDetailsService.getSlackBotTokenByUserId(slackId);
     const directMessageId = await SlackNotifications.getDMChannelId(
-      slackId, slackBotOauthToken
+      slackId, botToken
     );
     const attachment = new SlackAttachment();
     attachment.addOptionalProps('', '', '#3c58d7');
@@ -109,7 +109,7 @@ class ProvidersController {
     attachment.addFieldsOrActions('fields', driverFields);
     const message = SlackNotifications.createDirectMessage(directMessageId,
       'A new driver has been assigned to your route. :smiley:', [attachment]);
-    return SlackNotifications.sendNotification(message, slackBotOauthToken);
+    return SlackNotifications.sendNotification(message, botToken);
   }
 }
 
