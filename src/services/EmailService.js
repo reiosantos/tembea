@@ -9,7 +9,8 @@ class EmailService {
     if (apiKey && domain) {
       const options = {
         apiKey: process.env.MAILGUN_API_KEY,
-        domain: process.env.MAILGUN_DOMAIN
+        domain: process.env.MAILGUN_DOMAIN,
+        from: process.env.MAILGUN_SENDER,
       };
       this.client = mailgun(options);
     } else {

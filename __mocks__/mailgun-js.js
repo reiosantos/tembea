@@ -1,8 +1,8 @@
 let mailgun = jest.genMockFromModule('mailgun-js');
-
 mailgun = options => ({
   apiKey: options.apiKey,
   domain: options.domain,
+  from: options.from,
   messages: () => ({
     send: mailOptions => new Promise((resolve) => {
       resolve(
@@ -14,6 +14,4 @@ mailgun = options => ({
     })
   })
 });
-
-
 module.exports = mailgun;
