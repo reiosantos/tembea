@@ -1,3 +1,5 @@
+require('@babel/register');
+require('./env/loadConfig');
 const path = require('path');
 
 module.exports = {

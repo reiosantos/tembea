@@ -1,12 +1,9 @@
-import dotenv from 'dotenv';
 import bugsnagHelper from '../helpers/bugsnagHelper';
 import models from '../database/models';
 import RoleService from '../services/RoleService';
 import cache from '../cache';
 import { DEFAULT_LOCATIONS, DEFAULT_ADDRESSES } from '../helpers/constants';
 import LocationService from '../services/LocationService';
-
-dotenv.config();
 
 const { User, Address } = models;
 

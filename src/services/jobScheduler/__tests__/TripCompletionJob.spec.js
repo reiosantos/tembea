@@ -1,4 +1,5 @@
 import schedule from 'node-schedule';
+import moment from 'moment';
 import tripService from '../../TripService';
 import RemoveDataValues from '../../../helpers/removeDataValues';
 import TripCompletionJob from '../jobs/TripCompletionJob';
@@ -29,10 +30,12 @@ describe('TripCompletionJob', () => {
       jest.restoreAllMocks();
     });
     it('should add 2 hours to the departure time', async () => {
+      const dateTime = new Date('2019-3-27T05:30:00');
+      const dataTimePlusTwoHours = moment(new Date('2019-3-27T07:30:00')).format();
       const result = await TripCompletionJob
-        .calculateNotificationPrompTime('2019-03-27T05:00:21+00:00', 2);
+        .calculateNotificationPrompTime(dateTime, 2);
 
-      expect(result).toEqual('2019-03-27T07:00:21+00:00');
+      expect(result).toEqual(dataTimePlusTwoHours);
     });
   });
   describe('TripCompletionJob_createScheduleForATrip', () => {

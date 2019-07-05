@@ -1,6 +1,5 @@
 import express from 'express';
 import path from 'path';
-import dotenv from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
 import expressValidator from 'express-validator';
@@ -10,7 +9,6 @@ import SlackBodyParserFilter from './helpers/slackBodyParserFilter';
 import './modules/slack/events/index';
 import hbsConfig from './hbsConfig';
 
-dotenv.config();
 
 const app = express();
 

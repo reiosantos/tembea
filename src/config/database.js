@@ -1,25 +1,15 @@
 const env = require('./environment.js');
 
-const defaultConfig = {
-  databaseUrl: env.DATABASE_URL,
-  dialect: env.DATABASE_DIALECT || 'postgres',
-  logging: false,
-  use_env_variable: 'DATABASE_URL',
-};
+const appEnvironment = env.NODE_ENV;
 
 const database = {
-  development: {
-    ...defaultConfig,
-  },
-  test: {
-    ...defaultConfig,
-  },
-  staging: {
-    ...defaultConfig,
-  },
-  production: {
-    ...defaultConfig,
-  },
+  [appEnvironment]: {
+    databaseUrl: env.DATABASE_URL,
+    dialect: env.DATABASE_DIALECT || 'postgres',
+    logging: false,
+    use_env_variable: 'DATABASE_URL',
+    operatorsAliases: false
+  }
 };
 
 // DO NOT CHANGE EVER!!!

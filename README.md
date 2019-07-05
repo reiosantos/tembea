@@ -14,13 +14,19 @@ Trip management at it's best for Andela.
 
 ## Table of Contents
 
-- [Documentation](#documentation)
-- [Setup](#setup)
-  - [Database and ORM](#database-and-orm)
-- [Testing](#testing)
-- [Contribute](#contribute)
-- [Deployment](#deployment)
-- [License](#license)
+- [tembea](#tembea)
+  - [Description](#description)
+  - [Table of Contents](#table-of-contents)
+  - [Documentation](#documentation)
+  - [Setup](#setup)
+    - [Dependencies](#dependencies)
+    - [Getting Started](#getting-started)
+      - [Database and ORM](#database-and-orm)
+    - [More about environmental variables](#more-about-environmental-variables)
+    - [Run the Service Using Docker](#run-the-service-using-docker)
+  - [Testing](#testing)
+  - [Deployment](#deployment)
+  - [Docker for Local development](#docker-for-local-development)
 
 ## Documentation
 
@@ -52,7 +58,7 @@ Follow these steps to set up the project in development mode
   ```
   yarn install
   ```
-- Create a `.env` file in the root of your directory using the `.env.example` file in the repository
+- Create a `.env` file in the `env` directory using the `.env.sample` file in the repository
 - Setup the database and migrations (**_see [database setup](#database-and-orm, 'setting up database')_**)
 - Start the application by running
   ```
@@ -63,7 +69,7 @@ Follow these steps to set up the project in development mode
 #### Database and ORM
 
 - Create a database in `PostgreSQL` and name it `tembea`
-- Set the following environment variables in `.env`:
+- Set the following environment variables in `.env` (to be created in the `env` directory):
 
   - `DATABASE_USERNAME` - this is the database username
   - `DATABASE_PASSWORD` - this is the database password. Ignore if you don't have a database password
@@ -77,22 +83,8 @@ Follow these steps to set up the project in development mode
 
 ### More about environmental variables
 
-After setting up your `.env` from the template provided in the `.env.sample` file,
-to use these variables anywhere in the app;
-
-- import the `dotenv` package
-
-```[js]
-import dotenv from 'dotenv'
-```
-
-- Make it available for use as early as possible in that file
-
-```[js]
-dotenv.config()
-```
-
-- Access any variable in the `.env`
+After setting up your `.env` from the template provided in the `env/.env.sample` file;
+to use these environment variables anywhere in the app, simply:
 
 ```[js]
 process.env.MY_ENV_VARIABLE

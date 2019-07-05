@@ -1,4 +1,3 @@
-import { WriteStream } from 'fs';
 import moment from 'moment';
 import tripService from '../../TripService';
 import tripMockResults from '../__mocks__/TripsDataMock';
@@ -30,14 +29,13 @@ describe('Report Generator Service', () => {
     done();
   });
 
-  it('should return excel file stream', async (done) => {
+  it('should return excel file stream', async () => {
     const tripData = await reportService.generateMonthlyReport();
     const excelWorkBook = reportService.getEmailAttachmentFile(tripData);
     const fileStream = await ReportGeneratorService.writeAttachmentToStream(excelWorkBook);
-    expect(fileStream).toBeInstanceOf(WriteStream);
+    expect(fileStream.constructor.name).toBe('WriteStream');
     expect(fileStream).toHaveProperty('path');
     expect(fileStream.path).toBe('excel.xlsx');
-    done();
   });
 
   it('should raise an error on unsupported report type', () => {
