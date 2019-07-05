@@ -16,7 +16,6 @@ import { createTripData } from '../../SlackInteractions/__mocks__/SlackInteracti
 import PreviewScheduleTrip from '../../helpers/slackHelpers/previewScheduleTripAttachments';
 import InteractivePromptSlackHelper from '../../helpers/slackHelpers/InteractivePromptSlackHelper';
 
-jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../../slack/events/', () => ({
   slackEvents: jest.fn(() => ({
     raise: jest.fn(),
@@ -40,7 +39,7 @@ describe('Interactive Prompts test', () => {
   let getWebClient;
   const update = jest.fn(() => {});
   beforeEach(() => {
-    getWebClient = jest.spyOn(WebClientSingleton.prototype, 'getWebClient');
+    getWebClient = jest.spyOn(WebClientSingleton, 'getWebClient');
     getWebClient.mockImplementationOnce(() => ({
       chat: { update }
     }));

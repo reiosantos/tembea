@@ -171,7 +171,7 @@ describe('Tests for google maps suggestions', () => {
   });
 });
 
-describe('helper functions', async () => {
+describe('helper functions', () => {
   let respond;
   beforeEach(() => {
     respond = jest.fn();

@@ -34,7 +34,7 @@ describe('ProvidersController', () => {
     });
   });
 
-  describe('ProviderController_updateProvider', async () => {
+  describe('ProviderController_updateProvider', () => {
     let updateData;
     it('should update provider successfully', (done) => {
       updateData = { name: 'SharkDevs Uber' };
@@ -54,7 +54,7 @@ describe('ProvidersController', () => {
   });
 
   describe('ProviderController_addProvider', () => {
-    it('should create provider successfully', async () => {
+    it('should create provider successfully', (done) => {
       const requestData = {
         name: 'TaxiCako',
         email: 'abishai.omari@andela.com'
@@ -68,6 +68,7 @@ describe('ProvidersController', () => {
           expect(res.body.provider.name).toEqual('TaxiCako');
           expect(res.body.message).toEqual('Provider created successfully');
           expect(res.body.provider.providerUserId).toEqual(3);
+          done();
         });
     });
   });

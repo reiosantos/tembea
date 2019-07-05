@@ -22,7 +22,6 @@ import { SlackInteractiveMessage } from '../../SlackModels/SlackMessageModels';
 import { SlackEvents, slackEventNames } from '../../events/slackEvents';
 import formHelper from '../../helpers/formHelper';
 
-jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../events/index.js');
 jest.mock('../../../../services/TeamDetailsService');
 jest.mock('@google/maps');

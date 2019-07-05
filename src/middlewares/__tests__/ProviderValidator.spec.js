@@ -256,7 +256,7 @@ describe('ProviderValidator', () => {
       expect(next).toHaveBeenCalled();
     });
   });
-  describe('ProviderValidator_validateProviderIDQuery', async () => {
+  describe('ProviderValidator_validateProviderIDQuery', () => {
     it('should not throw an error when the providerID is an integer', async () => {
       const createReq = {
         query: {

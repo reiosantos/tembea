@@ -6,7 +6,6 @@ import DepartmentService from '../../../../services/DepartmentService';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import { InteractivePrompts } from '../../RouteManagement/rootFile';
 
-jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../SlackPrompts/InteractivePrompts');
 jest.mock('../../events/index.js');
 jest.mock('../../../../services/TeamDetailsService');

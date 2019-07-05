@@ -42,13 +42,15 @@ describe('CountryHelper', () => {
     expect(isInvalid).toBe(false);
   });
 
-  describe('validateIfCountryIsDeleted', async () => {
-    const countryName = 'Kenya';
-    const findDeletedCountrySpy = jest.spyOn(CountryService, 'findDeletedCountry');
-    findDeletedCountrySpy.mockResolvedValue(deletedCountryMock);
-    const result = await CountryHelper.validateIfCountryIsDeleted(countryName);
-    expect(findDeletedCountrySpy).toHaveBeenCalledWith(countryName);
-    expect(result).toEqual(deletedCountryMock);
+  describe('validateIfCountryIsDeleted', () => {
+    it('validates if country is deleted', async () => {
+      const countryName = 'Kenya';
+      const findDeletedCountrySpy = jest.spyOn(CountryService, 'findDeletedCountry');
+      findDeletedCountrySpy.mockResolvedValue(deletedCountryMock);
+      const result = await CountryHelper.validateIfCountryIsDeleted(countryName);
+      expect(findDeletedCountrySpy).toHaveBeenCalledWith(countryName);
+      expect(result).toEqual(deletedCountryMock);
+    });
   });
 
   describe('checkCountry', () => {

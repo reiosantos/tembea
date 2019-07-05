@@ -24,7 +24,7 @@ describe('JoinRouteDialogPrompts', () => {
       const payload = { trigger_id: 'triggerId', team: { id: 'teamId' }, user: { id: 'userId' } };
       const addElementsSpy = jest.spyOn(SlackDialog.prototype, 'addElements');
       const sendDialog = jest.spyOn(DialogPrompts, 'sendDialog');
-      const webSpy = jest.spyOn(WebClientSingleton.prototype, 'getWebClient')
+      const webSpy = jest.spyOn(WebClientSingleton, 'getWebClient')
         .mockImplementation(() => ({
           dialog: {
             open: jest.fn()

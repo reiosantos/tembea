@@ -78,10 +78,11 @@ class JoinRouteHelpers {
       capacity, riders, takeOff,
       route: { name: routeName, destination: { address } }
     } = route;
+    const takeOffTime = getSlackDateString(takeOff);
     return [
       new SlackAttachmentField('Route', routeName, true),
       new SlackAttachmentField('Route capacity', `${riders.length}/${capacity}`, true),
-      new SlackAttachmentField('Route Departure Time', getSlackDateString(takeOff), false),
+      new SlackAttachmentField('Route Departure Time', takeOffTime, false),
       new SlackAttachmentField('Bus Stop :busstop:', address, false),
     ];
   }

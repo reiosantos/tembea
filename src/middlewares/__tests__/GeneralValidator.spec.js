@@ -276,7 +276,7 @@ describe('General Validator', () => {
       expect(result.success).toEqual(false);
     });
   });
-  describe('ValidateUpdateBody', async () => {
+  describe('ValidateUpdateBody', () => {
     const res = {
       status: jest
         .fn(() => ({

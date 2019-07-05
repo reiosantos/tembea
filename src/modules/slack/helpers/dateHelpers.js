@@ -7,9 +7,10 @@ import moment from 'moment-timezone';
  */
 
 export const getSlackDateTime = (dateTime) => {
+  const newDateTime = new Date(dateTime);
   const [fallback, original] = [
-    moment(dateTime).format('ddd, MMM Do YYYY hh:mm a'),
-    moment(dateTime).unix()
+    moment(newDateTime).format('ddd, MMM Do YYYY hh:mm a'),
+    moment(newDateTime).unix()
   ];
   return {
     fallback, original
@@ -23,9 +24,10 @@ export const getSlackDateTime = (dateTime) => {
  */
 
 export const getSlackDateString = (dateTime) => {
+  const newDateTime = new Date(dateTime);
   const [fallback, original] = [
-    moment(dateTime).format('ddd, MMM Do YYYY hh:mm a'),
-    moment(dateTime).unix()
+    moment(newDateTime).format('ddd, MMM Do YYYY hh:mm a'),
+    moment(newDateTime).unix()
   ];
   const date = new Date(0);
   date.setUTCSeconds(original);

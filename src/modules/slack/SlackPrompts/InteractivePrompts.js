@@ -16,7 +16,6 @@ import DepartmentService from '../../../services/DepartmentService';
 import PreviewScheduleTrip from '../helpers/slackHelpers/previewScheduleTripAttachments';
 import InteractivePromptSlackHelper from '../helpers/slackHelpers/InteractivePromptSlackHelper';
 
-const web = new WebClientSingleton();
 
 class InteractivePrompts {
   static sendBookNewTripResponse(payload, respond) {
@@ -117,7 +116,7 @@ class InteractivePrompts {
    * @param {string} slackBotOauthToken The team bot token
    */
   static async messageUpdate(channel, text, timeStamp, attachments, slackBotOauthToken) {
-    await web.getWebClient(slackBotOauthToken).chat.update({
+    await WebClientSingleton.getWebClient(slackBotOauthToken).chat.update({
       channel,
       text,
       ts: timeStamp,

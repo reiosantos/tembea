@@ -89,7 +89,7 @@ describe('SlackNotifications', () => {
     jest.spyOn(DepartmentService, 'getById').mockResolvedValue(mockUser);
     jest.spyOn(DepartmentService, 'getHeadByDeptId').mockResolvedValue(mockUser);
     jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockResolvedValue(mockUser);
-    jest.spyOn(WebClientSingleton.prototype, 'getWebClient').mockReturnValue(webClientMock);
+    jest.spyOn(WebClientSingleton, 'getWebClient').mockReturnValue(webClientMock);
     jest.spyOn(IncomingWebhook.prototype, 'send').mockResolvedValue(true);
     jest.spyOn(Services, 'findOrCreateNewUserWithSlackId').mockResolvedValue(dbRider);
   });
@@ -102,7 +102,7 @@ describe('SlackNotifications', () => {
   describe('getDMChannelId', () => {
     it('return an id as received from slack', async (done) => {
       const [id, botToken] = ['419', 'hello'];
-      jest.spyOn(WebClientSingleton.prototype, 'getWebClient').mockReturnValue(
+      jest.spyOn(WebClientSingleton, 'getWebClient').mockReturnValue(
         {
           im: {
             open: jest.fn().mockResolvedValue({
@@ -114,7 +114,7 @@ describe('SlackNotifications', () => {
 
       const channelId = await SlackNotifications.getDMChannelId(undefined, botToken);
 
-      expect(WebClientSingleton.prototype.getWebClient).toBeCalledWith(botToken);
+      expect(WebClientSingleton.getWebClient).toBeCalledWith(botToken);
       expect(channelId).toEqual(id);
       done();
     });

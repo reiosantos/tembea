@@ -31,7 +31,7 @@ const webClientMock = {
 
 describe('slackHelpers', () => {
   beforeEach(() => {
-    jest.spyOn(WebClientSingleton.prototype, 'getWebClient').mockReturnValue(webClientMock);
+    jest.spyOn(WebClientSingleton, 'getWebClient').mockReturnValue(webClientMock);
 
     jest.spyOn(User, 'findOne').mockResolvedValue(testUserFromDb);
     jest.spyOn(User, 'findByPk').mockResolvedValue(testUserFromDb);

@@ -20,11 +20,10 @@ import TripCompletion from '../../../services/jobScheduler/jobs/TripCompletionJo
 import CleanData from '../../../helpers/cleanData';
 import { getSlackDateString } from '../helpers/dateHelpers';
 
-const web = new WebClientSingleton();
 
 class SlackNotifications {
   static async getDMChannelId(user, teamBotOauthToken) {
-    const imResponse = await web.getWebClient(teamBotOauthToken)
+    const imResponse = await WebClientSingleton.getWebClient(teamBotOauthToken)
       .im
       .open({
         user
@@ -34,7 +33,7 @@ class SlackNotifications {
   }
 
   static sendNotifications(channelId, attachments, text, teamBotOauthToken) {
-    return web.getWebClient(teamBotOauthToken)
+    return WebClientSingleton.getWebClient(teamBotOauthToken)
       .chat
       .postMessage({
         channel: channelId,
@@ -222,7 +221,7 @@ class SlackNotifications {
 
       Object.assign(responseData, { department: name });
 
-      const imResponse = await web.getWebClient(slackBotOauthToken)
+      const imResponse = await WebClientSingleton.getWebClient(slackBotOauthToken)
         .im
         .open({
           user: responseData.requester.slackId
@@ -241,7 +240,7 @@ class SlackNotifications {
   }
 
   static async sendNotification(response, teamBotOauthToken) {
-    return web.getWebClient(teamBotOauthToken)
+    return WebClientSingleton.getWebClient(teamBotOauthToken)
       .chat
       .postMessage(response);
   }

@@ -10,7 +10,6 @@ jest.mock('../../../../services/TeamDetailsService', () => ({
   getTeamDetailsBotOauthToken: async () => 'just a random token'
 }));
 
-jest.mock('../../../../utils/WebClientSingleton');
 jest.mock('../../../../helpers/sendDialogTryCatch', () => jest.fn());
 jest.mock('../../../../helpers/slack/createDialogForm', () => jest.fn());
 
