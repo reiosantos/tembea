@@ -1,6 +1,7 @@
 import request from 'supertest';
 import app from '../src/app';
 import Utils from '../src/utils';
+import models from '../src/database/models';
 
 
 const apiURL = '/api/v1/providers';
@@ -15,6 +16,9 @@ describe('ProvidersController', () => {
       Accept: 'application/json',
       Authorization: validToken
     };
+  });
+  afterAll(() => {
+    models.sequelize.close();
   });
 
 

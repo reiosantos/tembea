@@ -19,12 +19,11 @@ describe('Homebase Controller', () => {
     await Country.create({
       name: 'Uganda'
     });
-    afterEach(async (done) => {
+    afterEach(() => {
       jest.restoreAllMocks();
-      done();
     });
-    afterAll(async (done) => {
-      done();
+    afterAll(() => {
+      models.sequelize.close();
     });
   });
   it('e2e Test: should create a homebase successfully', (done) => {

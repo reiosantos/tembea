@@ -44,9 +44,9 @@ describe('Route Request Controller', () => {
     done();
   });
 
-  afterAll(async (done) => {
+  afterAll(async () => {
     await RouteRequest.destroy({ where: {} });
-    done();
+    models.sequelize.close();
   });
 
   it('e2e Test: should return a list of all route requests', (done) => {

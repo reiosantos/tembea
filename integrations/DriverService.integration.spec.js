@@ -31,7 +31,7 @@ beforeAll(async () => {
   });
 });
 
-afterAll(async () => {
+afterAll(() => {
   models.sequelize.close();
 });
 

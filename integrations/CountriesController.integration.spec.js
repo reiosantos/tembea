@@ -21,9 +21,9 @@ describe('Countries controller', () => {
       jest.restoreAllMocks();
       done();
     });
-    afterAll(async (done) => {
+    afterAll(async () => {
       await Country.destroy({ truncate: true, cascade: true });
-      done();
+      models.sequelize.close();
     });
   });
   it('e2e Test: should return a list of all countries', (done) => {

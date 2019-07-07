@@ -1,4 +1,3 @@
-import Utils from '../src/utils';
 import tripService, { TripService } from '../src/services/TripService';
 import models from '../src/database/models';
 
