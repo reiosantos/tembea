@@ -129,6 +129,7 @@ cabsRouter.get(
  */
 cabsRouter.put(
   '/cabs/:id',
+  CabsValidator.validateIdParam,
   CleanRequestBody.trimAllInputs,
   CabsValidator.validateAllInputs,
   CabsController.updateCabDetails

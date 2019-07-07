@@ -1,6 +1,7 @@
 import request from 'request-promise-native';
 import aisService from '../AISService';
 import cache from '../../cache';
+import bugsnagHelper from '../../helpers/bugsnagHelper';
 
 describe('AISService', () => {
   const mockUser = {
@@ -34,8 +35,8 @@ describe('AISService', () => {
   });
 
   it('should fetch from cache if it data is there', async () => {
-    jest.spyOn(cache, 'fetch').mockResolvedValueOnce(JSON.stringify(mockAISData));
-    jest.spyOn(request, 'get').mockResolvedValueOnce(JSON.stringify(mockAISData));
+    jest.spyOn(cache, 'fetch').mockResolvedValue(JSON.stringify(mockAISData));
+    jest.spyOn(request, 'get').mockResolvedValue(JSON.stringify(mockAISData));
     jest.spyOn(cache, 'saveObject').mockResolvedValue({});
 
     await aisService.getUserDetails('test.user@andela.com');
@@ -46,8 +47,9 @@ describe('AISService', () => {
   it('should throw a rebranded error', async () => {
     const errMessage = 'I failed :(';
     jest.spyOn(cache, 'fetch').mockRejectedValue(new Error(errMessage));
-
-    expect(aisService.getUserDetails('test.user@test.com')).rejects.toThrow(Error);
+    jest.spyOn(bugsnagHelper, 'log').mockReturnValue();
+    await aisService.getUserDetails('test.user@andela.com');
+    expect(bugsnagHelper.log).toHaveBeenCalled();
   });
 
   it('should get user details without AIS profile', async () => {

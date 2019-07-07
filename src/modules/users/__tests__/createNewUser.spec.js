@@ -4,29 +4,33 @@ import app from '../../../app';
 import UserValidator from '../../../middlewares/UserValidator';
 import HttpError from '../../../helpers/errorHandler';
 import Utils from '../../../utils';
+import models from '../../../database/models';
 
 let validToken;
 
-describe('/User create', () => {
-  beforeAll(() => {
-    validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
-    jest.mock('@slack/client', () => ({
-      WebClient: jest.fn(() => ({
-        users: {
-          lookupByEmail: jest.fn(() => ({
-            user: {
-              id: 'TEST123',
-              profile: {
-                real_name: 'Test buddy 1',
-                email: 'test.buddy1@andela.com'
-              }
+beforeAll(() => {
+  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+  jest.mock('@slack/client', () => ({
+    WebClient: jest.fn(() => ({
+      users: {
+        lookupByEmail: jest.fn(() => ({
+          user: {
+            id: 'TEST123',
+            profile: {
+              real_name: 'Test buddy 1',
+              email: 'test.buddy1@andela.com'
             }
-          }))
-        }
-      }))
-    }));
-  });
+          }
+        }))
+      }
+    }))
+  }));
+});
+afterAll(() => {
+  models.sequelize.close();
+});
 
+describe('/User create', () => {
   it('should respond with a no email provided error', (done) => {
     request(app)
       .post('/api/v1/users')
@@ -164,13 +168,10 @@ describe('/User create user who does not exist', () => {
   it('should respond success for non existing user', (done) => {
     request(app)
       .post('/api/v1/users')
+      .set('Authorization', validToken)
       .send({
         email: 'newuser@gmail.com',
         slackUrl: 'ACME.slack.com'
-      })
-      .set({
-        Accept: 'application/json',
-        authorization: validToken
       })
       .expect(200, done);
   });
@@ -189,13 +190,12 @@ describe('/User create user who does not exist', () => {
     done();
   });
 
-  it('should return an error', async (done) => {
+  it('should return an error', async () => {
     const error = new HttpError('error');
     expect(error.message).toEqual('error');
-    done();
   });
 
-  it('should return an error', async (done) => {
+  it('should return an error', async () => {
     const res = {
       status: jest.fn(() => ({
         json: jest.fn(() => { })
@@ -204,6 +204,5 @@ describe('/User create user who does not exist', () => {
     const error = { message: 'error' };
     const response = HttpError.sendErrorResponse(error, res);
     expect(response).toBeUndefined();
-    done();
   });
 });

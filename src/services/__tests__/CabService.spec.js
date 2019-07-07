@@ -15,23 +15,21 @@ describe('cabService', () => {
   });
 
   describe('findOrCreate', () => {
-    it('return newly created cab if it does not exist', async (done) => {
+    it('return newly created cab if it does not exist', async () => {
       jest.spyOn(Cab, 'findOrCreate').mockImplementation(obj => Promise.resolve([obj.defaults]));
       const testRegNo = 'ABJ-151-737';
       const cab = await cabService.findOrCreate(testRegNo);
       expect(cab.regNumber).toEqual(testRegNo);
-      done();
     });
   });
 
   describe('findOrCreateCab', () => {
-    it("return newly created cab if it doesn't exist", async (done) => {
+    it("return newly created cab if it doesn't exist", async () => {
       jest.spyOn(Cab, 'findOrCreate').mockImplementation(obj => Promise.resolve([{
         dataValues: obj.defaults
       }]));
       const cab = await cabService.findOrCreateCab('Hello', 'World', 'Test');
       expect(cab.dataValues.regNumber).toEqual('Hello');
-      done();
     });
   });
 

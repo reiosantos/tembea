@@ -15,36 +15,33 @@ describe('GoogleCloudStorage', () => {
 
   describe('getFile', () => {
     let storage;
-    it('should get file from google cloud', async (done) => {
+    it('should get file from google cloud', async () => {
       const expectedUrl = 'https://storage.googleapis.com/undefined/test';
       jest.spyOn(GoogleCloudStorageService.prototype, 'getFile').mockResolvedValue(expectedUrl);
       storage = new GoogleCloudStorageService();
       const result = await storage.getFile('uploded', './files/images.jpeg');
 
       expect(result).toBe(expectedUrl);
-      done();
     });
   });
 
   describe('saveFile', () => {
     let storage;
-    it('should save file to google cloud', async (done) => {
+    it('should save file to google cloud', async () => {
       storage = new GoogleCloudStorageService();
       const result = await storage.saveFile('uploded', './files/images.jpeg');
 
       expect(result).toBeTruthy();
-      done();
     });
   });
 
   describe('deleteFile', () => {
     let storage;
-    it('should delete file from google cloud', async (done) => {
+    it('should delete file from google cloud', async () => {
       storage = new GoogleCloudStorageService();
       const result = await storage.deleteFile('uploded', './files/images.jpeg');
 
       expect(result).toBeTruthy();
-      done();
     });
   });
 });

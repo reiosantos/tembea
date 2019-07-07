@@ -7,11 +7,11 @@ export default (
   payload,
   formElementsFunctionName,
   callbackId,
-  dialogTitle = 'Trip Details', state = null
+  dialogTitle = 'Trip Details', defaultNote
 ) => {
-  const stateValue = state === null ? JSON.stringify(payload) : null;
+  const stateValue = JSON.stringify(payload);
   const dialog = new SlackDialog(callbackId, dialogTitle, 'Submit', ' ', stateValue);
-  const formElements = createTripDetailsForm[formElementsFunctionName](state);
+  const formElements = createTripDetailsForm[formElementsFunctionName](defaultNote);
 
   dialog.addElements(formElements);
 

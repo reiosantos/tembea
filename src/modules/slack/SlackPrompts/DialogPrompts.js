@@ -335,12 +335,11 @@ class DialogPrompts {
     await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 
-  static async sendTripNotesDialogForm(payload, formElementsFunction, callbackId, dialogTitle, state) {
+  static async sendTripNotesDialogForm(payload, formElementsFunction, callbackId, dialogTitle, note) {
     const { team: { id: teamId } } = payload;
-    const dialogForm = createDialogForm(payload, formElementsFunction, callbackId, dialogTitle, state);
-    const slackBotOauthToken = await
-    TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-    await sendDialogTryCatch(dialogForm, slackBotOauthToken, state);
+    const dialogForm = createDialogForm(payload, formElementsFunction, callbackId, dialogTitle, note);
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+    await sendDialogTryCatch(dialogForm, slackBotOauthToken);
   }
 }
 export default DialogPrompts;

@@ -58,14 +58,13 @@ describe('Operations Route Controller', () => {
         jest.spyOn(OperationsNotifications, 'updateOpsStatusNotificationMessage')
           .mockImplementation();
       });
-      it('should launch approve dialog prompt', async (done) => {
+      it('should launch approve dialog prompt', async () => {
         const routeRequest = { ...mockRouteRequestData, status: 'Confirmed' };
         getRouteRequestAndToken.mockReturnValue(
           { botToken: 'botToken', routeRequest }
         );
         await OperationsHandler.handleOperationsActions(payload, respond);
         expect(DialogPrompts.sendOperationsNewRouteApprovalDialog).toHaveBeenCalledTimes(1);
-        done();
       });
       it('should not launch approve dialog when request has been declined', async () => {
         const routeRequest = {
@@ -131,7 +130,7 @@ describe('Operations Route Controller', () => {
         payload = { ...payload, state };
       });
 
-      it('should complete approve action if cab is selectd from dropdown', async (done) => {
+      it('should complete approve action if cab is selectd from dropdown', async () => {
         jest.spyOn(ManagerFormValidator, 'approveRequestFormValidation')
           .mockResolvedValue([]);
 
@@ -139,10 +138,9 @@ describe('Operations Route Controller', () => {
         await OperationsHandler.handleOperationsActions(payload, respond);
         expect(OperationsHelper.sendOpsData).toHaveBeenCalled();
         expect(ManagerFormValidator.approveRequestFormValidation).toHaveBeenCalled();
-        done();
       });
 
-      it('should not submit invalid user input', async (done) => {
+      it('should not submit invalid user input', async () => {
         payload = {
           ...payload,
           submission: {
@@ -161,10 +159,9 @@ describe('Operations Route Controller', () => {
         expect(result.errors[0]).toBeInstanceOf(SlackDialogError);
         expect(RouteRequestService.updateRouteRequest).not.toHaveBeenCalled();
         expect(OperationsNotifications.completeOperationsApprovedAction).not.toHaveBeenCalled();
-        done();
       });
 
-      it('should handle errors', async (done) => {
+      it('should handle errors', async () => {
         payload = {};
         payload.callback_id = 'operations_route_approvedRequest';
         jest.spyOn(
@@ -175,7 +172,6 @@ describe('Operations Route Controller', () => {
         await OperationsHandler.handleOperationsActions(payload, respond);
         expect(bugsnagHelper.log).toHaveBeenCalled();
         expect(respond.mock.calls[0][0].text).toEqual('Unsuccessful request. Kindly Try again');
-        done();
       });
     });
 
@@ -274,11 +270,10 @@ describe('Operations Route Controller', () => {
         jest.spyOn(OperationsNotifications, 'updateOpsStatusNotificationMessage')
           .mockImplementation();
       });
-      it('should launch decline dialog prompt', async (done) => {
+      it('should launch decline dialog prompt', async () => {
         getRouteRequestAndToken.mockResolvedValue(mockRouteRequestData);
         await OperationsHandler.handleOperationsActions(payload, respond);
         expect(DialogPrompts.sendReasonDialog).toHaveBeenCalledTimes(1);
-        done();
       });
       it('should not launch decline dialog when request has been declined', async () => {
         const routeRequest = {
@@ -333,7 +328,7 @@ describe('Operations Route Controller', () => {
       });
 
 
-      it('should complete decline action', async (done) => {
+      it('should complete decline action', async () => {
         getRouteRequestAndToken.mockResolvedValue({
           routeRequest: { ...mockRouteRequestData },
           slackBotOauthToken: 'dfdf'
@@ -348,10 +343,9 @@ describe('Operations Route Controller', () => {
         expect(RouteRequestService.getRouteRequestAndToken).toHaveBeenCalled();
         expect(RouteRequestService.updateRouteRequest).toHaveBeenCalled();
         expect(OperationsNotifications.completeOperationsDeclineAction).toHaveBeenCalled();
-        done();
       });
 
-      it('should handle errors', async (done) => {
+      it('should handle errors', async () => {
         getRouteRequestAndToken.mockResolvedValue({ ...mockRouteRequestData });
         updateRouteRequest.mockImplementation(() => {
           throw new Error();
@@ -360,7 +354,6 @@ describe('Operations Route Controller', () => {
         await OperationsHandler.handleOperationsActions(payload, respond);
         expect(bugsnagHelper.log).toHaveBeenCalled();
         expect(respond.mock.calls[0][0].text).toEqual('Unsuccessful request. Kindly Try again');
-        done();
       });
     });
 

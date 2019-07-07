@@ -22,10 +22,10 @@ describe('LRUCacheSingleton', () => {
   });
 
   describe('getAsync', () => {
-    it('should wrap call to cache.get', () => {
-      jest.spyOn(LRUCache.prototype, 'get').mockRejectedValue(new Error());
+    it('should wrap call to cache.get', async () => {
+      jest.spyOn(LRUCache.prototype, 'get').mockImplementation(() => new Error());
       try {
-        cache.getAsync('hello');
+        await cache.getAsync('hello');
       } catch (err) {
         expect(err).toBeDefined();
       }
@@ -33,17 +33,16 @@ describe('LRUCacheSingleton', () => {
   });
 
   describe('save', () => {
-    it('should call backing cache save method', async (done) => {
+    it('should call backing cache save method', async () => {
       await cache.save('hello', 'world', 'earth');
 
       const result = cache.cache.get('hello');
       expect(result).toBeDefined();
       expect(result).toHaveProperty('world');
       expect(result.world).toEqual('earth');
-      done();
     });
 
-    it('should add new field if key contains an object', async (done) => {
+    it('should add new field if key contains an object', async () => {
       await cache.save('theKey', 'firstValue', 'tembea-backend');
       await cache.save('theKey', 'secondValue', 'tembea-frontend');
 
@@ -51,24 +50,22 @@ describe('LRUCacheSingleton', () => {
       expect(result).toBeDefined();
       expect(result).toHaveProperty('firstValue');
       expect(result).toHaveProperty('secondValue');
-      done();
     });
   });
 
   describe('fetch', () => {
-    it('should return object if it exists', async (done) => {
+    it('should return object if it exists', async () => {
       const [testKey, testValue] = ['ade', 'bendel'];
 
       cache.cache.set(testKey, testValue);
       const result = await cache.fetch(testKey);
       expect(result).toBeDefined();
       expect(result).toEqual(testValue);
-      done();
     });
   });
 
   describe('saveObject', () => {
-    it('should save entire object', async (done) => {
+    it('should save entire object', async () => {
       const testKey = 'user';
       const testObject = { name: 'tomi', scores: [1, 2, 3] };
 
@@ -76,7 +73,6 @@ describe('LRUCacheSingleton', () => {
 
       const result = cache.cache.get(testKey);
       expect(result).toEqual(testObject);
-      done();
     });
 
     it('should throw an error when saving failed', async () => {
@@ -90,7 +86,7 @@ describe('LRUCacheSingleton', () => {
   });
 
   describe('delete', () => {
-    it('should remove from cache', async (done) => {
+    it('should remove from cache', async () => {
       const [testKey, testValue] = ['mc', 'oluomo'];
       await cache.saveObject(testKey, testValue);
 
@@ -100,11 +96,10 @@ describe('LRUCacheSingleton', () => {
       await cache.delete(testKey);
       const resultAfterDelete = cache.cache.get(testKey);
       expect(resultAfterDelete).toBeUndefined();
-      done();
     });
 
     it('should throw an error when deletion failed', async () => {
-      jest.spyOn(LRUCache.prototype, 'del').mockRejectedValue(new Error());
+      jest.spyOn(LRUCache.prototype, 'del').mockImplementation(() => new Error());
       try {
         await cache.delete('key');
       } catch (err) {
@@ -130,7 +125,7 @@ describe('LRUCacheSingleton', () => {
     });
 
     it('should throw an error when flushing fails', async () => {
-      jest.spyOn(LRUCache.prototype, 'reset').mockRejectedValue(new Error());
+      jest.spyOn(LRUCache.prototype, 'reset').mockImplementation(() => new Error());
       try {
         await cache.flush();
       } catch (err) {

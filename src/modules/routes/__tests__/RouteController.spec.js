@@ -24,6 +24,7 @@ import {
   batchRecords, successMessage, returnedObject, percentages
 } from '../__mocks__/routeMock';
 import { MockRatings, RatingAverages } from '../__mocks__/mockData';
+import models from '../../../database/models';
 
 const assertRouteInfo = (body) => {
   expect(body)
@@ -57,6 +58,9 @@ describe('RoutesController', () => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
   });
+  afterAll(() => {
+    models.sequelize.close();
+  });
 
   describe('deleteRouteBatch()', () => {
     let req;
@@ -76,9 +80,11 @@ describe('RoutesController', () => {
         })).mockReturnValue({ json: jest.fn() })
       };
     });
-    it('should delete a routeBatch', async (done) => {
-      RouteService.getRouteBatchByPk = jest.fn(() => mockRouteBatchData);
-      RouteService.deleteRouteBatch = jest.fn(() => 1);
+    it('should delete a routeBatch', async () => {
+      // RouteService.getRouteBatchByPk = jest.fn(() => mockRouteBatchData);
+      // RouteService.deleteRouteBatch = jest.fn(() => 1);
+      jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue(mockRouteBatchData);
+      jest.spyOn(RouteService, 'deleteRouteBatch').mockResolvedValue(1);
       SlackEvents.raise = jest.fn(() => { });
 
       await RoutesController.deleteRouteBatch(req, res);
@@ -87,13 +93,14 @@ describe('RoutesController', () => {
       expect(res.status().json).toHaveBeenCalledWith({
         message: 'route batch deleted successfully', success: true
       });
-      done();
     });
 
-    it('should return a not found error', async (done) => {
+    it('should return a not found error', async () => {
       const spy = jest.spyOn(HttpError, 'throwErrorIfNull');
-      RouteService.getRouteBatchByPk = jest.fn(() => false);
-      RouteService.deleteRouteBatch = jest.fn(() => 0);
+      // RouteService.getRouteBatchByPk = jest.fn(() => false);
+      // RouteService.deleteRouteBatch = jest.fn(() => 0);
+      jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue(false);
+      jest.spyOn(RouteService, 'deleteRouteBatch').mockResolvedValue(0);
 
       await RoutesController.deleteRouteBatch(req, res);
       expect(HttpError.throwErrorIfNull).toHaveBeenCalledTimes(1);
@@ -103,7 +110,6 @@ describe('RoutesController', () => {
       expect(res.status).toHaveBeenCalledTimes(1);
       expect(res.status).toHaveBeenCalledWith(404);
       spy.mockRestore();
-      done();
     });
   });
   describe('getAll()', () => {
@@ -117,21 +123,26 @@ describe('RoutesController', () => {
         })).mockReturnValue({ json: jest.fn() })
       };
     });
-    it('should return all route requests', async (done) => {
-      RouteRequestService.getAllConfirmedRouteRequests = jest.fn(() => mockRouteRequestData);
+    it('should return all route requests', async () => {
+      // RouteRequestService.getAllConfirmedRouteRequests = jest.fn(() => mockRouteRequestData);
+      jest.spyOn(RouteRequestService, 'getAllConfirmedRouteRequests')
+        .mockResolvedValue(mockRouteRequestData);
 
       await RoutesController.getAll(req, res);
       expect(res.status).toHaveBeenCalledTimes(1);
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.status().json).toHaveBeenCalledTimes(1);
       expect(res.status().json).toHaveBeenCalledWith({ routes: mockRouteRequestData });
-      done();
     });
 
-    it('should throw an Error', async (done) => {
-      RouteRequestService.getAllConfirmedRouteRequests = jest.fn(() => {
-        throw Error('This is an error');
-      });
+    it('should throw an Error', async () => {
+      // RouteRequestService.getAllConfirmedRouteRequests = jest.fn(() => {
+      //   throw Error('This is an error');
+      // });
+      jest.spyOn(RouteRequestService, 'getAllConfirmedRouteRequests')
+        .mockImplementation(() => {
+          throw Error('This is an error');
+        });
 
       await RoutesController.getAll(req, res);
       expect(res.status).toHaveBeenCalledTimes(1);
@@ -140,7 +151,6 @@ describe('RoutesController', () => {
       expect(res.status().json).toHaveBeenCalledWith({
         message: 'An error has occurred', success: false
       });
-      done();
     });
   });
   describe('getOne', () => {
@@ -168,7 +178,7 @@ describe('RoutesController', () => {
           done();
         });
     });
-    it('should successfully fetch one routes', async (done) => {
+    it('should successfully fetch one routes', async () => {
       jest.spyOn(RouteService, 'getRoute').mockResolvedValue(mockRouteBatchData);
       await RoutesController.getOne(req, res);
       expect(res.status).toHaveBeenCalledTimes(1);
@@ -178,7 +188,6 @@ describe('RoutesController', () => {
         message: 'Success',
         route: mockRouteBatchData
       });
-      done();
     });
     it('should give error message if route is not integer', (done) => {
       request(app)
@@ -493,7 +502,7 @@ describe('RoutesController', () => {
       expect(HttpError.sendErrorResponse).toBeCalledWith(error, res);
     });
 
-    it('should get all ratings from end point', async () => {
+    it('should get all ratings from end point', (done) => {
       request(app)
         .get('/api/v1/routes/ratings/')
         .set('Content-Type', 'application/json')
@@ -504,6 +513,7 @@ describe('RoutesController', () => {
           expect(body).toHaveProperty('success');
           expect(body).toHaveProperty('message');
           expect(body).toHaveProperty('data');
+          done();
         });
     });
   });

@@ -68,7 +68,7 @@ describe('operations approve request', () => {
     expect(RouteRequestService.updateRouteRequest).toHaveBeenCalled();
     completeOperationsApprovedAction.mockReturnValue('Token');
   });
-  it('get cab details if a new cab is created', async (done) => {
+  it('get cab details if a new cab is created', async () => {
     payload.callback_id = 'operations_reason_dialog_route';
     payload.submission = {
       cab: 'Create New Cab',
@@ -82,7 +82,6 @@ describe('operations approve request', () => {
     jest.spyOn(cabService, 'findOrCreateCab').mockResolvedValue({ data: {} });
     await OperationsHelper.getCabSubmissionDetails(payload, payload.submission);
     expect(cabService.findOrCreateCab).toBeCalled();
-    done();
   });
   it('should throw an error if route request is not updated', async () => {
     getRouteRequestAndToken.mockResolvedValue(

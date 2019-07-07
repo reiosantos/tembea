@@ -36,7 +36,7 @@ describe('Driver Service', () => {
     expect(driver.driverName).toEqual('Muhwezi Deo2');
     await driver.destroy({ force: true });
   });
-  it('should return not create driver if driverNumber exists', async (done) => {
+  it('should return not create driver if driverNumber exists', async () => {
     const driver = await driverService.create({
       driverName: 'Muhwezi Deo2',
       driverPhoneNo: '0700000011',
@@ -45,7 +45,6 @@ describe('Driver Service', () => {
     });
     const { _options: { isNewRecord } } = driver;
     expect(isNewRecord).toBeFalsy();
-    done();
   });
   describe('getProviders', () => {
     beforeEach(() => {

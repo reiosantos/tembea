@@ -19,7 +19,7 @@ describe('RedisCacheSingleton', () => {
   });
 
   describe('save', () => {
-    it('should save to cache', async (done) => {
+    it('should save to cache', async () => {
       await cache.save('hello', 'world', 'earth');
 
       const data = redisMockBackend.get('hello');
@@ -27,10 +27,9 @@ describe('RedisCacheSingleton', () => {
       expect(result).toBeDefined();
       expect(result).toHaveProperty('world');
       expect(result.world).toEqual('earth');
-      done();
     });
 
-    it('should add new field if key contains an object', async (done) => {
+    it('should add new field if key contains an object', async () => {
       await cache.save('theKey', 'firstValue', 'tembea-backend');
       await cache.save('theKey', 'secondValue', 'tembea-frontend');
 
@@ -39,24 +38,22 @@ describe('RedisCacheSingleton', () => {
       expect(result).toBeDefined();
       expect(result).toHaveProperty('firstValue');
       expect(result).toHaveProperty('secondValue');
-      done();
     });
   });
 
   describe('fetch', () => {
-    it('should return object if it exists', async (done) => {
+    it('should return object if it exists', async () => {
       const [testKey, testValue] = ['ade', 'bendel'];
 
       redisMockBackend.set(testKey, JSON.stringify(testValue));
       const result = await cache.fetch(testKey);
       expect(result).toBeDefined();
       expect(result).toEqual(testValue);
-      done();
     });
   });
 
   describe('saveObject', () => {
-    it('should save entire object', async (done) => {
+    it('should save entire object', async () => {
       const testKey = 'user';
       const testObject = { name: 'tomi', scores: [1, 2, 3] };
 
@@ -64,12 +61,11 @@ describe('RedisCacheSingleton', () => {
 
       const result = redisMockBackend.get(testKey);
       expect(JSON.parse(result)).toEqual(testObject);
-      done();
     });
   });
 
   describe('delete', () => {
-    it('should remove from cache', async (done) => {
+    it('should remove from cache', async () => {
       const [testKey, testValue] = ['mc', 'oluomo'];
       await cache.saveObject(testKey, testValue);
 
@@ -79,7 +75,6 @@ describe('RedisCacheSingleton', () => {
       await cache.delete(testKey);
       const resultAfterDelete = redisMockBackend.get(testKey);
       expect(resultAfterDelete).toBeUndefined();
-      done();
     });
   });
 

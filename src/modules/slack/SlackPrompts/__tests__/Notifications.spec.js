@@ -32,32 +32,55 @@ const tripInitial = {
   rider: { dataValues: { slackId: 2 } },
 };
 
-SlackEvents.raise = jest.fn();
+// SlackEvents.raise = jest.fn();
+jest.spyOn(SlackEvents, 'raise').mockReturnValue();
 
 const webClientMock = {
   im: {
-    open: () => Promise.resolve({
-      channel: { id: '419' }
-    })
+    open: jest.fn().mockResolvedValue({ channel: { id: '419' } })
   },
   users: {
-    info: jest.fn(() => Promise.resolve({
+    info: jest.fn().mockResolvedValue({
       user: { real_name: 'someName', profile: { email: 'someemial@email.com' } },
       token: 'sdf'
-    })),
+    }),
     profile: {
-      get: jest.fn(() => Promise.resolve({
+      get: jest.fn().mockResolvedValue({
         profile: {
           tz_offset: 'someValue',
           email: 'sekito.ronald@andela.com'
         }
-      }))
+      })
     }
   },
   chat: {
-    postMessage: () => Promise.resolve({ data: 'successfully opened chat' })
+    postMessage: jest.fn().mockResolvedValue({ data: 'successfully opened chat' })
   }
 };
+// const webClientMock = {
+//   im: {
+//     open: () => Promise.resolve({
+//       channel: { id: '419' }
+//     })
+//   },
+//   users: {
+//     info: jest.fn(() => Promise.resolve({
+//       user: { real_name: 'someName', profile: { email: 'someemial@email.com' } },
+//       token: 'sdf'
+//     })),
+//     profile: {
+//       get: jest.fn(() => Promise.resolve({
+//         profile: {
+//           tz_offset: 'someValue',
+//           email: 'sekito.ronald@andela.com'
+//         }
+//       }))
+//     }
+//   },
+//   chat: {
+//     postMessage: () => Promise.resolve({ data: 'successfully opened chat' })
+//   }
+// };
 
 const dbRider = {
   id: 275,
@@ -72,13 +95,21 @@ const dbRider = {
 };
 
 jest.mock('../../../../services/TeamDetailsService', () => ({
-  getTeamDetails: jest.fn(() => Promise.resolve({
+  getTeamDetails: jest.fn().mockResolvedValue({
     botToken: 'just a token',
     webhookConfigUrl: 'just a url',
     opsChannelId: 'S199'
-  })),
-  getTeamDetailsBotOauthToken: jest.fn(() => Promise.resolve('just a random token'))
+  }),
+  getTeamDetailsBotOauthToken: jest.fn().mockResolvedValue('just a random token')
 }));
+// jest.mock('../../../../services/TeamDetailsService', () => ({
+//   getTeamDetails: jest.fn(() => Promise.resolve({
+//     botToken: 'just a token',
+//     webhookConfigUrl: 'just a url',
+//     opsChannelId: 'S199'
+//   })),
+//   getTeamDetailsBotOauthToken: jest.fn(() => Promise.resolve('just a random token'))
+// }));
 
 
 describe('SlackNotifications', () => {
@@ -95,12 +126,12 @@ describe('SlackNotifications', () => {
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    // jest.resetAllMocks();
     jest.restoreAllMocks();
   });
 
   describe('getDMChannelId', () => {
-    it('return an id as received from slack', async (done) => {
+    it('return an id as received from slack', async () => {
       const [id, botToken] = ['419', 'hello'];
       jest.spyOn(WebClientSingleton, 'getWebClient').mockReturnValue(
         {
@@ -116,7 +147,6 @@ describe('SlackNotifications', () => {
 
       expect(WebClientSingleton.getWebClient).toBeCalledWith(botToken);
       expect(channelId).toEqual(id);
-      done();
     });
   });
 
@@ -140,7 +170,7 @@ describe('SlackNotifications', () => {
       jest.spyOn(SlackNotifications, 'createDirectMessage');
     });
 
-    it('should create a message', async (done) => {
+    it('should create a message', async () => {
       const result = await SlackNotifications.getManagerMessageAttachment(newTripRequest,
         imResponse, requester, 'newTrip', rider);
 
@@ -151,11 +181,9 @@ describe('SlackNotifications', () => {
       const result2 = await SlackNotifications.getManagerMessageAttachment(newTripRequest,
         imResponse, requester, 'notNew', rider);
       expect(result2).toBeDefined();
-
-      done();
     });
 
-    it('should add notification actions when tripStatus is pending', async (done) => {
+    it('should add notification actions when tripStatus is pending', async () => {
       jest.spyOn(SlackNotifications, 'notificationActions');
       newTripRequest.tripStatus = 'Pending';
 
@@ -164,12 +192,11 @@ describe('SlackNotifications', () => {
 
       expect(SlackNotifications.notificationActions).toHaveBeenCalledTimes(1);
       expect(result).toBeDefined();
-      done();
     });
   });
 
   describe('sendManagerTripRequestNotification', () => {
-    it('should fail when departmentId is wrong', async (done) => {
+    it('should fail when departmentId is wrong', async () => {
       jest.spyOn(DepartmentService, 'getHeadByDeptId').mockRejectedValue(true);
       const tripInfo = {
         departmentId: 100,
@@ -186,12 +213,11 @@ describe('SlackNotifications', () => {
       expect(response).toBeCalledWith({
         text: 'Error:warning:: Request saved, but I could not send a notification to your manager.'
       });
-      done();
     });
   });
 
   describe('sendNotification', () => {
-    it('should send notification', async (done) => {
+    it('should send notification', async () => {
       const res = await SlackNotifications.sendNotification(
         { channel: { id: 'XXXXXX' } },
         {},
@@ -201,28 +227,23 @@ describe('SlackNotifications', () => {
       expect(res).toEqual({
         data: 'successfully opened chat'
       });
-      done();
     });
   });
 
   describe('createUserConfirmOrDeclineMessage', () => {
-    it('should send notification to user when ride has been confirmed', async (done) => {
+    it('should send notification to user when ride has been confirmed', async () => {
       const res = await SlackNotifications.createUserConfirmOrDeclineMessage(true, 'Confirmed');
-
       expect(res).toEqual('Your trip has been Confirmed, and it is awaiting driver and vehicle assignment');
-      done();
     });
 
-    it('should send notification to user when ride has been confirmed', async (done) => {
+    it('should send notification to user when ride has been confirmed', async () => {
       const res = await SlackNotifications.createUserConfirmOrDeclineMessage(false, 'declined');
-
       expect(res).toEqual('Your trip has been declined');
-      done();
     });
   });
 
   describe('sendRequesterDeclinedNotification', () => {
-    it('should send error on decline', async (done) => {
+    it('should send error on decline', async () => {
       jest.spyOn(SlackHelpers, 'findUserByIdOrSlackId').mockRejectedValue();
 
       const tripInfo = {
@@ -247,10 +268,9 @@ describe('SlackNotifications', () => {
       };
       await SlackNotifications.sendRequesterDeclinedNotification(tripInfo, response);
       expect(response).toBeCalledWith(responseData);
-      done();
     });
 
-    it('should send decline notification', async (done) => {
+    it('should send decline notification', async () => {
       const tripInfo = {
         departmentId: 6,
         requestedById: 6,
@@ -282,7 +302,6 @@ describe('SlackNotifications', () => {
       );
 
       expect(SlackNotifications.sendNotification).toBeCalledTimes(1);
-      done();
     });
   });
 
@@ -376,7 +395,7 @@ describe('SlackNotifications', () => {
   });
 
   describe('sendManagerTripRequestNotification', () => {
-    it('should send the manager a notification', async (done) => {
+    it('should send the manager a notification', async () => {
       const tripInfo = {
         departmentId: 3,
         requestedById: 6,
@@ -419,19 +438,17 @@ describe('SlackNotifications', () => {
         payload, tripInfo, () => {}
       );
       expect(res).toEqual({ message: 'mockMessageToSlack' });
-      done();
     });
   });
 
   describe('sendWebhookPushMessage', () => {
-    it('should call IncomingWebhook send method', async (done) => {
+    it('should call IncomingWebhook send method', async () => {
       const [webhookUrl, message] = ['https://hello.com', 'Welcome to tembea'];
 
       const result = await SlackNotifications.sendWebhookPushMessage(webhookUrl, message);
 
       expect(IncomingWebhook.prototype.send).toHaveBeenCalledWith(message);
       expect(result).toBeTruthy();
-      done();
     });
   });
 
@@ -521,10 +538,10 @@ describe('SlackNotifications', () => {
   });
 
   describe('sendRequesterApprovedNotification', () => {
-    afterEach(() => {
-      jest.resetAllMocks();
-      jest.clearAllMocks();
-    });
+    // afterEach(() => {
+    //   jest.resetAllMocks();
+    //   jest.clearAllMocks();
+    // });
 
     let sendNotification;
     let findSelectedDepartment;
@@ -585,10 +602,10 @@ describe('SlackNotifications', () => {
   });
 
   describe('sendOperationsTripRequestNotification', () => {
-    afterEach(() => {
-      jest.resetAllMocks();
-      jest.clearAllMocks();
-    });
+    // afterEach(() => {
+    //   jest.resetAllMocks();
+    //   jest.clearAllMocks();
+    // });
 
     const fn = () => {};
     const payload = {
@@ -675,7 +692,7 @@ describe('SlackNotifications', () => {
     });
 
 
-    it('Handle manager approve details request and throw an error', async (done) => {
+    it('Handle manager approve details request and throw an error', async () => {
       const payload = {
         actions: [{ name: 'managerApprove' }],
         user: {},
@@ -683,11 +700,10 @@ describe('SlackNotifications', () => {
       };
       const manager = await SlackInteractions.handleManagerApprovalDetails(payload, jest.fn);
       expect(manager).toEqual(undefined);
-      done();
     });
 
 
-    it('Handle manager approve details request but fail to approve', async (done) => {
+    it('Handle manager approve details request but fail to approve', async () => {
       const payload = {
         actions: [{ name: 'manager_approve' }],
         user: {},
@@ -695,7 +711,6 @@ describe('SlackNotifications', () => {
       };
       const manager = await SlackInteractions.handleManagerApprovalDetails(payload, jest.fn);
       expect(manager).toEqual(undefined);
-      done();
     });
   });
 
@@ -726,8 +741,9 @@ describe('SlackNotifications', () => {
     });
 
     afterEach(() => {
-      jest.resetAllMocks();
-      jest.clearAllMocks();
+      jest.restoreAllMocks();
+      // jest.resetAllMocks();
+      // jest.clearAllMocks();
     });
 
     it('should send route request to ops channel', async () => {
@@ -777,20 +793,20 @@ describe('SlackNotifications', () => {
       expect(sendNotifications).toHaveBeenCalled();
     });
 
-    it('Should call respond and bugsnug', async () => {
+    it('Should call respond and bugsnug when error occurs', async () => {
       const respond = jest.fn();
-      bugsnagHelper.log = jest.fn().mockReturnValue({});
-
-      SlackNotifications.sendNotification = jest.fn().mockImplementation(() => {
+      jest.spyOn(bugsnagHelper, 'log').mockReturnValue({});
+      jest.spyOn(TeamDetailsService, 'getTeamDetails').mockImplementation(() => {
         throw new Error('Dummy error');
       });
-      await SlackNotifications.sendOperationsRiderlocationConfirmation({
+      const payload = {
         riderID: 1,
         teamID: 'rtyui',
         confirmedLocation: 'Nairobi',
         waitingRequester: 1,
         location: 'Pickup'
-      }, respond);
+      };
+      await SlackNotifications.sendOperationsRiderlocationConfirmation(payload, respond);
       expect(bugsnagHelper.log).toHaveBeenCalled();
       expect(respond).toHaveBeenCalled();
     });

@@ -31,10 +31,9 @@ describe('CabsValidator', () => {
   });
 
   describe('validateAllInputs', () => {
-    it('should return next if there are no validation errors', async (done) => {
+    it('should return next if there are no validation errors', async () => {
       await CabsValidator.validateAllInputs(correctReq, res, next);
       expect(next).toHaveBeenCalledTimes(1);
-      done();
     });
 
     it('should return errors if some inputs have been left out', async () => {

@@ -9,6 +9,9 @@ import CabsController from '../CabsController';
 import Response from '../../../helpers/responseHelper';
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
 import HttpError from '../../../helpers/errorHandler';
+import { messages } from '../../../helpers/constants';
+
+const { VALIDATION_ERROR } = messages;
 
 const { Cab } = models;
 
@@ -34,7 +37,7 @@ describe('CabsController_getAllCabs', () => {
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    // jest.resetAllMocks();
     jest.restoreAllMocks();
   });
 
@@ -43,7 +46,7 @@ describe('CabsController_getAllCabs', () => {
       cabs, successMessage, returnedData
     } = payloadData;
     cabServiceSpy.mockResolvedValue(cabs);
-    jest.spyOn(Response, 'sendResponse');
+    jest.spyOn(Response, 'sendResponse').mockReturnValue();
     await CabsController.getAllCabs(req, res);
     expect(Response.sendResponse).toBeCalledWith(res, 200, true, successMessage, returnedData);
   });
@@ -51,14 +54,13 @@ describe('CabsController_getAllCabs', () => {
   it('Should catch errors', async () => {
     const error = new Error('Something went wrong');
     cabServiceSpy.mockRejectedValue(error);
-    jest.spyOn(BugsnagHelper, 'log');
-    jest.spyOn(HttpError, 'sendErrorResponse');
+    jest.spyOn(BugsnagHelper, 'log').mockReturnValue();
+    jest.spyOn(HttpError, 'sendErrorResponse').mockReturnValue();
     await CabsController.getAllCabs(req, res);
     expect(BugsnagHelper.log).toBeCalledWith(error);
     expect(HttpError.sendErrorResponse).toBeCalledWith(error, res);
   });
 });
-
 
 describe('CabsController', () => {
   let validToken;
@@ -72,12 +74,8 @@ describe('CabsController', () => {
     };
   });
 
-  afterAll(async () => {
-    await Cab.destroy({
-      where: {
-        regNumber: payloadData.payload.regNumber
-      }
-    });
+  afterAll(() => {
+    models.sequelize.close();
   });
 
   describe('createCab', () => {
@@ -179,10 +177,9 @@ describe('CabsController', () => {
         .set(headers)
         .expect(400, {
           success: false,
-          message:
-            { invalidParameter: 'Id should be a valid integer' }
-        });
-      done();
+          message: VALIDATION_ERROR,
+          error: { message: '"id" must be a number' }
+        }, done);
     });
 
     it('should fail to update if no data is provided', (done) => {
@@ -191,8 +188,7 @@ describe('CabsController', () => {
         .put(`${apiURL}/1`)
         .send({})
         .set(headers)
-        .expect(400, noInputsError);
-      done();
+        .expect(400, noInputsError, done);
     });
 
     it('should update cab details successfully', (done) => {
@@ -200,7 +196,8 @@ describe('CabsController', () => {
         .put(`${apiURL}/1`)
         .send(payloadData.updateData)
         .set(headers)
-        .expect(200, (err, res) => {
+        .expect(200)
+        .end((err, res) => {
           expect(err).toBe(null);
           const { body, status } = res;
           expect(body.data.regNumber).toEqual(payloadData.updateData.regNumber);
@@ -214,7 +211,8 @@ describe('CabsController', () => {
         .put(`${apiURL}/200`)
         .send(payloadData.updateDatamock)
         .set(headers)
-        .expect(404, (err, res) => {
+        .expect(404)
+        .end((err, res) => {
           expect(err).toBe(null);
           const { body, status } = res;
           expect(body).toEqual({ success: false, message: 'Update Failed. Cab does not exist' });
@@ -228,7 +226,8 @@ describe('CabsController', () => {
         .put(`${apiURL}/200`)
         .send(payloadData.updateData)
         .set(headers)
-        .expect(409, (err, res) => {
+        .expect(409)
+        .end((err, res) => {
           expect(err).toBe(null);
           const { body, status } = res;
           expect(body).toEqual({
@@ -246,7 +245,8 @@ describe('CabsController', () => {
         .put(`${apiURL}/1`)
         .send(payloadData.updateData)
         .set(headers)
-        .expect(500, (err, res) => {
+        .expect(500)
+        .end((err, res) => {
           const { body } = res;
           expect(body).toHaveProperty('message');
           expect(body).toHaveProperty('success');
@@ -287,9 +287,7 @@ describe('CabsController', () => {
     });
 
     it('should return a server error when something goes wrong', (done) => {
-      cabService.deleteCab = jest.fn(() => {
-        throw Error();
-      });
+      jest.spyOn(cabService, 'deleteCab').mockRejectedValue();
       request(app)
         .delete(`${apiURL}/89`)
         .set(headers)
@@ -316,8 +314,8 @@ describe('CabsController', () => {
         })).mockReturnValue({ json: jest.fn() })
       };
     });
-    it('should delete a cab successfully', async (done) => {
-      cabService.deleteCab = jest.fn(() => 1);
+    it('should delete a cab successfully', async () => {
+      jest.spyOn(cabService, 'deleteCab').mockResolvedValue(1);
 
       await CabsController.deleteCab(req, res);
       expect(res.status).toHaveBeenCalledTimes(1);
@@ -326,11 +324,10 @@ describe('CabsController', () => {
         success: true,
         message: 'Cab successfully deleted'
       });
-      done();
     });
 
-    it('should return cab does not exist', async (done) => {
-      cabService.deleteCab = jest.fn(() => 0);
+    it('should return cab does not exist', async () => {
+      jest.spyOn(cabService, 'deleteCab').mockResolvedValue(0);
 
       await CabsController.deleteCab(req, res);
       expect(res.status).toHaveBeenCalledTimes(1);
@@ -339,13 +336,10 @@ describe('CabsController', () => {
         success: false,
         message: 'Cab does not exist'
       });
-      done();
     });
 
-    it('should return server error', async (done) => {
-      cabService.deleteCab = jest.fn(() => {
-        throw Error();
-      });
+    it('should return server error', async () => {
+      jest.spyOn(cabService, 'deleteCab').mockRejectedValue();
 
       await CabsController.deleteCab(req, res);
       expect(res.status).toHaveBeenCalledTimes(1);
@@ -354,7 +348,6 @@ describe('CabsController', () => {
         success: false,
         message: 'Server Error. Could not complete the request'
       });
-      done();
     });
   });
 });

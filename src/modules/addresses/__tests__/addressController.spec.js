@@ -3,11 +3,15 @@ import '@slack/client';
 import app from '../../../app';
 import AddressController from '../AddressController';
 import Utils from '../../../utils';
+import models from '../../../database/models';
 
 let validToken;
 
 beforeAll(() => {
   validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+});
+afterAll(() => {
+  models.sequelize.close();
 });
 
 describe('/Addresses post request for adding new address', () => {
@@ -322,21 +326,19 @@ describe('/Addresses get addresses', () => {
 
 describe('AddressController', () => {
   const errorMessage = "Cannot read property 'status' of undefined";
-  it('should return error for invalid parameters in addNewAddress', async (done) => {
+  it('should return error for invalid parameters in addNewAddress', async () => {
     try {
       await AddressController.addNewAddress();
     } catch (error) {
       expect(error.message).toBe(errorMessage);
     }
-    done();
   });
 
-  it('should return error for invalid parameters in updateAddress', async (done) => {
+  it('should return error for invalid parameters in updateAddress', async () => {
     try {
       await AddressController.updateAddress();
     } catch (error) {
       expect(error.message).toBe(errorMessage);
     }
-    done();
   });
 });

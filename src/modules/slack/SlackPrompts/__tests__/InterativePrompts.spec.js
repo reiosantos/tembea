@@ -210,14 +210,13 @@ describe('Interactive Prompts test', () => {
         }
       }
     };
-    it('should send ops decline or approval', async (done) => {
+    it('should send ops decline or approval', async () => {
       await InteractivePrompts.sendOpsDeclineOrApprovalCompletion(
         false, tripInfo, '3456787654.3456787654', 'DM45676543', 'just a token'
       );
       expect(update).toHaveBeenCalledTimes(1);
-      done();
     });
-    it('should handle errors', async (done) => {
+    it('should handle errors', async () => {
       const log = jest.spyOn(BugsnagHelper, 'log');
       const error = new Error('Async error');
       update.mockRejectedValue(error);
@@ -227,7 +226,6 @@ describe('Interactive Prompts test', () => {
       expect(update).toHaveBeenCalledTimes(1);
       expect(log).toHaveBeenCalledTimes(1);
       expect(log).toHaveBeenCalledWith(error);
-      done();
     });
   });
 });

@@ -46,9 +46,8 @@ describe('Trip Validator', () => {
   });
 
 
-  afterEach(async (done) => {
+  afterEach(() => {
     jest.restoreAllMocks();
-    done();
   });
 
   describe('validateAll method', () => {
@@ -61,7 +60,7 @@ describe('Trip Validator', () => {
         ]
       };
     });
-    it('should call validateAll with all values for confirm with non existing trip', async (done) => {
+    it('should call validateAll with all values for confirm with non existing trip', async () => {
       HttpError.sendErrorResponse = jest.fn(() => { });
       jest.spyOn(HttpError, 'sendErrorResponse')
         .mockResolvedValue(resolved);
@@ -71,9 +70,8 @@ describe('Trip Validator', () => {
       await TripValidator.validateAll(req, res, next);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
       expect(next).toHaveBeenCalledTimes(0);
-      done();
     });
-    it('should call validateAll with all values for confirm', async (done) => {
+    it('should call validateAll with all values for confirm', async () => {
       HttpError.sendErrorResponse = jest.fn(() => { });
       jest.spyOn(HttpError, 'sendErrorResponse')
         .mockResolvedValue(resolved);
@@ -83,9 +81,8 @@ describe('Trip Validator', () => {
       await TripValidator.validateAll(req, res, next);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(0);
       expect(next).toHaveBeenCalledTimes(1);
-      done();
     });
-    it('should call validateAll with all values for decline', async (done) => {
+    it('should call validateAll with all values for decline', async () => {
       HttpError.sendErrorResponse = jest.fn(() => { });
       jest.spyOn(HttpError, 'sendErrorResponse')
         .mockResolvedValue(resolved);
@@ -95,9 +92,8 @@ describe('Trip Validator', () => {
       await TripValidator.validateAll(reqDecline, res, next);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(0);
       expect(next).toHaveBeenCalledTimes(1);
-      done();
     });
-    it('should call validateAll with missing driverPhoneNo ', async (done) => {
+    it('should call validateAll with missing driverPhoneNo ', async () => {
       req.body.driverPhoneNo = null;
       HttpError.sendErrorResponse = jest.fn(() => { });
       resolved.errors[0] = 'Please provide driverPhoneNo.';
@@ -112,9 +108,8 @@ describe('Trip Validator', () => {
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
       expect(HttpError.sendErrorResponse).toHaveBeenCalledWith({ message: ['Please provide driverPhoneNo.'] }, res);
       expect(next).toHaveBeenCalledTimes(0);
-      done();
     });
-    it('should call validateAll with missing tripId ', async (done) => {
+    it('should call validateAll with missing tripId ', async () => {
       HttpError.sendErrorResponse = jest.fn(() => { });
       req.params.tripId = null;
       resolved.errors[0] = 'Add tripId to the url';
@@ -127,7 +122,6 @@ describe('Trip Validator', () => {
         expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
         expect(HttpError.sendErrorResponse).toHaveBeenCalledWith({ message: ['Add tripId to the url'] }, res);
       });
-      done();
     });
   });
   describe('validateEachInput method', () => {

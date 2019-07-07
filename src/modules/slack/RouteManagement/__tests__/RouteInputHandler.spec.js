@@ -222,17 +222,15 @@ describe('RouteInputHandler Tests', () => {
         jest.resetModules();
         jest.resetAllMocks();
       });
-      it('handleBusStopRoute throw error', async (done) => {
+      it('handleBusStopRoute throw error', async () => {
         await RouteInputHandlers.handleBusStopRoute(payload, respond);
         expect(respond).toHaveBeenCalled();
-        done();
       });
 
-      it('handleBusStopRoute: send dialog', async (done) => {
+      it('handleBusStopRoute: send dialog', async () => {
         payload.actions[0].value = '23,23';
         await RouteInputHandlers.handleBusStopRoute(payload, respond);
         expect(respond).toHaveBeenCalledTimes(1);
-        done();
       });
 
       it('should get the value for the nearest bus stop', async () => {
@@ -257,17 +255,16 @@ describe('RouteInputHandler Tests', () => {
         .mockResolvedValue('https://sampleMapurl');
       jest.spyOn(Cache, 'fetch').mockResolvedValue([{}, {}]);
       jest.spyOn(Cache, 'save').mockResolvedValue();
-      it('handleBusStopSelected error. invalid coordinate', async (done) => {
+      it('handleBusStopSelected error. invalid coordinate', async () => {
         const resp = await RouteInputHandlers.handleBusStopSelected(payload, respond);
         expect(respond).toHaveBeenCalledTimes(0);
         expect(resp).toEqual({
           errors:
             [{ error: 'You must submit a valid coordinate', name: 'otherBusStop' }]
         });
-        done();
       });
 
-      it('handleBusStopSelected error. both fields submitted', async (done) => {
+      it('handleBusStopSelected error. both fields submitted', async () => {
         payload = {
           ...payload,
           submission: { otherBusStop: 'san', selectBusStop: 'san', }
@@ -281,10 +278,9 @@ describe('RouteInputHandler Tests', () => {
               name: 'otherBusStop'
             }]
         });
-        done();
       });
 
-      it('handleBusStopSelected error. none of the fields is submitted', async (done) => {
+      it('handleBusStopSelected error. none of the fields is submitted', async () => {
         payload = {
           ...payload,
           submission: {}
@@ -295,7 +291,6 @@ describe('RouteInputHandler Tests', () => {
           errors:
             [{ error: 'One of the fields must be filled.', name: 'otherBusStop' }]
         });
-        done();
       });
 
       it('handleBusStopSelected with valid coordinates', async () => {

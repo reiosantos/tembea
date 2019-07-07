@@ -28,7 +28,7 @@ class SlackNotifications {
       .open({
         user
       });
-    const { id } = imResponse.channel;
+    const { id } = { ...imResponse.channel };
     return id;
   }
 

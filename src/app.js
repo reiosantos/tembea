@@ -17,7 +17,9 @@ const app = express();
 BugsnagHelper.init(app);
 
 app.use(cors());
-app.use(morgan('dev'));
+if (app.get('env') !== 'test') {
+  app.use(morgan('dev'));
+}
 
 app.use(SlackBodyParserFilter.maybe(
   express.urlencoded({

@@ -30,7 +30,7 @@ describe('Trip Reschedule Helper test', () => {
     jest.restoreAllMocks();
   });
 
-  it('should send Reschedule Trip Form ', async (done) => {
+  it('should send Reschedule Trip Form ', async () => {
     const twoHoursAfter = new Date(Date.now() + 2 * 60 * 60 * 1000);
     jest.spyOn(tripService, 'getById').mockResolvedValue({
       confirmedById: 0,
@@ -42,8 +42,6 @@ describe('Trip Reschedule Helper test', () => {
     const response = jest.fn();
     await TripRescheduleHelper.sendTripRescheduleDialog(payload, response, 12);
     expect(sendRescheduleTripFormSpy).toBeCalledTimes(1);
-
-    done();
   });
 
   it('should send reschedule confirm error when trip is < 1hr before the departure time',

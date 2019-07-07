@@ -26,24 +26,22 @@ describe('AISController', () => {
   });
 
   describe('/getUserDetails', () => {
-    it('should return user data from AIS', async (done) => {
+    it('should return user data from AIS', async () => {
       aisService.getUserDetails = jest.fn().mockResolvedValue(AISDataMock);
 
       await AISController.getUserDataByEmail(req, res);
       expect(res.status).toBeCalledTimes(1);
       expect(res.status).toBeCalledWith(200);
       expect(res.status().json).toHaveBeenCalledWith({ aisUserData: AISDataMock, success: 'true' });
-      done();
     });
 
-    it('should handle errors', async (done) => {
+    it('should handle errors', async () => {
       aisService.getUserDetails = jest.fn().mockRejectedValue(new Error('Failing for a test'));
       HttpError.sendErrorResponse = jest.fn().mockReturnValue({});
       BugsnagHelper.log = jest.fn().mockReturnValue({});
       await AISController.getUserDataByEmail(req, res);
       expect(HttpError.sendErrorResponse).toBeCalledTimes(1);
       expect(BugsnagHelper.log).toBeCalledTimes(1);
-      done();
     });
   });
 });

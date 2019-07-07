@@ -83,7 +83,7 @@ describe('ProviderNotifications', () => {
       jest.spyOn(ProviderNotifications, 'sendToOpsDept');
       jest.spyOn(ProviderNotifications, 'sendProviderApproveMessageToFellow');
       jest.spyOn(ProviderNotifications, 'sendProviderApproveMessageToManager');
-      it('should complete the approve new route action', async (done) => {
+      it('should complete the approve new route action', async () => {
         requestData = {
           ...mockRouteRequestData,
           status: 'Approved',
@@ -96,7 +96,6 @@ describe('ProviderNotifications', () => {
         expect(ProviderNotifications.sendProviderApproveMessageToFellow).toHaveBeenCalled();
         expect(ProviderNotifications.sendProviderApproveMessageToManager).toHaveBeenCalled();
         expect(ProviderAttachmentHelper.getProviderCompleteAttachment).toHaveBeenCalled();
-        done();
       });
     });
 
@@ -116,14 +115,13 @@ describe('ProviderNotifications', () => {
         expect(SlackNotifications.sendNotification).toHaveBeenCalled();
       });
 
-      it('should catch errors', async (done) => {
+      it('should catch errors', async () => {
         jest.spyOn(ProviderAttachmentHelper, 'getFellowApproveAttachment')
           .mockRejectedValue('an error');
         await ProviderNotifications.sendProviderApproveMessageToFellow(
           requestData, botToken, submission
         );
         expect(bugsnagHelper.log).toHaveBeenCalled();
-        done();
       });
     });
 
@@ -134,25 +132,22 @@ describe('ProviderNotifications', () => {
           status: 'Approved',
         };
       });
-      it('should send providers approve notification to manager', async (done) => {
+      it('should send providers approve notification to manager', async () => {
         await ProviderNotifications.sendProviderApproveMessageToManager(
           requestData, botToken, submission
         );
         expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
         expect(ProviderAttachmentHelper.getManagerApproveAttachment).toHaveBeenCalled();
         expect(SlackNotifications.sendNotification).toHaveBeenCalled();
-
-        done();
       });
 
-      it('should catch errors', async (done) => {
+      it('should catch errors', async () => {
         SlackNotifications.getDMChannelId
           .mockRejectedValue(new Error('Failed'));
         await ProviderNotifications.sendProviderApproveMessageToManager(
           requestData, botToken, submission
         );
         expect(bugsnagHelper.log.mock.calls[0][0].message).toEqual('Failed');
-        done();
       });
       it('should send a notification the ops department from the provider', async () => {
         jest.spyOn(TeamDetailsService, 'getTeamDetails');
@@ -188,11 +183,10 @@ describe('ProviderNotifications', () => {
       expect(ProviderAttachmentHelper.createProviderRouteAttachment).toHaveBeenCalled();
     });
 
-    it('should handle errors', async (done) => {
+    it('should handle errors', async () => {
       jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockRejectedValue(new Error('Dummy error'));
       await ProviderNotifications.sendRouteRequestNotification(routeRequest, null, routeDetails);
       expect(bugsnagHelper.log).toHaveBeenCalledTimes(1);
-      done();
     });
   });
 

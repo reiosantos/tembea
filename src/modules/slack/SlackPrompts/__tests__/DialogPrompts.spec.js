@@ -30,45 +30,40 @@ describe('Dialog prompts test', () => {
     jest.resetAllMocks();
   });
 
-  it('should test sendTripDetailsForm function', async (done) => {
+  it('should test sendTripDetailsForm function', async () => {
     const payload = { trigger_id: 'trigger', team: { id: 'TEAMID1' } };
     await DialogPrompts.sendTripDetailsForm(payload, 'someFunctionName', 'someCallbackId');
     expect(sendDialogTryCatch).toBeCalledTimes(1);
-    done();
   });
 
-  it('should test sendSkipPage function', async (done) => {
+  it('should test sendSkipPage function', async () => {
     const payload = { actions: [{ name: 'skipPage' }], team: { id: 'TEAMID1' } };
     await DialogPrompts.sendSkipPage(payload, 'view_upcoming_trips');
     expect(sendDialogTryCatch).toBeCalledTimes(1);
-    done();
   });
 
-  it('should test sendRescheduleTripForm function', async (done) => {
+  it('should test sendRescheduleTripForm function', async () => {
     const payload = { callback_id: 'calling', team: { id: 'TEAMID1' } };
     await DialogPrompts.sendRescheduleTripForm(payload, 'call', 'state', 'dialog');
     expect(sendDialogTryCatch).toBeCalledTimes(1);
-    done();
   });
 
-  it('should test sendTripReasonForm function', async (done) => {
+  it('should test sendTripReasonForm function', async () => {
     const payload = { trigger_id: 'trigger', team: { id: 'TEAMID1' } };
     await DialogPrompts.sendTripReasonForm(payload);
     expect(sendDialogTryCatch).toBeCalledTimes(1);
-    done();
   });
 
-  it('should test sendCommentDialog function', async (done) => {
+  it('should test sendCommentDialog function', async () => {
     await DialogPrompts.sendOperationsDeclineDialog({
       message_ts: 'trigger',
       actions: ['value', ''],
       team: { id: 'TEAMID1' }
     });
     expect(sendDialogTryCatch).toBeCalledTimes(1);
-    done();
   });
 
-  it('should test sendOperationsApprovalDialog function', async (done) => {
+  it('should test sendOperationsApprovalDialog function', async () => {
     await DialogPrompts.sendOperationsApprovalDialog({
       actions: [{
         value: JSON.stringify({ confirmationComment: 'comment' })
@@ -81,10 +76,9 @@ describe('Dialog prompts test', () => {
     }, respond);
 
     expect(sendDialogTryCatch).toBeCalledTimes(1);
-    done();
   });
 
-  it('should test sendOperationsApprovalDialog function on create new cab', async (done) => {
+  it('should test sendOperationsApprovalDialog function on create new cab', async () => {
     await DialogPrompts.sendOperationsApprovalDialog({
       actions: [{
         value: JSON.stringify({ confirmationComment: 'comment' })
@@ -97,10 +91,9 @@ describe('Dialog prompts test', () => {
       team: { id: 'TEAMID1' }
     }, respond);
     expect(sendDialogTryCatch).toBeCalledTimes(1);
-    done();
   });
 
-  it('should send decline dialog', async (done) => {
+  it('should send decline dialog', async () => {
     await DialogPrompts.sendReasonDialog({
       trigger_id: 'XXXXXXX',
       team: { id: 'TEAMID1' }
@@ -110,10 +103,9 @@ describe('Dialog prompts test', () => {
     'dialogName');
 
     expect(sendDialogTryCatch).toBeCalled();
-    done();
   });
 
-  it('should test sendLocationForm function', async (done) => {
+  it('should test sendLocationForm function', async () => {
     await DialogPrompts.sendLocationForm({
       actions: ['value', ''],
       trigger_id: 'trigger',
@@ -124,20 +116,18 @@ describe('Dialog prompts test', () => {
     });
 
     expect(sendDialogTryCatch).toBeCalledTimes(1);
-    done();
   });
 
-  it('should sendLocationCoordinatesForm', async (done) => {
+  it('should sendLocationCoordinatesForm', async () => {
     await DialogPrompts.sendLocationCoordinatesForm({
       trigger_id: 'XXXXXXX',
       team: { id: 'TEAMID1' }
     });
 
     expect(sendDialogTryCatch).toBeCalledTimes(1);
-    done();
   });
 
-  it('should send sendOperationsNewRouteApprovalDialog dialog', async (done) => {
+  it('should send sendOperationsNewRouteApprovalDialog dialog', async () => {
     const state = JSON.stringify({
       approve: {
         timeStamp: '123848', channelId: 'XXXXXX', routeRequestId: '1'
@@ -156,7 +146,6 @@ describe('Dialog prompts test', () => {
     }, state);
 
     expect(sendDialogTryCatch).toBeCalledTimes(1);
-    done();
   });
 
   it('should test sendEngagementInfoDialogToManager function', async () => {
@@ -169,13 +158,12 @@ describe('Dialog prompts test', () => {
       .toBeCalledTimes(1);
   });
 
-  it('should test sendSearchPage function', async (done) => {
+  it('should test sendSearchPage function', async () => {
     const payload = { actions: [{ name: 'search' }], team: { id: 'TEAMID1' } };
     await DialogPrompts.sendSearchPage(payload, 'view_available_routes', 'tembea-route', respond);
     expect(sendDialogTryCatch).toBeCalledTimes(1);
-    done();
   });
-  it('should send select cab dialog', async (done) => {
+  it('should send select cab dialog', async () => {
     const driver = {
       data: [{
         id: 2,
@@ -206,19 +194,17 @@ describe('Dialog prompts test', () => {
     });
 
     expect(sendDialogTryCatch).toBeCalledTimes(1);
-    done();
   });
 });
 
 describe('sendBusStopForm dialog', () => {
-  it('should send dialog for bus stop', async (done) => {
+  it('should send dialog for bus stop', async () => {
     const payload = { channel: {}, team: {}, actions: [{ value: 2 }] };
     const busStageList = [{}];
 
     await DialogPrompts.sendBusStopForm(payload, busStageList);
 
     expect(sendDialogTryCatch).toBeCalled();
-    done();
   });
   describe('DialogPrompts_sendNewRouteForm', () => {
     it('should lunch new route form', async () => {
@@ -228,16 +214,15 @@ describe('sendBusStopForm dialog', () => {
     });
   });
   describe('sendTripNotesDialogForm', () => {
-    it('should send trip notes form dialog', async (done) => {
+    it('should send trip notes form dialog', async () => {
       const payload = { submission: {}, team: { id: 'TEAMID1' } };
       await DialogPrompts.sendTripNotesDialogForm(payload);
       expect(sendDialogTryCatch).toBeCalled();
-      done();
     });
   });
 
   describe('sendLocationDialogToUser', () => {
-    it('should send resubmit location dialog to user', async (done) => {
+    it('should send resubmit location dialog to user', async () => {
       await DialogPrompts.sendLocationDialogToUser({
         actions: [{
           value: 'no_Pick up'
@@ -247,7 +232,6 @@ describe('sendBusStopForm dialog', () => {
       });
 
       expect(sendDialogTryCatch).toHaveBeenCalled();
-      done();
     });
   });
   describe('DialogPrompts > sendSelectProviderDialog', () => {

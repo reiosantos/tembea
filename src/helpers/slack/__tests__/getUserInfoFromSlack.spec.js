@@ -30,11 +30,9 @@ describe('test getUserInfoFromSlack by slackId ', () => {
     jest.resetAllMocks();
   });
 
-  it('should return existing user', async (done) => {
+  it('should return existing user', async () => {
     const result = await SlackHelpers.getUserInfoFromSlack('23MTU2', 'TI34DJ');
     expect(result).toEqual({ id: '23MTU2', name: 'sande', tz_offset: 3600 });
     expect(TeamDetailsService.getTeamDetailsBotOauthToken).toHaveBeenCalledTimes(1);
-
-    done();
   });
 });

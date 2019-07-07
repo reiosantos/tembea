@@ -16,34 +16,31 @@ describe('Team details service', () => {
     });
   });
 
-  it('should get team details from cache', async (done) => {
+  it('should get team details from cache', async () => {
     const teamDetails = await TeamDetailsService.getTeamDetails('SAVEDTEAMID');
 
     expect(teamDetails).toEqual({
       data: 'team details'
     });
-    done();
   });
 
-  it('should fetch team details from DB', async (done) => {
+  it('should fetch team details from DB', async () => {
     const teamDetails = await TeamDetailsService.getTeamDetails('TEAMID1');
 
     expect(teamDetails.teamId).toEqual('TEAMID1');
     expect(teamDetails.teamName).toEqual('Team 1');
     expect(cache.saveObject.mock.calls.length).toEqual(1);
-    done();
   });
 
-  it('should throw a db error', async (done) => {
+  it('should throw a db error', async () => {
     try {
       await TeamDetailsService.getTeamDetails({});
     } catch (error) {
       expect(error.message).toBe('Could not get team details from DB');
-      done();
     }
   });
 
-  it('should save new team details', async (done) => {
+  it('should save new team details', async () => {
     const result = await TeamDetailsService.saveTeamDetails({
       botId: 'XXXXXXX',
       botToken: 'XXXXXXXXXXXXX',
@@ -67,15 +64,13 @@ describe('Team details service', () => {
       opsChannelId: 'XXXXXXXXXXXXX',
       teamUrl: 'faketeam.slack.come'
     });
-    done();
   });
 
-  it('should throw an error on team details', async (done) => {
+  it('should throw an error on team details', async () => {
     try {
       await TeamDetailsService.saveTeamDetails();
     } catch (error) {
       expect(error.message).toEqual('Could not update teamDetails or write new teamDetails to DB');
-      done();
     }
   });
 
@@ -94,16 +89,15 @@ describe('Team details service', () => {
       jest.resetAllMocks();
     });
 
-    it('should fetch all team details from DB', async (done) => {
+    it('should fetch all team details from DB', async () => {
       const allTeams = await TeamDetailsService.getAllTeams();
 
       expect(TeamDetails.findAll).toBeCalled();
       expect(allTeams[0].teamId).toEqual('TEAMID2');
       expect(allTeams).not.toBeNaN();
-      done();
     });
 
-    it('should throw an error when it cannot get team details', async (done) => {
+    it('should throw an error when it cannot get team details', async () => {
       jest.spyOn(TeamDetails, 'findAll').mockImplementation(() => {
         throw new Error();
       });
@@ -112,7 +106,6 @@ describe('Team details service', () => {
       } catch (error) {
         expect(error.message).toEqual('Could not get all teamDetails from DB');
       }
-      done();
     });
   });
 });
@@ -147,7 +140,7 @@ describe('getTeamDetailsByTeamUrl', () => {
     expect(result).toEqual(data);
   });
 
-  it('should fail on get team details by URL', async (done) => {
+  it('should fail on get team details by URL', async () => {
     cache.fetch = jest.fn(() => null);
     TeamDetails.findOne = jest.fn(() => Promise.reject(new Error('')));
 
@@ -156,7 +149,6 @@ describe('getTeamDetailsByTeamUrl', () => {
       expect(cache.fetch).toBeCalledTimes(1);
     } catch (error) {
       expect(error.message).toEqual('Could not get the team details.');
-      done();
     }
   });
 });

@@ -33,7 +33,7 @@ describe('Provider Controller', () => {
     jest.restoreAllMocks();
   });
 
-  it('should complete approve action if a cab and a driver is assigned by provider', async (done) => {
+  it('should complete approve action if a cab and a driver is assigned by provider', async () => {
     getRouteRequestAndToken.mockResolvedValueOnce({
       routeRequest: { ...mockRouteRequestData },
       slackBotOauthToken: 'dfdf'
@@ -51,9 +51,8 @@ describe('Provider Controller', () => {
     expect(ProvidersController.getFinalCabSubmissionDetails).toBeCalled();
     expect(ProvidersController.saveRoute).toHaveBeenCalled();
     expect(ProviderNotifications.completeProviderApprovedAction).toHaveBeenCalled();
-    done();
   });
-  it('should save route', async (done) => {
+  it('should save route', async () => {
     jest.spyOn(RouteService, 'createRouteBatch').mockResolvedValue({});
     jest.spyOn(ConfirmRouteUseJob, 'scheduleBatchStartJob').mockResolvedValue({});
     jest.spyOn(RouteService, 'addUserToRoute').mockResolvedValue({});
@@ -63,7 +62,6 @@ describe('Provider Controller', () => {
     expect(RouteService.addUserToRoute).toBeCalled();
     expect(ConfirmRouteUseJob.scheduleBatchStartJob).toHaveBeenCalled();
     expect(RouteService.createRouteBatch).toBeCalled();
-    done();
   });
   it('should get the final submission', async () => {
     const vehicleData = {
@@ -83,14 +81,13 @@ describe('Provider Controller', () => {
       routeCapacity: 'TTTT'
     });
   });
-  it('should throw an error', async (done) => {
+  it('should throw an error', async () => {
     getRouteRequestAndToken.mockRejectedValueOnce('an error');
     jest.spyOn(bugsnagHelper, 'log');
     completeProviderApprovedAction.mockReturnValueOnce('Token');
     await ProvidersController.handleProvidersRouteApproval(payload, respond);
     expect(bugsnagHelper.log).toHaveBeenCalled();
     expect(respond.mock.calls[0][0].text).toEqual('Unsuccessful request. Kindly Try again');
-    done();
   });
 
   describe('reassigned cab', () => {

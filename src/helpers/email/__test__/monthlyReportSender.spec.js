@@ -64,16 +64,15 @@ describe('MonthlyReportSender', () => {
       jest.restoreAllMocks();
     });
 
-    it('should send mail to expected recipients', async (done) => {
+    it('should send mail to expected recipients', async () => {
       jest.spyOn(testReporter, 'sendMail').mockResolvedValue(true);
       await testReporter.send();
 
       expect(TeamDetailsService.getAllTeams).toHaveBeenCalledTimes(1);
       expect(testReporter.sendMail).toHaveBeenCalledTimes(2);
-      done();
     });
 
-    it('should log to bugsnag if something goes wrong', async (done) => {
+    it('should log to bugsnag if something goes wrong', async () => {
       const mockError = new Error('failed to send mail');
       jest.spyOn(testReporter, 'sendMail').mockRejectedValue(mockError);
       jest.spyOn(BugsnagHelper, 'log').mockReturnValue();
@@ -81,7 +80,6 @@ describe('MonthlyReportSender', () => {
       await testReporter.send();
 
       expect(BugsnagHelper.log).toHaveBeenCalledWith(mockError);
-      done();
     });
   });
 
@@ -100,7 +98,7 @@ describe('MonthlyReportSender', () => {
       jest.spyOn(Utils, 'writableToReadableStream').mockResolvedValue('true');
     });
 
-    it('should send mail to expected people', async (done) => {
+    it('should send mail to expected people', async () => {
       jest.spyOn(testReporter.emailService, 'sendMail').mockImplementation();
 
       jest.spyOn(ReportGeneratorService, 'getOverallTripsSummary')
@@ -118,7 +116,6 @@ describe('MonthlyReportSender', () => {
       expect(MonthlyReportSender.processAttachments).toHaveBeenCalled();
       expect(MonthlyReportSender.processAttachments).toHaveBeenCalled();
       expect(MonthlyReportSender.getEmailReportAttachment).toHaveBeenCalled();
-      done();
     });
   });
 
@@ -127,13 +124,12 @@ describe('MonthlyReportSender', () => {
       jest.spyOn(DepartmentService, 'getDepartmentsForSlack').mockResolvedValue(departmentsMock);
     });
 
-    it('should return object of name and email', async (done) => {
+    it('should return object of name and email', async () => {
       const result = await MonthlyReportSender.getAddresses();
 
       expect(result.length).toEqual(2);
       expect(result[0]).toHaveProperty('name');
       expect(result[1]).toHaveProperty('email');
-      done();
     });
   });
 

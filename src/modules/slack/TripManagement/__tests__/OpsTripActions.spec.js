@@ -6,9 +6,9 @@ describe('sendUserCancellation', () => {
   it('Should send user cancellation update', async () => {
     const [channel, botToken, trip, userId, timeStamp] = ['operations', 'xyz098', {}, '123409864'];
     jest.spyOn(InteractivePromptsHelpers, 'addOpsNotificationTripFields').mockResolvedValue({});
-    const messageUpdateSpy = jest.spyOn(InteractivePrompts, 'messageUpdate');
+    jest.spyOn(InteractivePrompts, 'messageUpdate').mockResolvedValue();
 
     await OpsTripActions.sendUserCancellation(channel, botToken, trip, userId, timeStamp);
-    expect(messageUpdateSpy).toHaveBeenCalled();
+    expect(InteractivePrompts.messageUpdate).toHaveBeenCalled();
   });
 });

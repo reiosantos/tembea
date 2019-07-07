@@ -9,16 +9,15 @@ describe('/Users service', () => {
     jest.clearAllMocks();
   });
 
-  it('should not be able to create user', async (done) => {
+  it('should not be able to create user', async () => {
     try {
       await UserService.createNewUser(1);
     } catch (error) {
       expect(error.message).toBe('Could not create user');
     }
-    done();
   });
 
-  it('should not get User SlackInfo', async (done) => {
+  it('should not get User SlackInfo', async () => {
     try {
       await UserService.getUserSlackInfo(1);
     } catch (error) {
@@ -27,25 +26,22 @@ describe('/Users service', () => {
         + ' it must be the same as the user\'s email on slack'
       );
     }
-    done();
   });
 
-  it('should not update the user record', async (done) => {
+  it('should not update the user record', async () => {
     try {
       await UserService.getUser({});
     } catch (error) {
       expect(error.message).toBe('Could not update the user record');
     }
-    done();
   });
 
-  it('should not update the user in the database', async (done) => {
+  it('should not update the user in the database', async () => {
     try {
       await UserService.saveNewRecord({});
     } catch (error) {
       expect(error.message).toBe('Could not update user record');
     }
-    done();
   });
 
   describe('getUserById', () => {
@@ -54,10 +50,9 @@ describe('/Users service', () => {
       User.findByPk = jest.fn().mockResolvedValue({});
     });
 
-    it('should return valid user when found', async (done) => {
+    it('should return valid user when found', async () => {
       const user = await UserService.getUserById(1);
       expect(user).toBeInstanceOf(Object);
-      done();
     });
   });
 
@@ -67,10 +62,9 @@ describe('/Users service', () => {
       User.findOne = jest.fn().mockResolvedValue({});
     });
 
-    it('should return valid user when found', async (done) => {
+    it('should return valid user when found', async () => {
       const user = await UserService.getUserBySlackId(1);
       expect(user).toBeInstanceOf(Object);
-      done();
     });
   });
 
@@ -80,10 +74,9 @@ describe('/Users service', () => {
       User.findOne = jest.fn().mockResolvedValue({});
     });
 
-    it('should return valid user when found', async (done) => {
+    it('should return valid user when found', async () => {
       const user = await UserService.getUserByEmail(1);
       expect(user).toBeInstanceOf(Object);
-      done();
     });
   });
 

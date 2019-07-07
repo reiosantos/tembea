@@ -37,12 +37,11 @@ describe('GoogleMapsService', () => {
       expect(maps.findNearestBusStops('23,32')).resolves.toHaveLength(4);
       expect(mockCoordinates).toHaveBeenCalledTimes(2);
     });
-    it('should map results to coordinates', async (done) => {
+    it('should map results to coordinates', async () => {
       const results = await maps.findNearestBusStops('23,32');
       const coords = GoogleMapsService.mapResultsToCoordinates(results);
       expect(coords).toHaveLength(4);
       expect(GoogleMapsService.generateMarkers(results)).toHaveLength(4);
-      done();
     });
   });
 });

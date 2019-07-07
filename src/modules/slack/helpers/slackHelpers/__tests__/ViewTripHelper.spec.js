@@ -38,7 +38,7 @@ describe('ViewTripHelper', () => {
     jest.restoreAllMocks();
   });
   describe('displayTripRequest', () => {
-    it('should display trip request', async (done) => {
+    it('should display trip request', async () => {
       tripRequest.mockResolvedValueOnce({ ...tripData });
       userName.mockResolvedValue();
       const result = await ViewTripHelper.displayTripRequest(requestId, payload, respond);
@@ -48,16 +48,14 @@ describe('ViewTripHelper', () => {
       expect(result).toHaveProperty('attachments');
       expect(result).toHaveProperty('text');
       expect(result.response_type).toBe('ephemeral');
-      done();
     });
 
-    it('should handle errors', async (done) => {
+    it('should handle errors', async () => {
       tripRequest.mockRejectedValue(new Error('failing'));
       jest.spyOn(bugsnagHelper, 'log');
       const result = await ViewTripHelper.displayTripRequest(requestId, payload, respond);
       expect(bugsnagHelper.log).toHaveBeenCalled();
       expect(result.text).toBe('Request unsuccessful.:cry:');
-      done();
     });
   });
 

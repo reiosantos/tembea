@@ -7,11 +7,15 @@ import {
   missingDeptNamePayload, validDeptPayload, existingDeptPayload,
   numericLocationPayload, missingDeptLocationPayload, invalidLocationPayload
 } from '../__mocks__/addDepartments';
+import models from '../../../database/models';
 
 let validToken;
 
 beforeAll(() => {
   validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+});
+afterAll(() => {
+  models.sequelize.close();
 });
 describe('/Departments create', () => {
   it('should return a no user found error with wrong email', (done) => {

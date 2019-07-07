@@ -63,6 +63,13 @@ describe('TravelTripHelper', () => {
       );
       expect(respond).toHaveBeenCalled();
     });
+
+    it('Should thrown an error', async () => {
+      jest.spyOn(BugsnagHelper, 'log');
+      await travelHelper.getDestinationType({ submission: { destination: 'Others' } }, respond);
+      await travelHelper.detailsConfirmation({ submission: { destination: 'Others' } }, respond);
+      expect(respond).toHaveBeenCalled();
+    });
   });
 
   describe('validatePickupDestination', () => {

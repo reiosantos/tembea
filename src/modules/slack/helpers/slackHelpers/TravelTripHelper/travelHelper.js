@@ -1,5 +1,5 @@
 import LocationMapHelpers from '../../../../../helpers/googleMaps/locationsMapHelpers';
-import TravelTripHelper, { getTravelKey } from './index';
+import { getTravelKey } from './index';
 import GoogleMapsError from '../../../../../helpers/googleMaps/googleMapsError';
 import {
   SlackInteractiveMessage,
@@ -9,9 +9,10 @@ import {
 import Notifications from '../../../SlackPrompts/Notifications';
 import InteractivePromptSlackHelper from '../InteractivePromptSlackHelper';
 import {
-  LocationPrompts, Cache, InteractivePrompts, DialogPrompts
+  LocationPrompts, Cache, InteractivePrompts, DialogPrompts, bugsnagHelper
 } from '../../../RouteManagement/rootFile';
-import Validators from '../../../../../helpers/slack/UserInputValidator/Validators';
+import UpdateSlackMessageHelper from '../../../../../helpers/slack/updatePastMessageHelper';
+import Services from '../../../../../services/UserService';
 
 export default class travelHelper {
   static async getPickupType(data) {
@@ -27,7 +28,7 @@ export default class travelHelper {
   static async getDestinationType(payload, respond) {
     const { submission: { destination } } = payload;
     if (destination !== 'Others') {
-      const confirmDetails = await TravelTripHelper.detailsConfirmation(payload, respond);
+      const confirmDetails = await travelHelper.detailsConfirmation(payload, respond);
       return confirmDetails;
     }
     try {
@@ -36,7 +37,7 @@ export default class travelHelper {
       if (verifiable) respond(verifiable);
     } catch (err) {
       if (err instanceof GoogleMapsError && err.code === GoogleMapsError.UNAUTHENTICATED) {
-        const confirmDetails = await TravelTripHelper.detailsConfirmation(payload, respond);
+        const confirmDetails = await travelHelper.detailsConfirmation(payload, respond);
         respond(confirmDetails);
       }
     }
@@ -113,26 +114,6 @@ export default class travelHelper {
     return { updatedTripDetails, location };
   }
 
-  static async tripNotesAddition(payload, respond) {
-    const { user: { id }, submission: { tripNote } } = payload;
-    const { tripDetails } = await Cache.fetch(getTravelKey(id));
-    const errors = [];
-    errors.push(...Validators.validateDialogSubmission(payload));
-    if (errors.length) return { errors };
-    tripDetails.tripNote = tripNote;
-    await Cache.save(getTravelKey(id), 'tripDetails', tripDetails);
-    return InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
-  }
-
-  static async notesRequest(payload, respond) {
-    const { user: { id } } = payload;
-    const { tripDetails: { tripNote } } = await Cache.fetch(getTravelKey(id));
-    respond(new SlackInteractiveMessage('Noted ...'));
-    return DialogPrompts.sendTripNotesDialogForm(payload,
-      'travelTripNoteForm', 'travel_trip_tripNotesAddition',
-      'Add Trip Notes', tripNote || null);
-  }
-
   static async riderRequest(payload, tripDetails, respond) {
     const { team: { id: teamID }, user: { id: userID } } = payload;
     const { pickup, destination, rider } = tripDetails;
@@ -141,5 +122,54 @@ export default class travelHelper {
       pickup, destination, teamID, userID, rider
     };
     await travelHelper.validatePickupDestination(data, respond);
+  }
+
+  static async tripNotesUpdate(payload, respond) {
+    const { user: { id }, submission: { tripNote } } = payload;
+    const { tripDetails } = await Cache.fetch(getTravelKey(id));
+    tripDetails.tripNote = tripNote;
+    await Cache.save(getTravelKey(id), 'tripDetails', tripDetails);
+    if (tripDetails.tripNote && payload.state) {
+      const data = { text: 'Noted...' };
+      await UpdateSlackMessageHelper.updateMessage(payload.state, data);
+    }
+    return InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
+  }
+
+  static async notesRequest(payload) {
+    const { user: { id } } = payload;
+    const { tripDetails: { tripNote } } = await Cache.fetch(getTravelKey(id));
+    return DialogPrompts.sendTripNotesDialogForm(payload,
+      'travelTripNoteForm', 'travel_trip_tripNotesAddition',
+      'Add Trip Notes', tripNote);
+  }
+
+  static async checkNoteStatus(payload, respond) {
+    switch (payload.actions[0].value) {
+      case 'cancel':
+        await InteractivePromptSlackHelper.sendCancelRequestResponse(respond);
+        break;
+      case 'trip_note':
+        await travelHelper.notesRequest(payload, respond);
+        break;
+      case 'update_note':
+        await travelHelper.notesRequest(payload, respond);
+        break;
+      default:
+    }
+  }
+
+  static async detailsConfirmation(payload, respond) {
+    try {
+      const { user: { id } } = payload;
+      const { tripDetails } = await Cache.fetch(getTravelKey(id));
+      const requesterData = await Services.getUserBySlackId(id);
+      const tripData = LocationMapHelpers.tripCompare(tripDetails);
+      tripData.requester = requesterData.dataValues.name;
+      return InteractivePrompts.sendPreviewTripResponse(tripData, respond);
+    } catch (error) {
+      bugsnagHelper.log(error);
+      respond(new SlackInteractiveMessage(`${error} Unsuccessful request. Please try again`));
+    }
   }
 }

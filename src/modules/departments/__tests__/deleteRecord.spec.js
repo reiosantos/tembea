@@ -12,6 +12,9 @@ const { Department } = models;
 beforeAll(() => {
   validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
 });
+afterAll(() => {
+  models.sequelize.close();
+});
 
 describe('Delete department record', () => {
   beforeAll(async () => {

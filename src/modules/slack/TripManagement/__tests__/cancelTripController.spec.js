@@ -9,14 +9,13 @@ describe('cancel trip test', () => {
     jest.spyOn(tripService, 'getById').mockResolvedValue();
     jest.spyOn(TripRequest, 'update').mockResolvedValue();
   });
-  it('should return trip not found', async (done) => {
+  it('should return trip not found', async () => {
     tripService.getById.mockResolvedValue(null);
     const result = await CancelTripController.cancelTrip(300000000);
     expect(result.text).toBe('Trip not found');
-    done();
   });
 
-  it('should return success', async (done) => {
+  it('should return success', async () => {
     jest.spyOn(tripService, 'getById')
       .mockImplementation(id => Promise.resolve({ id, name: 'Test Trip', approvedById: 4 }));
     jest.spyOn(tripService, 'updateRequest').mockResolvedValue({});
@@ -28,14 +27,12 @@ describe('cancel trip test', () => {
       { tripStatus: 'Cancelled' });
 
     expect(result.text).toBe('Success! Your Trip request has been cancelled');
-    done();
   });
 
-  it('should handle error', async (done) => {
+  it('should handle error', async () => {
     const err = new Error('dummy message');
     tripService.getById.mockRejectedValue(err);
     const result = await CancelTripController.cancelTrip(1);
     expect(result.text).toBe(`Request could not be processed, ${err.message}`);
-    done();
   });
 });

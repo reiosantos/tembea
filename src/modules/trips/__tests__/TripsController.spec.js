@@ -25,7 +25,7 @@ describe('TripController', () => {
     jest.restoreAllMocks();
   });
   describe('TripController_getTrips', () => {
-    it('Should get all trips value', async (done) => {
+    it('Should get all trips value', async () => {
       const {
         resultValue: { message, success, data: mockedData },
         response: res
@@ -39,7 +39,6 @@ describe('TripController', () => {
         message,
         success
       });
-      done();
     });
     it('Should throw an error', async () => {
       const { response: res } = rest;
@@ -124,7 +123,7 @@ describe('TripsController for update trip', () => {
 
 
   describe('updateTrip() with confirm', () => {
-    it('updateTrip should run with confirm  success', async (done) => {
+    it('updateTrip should run with confirm  success', async () => {
       jest
         .spyOn(TripsController, 'getCommonPayloadParam')
         .mockResolvedValue(payload);
@@ -141,10 +140,9 @@ describe('TripsController for update trip', () => {
       expect(TripActionsController.changeTripStatus).toHaveBeenCalledTimes(1);
       expect(res.status().json).toHaveBeenCalledTimes(1);
       expect(res.status().json).toHaveBeenLastCalledWith(TripConfirmSuccessMock);
-      done();
     });
 
-    it('updateTrip() should run with decline success', async (done) => {
+    it('updateTrip() should run with decline success', async () => {
       jest
         .spyOn(TripsController, 'getCommonPayloadParam')
         .mockResolvedValue(payload);
@@ -161,9 +159,8 @@ describe('TripsController for update trip', () => {
       expect(TripActionsController.changeTripStatus).toHaveBeenCalledTimes(1);
       expect(res.status().json).toHaveBeenCalledTimes(1);
       expect(res.status().json).toHaveBeenLastCalledWith(TripDeclineSuccessMock);
-      done();
     });
-    it('updateTrip() should run with decline fail', async (done) => {
+    it('updateTrip() should run with decline fail', async () => {
       jest
         .spyOn(TripsController, 'getCommonPayloadParam')
         .mockResolvedValue(payload);
@@ -180,9 +177,8 @@ describe('TripsController for update trip', () => {
       expect(TripActionsController.changeTripStatus).toHaveBeenCalledTimes(1);
       expect(res.status().json).toHaveBeenCalledTimes(1);
       expect(res.status().json).toHaveBeenLastCalledWith(TripConfirmFailMock);
-      done();
     });
-    it('updateTrip() should run with confirm fail', async (done) => {
+    it('updateTrip() should run with confirm fail', async () => {
       jest
         .spyOn(TripsController, 'getCommonPayloadParam')
         .mockResolvedValue(payload);
@@ -199,7 +195,6 @@ describe('TripsController for update trip', () => {
       expect(TripActionsController.changeTripStatus).toHaveBeenCalledTimes(1);
       expect(res.status().json).toHaveBeenCalledTimes(1);
       expect(res.status().json).toHaveBeenLastCalledWith(TripConfirmFailMock);
-      done();
     });
     it('getSlackIdFromReq() should return user Id', (done) => {
       jest
@@ -209,7 +204,7 @@ describe('TripsController for update trip', () => {
       expect(UserService.getUserByEmail).toHaveBeenCalledTimes(1);
       done();
     });
-    it('getCommonPayloadParam() should should get payload', async (done) => {
+    it('getCommonPayloadParam() should should get payload', async () => {
       jest
         .spyOn(TripsController, 'getSlackIdFromReq')
         .mockResolvedValue('UG9MG84U8');
@@ -219,9 +214,8 @@ describe('TripsController for update trip', () => {
       await TripsController.getCommonPayloadParam('', '', '');
       expect(TeamDetailsService.getTeamDetailsByTeamUrl).toHaveBeenCalledTimes(1);
       expect(TripsController.getSlackIdFromReq).toHaveBeenCalledTimes(1);
-      done();
     });
-    it('updateTrip() with missing data', async (done) => {
+    it('updateTrip() with missing data', async () => {
       jest
         .spyOn(TripsController, 'getCommonPayloadParam')
         .mockResolvedValue(payload);
@@ -232,7 +226,6 @@ describe('TripsController for update trip', () => {
       expect(res.status).toHaveBeenCalledTimes(1);
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.status().json).toHaveBeenCalledTimes(1);
-      done();
     });
   });
 });

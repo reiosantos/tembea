@@ -30,6 +30,8 @@ import ProvidersController from '../../RouteManagement/ProvidersController';
 import SlackInteractionsHelpers from '../../helpers/slackHelpers/SlackInteractionsHelpers';
 import InteractivePromptSlackHelper from '../../helpers/slackHelpers/InteractivePromptSlackHelper';
 import ProviderService from '../../../../services/ProviderService';
+import SlackNotifications from '../../SlackPrompts/Notifications';
+
 
 describe('SlackInteractions', () => {
   let payload1;
@@ -44,60 +46,58 @@ describe('SlackInteractions', () => {
       original_message: { ts: 'dsfdf' },
       user: { id: 3 }
     };
+
+    jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('xyz');
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
     jest.restoreAllMocks();
   });
   describe('Handle manager actions', () => {
-    it('should handle manager actions when isCancel is true', async (done) => {
-      jest.spyOn(SlackHelpers, 'handleCancellation').mockImplementation().mockResolvedValue(true);
+    it('should handle manager actions when isCancel is true', async () => {
+      jest.spyOn(SlackHelpers, 'handleCancellation').mockResolvedValue(true);
       await SlackInteractions.handleManagerActions(payload1, respond1);
       expect(respond1.mock.calls[0][0].text)
         .toEqual('The trip request has already been cancelled.');
-      done();
     });
 
-    it('should handle manager approve', async (done) => {
+    it('should handle manager approve', async () => {
       payload1.actions[0].name = 'managerApprove';
-      jest.spyOn(SlackHelpers, 'handleCancellation').mockImplementation().mockResolvedValue(false);
-      jest.spyOn(ManagerActionsHelper, 'managerApprove').mockImplementation().mockResolvedValue({});
+      jest.spyOn(SlackHelpers, 'handleCancellation').mockResolvedValue(false);
+      jest.spyOn(ManagerActionsHelper, 'managerApprove').mockResolvedValue({});
       await SlackInteractions.handleManagerActions(payload1, respond1);
 
       expect(ManagerActionsHelper.managerApprove).toHaveBeenCalled();
-      done();
     });
 
-    it('should handle manager decline', async (done) => {
+    it('should handle manager decline', async () => {
       payload1.actions[0].name = 'managerDecline';
-      jest.spyOn(SlackHelpers, 'handleCancellation').mockImplementation().mockResolvedValue(false);
-      jest.spyOn(ManagerActionsHelper, 'managerDecline').mockImplementation().mockResolvedValue({});
+      jest.spyOn(SlackHelpers, 'handleCancellation').mockResolvedValue(false);
+      jest.spyOn(ManagerActionsHelper, 'managerDecline').mockResolvedValue({});
       await SlackInteractions.handleManagerActions(payload1, respond1);
 
       expect(ManagerActionsHelper.managerDecline).toHaveBeenCalled();
-      done();
     });
 
-    it('should catch thrown errors', async (done) => {
+    it('should catch thrown errors', async () => {
       payload1.actions[0].name = null;
-      jest.spyOn(SlackHelpers, 'handleCancellation').mockImplementation().mockResolvedValue(false);
+      jest.spyOn(SlackHelpers, 'handleCancellation').mockResolvedValue(false);
       jest.spyOn(ManagerActionsHelper, 'managerApprove').mockImplementation();
-      jest.spyOn(BugsnagHelper, 'log').mockImplementation().mockReturnValue({});
+      jest.spyOn(BugsnagHelper, 'log').mockReturnValue({});
       await SlackInteractions.handleManagerActions(payload1, respond1);
 
       expect(BugsnagHelper.log).toHaveBeenCalled();
       expect(respond1).toHaveBeenCalled();
-      done();
     });
   });
 
   describe('Manager decline trip', () => {
     beforeAll(() => {
       ManageTripController.declineTrip = jest.fn(() => { });
+      jest.spyOn(ManageTripController, 'declineTrip').mockImplementation(() => {});
     });
 
-    it('should handle empty decline message', async (done) => {
+    it('should handle empty decline message', async () => {
       const res = await SlackInteractions.handleTripDecline({
         submission: {
           declineReason: '        '
@@ -108,10 +108,9 @@ describe('SlackInteractions', () => {
 
       expect(res.errors.length).toBe(1);
       expect(res.errors[0]).toEqual({ name: 'declineReason', error: 'This field cannot be empty' });
-      done();
     });
 
-    it('should handle trip decline', async (done) => {
+    it('should handle trip decline', async () => {
       await SlackInteractions.handleTripDecline({
         submission: {
           declineReason: 'Just a funny reason'
@@ -120,13 +119,12 @@ describe('SlackInteractions', () => {
         team: { id: 'AHJKURLKJR' }
       });
 
-      expect(ManageTripController.declineTrip.mock.calls.length).toBe(1);
-      done();
+      expect(ManageTripController.declineTrip).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('Error handling for manager decline', () => {
-    it('should catch unexpected errors', async (done) => {
+    it('should catch unexpected errors', async () => {
       await SlackInteractions.handleTripDecline(
         {
           submission: {
@@ -143,7 +141,6 @@ describe('SlackInteractions', () => {
             response_type: 'ephemeral',
             text: 'Error:bangbang:: Something went wrong! Please try again.'
           });
-          done();
         }
       );
     });
@@ -158,7 +155,7 @@ describe('SlackInteractions', () => {
 
     it('should test back_to_launch', (done) => {
       const payload = createPayload('back_to_launch');
-      SlackController.getWelcomeMessage = jest.fn().mockImplementation().mockReturnValue({});
+      SlackController.getWelcomeMessage = jest.fn().mockReturnValue({});
       SlackInteractions.launch(payload, respond);
       expect(SlackController.getWelcomeMessage).toHaveBeenCalled();
       done();
@@ -166,7 +163,7 @@ describe('SlackInteractions', () => {
 
     it('should test back_to_launch', (done) => {
       const payload = createPayload('back_to_travel_launch');
-      SlackController.getTravelCommandMsg = jest.fn().mockImplementation().mockReturnValue({});
+      SlackController.getTravelCommandMsg = jest.fn().mockReturnValue({});
       SlackInteractions.launch(payload, respond);
       expect(SlackController.getTravelCommandMsg).toHaveBeenCalled();
       done();
@@ -174,7 +171,7 @@ describe('SlackInteractions', () => {
 
     it('should test back_to_routes_launch', (done) => {
       const payload = createPayload('back_to_routes_launch');
-      SlackController.getRouteCommandMsg = jest.fn().mockImplementation().mockReturnValue({});
+      SlackController.getRouteCommandMsg = jest.fn().mockReturnValue({});
       SlackInteractions.launch(payload, respond);
       expect(SlackController.getRouteCommandMsg).toHaveBeenCalled();
       done();
@@ -222,23 +219,21 @@ describe('SlackInteractions', () => {
       DialogPrompts.sendTripDetailsForm = jest.fn((value1, value2) => ({ value1, value2 }));
     });
 
-    it('should test book new trip action', async (done) => {
+    it('should test book new trip action', async () => {
       const payload = createPayload('true');
       const result = await SlackInteractionsHelpers.bookNewTrip(payload, respond);
       expect(result).toBe(undefined);
       expect(Cache.save).toHaveBeenCalled();
       expect(DialogPrompts.sendTripReasonForm).toHaveBeenCalledWith(payload);
-      done();
     });
 
-    it('should test book new trip default action', async (done) => {
+    it('should test book new trip default action', async () => {
       const payload = createPayload();
       const result = await SlackInteractionsHelpers.bookNewTrip(payload, respond);
       expect(result).toBe(undefined);
       expect(respond).toHaveBeenCalledWith(
         responseMessage('Thank you for using Tembea. See you again.')
       );
-      done();
     });
   });
 
@@ -277,25 +272,23 @@ describe('SlackInteractions', () => {
       TripRescheduleHelper.sendTripRescheduleDialog = jest.fn();
     });
 
-    it('should trigger dispalyTripRequestInteractive prompt', async (done) => {
+    it('should trigger dispalyTripRequestInteractive prompt', async () => {
       const payload = createPayload('value', 'view');
       jest.spyOn(ViewTripHelper, 'displayTripRequest').mockResolvedValue();
 
       await SlackInteractionsHelpers.handleItineraryActions(payload, itineraryRespond);
       expect(ViewTripHelper.displayTripRequest).toHaveBeenCalled();
-      done();
     });
 
-    it('should trigger reschedule dialog', async (done) => {
+    it('should trigger reschedule dialog', async () => {
       const payload = createPayload('value', 'reschedule');
 
       const result = await SlackInteractionsHelpers.handleItineraryActions(payload, itineraryRespond);
       expect(result).toBe(undefined);
       expect(TripRescheduleHelper.sendTripRescheduleDialog).toHaveBeenCalled();
-      done();
     });
 
-    it('should trigger cancel trip', async (done) => {
+    it('should trigger cancel trip', async () => {
       const payload = createPayload(1, 'cancel_trip');
       CancelTripController.cancelTrip = jest.fn(() => Promise.resolve('message'));
 
@@ -304,10 +297,9 @@ describe('SlackInteractions', () => {
       expect(itineraryRespond).toHaveBeenCalledWith(
         'message'
       );
-      done();
     });
 
-    it('should trigger trip', async (done) => {
+    it('should trigger trip', async () => {
       const payload = createPayload(1, 'trip');
       CancelTripController.cancelTrip = jest.fn(() => Promise.resolve('message'));
 
@@ -316,7 +308,6 @@ describe('SlackInteractions', () => {
       expect(itineraryRespond).toHaveBeenCalledWith(
         responseMessage('Thank you for using Tembea. See you again.')
       );
-      done();
     });
   });
 
@@ -327,12 +318,13 @@ describe('SlackInteractions', () => {
 
     beforeEach(() => {
       rescheduleRespond = respondMock();
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('xyz');
     });
 
-    it('should test reschedule switch interaction', async (done) => {
+    it('should test reschedule switch interaction', async () => {
       RescheduleTripController.runValidations = jest.fn(() => (expectedErrorResponse));
       RescheduleTripController.rescheduleTrip = jest.fn(() => response);
-      TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => { });
+      // TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => { });
       const payload = {
         state: 'reschedule boy',
         submission: {
@@ -345,13 +337,12 @@ describe('SlackInteractions', () => {
       };
       const result = await SlackInteractionsHelpers.handleReschedule(payload, rescheduleRespond);
       expect(result).toEqual({ errors: expectedErrorResponse });
-      done();
     });
 
-    it('should test reschedule switch interaction', async (done) => {
+    it('should test reschedule switch interaction', async () => {
       RescheduleTripController.runValidations = jest.fn(() => ([]));
       RescheduleTripController.rescheduleTrip = jest.fn(() => response);
-      TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => { });
+      // TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => { });
       const payload = {
         state: 'reschedule boy',
         submission: {
@@ -365,13 +356,12 @@ describe('SlackInteractions', () => {
       const result = await SlackInteractionsHelpers.handleReschedule(payload, rescheduleRespond);
       expect(result).toEqual(undefined);
       expect(rescheduleRespond).toHaveBeenCalledWith(response);
-      done();
     });
 
-    it('should test reschedule switch interaction', async (done) => {
+    it('should test reschedule switch interaction', async () => {
       RescheduleTripController.runValidations = jest.fn(() => ([]));
       RescheduleTripController.rescheduleTrip = jest.fn(() => response);
-      TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => { });
+      // TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => { });
       const payload = {
         state: 'boy',
         submission: {
@@ -385,7 +375,6 @@ describe('SlackInteractions', () => {
       const result = await SlackInteractionsHelpers.handleReschedule(payload, rescheduleRespond);
       expect(result).toEqual(undefined);
       expect(rescheduleRespond).toHaveBeenCalledWith('request submitted');
-      done();
     });
   });
 
@@ -398,13 +387,12 @@ describe('SlackInteractions', () => {
       TripItineraryController.handleUpcomingTrips = jest.fn();
     });
 
-    it('should test view_trips_history case', async (done) => {
+    it('should test view_trips_history case', async () => {
       const payload = createPayload('view_trips_history');
 
       const result = await SlackInteractions.viewTripItineraryActions(payload, itineraryRespond);
       expect(result).toBe(undefined);
       expect(TripItineraryController.handleTripHistory).toHaveBeenCalled();
-      done();
     });
 
     it('should test view_trips_history case', (done) => {
@@ -415,11 +403,10 @@ describe('SlackInteractions', () => {
       done();
     });
 
-    it('should test view_upcoming_trips case', async (done) => {
+    it('should test view_upcoming_trips case', async () => {
       const payload = createPayload('view_upcoming_trips');
       await SlackInteractions.viewTripItineraryActions(payload, itineraryRespond);
       expect(TripItineraryController.handleUpcomingTrips).toHaveBeenCalled();
-      done();
     });
 
     it('should test default case', (done) => {
@@ -568,14 +555,18 @@ describe('SlackInteractions', () => {
         state: 'cvbn jhgf ty'
       };
       const respond = jest.fn();
-      jest.spyOn(SlackHelpers, 'approveRequest').mockReturnValue(true);
+      jest.spyOn(SlackHelpers, 'approveRequest').mockResolvedValue(true);
       jest.spyOn(SlackEvents, 'raise').mockReturnValue();
-      jest.spyOn(InteractivePrompts, 'sendManagerDeclineOrApprovalCompletion').mockReturnValue();
+      jest.spyOn(InteractivePrompts, 'sendManagerDeclineOrApprovalCompletion')
+        .mockResolvedValue();
       jest.spyOn(tripService, 'getById')
         .mockImplementation(id => Promise.resolve({ id, name: 'Test Trip' }));
-      const getTeamDetailsBotOauthToken = jest.spyOn(TeamDetailsService,
-        'getTeamDetailsBotOauthToken')
-        .mockImplementationOnce(() => Promise.resolve());
+      const getTeamDetailsBotOauthToken = jest.spyOn(
+        TeamDetailsService, 'getTeamDetailsBotOauthToken'
+      ).mockResolvedValue('xyz');
+      // const getTeamDetailsBotOauthToken = jest.spyOn(TeamDetailsService,
+      //   'getTeamDetailsBotOauthToken')
+      //   .mockImplementationOnce(() => Promise.resolve());
 
       await SlackInteractions.handleManagerApprovalDetails(payload, respond);
       expect(SlackEvents.raise).toHaveBeenCalled();
@@ -583,7 +574,6 @@ describe('SlackInteractions', () => {
       expect(InteractivePrompts.sendManagerDeclineOrApprovalCompletion).toHaveBeenCalledTimes(1);
       expect(getTeamDetailsBotOauthToken).toHaveBeenCalledTimes(1);
       expect(getTeamDetailsBotOauthToken).toHaveBeenCalledWith(teamId);
-      getTeamDetailsBotOauthToken.mockRestore();
     });
 
     it('should respond with error', async () => {
@@ -748,18 +738,21 @@ describe('SlackInteractions', () => {
           + 'We could not complete this process please try again.');
       });
     });
-
     describe('SlackInteractions > handleSelectProviderAction', () => {
-      it('should call selectProviderDialog with payload data for confirmTrip actions', () => {
+      it('should call selectProviderDialog with payload data for confirmTrip actions', async () => {
         const data = {
           actions: [
             {
               name: 'confirmTrip'
             }
-          ]
+          ],
+          channel: { id: 'ABC' },
+          team: { id: 'XYZ' }
         };
-        const sendSelectProviderDialogSpy = jest.spyOn(DialogPrompts, 'sendSelectProviderDialog');
-        SlackInteractions.handleSelectProviderAction(data);
+        const sendSelectProviderDialogSpy = jest.spyOn(DialogPrompts, 'sendSelectProviderDialog')
+          .mockResolvedValue();
+        jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue();
+        await SlackInteractions.handleSelectProviderAction(data);
         expect(sendSelectProviderDialogSpy).toHaveBeenCalled();
       });
       it('should call identify difference between trip and route request and call trip controller', () => {
@@ -779,12 +772,11 @@ describe('SlackInteractions', () => {
         SlackInteractions.handleSelectCabAndDriverAction(data, respond);
         expect(ProvidersControllerSpy).toHaveBeenCalled();
       });
-      it('should handle provider actions', (done) => {
-        jest.spyOn(DialogPrompts, 'sendSelectCabDialog');
+      it('should handle provider actions', async () => {
+        jest.spyOn(DialogPrompts, 'sendSelectCabDialog').mockResolvedValue();
         const payload = createPayload('accept_route_request');
-        SlackInteractionsHelpers.startProviderActions(payload, respond);
+        await SlackInteractionsHelpers.startProviderActions(payload, respond);
         expect(DialogPrompts.sendSelectCabDialog).toBeCalled();
-        done();
       });
       it('should handle provider actions', (done) => {
         const payload = createPayload('default');
@@ -839,14 +831,14 @@ describe('SlackInteractions', () => {
   });
 
   describe('handleSelectCabActions', () => {
-    beforeEach(() => {
-      jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('xyz');
-    });
-    const payload = { user: { id: 1 }, actions: [{ value: 1 }], channel: { id: 1 } };
     it('Should call user cancellation function if trip has been canceled', async () => {
+      // jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('xyz');
       jest.spyOn(ProviderService, 'getProviderBySlackId').mockResolvedValue({ id: 1 });
       jest.spyOn(tripService, 'getById').mockResolvedValue({ providerId: '16' });
-      SlackInteractions.handleSelectCabActions(payload);
+
+      const payload = { user: { id: 1 }, actions: [{ value: 1 }], channel: { id: 1 } };
+      const respond = jest.fn();
+      SlackInteractions.handleSelectCabActions(payload, respond);
       expect(ProviderService.getProviderBySlackId).toHaveBeenCalled();
     });
   });

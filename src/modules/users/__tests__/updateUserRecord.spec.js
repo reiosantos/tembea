@@ -2,12 +2,8 @@ import request from 'supertest';
 import '@slack/client';
 import app from '../../../app';
 import Utils from '../../../utils';
+import models from '../../../database/models';
 
-let validToken;
-
-beforeAll(() => {
-  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
-});
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
     users: {
@@ -19,6 +15,15 @@ jest.mock('@slack/client', () => ({
     }
   }))
 }));
+
+let validToken;
+
+beforeAll(() => {
+  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+});
+afterAll(() => {
+  models.sequelize.close();
+});
 
 describe('/User update', () => {
   it('should return a not found error with wrong email', (done) => {

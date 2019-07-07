@@ -17,21 +17,18 @@ describe('ManagerActionsHelper', () => {
     };
   });
   
-  it('should handle manager decline', async (done) => {
+  it('should handle manager decline', async () => {
     jest.spyOn(DialogPrompts, 'sendReasonDialog').mockImplementation().mockResolvedValue({});
     await ManagerActionsHelper.managerDecline(payload);
     expect(DialogPrompts.sendReasonDialog).toHaveBeenCalled();
-    done();
   });
 
-  it('should handle manager approve', async (done) => {
+  it('should handle manager approve', async () => {
     const respond = jest.fn();
     jest.spyOn(SlackHelpers, 'isRequestApproved').mockImplementation().mockResolvedValue('mockedTrip');
     jest.spyOn(SlackInteractionsHelpers, 'approveTripRequestByManager').mockImplementation().mockReturnValue({});
     await ManagerActionsHelper.managerApprove(payload, respond);
     expect(SlackHelpers.isRequestApproved).toHaveBeenCalled();
     expect(SlackInteractionsHelpers.approveTripRequestByManager).toHaveBeenCalled();
-
-    done();
   });
 });

@@ -60,7 +60,7 @@ describe('Route Request Approval/Decline', () => {
   describe('Decline route request', () => {
     it('should respond with a missing request param response', (done) => {
       request(app)
-        .put(`/api/v1/routes/requests/status/${routeRequestPendingId}`)
+        .put('/api/v1/routes/requests/status/1')
         .set(reqHeaders)
         .send(mockDataMissingTeamUrl)
         .expect(
@@ -72,6 +72,32 @@ describe('Route Request Approval/Decline', () => {
           },
           done
         );
+    });
+
+    it('should respond with an invalid request', (done) => {
+      request(app)
+        .put('/api/v1/routes/requests/status/1')
+        .set(reqHeaders)
+        .send(mockDataInvalidComment)
+        .expect(
+          400,
+          {
+            success: false,
+            message: 'comment can only contain words and [,."\' -]',
+          },
+          done
+        );
+    });
+
+    it('should respond with pending route request response', async () => {
+      const response = await request(app)
+        .put('/api/v1/routes/requests/status/3')
+        .set(reqHeaders)
+        .send(mockDeclinedRouteRequest);
+      expect(response.status).toEqual(409);
+      expect(response.body.message).toEqual(
+        'This request needs to be confirmed by the manager first'
+      );
     });
 
     it('should respond with an invalid request', (done) => {
@@ -100,7 +126,7 @@ describe('Route Request Approval/Decline', () => {
       );
     });
   });
-  
+
   describe('Approve a route request', () => {
     it('should return a 409 response if request is pending', (done) => {
       request(app)

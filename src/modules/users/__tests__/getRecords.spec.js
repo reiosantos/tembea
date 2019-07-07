@@ -1,11 +1,15 @@
 import request from 'supertest';
 import app from '../../../app';
 import Utils from '../../../utils';
+import models from '../../../database/models';
 
 let validToken; // Token for secure requests
 
 beforeAll(() => {
   validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+});
+afterAll(() => {
+  models.sequelize.close();
 });
 
 describe('Get users records', () => {

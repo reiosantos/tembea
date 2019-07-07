@@ -42,7 +42,7 @@ describe('OperationsNotifications', () => {
       jest.restoreAllMocks();
     });
     describe('sendOpsDeclineMessageToFellow', () => {
-      it('should send ops decline notification to fellow', async (done) => {
+      it('should send ops decline notification to fellow', async () => {
         // should change to ops comment
         requestData = {
           id: 12,
@@ -63,15 +63,13 @@ describe('OperationsNotifications', () => {
         expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
         expect(OpsAttachmentHelper.getOperationDeclineAttachment).toHaveBeenCalledTimes(2);
         expect(SlackNotifications.sendNotification).toHaveBeenCalled();
-        done();
       });
 
-      it('should catch errors', async (done) => {
+      it('should catch errors', async () => {
         jest.spyOn(RouteRequestService, 'getRouteRequest')
           .mockRejectedValue(new Error('Failed'));
         await OperationsNotifications.sendOpsDeclineMessageToFellow(data);
         expect(bugsnagHelper.log.mock.calls[0][0].message).toEqual('Failed');
-        done();
       });
     });
 
@@ -88,7 +86,7 @@ describe('OperationsNotifications', () => {
       afterEach(() => {
         jest.resetAllMocks();
       });
-      it('should complete the decline new route action', async (done) => {
+      it('should complete the decline new route action', async () => {
         requestData = {
           ...mockRouteRequestData,
           status: 'Declined',
@@ -110,7 +108,6 @@ describe('OperationsNotifications', () => {
         expect(InteractivePrompts.messageUpdate).toHaveBeenCalled();
         expect(OperationsNotifications.sendOpsDeclineMessageToFellow).toHaveBeenCalled();
         expect(ManagerAttachmentHelper.getManagerCompleteAttachment).toHaveBeenCalled();
-        done();
       });
 
       it('should complete approve new route action', async () => {
@@ -169,11 +166,10 @@ describe('OperationsNotifications', () => {
         expect(OperationsNotifications.completeOperationsDeclineAction).toHaveBeenCalled();
       });
 
-      it('should handle errors', async (done) => {
+      it('should handle errors', async () => {
         await OperationsNotifications.completeOperationsDeclineAction();
         jest.spyOn(bugsnagHelper, 'log');
         expect(bugsnagHelper.log).toHaveBeenCalledTimes(1);
-        done();
       });
     });
   });

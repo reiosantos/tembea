@@ -66,7 +66,7 @@ describe('Manage Trip Controller decline trip', () => {
     }
   });
 
-  it('should decline trip request', async (done) => {
+  it('should decline trip request', async () => {
     await ManageTripController.declineTrip(['timestamp', 'XXXXXXX', 3],
       'No reason at all', jest.fn());
 
@@ -75,7 +75,5 @@ describe('Manage Trip Controller decline trip', () => {
       expect.any(Object), expect.any(Function),
       expect.any(String)
     );
-
-    done();
   });
 });

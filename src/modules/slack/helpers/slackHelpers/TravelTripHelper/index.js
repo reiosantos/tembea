@@ -8,7 +8,6 @@ import bugsnagHelper from '../../../../../helpers/bugsnagHelper';
 import LocationMapHelpers from '../../../../../helpers/googleMaps/locationsMapHelpers';
 import SlackEvents from '../../../events';
 import { slackEventNames } from '../../../events/slackEvents';
-import Services from '../../../../../services/UserService';
 import { LocationPrompts } from '../../../RouteManagement/rootFile';
 import GoogleMapsError from '../../../../../helpers/googleMaps/googleMapsError';
 import CleanData from '../../../../../helpers/cleanData';
@@ -16,6 +15,7 @@ import Validators from '../../../../../helpers/slack/UserInputValidator/Validato
 import Notifications from '../../../SlackPrompts/Notifications';
 import InteractivePromptSlackHelper from '../InteractivePromptSlackHelper';
 import travelHelper from './travelHelper';
+import UpdateSlackMessageHelper from '../../../../../helpers/slack/updatePastMessageHelper';
 
 
 export const getTravelKey = id => `TRAVEL_REQUEST_${id}`;
@@ -163,20 +163,6 @@ class TravelTripHelper {
     }
   }
 
-  static async detailsConfirmation(payload, respond) {
-    try {
-      const { user: { id } } = payload;
-      const { tripDetails } = await Cache.fetch(getTravelKey(id));
-      const requesterData = await Services.getUserBySlackId(id);
-      const tripData = LocationMapHelpers.tripCompare(tripDetails);
-      tripData.requester = requesterData.dataValues.name;
-      return InteractivePrompts.sendPreviewTripResponse(tripData, respond);
-    } catch (error) {
-      bugsnagHelper.log(error);
-      respond(new SlackInteractiveMessage(`${error} Unsuccessful request. Please try again`));
-    }
-  }
-
   static sendDetails(payload, respond) {
     if (payload.actions[0].value === 'cancel') {
       return InteractivePromptSlackHelper.sendCancelRequestResponse(respond);
@@ -188,23 +174,29 @@ class TravelTripHelper {
 
   static async confirmation(payload, respond) {
     try {
-      await TravelTripHelper.sendDetails(payload, respond);
       const { user: { id } } = payload;
       const { tripDetails } = await Cache.fetch(getTravelKey(id));
-      const tripRequest = await ScheduleTripController.createTravelTripRequest(
-        payload, tripDetails
-      );
-      if (tripDetails.destination === 'To Be Decided' || tripDetails.pickup === 'To Be Decided') {
-        travelHelper.riderRequest(payload, tripDetails, respond);
+      if (payload.actions[0].value === 'confirm') {
+        await TravelTripHelper.processTripCompletion(payload, tripDetails, respond);
       } else {
-        return TravelTripHelper.sendCompletedResponseToOps(
-          tripRequest, tripDetails, respond, payload
-        );
+        await travelHelper.checkNoteStatus(payload, respond);
       }
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     }
+  }
+
+  static async processTripCompletion(payload, tripDetails, respond) {
+    const tripRequest = await ScheduleTripController.createTravelTripRequest(
+      payload, tripDetails
+    );
+    if (tripDetails.destination === 'To Be Decided' || tripDetails.pickup === 'To Be Decided') {
+      travelHelper.riderRequest(payload, tripDetails, respond);
+    }
+    TravelTripHelper.sendCompletedResponseToOps(
+      tripRequest, tripDetails, respond, payload
+    );
   }
 
   static async requesterToBeDecidedNotification(payload, respond) {
@@ -254,5 +246,21 @@ class TravelTripHelper {
       slackEventNames.NEW_TRAVEL_TRIP_REQUEST, tripRequest, payload, respond, 'travel'
     );
   }
+
+  static async tripNotesAddition(payload, respond) {
+    const { user: { id }, submission: { tripNote } } = payload;
+    const { tripDetails } = await Cache.fetch(getTravelKey(id));
+    const errors = [];
+    errors.push(...Validators.validateDialogSubmission(payload));
+    if (errors.length) return { errors };
+    tripDetails.tripNote = tripNote;
+    await Cache.save(getTravelKey(id), 'tripDetails', tripDetails);
+    if (payload.state) {
+      const data = { text: 'Noted...' };
+      await UpdateSlackMessageHelper.updateMessage(payload.state, data);
+    }
+    return InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
+  }
 }
+
 export default TravelTripHelper;

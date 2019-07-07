@@ -242,7 +242,7 @@ describe('JoinInputHandlers', () => {
       jest.restoreAllMocks();
     });
 
-    it('should save join request and send notification to managers', async (done) => {
+    it('should save join request and send notification to managers', async () => {
       const routeId = 1;
       const value = JSON.stringify({ routeId, capacityFilled: false });
       payload = { ...payload, actions: [{ value }] };
@@ -256,7 +256,6 @@ describe('JoinInputHandlers', () => {
       expect(JoinRouteHelpers.saveJoinRouteRequest).toBeCalledWith(payload, 1);
       expect(SlackEvents.raise)
         .toBeCalledWith(slackEventNames.MANAGER_RECEIVE_JOIN_ROUTE, payload, 2);
-      done();
     });
 
     it('should send request to ops when user trying to join a full route', async () => {

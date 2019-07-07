@@ -6,6 +6,30 @@ import { messages } from '../helpers/constants';
 const { VALIDATION_ERROR } = messages;
 
 class CabsValidator {
+  /**
+   * A middleware that validates the cab id param
+   *
+   * @static
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
+   * @param {object} next - Express next function
+   * @returns {object|function} Returns a response or calls the next middleware
+   * @memberof CabsValidator
+   */
+  static validateIdParam(req, res, next) {
+    const schema = joi.object().keys({
+      id: joi.number().required().positive(),
+    });
+    const { error } = joi.validate(req.params, schema);
+    if (error) {
+      const { details: errorDetails } = error;
+      const { message } = errorDetails[0];
+      const validationError = new HttpError(VALIDATION_ERROR, 400, { message });
+      return HttpError.sendErrorResponse(validationError, res);
+    }
+    return next();
+  }
+
   static validateAllInputs(req, res, next) {
     const schema = joi.object().keys({
       model: joi.string().trim().required(),

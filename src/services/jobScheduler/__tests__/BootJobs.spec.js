@@ -8,11 +8,9 @@ describe('BootJobsService', () => {
   describe('scheduleJobs', () => {
     it('should return trip status when it being  passed', async () => {
       jest.spyOn(BootJobsService, 'scheduleJobs');
-      jest.spyOn(bootJobs, 'map').mockImplementation(async (job) => {
-        await job();
-      });
+      jest.spyOn(bootJobs, 'map').mockReturnValue();
       await BootJobsService.scheduleJobs();
-      expect(BootJobsService.scheduleJobs).toBeCalledTimes(1);
+      expect(bootJobs.map).toBeCalledTimes(1);
     });
   });
 });

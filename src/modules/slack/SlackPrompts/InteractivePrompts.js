@@ -277,7 +277,7 @@ class InteractivePrompts {
     const actions = [
       new SlackButtonAction('confirmTripRequest', 'Confirm Trip Request', 'confirm'),
       new SlackButtonAction('Add Trip Note', tripDetails.tripNote ? 'Update Trip Note'
-        : 'Add Trip Note', 'trip_note'),
+        : 'Add Trip Note', tripDetails.tripNote ? 'update_note' : 'trip_note'),
       new SlackCancelButtonAction(
         'Cancel Trip Request',
         'cancel',

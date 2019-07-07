@@ -11,6 +11,7 @@ import LocationPrompts from '../../../../SlackPrompts/LocationPrompts';
 import Validators from '../../../../../../helpers/slack/UserInputValidator/Validators';
 import InteractivePromptSlackHelper from '../../InteractivePromptSlackHelper';
 import travelHelper from '../travelHelper';
+import UpdateSlackMessageHelper from '../../../../../../helpers/slack/updatePastMessageHelper';
 
 jest.mock('../../../../events', () => ({
   slackEvents: jest.fn(() => ({
@@ -45,14 +46,18 @@ describe('TravelTripHelper', () => {
           contactDetails: '',
           tripDetails: {
             destination: 'home',
-            pickup: 'dojo'
+            pickup: 'dojo',
+            tripNote: 'Hello'
           }
         };
       }
       return {};
     });
     payload = {
-      user: { id: 1 }, submission: {}, actions: [{ name: '', value: '' }], team: { id: 'TEAMID1' }
+      user: { id: 1 },
+      submission: { tripNote: 'hello' },
+      actions: [{ name: '', value: '' }],
+      team: { id: 'TEAMID1' }
     };
   });
 
@@ -468,13 +473,15 @@ describe('TravelTripHelper', () => {
 
     it('should test confirmation ', async () => {
       payload.user.id = 1;
+      payload.actions[0].value = 'confirm';
       InteractivePromptSlackHelper.sendCompletionResponse = jest.fn();
       SlackEvents.raise = jest.fn();
-
+      jest.spyOn(TravelTripHelper, 'processTripCompletion');
       createTravelTripRequest.mockImplementationOnce(() => ({ newPayload: 'newPayload', id: 1 }));
 
       await TravelTripHelper.confirmation(payload, respond);
       expect(cache.fetch).toHaveBeenCalledTimes(1);
+      expect(TravelTripHelper.processTripCompletion).toHaveBeenCalled();
       expect(createTravelTripRequest).toHaveBeenCalled();
       expect(InteractivePromptSlackHelper.sendCompletionResponse).toHaveBeenCalled();
       expect(SlackEvents.raise).toHaveBeenCalled();
@@ -482,6 +489,7 @@ describe('TravelTripHelper', () => {
 
     it('should test confirmation when "To Be Decided" is passed', async () => {
       payload.user.id = 1;
+      payload.actions[0].value = 'confirm';
       cache.fetch = jest.fn((id) => {
         if (id === 'TRAVEL_REQUEST_1') {
           return {
@@ -519,6 +527,7 @@ describe('TravelTripHelper', () => {
 
     it('should test confirmation error handling', async () => {
       payload.user.id = 1;
+      payload.actions[0].value = 'confirm';
       const log = jest.spyOn(BugsnagHelper, 'log');
       InteractivePromptSlackHelper.sendCompletionResponse = jest.fn();
       SlackEvents.raise = jest.fn();
@@ -549,7 +558,7 @@ describe('TravelTripHelper', () => {
       const sendPreviewTripResponse = jest.spyOn(InteractivePrompts,
         'sendPreviewTripResponse');
 
-      await TravelTripHelper.detailsConfirmation(payload, respond);
+      await travelHelper.detailsConfirmation(payload, respond);
       expect(cache.fetch).toHaveBeenCalledTimes(1);
       expect(getUserBySlackId).toHaveBeenCalledTimes(1);
       expect(sendPreviewTripResponse).toHaveBeenCalledTimes(1);
@@ -561,7 +570,7 @@ describe('TravelTripHelper', () => {
         throw new Error('Dummy error');
       });
       BugsnagHelper.log = jest.fn().mockReturnValue({});
-      await TravelTripHelper.detailsConfirmation(payload, respond);
+      await travelHelper.detailsConfirmation(payload, respond);
       expect(BugsnagHelper.log).toHaveBeenCalled();
     });
   });
@@ -580,9 +589,35 @@ describe('TravelTripHelper', () => {
       const sendPreviewTripResponse = jest.spyOn(InteractivePrompts,
         'sendPreviewTripResponse');
 
-      await travelHelper.tripNotesAddition(payload, respond);
+      await TravelTripHelper.tripNotesAddition(payload, respond);
       expect(cache.fetch).toHaveBeenCalledTimes(1);
       expect(sendPreviewTripResponse).toHaveBeenCalledTimes(1);
+    });
+
+    it('should sendPreviewTripResponse to the user when input tripNotes has been updated',
+      async () => {
+        const sendPreviewTripResponse = jest.spyOn(InteractivePrompts,
+          'sendPreviewTripResponse');
+
+        await travelHelper.tripNotesUpdate(payload, respond);
+        expect(cache.fetch).toHaveBeenCalledTimes(1);
+        expect(sendPreviewTripResponse).toHaveBeenCalledTimes(1);
+      });
+
+    it('should update the message when the payload contains a state', async () => {
+      payload.state = {};
+
+      jest.spyOn(UpdateSlackMessageHelper, 'updateMessage');
+      await TravelTripHelper.tripNotesAddition(payload, respond);
+      expect(UpdateSlackMessageHelper.updateMessage).toBeCalled();
+    });
+
+    it('should update the message when the payload contains a state and a tripNote', async () => {
+      payload.state = {};
+
+      jest.spyOn(UpdateSlackMessageHelper, 'updateMessage');
+      await travelHelper.tripNotesUpdate(payload, respond);
+      expect(UpdateSlackMessageHelper.updateMessage).toBeCalled();
     });
 
     it('should send send tripNoteDialogForm ', async () => {
@@ -593,7 +628,7 @@ describe('TravelTripHelper', () => {
       const sendTripNoteDetailsForm = jest.spyOn(DialogPrompts,
         'sendTripNotesDialogForm');
       await sendTripNoteDetailsForm.mockImplementationOnce(() => {});
-
+      await travelHelper.checkNoteStatus(payload, respond);
       await TravelTripHelper.confirmation(payload, respond);
 
       expect(cache.fetch).toBeCalled();
@@ -610,11 +645,30 @@ describe('TravelTripHelper', () => {
       DialogPrompts.sendTripNotesDialogForm = jest.fn;
       const sendTripNoteDetailsForm = jest.spyOn(DialogPrompts,
         'sendTripNotesDialogForm');
+      jest.spyOn(travelHelper, 'checkNoteStatus');
       await sendTripNoteDetailsForm.mockImplementationOnce(() => {});
-
       await TravelTripHelper.confirmation(payload, respond);
 
-      expect(respond).toBeCalled();
+      expect(travelHelper.checkNoteStatus).toBeCalled();
+      expect(DialogPrompts.sendTripNotesDialogForm).toBeCalled();
+    });
+  
+    it('should call respond if there is tripNote value in cache to update a trip', async () => {
+      const cacheReturn = { tripDetails: { tripNote: 'A note' } };
+
+      jest.spyOn(cache,
+        'fetch').mockResolvedValue(cacheReturn);
+
+      payload.actions[0].value = 'update_note';
+
+      DialogPrompts.sendTripNotesDialogForm = jest.fn;
+      const sendTripNoteDetailsForm = jest.spyOn(DialogPrompts,
+        'sendTripNotesDialogForm');
+      jest.spyOn(travelHelper, 'checkNoteStatus');
+
+      await sendTripNoteDetailsForm.mockImplementationOnce(() => {});
+      await TravelTripHelper.confirmation(payload, respond);
+      expect(travelHelper.checkNoteStatus).toBeCalled();
       expect(DialogPrompts.sendTripNotesDialogForm).toBeCalled();
     });
 
@@ -626,7 +680,7 @@ describe('TravelTripHelper', () => {
       jest.spyOn(Validators, 'validateDialogSubmission')
         .mockReturnValue(['errors']);
 
-      const errors = await travelHelper.tripNotesAddition(payload1, respond);
+      const errors = await TravelTripHelper.tripNotesAddition(payload1, respond);
 
       expect(Validators.validateDialogSubmission).toBeCalled();
       expect(errors.errors).toEqual(['errors']);

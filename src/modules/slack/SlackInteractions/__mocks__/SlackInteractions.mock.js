@@ -11,6 +11,7 @@ export const createPayload = (value = 'value', name = 'name') => ({
   actions: [{ value, name, selected_options: [{ value, name }] }],
   user: { id: 'dummyId' },
   team: { id: 'XXXXXXX' },
+  channel: { id: 'ABCXYZ' },
   callback_id: `schedule_trip_${value}`,
   submission: {
     pickup: 'pickup',

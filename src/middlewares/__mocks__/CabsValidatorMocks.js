@@ -55,12 +55,12 @@ const invalidParamsError = {
 };
 const noInputsError = {
   success: false,
-  message: {
-    inputErrors: [
-      'Please provide regNumber.',
-      'Please provide capacity.',
-      'Please provide model.',
-    ]
+  message: 'Validation error occurred, see error object for details',
+  error: {
+    model: '"model" is required',
+    regNumber: '"regNumber" is required',
+    capacity: '"capacity" is required',
+    providerId: '"providerId" is required'
   }
 };
 
