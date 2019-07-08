@@ -15,7 +15,7 @@ pipeline {
         spec:
           containers:
           - name: tembea-backend-agent
-            image: eu.gcr.io/${TEMBEA_AGENT_GCP_PROJECT_ID}/tembea-jenkins-backend
+            image: ${IMAGE_REGISTRY}/tembea-jenkins-backend
             resources:
               requests:
                 cpu: "3000m"
