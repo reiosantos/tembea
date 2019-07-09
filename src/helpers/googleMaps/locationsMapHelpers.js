@@ -141,9 +141,6 @@ export default class LocationHelpers {
       const { tripType } = await Cache.fetch(getTravelKey(id));
 
       if (tripType === 'Airport Transfer') {
-        respond(
-          new SlackInteractiveMessage('Noted ...')
-        );
         return DialogPrompts.sendTripDetailsForm(
           payload, 'travelDestinationForm',
           'travel_trip_destinationConfirmation', 'Destination Details'

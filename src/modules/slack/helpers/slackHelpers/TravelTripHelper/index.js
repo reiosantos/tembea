@@ -49,22 +49,22 @@ class TravelTripHelper {
     }
   }
 
-  static async department(payload, respond) {
+  static async department(payload) {
     try {
-      respond(new SlackInteractiveMessage('Noted...'));
       const { user: { id }, actions } = payload;
       const { value, name } = actions[0];
       await Cache.save(getTravelKey(id), 'departmentId', value);
       await Cache.save(getTravelKey(id), 'departmentName', name);
-
+      const newPayload = { ...payload };
+      newPayload.state = JSON.stringify(payload);
       const { tripType } = await Cache.fetch(getTravelKey(id));
       if (tripType === 'Airport Transfer') {
         return DialogPrompts.sendTripDetailsForm(
-          payload, 'travelTripFlightDetailsForm', 'travel_trip_flightDetails'
+          newPayload, 'travelTripFlightDetailsForm', 'travel_trip_flightDetails'
         );
       }
       return DialogPrompts.sendTripDetailsForm(
-        payload, 'travelEmbassyDetailsForm', 'travel_trip_embassyForm'
+        newPayload, 'travelEmbassyDetailsForm', 'travel_trip_embassyForm'
       );
     } catch (error) {
       bugsnagHelper.log(error);
@@ -80,6 +80,7 @@ class TravelTripHelper {
       if (errors.length > 0) {
         return { errors };
       }
+      await UpdateSlackMessageHelper.updateMessage(payload.state, { text: 'Noted...' });
       const tripDetails = await createTravelTripDetails(payload, 'embassyVisitDateTime');
       await Cache.save(getTravelKey(id), 'tripDetails', tripDetails);
       InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
@@ -110,6 +111,7 @@ class TravelTripHelper {
       if (errors.length > 0) {
         return { errors };
       }
+      await UpdateSlackMessageHelper.updateMessage(payload.state, { text: 'Noted...' });
       const tripDetails = await createTravelTripDetails(payload);
       await Cache.save(getTravelKey(id), 'tripDetails', tripDetails);
       await TravelTripHelper.checkVerifiable(payload, respond);
@@ -129,13 +131,15 @@ class TravelTripHelper {
   }
 
   static async destinationSelection(payload, respond) {
+    const newPayload = { ...payload };
+    newPayload.state = JSON.stringify(payload);
     const valueName = payload.actions[0].value;
     if (valueName === 'cancel') {
       respond(
         new SlackInteractiveMessage('Thank you for using Tembea')
       );
     } else {
-      await LocationMapHelpers.callDestinationSelection(payload, respond);
+      await LocationMapHelpers.callDestinationSelection(newPayload, respond);
     }
   }
 
@@ -153,6 +157,7 @@ class TravelTripHelper {
       errors.push(...Validators.checkOriginAnDestination(tripDetails.pickup,
         destination, 'pickup', 'destination'));
       if (errors.length > 0) return { errors };
+      await UpdateSlackMessageHelper.updateMessage(payload.state, { text: 'Noted...' });
       tripDetails.destination = destination;
       tripDetails.othersDestination = othersDestination;
       await Cache.save(getTravelKey(id), 'tripDetails', tripDetails);

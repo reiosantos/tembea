@@ -59,6 +59,7 @@ describe('TravelTripHelper', () => {
       actions: [{ name: '', value: '' }],
       team: { id: 'TEAMID1' }
     };
+    jest.spyOn(UpdateSlackMessageHelper, 'updateMessage');
   });
 
   afterEach(() => {
@@ -137,6 +138,8 @@ describe('TravelTripHelper', () => {
       + ' "travelTripFlightDetailsForm" and callbackId, "travel_trip_flightDetails"'
       + ' when tripType is Airport Transfer', async () => {
       payload.user.id = 1;
+      const newPayload = { ...payload };
+      newPayload.state = JSON.stringify(payload);
       const sendTripDetailsForm = jest.spyOn(DialogPrompts,
         'sendTripDetailsForm');
       await sendTripDetailsForm.mockImplementationOnce(() => {});
@@ -149,7 +152,7 @@ describe('TravelTripHelper', () => {
       );
 
       expect(sendTripDetailsForm).toHaveBeenCalledWith(
-        payload, 'travelTripFlightDetailsForm', 'travel_trip_flightDetails'
+        newPayload, 'travelTripFlightDetailsForm', 'travel_trip_flightDetails'
       );
     });
 
@@ -157,6 +160,8 @@ describe('TravelTripHelper', () => {
       + ' "travelEmbassyDetailsForm" and callbackId, "travel_trip_embassyForm"'
       + ' when tripType is Embassy Visit', async () => {
       payload.user.id = 2;
+      const newPayload = { ...payload };
+      newPayload.state = JSON.stringify(newPayload);
       const sendTripDetailsForm = jest.spyOn(DialogPrompts,
         'sendTripDetailsForm');
       await sendTripDetailsForm.mockImplementationOnce(() => {});
@@ -169,7 +174,7 @@ describe('TravelTripHelper', () => {
       );
 
       expect(sendTripDetailsForm).toHaveBeenCalledWith(
-        payload, 'travelEmbassyDetailsForm', 'travel_trip_embassyForm'
+        newPayload, 'travelEmbassyDetailsForm', 'travel_trip_embassyForm'
       );
     });
 
@@ -212,6 +217,7 @@ describe('TravelTripHelper', () => {
 
       expect(validateTravelContactDetailsForm).toHaveBeenCalledTimes(1);
       expect(sendPreviewTripResponse).toHaveBeenCalledTimes(1);
+      expect(UpdateSlackMessageHelper.updateMessage).toHaveBeenCalled();
     });
 
     it('should catch error ', async () => {
@@ -263,6 +269,7 @@ describe('TravelTripHelper', () => {
 
       expect(cache.save).toHaveBeenCalledTimes(1);
       expect(validateTravelContactDetailsForm).toHaveBeenCalledTimes(1);
+      expect(UpdateSlackMessageHelper.updateMessage).toHaveBeenCalled();
     });
 
     it('should catch error ', async () => {
@@ -360,11 +367,10 @@ describe('TravelTripHelper', () => {
       jest.restoreAllMocks();
     });
 
-    it('Call respond on Airport Transfer', async () => {
+    it('should return sendTripDetailsForm  on Airport Transfer', async () => {
       await TravelTripHelper.destinationSelection(payload, respond);
       expect(cache.fetch).toHaveBeenCalledTimes(1);
       expect(cache.fetch).toHaveBeenCalledWith('TRAVEL_REQUEST_1');
-      expect(respond).toHaveBeenCalled();
       expect(sendTripDetailsForm).toHaveBeenCalled();
     });
 
