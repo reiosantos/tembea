@@ -31,6 +31,7 @@ describe('ProviderNotifications', () => {
     provider: {
       providerUserId: 1
     },
+    Provider: '1,Uber Kenya,16',
     driverNumber: 78978768,
     driverId: 2,
     driverPhoneNo: 9808787797998,
@@ -174,19 +175,54 @@ describe('ProviderNotifications', () => {
     });
 
     it('should return provider notification', async () => {
-      jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl');
+      jest.spyOn(ProviderService, 'getProviderByUserId');
       await ProviderNotifications.sendRouteRequestNotification(
         routeRequest, '', submission
       );
-      expect(TeamDetailsService.getTeamDetailsByTeamUrl).toBeCalled();
-      expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
-      expect(ProviderAttachmentHelper.createProviderRouteAttachment).toHaveBeenCalled();
+      expect(ProviderService.getProviderByUserId).toBeCalled();
     });
 
     it('should handle errors', async () => {
-      jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockRejectedValue(new Error('Dummy error'));
+      jest.spyOn(ProviderService, 'getProviderByUserId').mockRejectedValue(new Error('Dummy error'));
       await ProviderNotifications.sendRouteRequestNotification(routeRequest, null, routeDetails);
       expect(bugsnagHelper.log).toHaveBeenCalledTimes(1);
+    });
+    it('should return provider notification', async () => {
+      jest.spyOn(ProviderService, 'getProviderByUserId');
+      await ProviderNotifications.sendRouteRequestNotification(
+        routeRequest, '', submission
+      );
+      expect(ProviderService.getProviderByUserId).toBeCalled();
+    });
+  });
+
+  describe('sendTripRouteRequest', () => {
+    beforeEach(() => {
+      jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue({});
+      const sendNotification = jest.spyOn(SlackNotifications, 'sendNotification');
+      jest.spyOn(bugsnagHelper, 'log');
+      sendNotification.mockImplementation(() => { throw new Error('Dummy error'); });
+      jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue({});
+      jest.spyOn(SlackNotifications, 'sendNotification').mockReturnValue({});
+    });
+    afterEach(() => {
+      jest.resetAllMocks();
+      jest.restoreAllMocks();
+    });
+
+    it('should return provider notification', async () => {
+      jest.spyOn(ProviderService, 'getProviderByUserId');
+      await ProviderNotifications.sendTripNotification(
+        1, 'test', 'testtoken', {
+          id: 1,
+          origin: { address: 'Home' },
+          destination: { address: 'Office' },
+          rider: { name: 'My name', phoneNo: '080123454' },
+          createdAt: new Date(),
+        }
+      );
+      expect(SlackNotifications.sendNotification).toBeCalled();
+      expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
     });
   });
 
@@ -362,7 +398,6 @@ describe('provider cab reassignnment', () => {
     await ProviderNotifications.sendVehicleRemovalProviderNotification(cab, [route], 'segun-andela.slack.com');
     expect(ProviderService.findProviderByPk).toHaveBeenCalled();
     expect(UserService.getUserById).toHaveBeenCalled();
-    expect(TeamDetailsService.getTeamDetailsByTeamUrl).toHaveBeenCalled();
     expect(cabService.getCabs).toHaveBeenCalled();
     expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
     expect(SlackNotifications.sendNotification).toHaveBeenCalled();
@@ -403,5 +438,20 @@ describe('updateProviderReAssignCabMessage ', () => {
       channelId, 'moon', timestamp, route, cab
     );
     expect(bugsnagHelper.log).toHaveBeenCalled();
+  });
+});
+
+describe('checkIsDirectMessage ', () => {
+  it('Should return channelId if isDirectMessage is true', async () => {
+    const providerDetails = { isDirectMessage: false, channelId: 'testChannel' };
+    const slackId = 'sd245trfg';
+    const channelId = ProviderNotifications.checkIsDirectMessage(providerDetails, slackId);
+    expect(channelId).toEqual('testChannel');
+  });
+  it('Should return channelId if isDirectMessage is false', async () => {
+    const providerDetails = { isDirectMessage: true, channelId: 'testChannel' };
+    const slackId = 'sd245trfg';
+    const channelId = ProviderNotifications.checkIsDirectMessage(providerDetails, slackId);
+    expect(channelId).toEqual('sd245trfg');
   });
 });

@@ -148,12 +148,29 @@ class ProviderService extends BaseService {
    * @returns {object} the user details
     */
   static async getProviderBySlackId(slackId) {
-    const user = Provider.findOne({
+    const user = await Provider.findOne({
       include: [{
         model: User,
         where: { slackId },
         as: 'user',
         attributes: ['slackId', 'id']
+      }]
+    });
+    return RemoveDataValues.removeDataValues(user);
+  }
+
+  /**
+   * @description Returns a user and its provider detail of the specified userId
+   * @param slackId {string}
+   * @returns {object} the user details
+    */
+  static async getProviderByUserId(id) {
+    const user = await Provider.findOne({
+      include: [{
+        model: User,
+        where: { id },
+        as: 'user',
+        attributes: ['slackId']
       }]
     });
     return RemoveDataValues.removeDataValues(user);

@@ -183,4 +183,17 @@ describe('ProviderService', () => {
       expect(result).toHaveProperty('id', 'name', 'providerUserId', 'createdAt', 'updatedAt');
     });
   });
+
+  describe('getProviderByUserId', () => {
+    it('should get provider by slack id', async () => {
+      const result = await ProviderService.getProviderByUserId(16);
+      expect(result).toBeDefined();
+      expect(result).toHaveProperty('id', 'name', 'providerUserId', 'createdAt', 'updatedAt', 'deletedAt');
+    });
+    it('should get provider by slack id', async () => {
+      const result = await ProviderService.getProviderByUserId(2);
+      expect(result).toBeDefined();
+      expect(result).toHaveProperty('id', 'name', 'providerUserId', 'createdAt', 'updatedAt');
+    });
+  });
 });

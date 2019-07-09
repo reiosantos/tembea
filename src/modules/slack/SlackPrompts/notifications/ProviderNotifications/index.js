@@ -14,24 +14,33 @@ import ProviderService from '../../../../../services/ProviderService';
 import { driverService } from '../../../../../services/DriverService';
 import CabsHelper from '../../../helpers/slackHelpers/CabsHelper';
 import { cabService } from '../../../../../services/CabService';
-import RemoveDataValues from '../../../../../helpers/removeDataValues';
 
 /**
  * A class representing provider notification
  *
  * @class ProviderNotifications
  */
+
 export default class ProviderNotifications {
+  static checkIsDirectMessage(providerDetails, slackId) {
+    if (!providerDetails.isDirectMessage) return providerDetails.channelId;
+    return slackId;
+  }
+
   static async sendRouteRequestNotification(
-    routeRequest, teamUrl, submission
+    routeRequest, botToken, submission
   ) {
     try {
-      let providerUser = await UserService.getUserById(submission.provider.providerUserId);
-      providerUser = RemoveDataValues.removeDataValues(providerUser);
-      const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
-      const channelID = await SlackNotifications.getDMChannelId(
-        providerUser.slackId, botToken
-      );
+      let userId;
+      const { providerUserId } = submission.Provider;
+      if (providerUserId) {
+        userId = providerUserId;
+      } else {
+        const [, , id] = submission.Provider.split(',');
+        userId = id;
+      }
+      const providerDetails = await ProviderService.getProviderByUserId(userId);
+      const channelID = this.checkIsDirectMessage(providerDetails, providerDetails.user.slackId);
       const message = await ProviderAttachmentHelper.createProviderRouteAttachment(
         routeRequest, channelID, submission
       );
