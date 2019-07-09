@@ -7,7 +7,7 @@ import cache from '../cache';
 import RemoveDataValues from '../helpers/removeDataValues';
 
 
-const { Department, User } = models;
+const { Department, User, TripRequest } = models;
 const getDeptKey = id => `dept_${id}`;
 
 class DepartmentService {
@@ -147,6 +147,45 @@ class DepartmentService {
       value: item.dataValues.id,
       head: item.dataValues.head ? item.dataValues.head.dataValues : item.dataValues.head
     }));
+  }
+
+  static async mapDepartmentId(departments) {
+    const departmentList = await Department.findAll();
+    const dept = RemoveDataValues.removeDataValues(departmentList);
+    const departmentIds = [];
+    if (departments) {
+      dept.forEach((department) => {
+        departments.forEach((departmentName) => {
+          if (department.name.toLowerCase()
+          === departmentName.toLowerCase()) { departmentIds.push(department.id); }
+        });
+      });
+    }
+    
+    return departmentIds;
+  }
+
+  static async getDepartmentAnalytics(startDate, endDate, departments) {
+    const departmentId = await DepartmentService.mapDepartmentId(departments);
+    let where = {};
+    if (departmentId.length) {
+      where = { id: { [Op.in]: departmentId } };
+    }
+    const result = await TripRequest.findAll({
+      where: { tripStatus: 'Completed', createdAt: { [Op.between]: [startDate, endDate] } },
+      include: [{
+        model: Department, as: 'department', attributes: [], where
+      }],
+      attributes: [
+        'departmentId',
+        [models.sequelize.literal('department.name'), 'departmentName'],
+        [models.sequelize.fn('avg', models.sequelize.col('rating')), 'averageRating'],
+        [models.sequelize.fn('count', models.sequelize.col('departmentId')), 'totalTrips'],
+        [models.sequelize.fn('sum', models.sequelize.col('cost')), 'totalCost'],
+      ],
+      group: ['department.id', 'TripRequest.departmentId'],
+    });
+    return RemoveDataValues.removeDataValues(result);
   }
 }
 

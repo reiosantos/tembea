@@ -4,7 +4,7 @@ import UserService from '../../services/UserService';
 import bugsnagHelper from '../../helpers/bugsnagHelper';
 import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
 import TeamDetailsService from '../../services/TeamDetailsService';
-
+import Response from '../../helpers/responseHelper';
 
 class DepartmentController {
   /**
@@ -109,8 +109,8 @@ class DepartmentController {
    */
   static async deleteRecord(req, res) {
     try {
-      const { body: { id, name } } = req;
-      const success = await DepartmentService.deleteDepartmentByNameOrId(id, name);
+      const { body: { id: departmentId, name: departmentName } } = req;
+      const success = await DepartmentService.deleteDepartmentByNameOrId(departmentId, departmentName);
 
       if (success) {
         return res.status(200).json({
@@ -118,6 +118,31 @@ class DepartmentController {
           message: 'The department has been deleted'
         });
       }
+    } catch (error) {
+      bugsnagHelper.log(error);
+      HttpError.sendErrorResponse(error, res);
+    }
+  }
+
+  /**
+   * @description Get department trips from database
+   * @param {object} req
+   * @param {object} res
+   * @returns {object} The http response object
+   */
+  static async fetchDepartmentTrips(req, res) {
+    try {
+      const { body: { startDate, endDate, departments } } = req;
+      const analyticsData = await DepartmentService.getDepartmentAnalytics(
+        startDate, endDate, departments
+      );
+      const deptData = [];
+      analyticsData.map((departmentTrip) => {
+        const deptObject = departmentTrip;
+        deptObject.averageRating = parseFloat(departmentTrip.averageRating).toFixed(2);
+        return deptData.push(deptObject);
+      });
+      return Response.sendResponse(res, 200, true, 'Request was successful', analyticsData);
     } catch (error) {
       bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);

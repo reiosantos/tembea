@@ -1,6 +1,8 @@
 import validator from 'validator';
+import joi from '@hapi/joi';
 import GeneralValidator from './GeneralValidator';
 import HttpError from '../helpers/errorHandler';
+
 
 class DepartmentValidator {
   /**
@@ -183,6 +185,24 @@ class DepartmentValidator {
     } catch (error) {
       HttpError.sendErrorResponse(error, res);
     }
+  }
+
+  static async validateDepartmentTrips(req, res, next) {
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const schema = {
+      startDate: joi.string().required().regex(dateRegex)
+        .error(() => 'StartDate must be in the format YYYY-MM-DD and is required'),
+      endDate: joi.string().required().regex(dateRegex)
+        .error(() => 'endDate must be in the format YYYY-MM-DD and is required'),
+      departments: joi.array()
+    };
+    const { error } = joi.validate(req.body, schema, { abortEarly: false });
+    
+    if (error) {
+      const tripInputErrors = HttpError.formatValidationError(error);
+      return HttpError.sendErrorResponse(tripInputErrors, res);
+    }
+    next();
   }
 }
 

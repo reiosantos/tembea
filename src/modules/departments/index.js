@@ -3,7 +3,6 @@ import DepartmentsController from './DepartmentsController';
 import middlewares from '../../middlewares';
 
 const departmentRouter = express.Router();
-
 const {
   DepartmentValidator, UserValidator, GeneralValidator, TokenValidator, CleanRequestBody
 } = middlewares;
@@ -158,6 +157,42 @@ departmentRouter.delete(
   DepartmentValidator.validateDeleteProps,
   DepartmentValidator.validateDeletePropsValues,
   DepartmentsController.deleteRecord
+);
+
+/**
+ * @swagger
+ * /departments/trips:
+ *  post:
+ *    summary: fetch department trips with analytics data
+ *    tags:
+ *      - Departments
+ *      - Trips
+ *    parameters:
+ *      - name: body
+ *        in: body
+ *        required: true
+ *        type: string
+ *        schema:
+ *          type: object
+ *          required:
+ *            - startDate
+ *            - endDate
+ *          properties:
+ *            startDate:
+ *              type: string
+ *            endDate:
+ *              type: string
+ *            departments:
+ *              description: array of departments
+ *              type: array
+ *    responses:
+ *      200:
+ *        description: department trips fetched successfully
+ */
+departmentRouter.post(
+  '/departments/trips',
+  DepartmentValidator.validateDepartmentTrips,
+  DepartmentsController.fetchDepartmentTrips
 );
 
 export default departmentRouter;

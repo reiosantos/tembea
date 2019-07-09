@@ -173,6 +173,10 @@ module.exports = (sequelize, DataTypes) => {
       targetKey: 'id',
       as: 'provider'
     });
+    TripRequest.belongsTo(models.Department, {
+      foreignKey: 'departmentId',
+      targetKey: 'id',
+    });
   };
   return TripRequest;
 };
