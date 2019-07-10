@@ -199,29 +199,23 @@ workflows:
   version: 2
   check_build_deploy:
     jobs:
-      - checkout_code
-      # - package_vulnerability_check:
-      #     requires:
-      #       - checkout_code
+      - approve_deployment:
+          type: approval
+      - checkout_code:
+          requires:
+            - approve_deployment
       - test_and_report:
           requires:
             - checkout_code
       - build_artifacts:
           requires:
             - checkout_code
-            # - package_vulnerability_check
             - test_and_report
-          <<: *filters
-      - approve_deployment:
-          type: approval
-          requires:
-            - build_artifacts
           <<: *filters
       - docker_and_deploy:
           requires:
             - approve_deployment
             - checkout_code
-            # - package_vulnerability_check
             - test_and_report
             - build_artifacts
           <<: *filters
