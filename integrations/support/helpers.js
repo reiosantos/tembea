@@ -5,6 +5,7 @@ const {
   Provider,
   Driver,
   RouteRequest,
+  TripRequest,
 } = models;
 
 export const createModel = async (Model, payload) => {
@@ -21,3 +22,8 @@ export const createDriver = async driverPayload => createModel(Driver, driverPay
 export const createRouteRequest = async requestPayload => createModel(
   RouteRequest, requestPayload
 );
+
+export const createTripRequests = async (payload) => {
+  const result = await TripRequest.bulkCreate(payload);
+  return result;
+}

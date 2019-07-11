@@ -5,6 +5,7 @@ import {
 } from '../../modules/trips/__tests__/__mocks__';
 import cache from '../../cache';
 import RemoveDataValues from '../../helpers/removeDataValues';
+import TravelTripService from '../TravelTripService';
 
 const { TripRequest } = models;
 
@@ -275,6 +276,40 @@ describe('TripService', () => {
         email: 'provider_email@email.com',
         phoneNumber: '-'
       });
+    });
+  });
+
+  describe('tripService_getCompletedTravelTrips', () => {
+    it('should return an empty list of travel trips if none ', async () => {
+      const result = await TravelTripService.getCompletedTravelTrips(null, null, []);
+      expect(result).toEqual([]);
+    });
+
+    it('should return a list of travel trips if any ', async () => {
+      const result = await TravelTripService.getCompletedTravelTrips('2016-12-03', '2019-07-03',
+        [
+          'D0 Programs',
+          'Technology',
+        ]);
+      expect(result).toEqual([]);
+      const mockedTravelTrips = [
+        {
+          departmentId: 3,
+          departmentName: 'People',
+          tripsCount: '1',
+          averageRating: '4.0000000000000000',
+          totalCost: '14'
+        }
+      ];
+
+      jest.spyOn(TripRequest, 'findAll').mockResolvedValue(mockedTravelTrips);
+      const result2 = await TravelTripService.getCompletedTravelTrips('2019-12-03', '2018-07-03', [
+        'D0 Programs',
+        'Technology',
+      ]);
+      expect(result2).toEqual(mockedTravelTrips);
+
+      expect(TripRequest.findAll).toBeCalled();
     });
   });
 });

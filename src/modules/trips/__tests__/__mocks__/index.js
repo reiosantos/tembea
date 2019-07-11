@@ -125,7 +125,25 @@ const providerMock = {
     phoneNo: '08001111111'
   }
 };
-
+const mockedTravelTrips = {
+  data: [
+    {
+      departmentId: 3,
+      departmentName: 'People',
+      totalTrips: '1',
+      averageRating: '3.00',
+      totalCost: '70'
+    },
+    {
+      departmentId: 5,
+      departmentName: 'D0 Programs',
+      totalTrips: '2',
+      averageRating: '4.00',
+      totalCost: '120'
+    }
+  ]
+};
 export {
-  mockedValue, resultValue, response, tripInfo, mockTrip, updatedValue, mockAirportTransferTrip, providerMock
+  mockedValue, resultValue, response, tripInfo, mockTrip, updatedValue, mockAirportTransferTrip,
+  providerMock, mockedTravelTrips
 };

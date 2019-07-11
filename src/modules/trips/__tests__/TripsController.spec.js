@@ -10,6 +10,7 @@ import UserService from '../../../services/UserService';
 
 import * as mocked from './__mocks__';
 import tripService from '../../../services/TripService';
+import TravelTripService from '../../../services/TravelTripService';
 
 describe('TripController', () => {
   const { mockedValue: { routes: trips }, ...rest } = mocked;
@@ -226,6 +227,42 @@ describe('TripsController for update trip', () => {
       expect(res.status).toHaveBeenCalledTimes(1);
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.status().json).toHaveBeenCalledTimes(1);
+    });
+  });
+});
+
+describe('TripController_getTravelTrips', () => {
+  let req;
+  const { response: res, mockedTravelTrips } = mocked;
+
+  beforeEach(() => {
+    req = {
+      body: {
+        startDate: '2018-11-15 00:0',
+        endDate: '2019-11-15 03:00',
+        departmentList: ['People', 'D0 Programs']
+      }
+    };
+
+    jest.spyOn(TravelTripService, 'getCompletedTravelTrips').mockResolvedValue(
+      mockedTravelTrips.data
+    );
+  });
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  describe('TripController_getTravelTrips_Success', () => {
+    it('Should get all Travel trips', async () => {
+      await TripsController.getTravelTrips(req,res);
+      expect(res.status).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.status().json).toHaveBeenCalledWith({
+        ...mockedTravelTrips,
+        success: true,
+        message: 'Request was successful',
+      });
     });
   });
 });

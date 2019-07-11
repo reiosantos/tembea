@@ -7,6 +7,7 @@ import TripActionsController from '../slack/TripManagement/TripActionsController
 import GeneralValidator from '../../middlewares/GeneralValidator';
 import HttpError from '../../helpers/errorHandler';
 import TripHelper from '../../helpers/TripHelper';
+import TravelTripService from '../../services/TravelTripService';
 
 class TripsController {
   static async getTrips(req, res) {
@@ -127,6 +128,29 @@ class TripsController {
     return {
       confirmationComment: comment, driverName, driverPhoneNo, regNumber
     };
+  }
+
+  /**
+   ** @description gets the Travel trips,cost, count and average
+   *  rating for specified period by department
+   * @param  {object} req The http request object
+   * @param  {object} res The http response object
+   * @returns {object} The http response object
+   */
+
+  static async getTravelTrips(req, res) {
+    const { startDate, endDate, departmentList } = req.body;
+    const travelTrips = await TravelTripService.getCompletedTravelTrips(
+      startDate, endDate, departmentList
+    );
+
+    const result = travelTrips.map((trip) => {
+      const tripObject = trip;
+      tripObject.averageRating = parseFloat(trip.averageRating).toFixed(2);
+      return tripObject;
+    });
+
+    return Response.sendResponse(res, 200, true, 'Request was successful', result);
   }
 }
 

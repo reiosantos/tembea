@@ -137,4 +137,42 @@ tripsRouter.put(
   TripsController.updateTrip
 );
 
+/**
+ * @swagger
+ * /trips/travel:
+ *  post:
+ *    summary: fetch travel trips for specified period by department
+ *    tags:
+ *      - Trips
+ *    parameters:
+ *      - name: body
+ *        in: body
+ *        required: true
+ *        type: string
+ *        schema:
+ *          type: object
+ *          required:
+ *            - startDate
+ *            - endDate
+ *            - departmentList
+ *          properties:
+ *            startDate:
+ *              type: string
+ *            endDate:
+ *              type: string
+ *            departmentList:
+ *              description: array of departments
+ *              type: array
+ *    responses:
+ *      200:
+ *        description: travel trips fetched successfully
+ *      400:
+ *        description: bad format  request body parameters
+ */
+tripsRouter.post(
+  '/trips/travel',
+  TripValidator.validateTravelTrip,
+  TripsController.getTravelTrips
+);
+
 export default tripsRouter;

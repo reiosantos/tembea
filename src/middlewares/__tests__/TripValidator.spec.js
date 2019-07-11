@@ -3,6 +3,7 @@ import HttpError from '../../helpers/errorHandler';
 import GeneralValidator from '../GeneralValidator';
 import { TripService } from '../../services/TripService';
 
+
 describe('Trip Validator', () => {
   let req;
   let reqDecline;
@@ -327,5 +328,46 @@ describe('validate query params', () => {
       expect(jsonMock).toHaveBeenCalledWith(validationErrorResponse);
       expect(next).not.toHaveBeenCalled();
     });
+  });
+});
+
+
+describe('Travel Trip Validator', () => {
+  const req = { body: {} };
+  let res;
+  let next;
+
+  beforeEach(() => {
+    jest.spyOn(HttpError, 'sendErrorResponse');
+    jest.spyOn(HttpError, 'formatValidationError');
+
+    next = jest.fn();
+
+    res = {
+      status: jest.fn(() => ({ json: jest.fn() })),
+    };
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.resetAllMocks();
+  });
+
+  it('should validate the request body', async () => {
+    await TripValidator.validateTravelTrip(req, res, next);
+    expect(HttpError.formatValidationError).toHaveBeenCalled();
+    expect(HttpError.sendErrorResponse).toHaveBeenCalled();
+  });
+
+  it('should call next it no errors are found', async () => {
+    req.body = {
+      startDate: '2016-11-15 03:00',
+      endDate: '2018-11-15 03:00',
+      departmentList: [' people ', ' TDD ']
+    };
+    await TripValidator.validateTravelTrip(req, res, next);
+    expect(req.body.departmentList[1]).toBe('TDD');
+    expect(req.body.departmentList[0]).toBe('people');
+    expect(next).toHaveBeenCalledTimes(1);
   });
 });

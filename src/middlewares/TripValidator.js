@@ -1,10 +1,12 @@
 import moment from 'moment';
+import joi from '@hapi/joi';
 import GeneralValidator from './GeneralValidator';
 import UserInputValidator from '../helpers/slack/UserInputValidator';
 import HttpError from '../helpers/errorHandler';
 import { TripService } from '../services/TripService';
 import Response from '../helpers/responseHelper';
 import TripHelper from '../helpers/TripHelper';
+
 
 class TripValidator {
   static async validateAll(req, res, next) {
@@ -173,6 +175,30 @@ class TripValidator {
       return [(`Invalid format, ${field} ${dateFormat}`)];
     }
     return [];
+  }
+
+  static async validateTravelTrip(req, res, next) {
+    const messagesObject = {
+      startDate: joi.date().iso().label('start Date').required(),
+      endDate: joi.date().iso().greater(joi.ref('startDate'))
+        .label('end Date')
+        .required(),
+      departmentList:
+          joi.array()
+            .items(joi.string().trim().label('Departments'))
+            .min(1)
+            .required()
+    };
+    const schema = joi.object().keys(messagesObject);
+    const { error, value } = joi.validate(req.body, schema, { abortEarly: false });
+
+    if (error) {
+      const travelTripErrors = HttpError.formatValidationError(error);
+
+      return HttpError.sendErrorResponse(travelTripErrors, res);
+    }
+    req.body = value;
+    return next();
   }
 }
 
