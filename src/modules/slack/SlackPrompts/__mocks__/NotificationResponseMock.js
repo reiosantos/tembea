@@ -10,7 +10,7 @@ const responseData = {
     slackId: '2124A'
   },
   destination: 'dest',
-  department: 'dept',
+  department: { teamId: 'teamId' },
   departmentId: 3,
   origin: {},
   noOfPassengers: 'noPa',

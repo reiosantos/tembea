@@ -53,6 +53,10 @@ export default class ProviderNotifications {
 
   /**
    * Handler for sending notifications to provider
+   * It sends a notification to a provider channel
+   * if the provider has been marked to receive the
+   * notification in a channel, else, it sends the
+   * notification to the provider's DM
    *
    * @static
    * @param {number} providerUserSlackId - The unique identifier of the provider's owner
@@ -62,23 +66,30 @@ export default class ProviderNotifications {
    * @memberof ProviderNotifications
    */
   static async sendTripNotification(providerUserSlackId, providerName, slackBotOauthToken, tripDetails) {
-    const { id: tripId } = tripDetails;
+    const { id: tripId, department: { teamId } } = tripDetails;
     const directMessageId = await SlackNotifications.getDMChannelId(providerUserSlackId, slackBotOauthToken);
     const attachment = new SlackAttachment();
     const fields = SlackNotifications.notificationFields(tripDetails);
-    attachment.addFieldsOrActions('actions', [
-      new SlackButtonAction(
-        'assign-cab',
-        'Accept',
-        `${tripId}`
-      )
-    ]);
+    attachment.addFieldsOrActions('actions', [new SlackButtonAction('assign-cab', 'Accept', `${tripId}`)]);
     attachment.addFieldsOrActions('fields', fields);
     attachment.addOptionalProps('provider_actions', 'fallback', '#FFCCAA', 'default');
-
-    const message = SlackNotifications.createDirectMessage(directMessageId,
-      `A trip has been assigned to *${providerName}*, please assign a cab`, [attachment]);
-    return SlackNotifications.sendNotification(message, slackBotOauthToken);
+    try {
+      const providerUser = await ProviderService.getProviderBySlackId(providerUserSlackId);
+      const { isDirectMessage, channelId } = providerUser;
+      if (!isDirectMessage) {
+        const { userToken: slackUserOauthToken } = await TeamDetailsService.getTeamDetails(teamId);
+        return SlackNotifications.sendNotifications(
+          channelId,
+          attachment,
+          `Hello <@${providerUserSlackId}>\nA trip has been assigned to *${providerName}*, please assign a cab`,
+          slackUserOauthToken
+        );
+      }
+      const message = SlackNotifications.createDirectMessage(directMessageId,
+        `A trip has been assigned to *${providerName}*, please assign a cab`, [attachment]);
+        
+      await SlackNotifications.sendNotification(message, slackBotOauthToken);
+    } catch (err) { BugsnagHelper.log(err); }
   }
 
   /**

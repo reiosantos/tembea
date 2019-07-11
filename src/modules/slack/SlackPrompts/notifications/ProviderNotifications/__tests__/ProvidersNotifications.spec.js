@@ -212,8 +212,13 @@ describe('ProviderNotifications', () => {
 
     it('should return provider notification', async () => {
       jest.spyOn(ProviderService, 'getProviderByUserId');
+      jest.spyOn(ProviderService, 'getProviderBySlackId').mockResolvedValue({
+        isDirectMessage: true,
+        chanelId: 'CHANID'
+      });
       await ProviderNotifications.sendTripNotification(
         1, 'test', 'testtoken', {
+          ...responseData,
           id: 1,
           origin: { address: 'Home' },
           destination: { address: 'Office' },
@@ -410,6 +415,64 @@ describe('provider cab reassignnment', () => {
     expect(bugsnagHelper.log).toHaveBeenCalled();
   });
 });
+
+describe("Provider's Trip Notification", () => {
+  const teamDetails = { ...responseData };
+  beforeEach(() => {
+    jest.spyOn(bugsnagHelper, 'log').mockReturnValue();
+    jest.spyOn(SlackNotifications, 'sendNotifications').mockResolvedValue({});
+    jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('SLACKID');
+    jest.spyOn(SlackNotifications, 'notificationFields').mockResolvedValue({});
+    jest.spyOn(TeamDetailsService, 'getTeamDetails').mockResolvedValue({ userToken: '' });
+    jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue({});
+  });
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+  describe("Send Provider's Trip notification should throw an error", () => {
+    beforeEach(() => {
+      jest.spyOn(SlackNotifications, 'sendNotification').mockRejectedValue();
+      jest.spyOn(ProviderService, 'getProviderBySlackId').mockResolvedValue({
+        isDirectMessage: true,
+        chanelId: 'CHANID'
+      });
+    });
+    it('should call BugsnagHelper when an error ocuurs', async () => {
+      await ProviderNotifications.sendTripNotification('SLACKID', 'NAME', 'BOT_TOKEN', teamDetails);
+      expect(bugsnagHelper.log).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("Send Provider's Trip notification to channel", () => {
+    beforeEach(() => {
+      jest.spyOn(ProviderService, 'getProviderBySlackId').mockResolvedValue({
+        isDirectMessage: false,
+        chanelId: 'CHANID'
+      });
+    });
+    it('should send trip notification to channel', async () => {
+      await ProviderNotifications.sendTripNotification('SLACKID', 'NAME', 'BOT_TOKEN', teamDetails);
+      expect(SlackNotifications.sendNotifications).toHaveBeenCalled();
+      expect(SlackNotifications.sendNotification).toHaveBeenCalledTimes(0);
+    });
+  });
+  
+  describe("Send Provider's Trip notification to Provider's DM", () => {
+    beforeEach(() => {
+      jest.spyOn(ProviderService, 'getProviderBySlackId').mockResolvedValue({
+        isDirectMessage: true,
+        chanelId: 'CHANID'
+      });
+    });
+    it('should send trip notification to Provider dm', async () => {
+      await ProviderNotifications.sendTripNotification('SLACKID', 'NAME', 'BOT_TOKEN', teamDetails);
+      expect(SlackNotifications.sendNotifications).toHaveBeenCalledTimes(0);
+      expect(SlackNotifications.sendNotification).toHaveBeenCalledTimes(1);
+    });
+  });
+});
+
 
 describe('updateProviderReAssignCabMessage ', () => {
   it('Should update provider reassign message', async () => {
