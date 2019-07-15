@@ -207,7 +207,12 @@ class DialogPrompts {
 
   static async sendBusStopForm(payload, busStageList) {
     const { value } = payload.actions[0];
-    const state = { tripId: value, timeStamp: payload.message_ts, channel: payload.channel.id };
+    const state = {
+      tripId: value,
+      timeStamp: payload.message_ts,
+      channel: payload.channel.id,
+      response_url: payload.response_url
+    };
 
     const dialog = new SlackDialog('new_route_handleBusStopSelected',
       'Drop off', 'Submit', false, JSON.stringify(state));
@@ -261,6 +266,7 @@ class DialogPrompts {
   }
 
   static async sendNewRouteForm(payload) {
+    const state = { response_url: payload.response_url };
     const selectManager = new SlackDialogElementWithDataSource('Select Manager', 'manager');
     const workingHours = new SlackDialogText(
       'Working Hours', 'workingHours',
@@ -268,11 +274,10 @@ class DialogPrompts {
     );
 
     const dialog = new SlackDialog(
-      'new_route_handlePreviewPartnerInfo', 'Engagement Information', 'Submit', true
+      'new_route_handlePreviewPartnerInfo', 'Engagement Information', 'Submit', true,
+      JSON.stringify(state)
     );
-
     dialog.addElements([selectManager, workingHours]);
-
     const dialogForm = new SlackDialogModel(payload.trigger_id, dialog);
     const { team: { id: teamId } } = payload;
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);

@@ -22,6 +22,7 @@ import RouteInputHandlerHelper from './RouteInputHandlerHelper';
 import LocationMapHelper from '../../../helpers/googleMaps/locationsMapHelpers';
 import { getFellowEngagementDetails } from '../helpers/formHelper';
 import InteractivePromptSlackHelper from '../helpers/slackHelpers/InteractivePromptSlackHelper';
+import UpdateSlackMessageHelper from '../../../helpers/slack/updatePastMessageHelper';
 
 const RouteInputHandlers = {
   home: async (payload, respond) => {
@@ -102,7 +103,6 @@ const RouteInputHandlers = {
       const busStageList = GoogleMapsService.mapResultsToCoordinates(result);
 
       await Cache.save(payload.user.id, 'busStageList', busStageList);
-      respond(new SlackInteractiveMessage('Noted...'));
       await DialogPrompts.sendBusStopForm(payload, busStageList);
     } catch (e) {
       bugsnagHelper.log(e);
@@ -121,10 +121,10 @@ const RouteInputHandlers = {
       const previewData = await RouteInputHandlerHelper.resolveDestinationPreviewData(
         payload, busStopCoordinate
       );
-
       const { validationError } = previewData;
       if (validationError) return validationError;
-
+      
+      await UpdateSlackMessageHelper.updateMessage(payload.state, { text: 'Noted...' });
       await RouteInputHandlerHelper.savePreviewDataToCache(payload.user.id, previewData);
       const previewMessage = PreviewPrompts.displayDestinationPreview(previewData);
       respond(previewMessage);
@@ -139,10 +139,9 @@ const RouteInputHandlers = {
       return errors;
     }
   },
-  handleNewRouteRequest: async (payload, respond) => {
+  handleNewRouteRequest: async (payload) => {
     const { value } = payload.actions[0];
-    if (value === 'lunchNewRoutePrompt') {
-      respond(new SlackInteractiveMessage('Noted...'));
+    if (value === 'launchNewRoutePrompt') {
       return DialogPrompts.sendNewRouteForm(payload);
     }
   },
@@ -156,9 +155,9 @@ const RouteInputHandlers = {
     const { locationInfo } = cached;
     const { submission } = payload;
     const errors = UserInputValidator.validateEngagementForm(submission);
-
     if (errors) return errors;
 
+    await UpdateSlackMessageHelper.updateMessage(payload.state, { text: 'Noted...' });
     if (locationInfo) {
       const message = await PreviewPrompts.sendPartnerInfoPreview(payload, locationInfo, requester);
       respond(message);
@@ -176,7 +175,7 @@ const RouteInputHandlers = {
           teamId
         }
       );
-      respond(new SlackInteractiveMessage('Your request have been successfully saved '));
+      respond(new SlackInteractiveMessage('Your Route Request has been successfully submitted'));
     } catch (e) {
       bugsnagHelper.log(e);
       respond(new SlackInteractiveMessage(

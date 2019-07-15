@@ -71,7 +71,7 @@ class PreviewPrompts {
 
     attachment.addFieldsOrActions('fields', AttachmentHelper.routeAttachmentFields(routeRequest));
     attachment.addFieldsOrActions('actions', [
-      new SlackButtonAction('lunchNewRoutePrompt', 'Continue', 'lunchNewRoutePrompt')]);
+      new SlackButtonAction('launchNewRoutePrompt', 'Continue', 'launchNewRoutePrompt')]);
 
     attachment.addOptionalProps('new_route_handleNewRouteRequest');
 

@@ -230,7 +230,7 @@ describe('RouteInputHandler Tests', () => {
       it('handleBusStopRoute: send dialog', async () => {
         payload.actions[0].value = '23,23';
         await RouteInputHandlers.handleBusStopRoute(payload, respond);
-        expect(respond).toHaveBeenCalledTimes(1);
+        expect(DialogPrompts.sendBusStopForm).toHaveBeenCalledTimes(1);
       });
 
       it('should get the value for the nearest bus stop', async () => {
@@ -350,7 +350,7 @@ describe('RouteInputHandler Tests', () => {
       jest.spyOn(DialogPrompts, 'sendNewRouteForm').mockResolvedValue();
     });
     it('should handle route request', async () => {
-      const payload = { actions: [{ value: 'lunchNewRoutePrompt' }] };
+      const payload = { actions: [{ value: 'launchNewRoutePrompt' }] };
       await RouteInputHandlers.handleNewRouteRequest(payload, respond);
       expect(DialogPrompts.sendNewRouteForm).toBeCalled();
     });
@@ -418,7 +418,7 @@ describe('RouteInputHandler Tests', () => {
       await RouteInputHandlers.handlePartnerForm(payload, respond);
       expect(SlackEvents.raise.mock.calls[0][0]).toBe(slackEventNames.NEW_ROUTE_REQUEST);
       expect(respond).toHaveBeenCalledWith(
-        new SlackInteractiveMessage('Your request have been successfully saved ')
+        new SlackInteractiveMessage('Your Route Request has been successfully submitted')
       );
     });
   });
