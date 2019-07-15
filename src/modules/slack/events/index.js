@@ -72,4 +72,7 @@ SlackEvents.handle(slackEventNames.SEND_PROVIDER_APPROVED_ROUTE_REQUEST,
 SlackEvents.handle(slackEventNames.SEND_PROVIDER_VEHICLE_REMOVAL_NOTIFICATION,
   ProviderNotifications.sendVehicleRemovalProviderNotification);
 
+SlackEvents.handle(slackEventNames.SEND_PROVIDER_CREATED_ROUTE_REQUEST,
+  ProviderNotifications.sendRouteApprovalNotification);
+
 export default slackEvents;

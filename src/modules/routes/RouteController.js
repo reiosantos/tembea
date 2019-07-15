@@ -18,6 +18,7 @@ import RouteHelper from '../../helpers/RouteHelper';
 import RemoveDataValues from '../../helpers/removeDataValues';
 import RouteNotifications from '../slack/SlackPrompts/notifications/RouteNotifications';
 import TeamDetailsService from '../../services/TeamDetailsService';
+import slackEvents from '../slack/events';
 
 class RoutesController {
   /**
@@ -49,8 +50,10 @@ class RoutesController {
   }
 
   static async createRoute(req, res) {
+    console.log(req.body, '........');
     let message;
     let routeInfo;
+    const { body } = req;
     try {
       const { action, batchId } = req.query;
       if (action === 'duplicate' && batchId) {
@@ -58,6 +61,7 @@ class RoutesController {
         message = `Successfully duplicated ${routeInfo.name} route`;
       } else if (!batchId) {
         routeInfo = await RouteHelper.createNewRouteBatch(req.body);
+        slackEvents.raise(slackEventNames.SEND_PROVIDER_CREATED_ROUTE_REQUEST, routeInfo, body);
         message = 'Route created successfully';
       }
       return Response.sendResponse(res, 200, true, message, routeInfo);

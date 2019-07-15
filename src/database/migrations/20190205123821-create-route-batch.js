@@ -31,7 +31,7 @@ module.exports = {
       type: Sequelize.STRING
     },
     cabId: {
-      allowNull: false,
+      allowNull: true,
       type: Sequelize.INTEGER,
       references: {
         model: 'Cabs',

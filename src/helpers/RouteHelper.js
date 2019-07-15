@@ -105,7 +105,7 @@ class RouteHelper {
       destination: {
         address, coordinates: { lat: latitude, lng: longitude }
       },
-      vehicle: vehicleRegNumber, takeOffTime, capacity
+      takeOffTime, capacity
     } = body;
 
     const destinationAddress = await AddressService.createNewAddress(
@@ -114,13 +114,12 @@ class RouteHelper {
 
     const data = {
       name: routeName,
-      vehicleRegNumber,
       capacity,
       takeOff: takeOffTime,
       destinationName: destinationAddress.address
     };
 
-    const routeInfo = await RouteService.createRouteBatch(data);
+    const routeInfo = await RouteService.createRouteBatchWeb(data);
     return routeInfo;
   }
 

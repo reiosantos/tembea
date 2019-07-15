@@ -22,7 +22,8 @@ export const slackEventNames = Object.freeze({
   RIDER_CANCEL_TRIP: 'rider_cancel_trip',
   NOTIFY_OPS_CANCELLED_TRIP: 'notify_ops_cancelled_trip',
   SEND_PROVIDER_APPROVED_ROUTE_REQUEST: 'send_provider_approved_route_request',
-  SEND_PROVIDER_VEHICLE_REMOVAL_NOTIFICATION: 'send_provider_vehicle_removal_notification'
+  SEND_PROVIDER_VEHICLE_REMOVAL_NOTIFICATION: 'send_provider_vehicle_removal_notification',
+  SEND_PROVIDER_CREATED_ROUTE_REQUEST: 'send_provider_created_route_request'
 });
 
 export class SlackEvents {

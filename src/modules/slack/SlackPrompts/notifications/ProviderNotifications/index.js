@@ -27,6 +27,24 @@ export default class ProviderNotifications {
     return slackId;
   }
 
+  static async sendRouteApprovalNotification(routeBatch, requestData) {
+    const { id: routeBatchId } = routeBatch;
+    const { teamUrl, provider: { user: { slackId } } } = requestData;
+    const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
+    
+    const channelID = await SlackNotifications.getDMChannelId(slackId, botToken);
+    const attachment = new SlackAttachment();
+    attachment.addFieldsOrActions('fields',
+      ProviderAttachmentHelper.providerRouteFields(routeBatch));
+    attachment.addFieldsOrActions('actions', [
+      new SlackButtonAction('provider_approval', 'Accept', `${routeBatchId}`)
+    ]);
+    attachment.addOptionalProps('provider_accept', '', '#FFCCAA');
+    const message = SlackNotifications.createDirectMessage(channelID,
+      'A route has been assigned to you, please assign a cab and a driver', [attachment]);
+    return SlackNotifications.sendNotification(message, botToken);
+  }
+  
   static async sendRouteRequestNotification(
     routeRequest, botToken, submission
   ) {
@@ -80,12 +98,12 @@ export default class ProviderNotifications {
         return SlackNotifications.sendNotifications(
           channelId,
           attachment,
-          `Hello <@${providerUserSlackId}>\nA trip has been assigned to *${providerName}*, please assign a cab`,
+          `Hello <@${providerUserSlackId}>\nA trip has been assigned to *${providerName}*, please assign a driver and a cab`,
           slackBotOauthToken
         );
       }
       const message = SlackNotifications.createDirectMessage(directMessageId,
-        `A trip has been assigned to *${providerName}*, please assign a cab`, [attachment]);
+        `A trip has been assigned to *${providerName}*, please assign a driver and a cab`, [attachment]);
         
       await SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (err) { BugsnagHelper.log(err); }

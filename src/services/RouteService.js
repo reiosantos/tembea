@@ -65,6 +65,23 @@ class RouteService extends BaseService {
     return ['RouteBatch.id', 'cabDetails.id', 'route.id', 'route->destination.id'];
   }
 
+  static async createRouteBatchWeb(data) {
+    console.log('weeell', data);
+    const {
+      name, imageUrl, destinationName, ...batchDetails
+    } = data;
+    const destination = await AddressService.findAddress(destinationName);
+    const routeDetails = await RouteService.createRoute(name, imageUrl, destination);
+    const { route } = routeDetails;
+
+    batchDetails.batch = 'A';
+    const routeId = route.id;
+    const batch = await RouteService.createBatch(batchDetails, routeId);
+    route.destination = destination;
+    batch.route = route;
+    return batch;
+  }
+
   /**
    * @param {{
    *     name:string, destinationName:string, vehicleRegNumber:string, capacity:number,
