@@ -1,6 +1,5 @@
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import NewSlackHelpers from '../../helpers/slack-helpers';
-import UserTripHelpers from './user-trip-helpers';
 import Validators from './validators';
 
 describe('Validators', () => {

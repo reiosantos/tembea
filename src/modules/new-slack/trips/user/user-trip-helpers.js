@@ -1,6 +1,7 @@
 import { Cache, SlackHelpers } from '../../../slack/RouteManagement/rootFile';
 import {
-  SlackText, Block, BlockTypes, SelectElement, ElementTypes, ButtonElement, BlockMessage, CancelButtonElement
+  SlackText, Block, BlockTypes, SelectElement, ElementTypes, ButtonElement,
+  BlockMessage, CancelButtonElement
 } from '../../models/slack-block-models';
 import NewSlackHelpers, { sectionDivider } from '../../helpers/slack-helpers';
 import { getTripKey } from '../../../../helpers/slack/ScheduleTripInputHandlers';
@@ -13,7 +14,7 @@ import tripPaymentSchema, {
 import userTripActions from './actions';
 import userTripBlocks from './blocks';
 import PreviewTripBooking from './preview-trip-booking-helper';
-import { TripService } from '../../../../services/TripService';
+import tripService from '../../../../services/TripService';
 
 export default class UserTripHelpers {
   static createStartMessage() {
@@ -200,7 +201,7 @@ export default class UserTripHelpers {
   }
 
   static async handleLocationVerfication(user, location, type) {
-    const placeIds = UserTripHelpers.getCachedPlaceIds(user.id);
+    const placeIds = await UserTripHelpers.getCachedPlaceIds(user.id);
     const { lat, lng } = await NewLocationHelpers.handleLocationVerfication(placeIds, location);
     const updateTripData = await NewLocationHelpers.updateLocation(
       type, user.id, placeIds[location], lat, lng, location
@@ -273,7 +274,7 @@ export default class UserTripHelpers {
       NewSlackHelpers.dialogValidator(submission, tripPaymentSchema);
       const { tripId } = JSON.parse(state);
       const { price } = submission;
-      await TripService.updateRequest(tripId, { cost: price });
+      await tripService.updateRequest(tripId, { cost: price });
     } catch (err) {
       return err;
     }

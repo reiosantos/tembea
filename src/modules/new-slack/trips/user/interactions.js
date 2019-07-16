@@ -1,4 +1,6 @@
-import { SlackDialog, SlackDialogTextarea, SlackDialogText } from '../../../slack/SlackModels/SlackDialogModels';
+import {
+  SlackDialog, SlackDialogTextarea, SlackDialogText
+} from '../../../slack/SlackModels/SlackDialogModels';
 import { DialogPrompts } from '../../../slack/RouteManagement/rootFile';
 import userTripActions from './actions';
 import UserTripHelpers from './user-trip-helpers';
@@ -38,7 +40,7 @@ export default class Interactions {
 
   static async sendAddPassengers(state) {
     const message = UserTripHelpers.getAddPassengersMessage();
-    const { origin } = JSON.parse(state || {});
+    const { origin } = JSON.parse(state);
     await UpdateSlackMessageHelper.newUpdateMessage(origin, message);
   }
 

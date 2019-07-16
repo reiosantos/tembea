@@ -1,5 +1,5 @@
 import LocationHelpers from '../../../helpers/googleMaps/locationsMapHelpers';
-import { Cache, AddressService } from '../../slack/RouteManagement/rootFile';
+import { Cache } from '../../slack/RouteManagement/rootFile';
 import NewLocationHelpers from './location-helpers';
 import { getTripKey } from '../../../helpers/slack/ScheduleTripInputHandlers';
 

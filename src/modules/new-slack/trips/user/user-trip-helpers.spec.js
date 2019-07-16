@@ -4,11 +4,9 @@ import { getTripKey } from '../../../../helpers/slack/ScheduleTripInputHandlers'
 import { userTripDetails } from './user-data-mocks';
 import GoogleMapsReverseGeocode from '../../../../services/googleMaps/GoogleMapsReverseGeocode';
 import NewLocationHelpers, { getPredictionsKey } from '../../helpers/location-helpers';
-import TeamDetailsService from '../../../../services/TeamDetailsService';
-import NewSlackHelpers from '../../helpers/slack-helpers';
-import UpdateSlackMessageHelper from '../../../../helpers/slack/updatePastMessageHelper';
 import PreviewTripBooking from './preview-trip-booking-helper';
 import tripService from '../../../../services/TripService';
+import NewSlackHelpers from '../../helpers/slack-helpers';
 
 describe('UserTripHelpers', () => {
   const testUser = { id: 'U1479' };
@@ -158,9 +156,8 @@ describe('UserTripHelpers', () => {
     };
 
     it('save payment', async () => {
-      jest.spyOn(UserTripHelpers, 'savePayment');
-      jest.spyOn(NewSlackHelpers, 'dialogValidator');
-      jest.spyOn(tripService, 'updateRequest');
+      jest.spyOn(NewSlackHelpers, 'dialogValidator').mockResolvedValue();
+      jest.spyOn(tripService, 'updateRequest').mockResolvedValue();
   
       await UserTripHelpers.savePayment(payload);
   

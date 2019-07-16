@@ -350,11 +350,11 @@ describe('UserTripBookingController', () => {
   });
 
   describe('paymentRequest', () => {
-    it('save payment request', async () => {  
+    it('save payment request', async () => {
       jest.spyOn(UserTripHelpers, 'savePayment');
       await UserTripBookingController.paymentRequest(payload, res);
   
       expect(UserTripHelpers.savePayment).toHaveBeenCalled();
     });
-  })
+  });
 });
