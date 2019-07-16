@@ -116,6 +116,13 @@ class ProviderController {
       HttpError.sendErrorResponse(serverError, res);
     }
   }
+
+  // TODO: write test
+  static async getViableProviders(req, res) {
+    const providers = await ProviderService.getViableProviders();
+    if (!providers[0]) return Response.sendResponse(res, 404, false, 'No viable provider exists');
+    return Response.sendResponse(res, 200, true, 'List of viable providers', providers);
+  }
 }
 
 export default ProviderController;

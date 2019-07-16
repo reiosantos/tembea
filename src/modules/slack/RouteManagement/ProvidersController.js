@@ -9,6 +9,7 @@ import TeamDetailsService from '../../../services/TeamDetailsService';
 import ProviderAttachmentHelper from '../SlackPrompts/notifications/ProviderNotifications/helper';
 import { driverService } from '../../../services/DriverService';
 import { cabService } from '../../../services/CabService';
+import ProviderService from '../../../services/ProviderService';
 
 class ProvidersController {
   static async saveRoute(updatedRequest, submission, userId) {
@@ -72,12 +73,75 @@ class ProvidersController {
     }
   }
 
-  // TODO: handle provider approval here
+  // TODO: write test
   static async handleProviderRouteApproval(payload) {
-    console.log(payload);
-    // update routebatch
-    // update provider message
-    // send user routeconfirmation details
+    const {
+      team: { id: teamId },
+      submission: { driver: driverDetails, cab: cabDetails },
+      state
+    } = payload;
+    const driverId = driverDetails.split(',')[0];
+    const cabId = cabDetails.split(',')[0];
+    const { tripId: routeBatchId, channel, timeStamp } = JSON.parse(state);
+    const routeBatch = await RouteService.updateRouteBatch(routeBatchId, { driverId, cabId });
+    const { cabDetails: { providerId }, route: { name: routeName }, riders } = routeBatch;
+    const { name } = await ProviderService.findProviderByPk(providerId);
+    const attachment = await ProvidersController.getMessageAttachment(routeBatch);
+    const { botToken, opsChannelId } = await TeamDetailsService.getTeamDetails(teamId);
+    if (routeBatch.riders[0]) {
+      await ProvidersController.sendUserProviderAssignMessage(
+        riders, botToken, routeName, attachment
+      );
+    }
+    const opsNotification = ProvidersController.sendOpsProviderAssignMessage(
+      name, routeName, botToken, opsChannelId, attachment
+    );
+    const updateNotification = ProviderNotifications.updateRouteApprovalNotification(
+      channel, botToken, timeStamp, attachment
+    );
+    await Promise.all(opsNotification, updateNotification);
+  }
+
+  // TODO: write test
+  static async sendOpsProviderAssignMessage(
+    providerName, routeName, botToken, opsChannelId, attachment
+  ) {
+    const message = SlackNotifications.createDirectMessage(
+      opsChannelId,
+      `*${providerName}* has assigned a cab and a driver to route "*${routeName}*". :smiley:`,
+      [attachment]
+    );
+    return SlackNotifications.sendNotification(message, botToken);
+  }
+
+  // TODO: write test
+  static async sendUserProviderAssignMessage(riders, botToken, routeName, attachment) {
+    const { slackId } = riders[0];
+    const directMessageId = await SlackNotifications.getDMChannelId(
+      slackId, botToken
+    );
+    const message = SlackNotifications.createDirectMessage(
+      directMessageId,
+      `A driver and cab has been assigned to your route "*${routeName}*". :smiley:`,
+      [attachment]
+    );
+    return SlackNotifications.sendNotification(message, botToken);
+  }
+
+  // TODO: cover lines
+  static async getMessageAttachment(route) {
+    const { driver, cabDetails } = route;
+    const routeFields = await ProviderAttachmentHelper.providerRouteFields(route);
+    const driverFields = await ProviderAttachmentHelper.driverFields(driver);
+    const cabFields = await ProviderAttachmentHelper.cabFields(cabDetails);
+
+    const attachment = new SlackAttachment('Route Creation Complete');
+    attachment.addOptionalProps('assignment_notification', 'fallback', '#3AAF85', 'default');
+    attachment.addFieldsOrActions('fields', routeFields);
+    attachment.addFieldsOrActions('fields', driverFields);
+    attachment.addFieldsOrActions('fields', cabFields);
+
+    return attachment;
   }
 
   static async providerReassignDriver(payload) {

@@ -51,6 +51,11 @@ providerRouter.get(
   ProviderController.getAllProviders
 );
 
+providerRouter.get(
+  '/providers/viableOptions',
+  ProviderController.getViableProviders
+);
+
 /**
  * @swagger
  * /provider/{id}:

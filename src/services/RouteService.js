@@ -12,7 +12,7 @@ import RouteServiceHelper from '../helpers/RouteServiceHelper';
 import BaseService from './BaseService';
 
 const {
-  Route, RouteBatch, Cab, Address, User, sequelize, Sequelize
+  Route, RouteBatch, Cab, Address, User, sequelize, Sequelize, Driver
 } = models;
 
 class RouteService extends BaseService {
@@ -36,7 +36,13 @@ class RouteService extends BaseService {
   }
 
   static get defaultInclude() {
-    return ['cabDetails',
+    return [
+      {
+        model: Cab, as: 'cabDetails'
+      },
+      {
+        model: Driver, as: 'driver'
+      },
       {
         model: Route, as: 'route', include: ['destination']
       },
@@ -62,11 +68,11 @@ class RouteService extends BaseService {
    * @memberof RouteService
    */
   static get defaultRouteGroupBy() {
-    return ['RouteBatch.id', 'cabDetails.id', 'route.id', 'route->destination.id'];
+    return ['RouteBatch.id', 'cabDetails.id', 'route.id', 'route->destination.id', 'driver.id'];
   }
 
+  // TODO: clean this up
   static async createRouteBatchWeb(data) {
-    console.log('weeell', data);
     const {
       name, imageUrl, destinationName, ...batchDetails
     } = data;

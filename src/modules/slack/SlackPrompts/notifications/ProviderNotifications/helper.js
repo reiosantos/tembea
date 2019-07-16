@@ -76,9 +76,13 @@ class ProviderAttachmentHelper {
     ];
   }
 
+  // TODO: cover lines
   static providerRouteFields(routeInformation) {
     const {
-      route: { name },
+      route: {
+        name,
+        destination: { address }
+      },
       batch,
       takeOff,
     } = routeInformation;
@@ -86,6 +90,7 @@ class ProviderAttachmentHelper {
     return [
       new SlackAttachmentField('*_`Route Information`_*', null, false),
       new SlackAttachmentField('Route Name', name, true),
+      new SlackAttachmentField('Destination', address, true),
       new SlackAttachmentField('Route Batch', batch, true),
       new SlackAttachmentField('Take Off Time', takeOff, true),
     ];

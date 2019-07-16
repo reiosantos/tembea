@@ -29,7 +29,7 @@ export default class ProviderNotifications {
 
   static async sendRouteApprovalNotification(routeBatch, requestData) {
     const { id: routeBatchId } = routeBatch;
-    const { teamUrl, provider: { user: { slackId } } } = requestData;
+    const { teamUrl, provider: { name, user: { slackId } } } = requestData;
     const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
     
     const channelID = await SlackNotifications.getDMChannelId(slackId, botToken);
@@ -39,12 +39,26 @@ export default class ProviderNotifications {
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('provider_approval', 'Accept', `${routeBatchId}`)
     ]);
-    attachment.addOptionalProps('provider_accept', '', '#FFCCAA');
+    attachment.addOptionalProps('provider_actions_route', '', '#FFCCAA');
     const message = SlackNotifications.createDirectMessage(channelID,
-      'A route has been assigned to you, please assign a cab and a driver', [attachment]);
+      `A route has been assigned to *${name}*, please assign a cab and a driver`,
+      [attachment]);
     return SlackNotifications.sendNotification(message, botToken);
   }
-  
+
+  // TODO: write test
+  static async updateRouteApprovalNotification(channel, botToken, timeStamp, attachment) {
+    try {
+      await InteractivePrompts.messageUpdate(channel,
+        'Thank you for assigning a cab and driver. :smiley: *`This is a recurring trip.`*',
+        timeStamp,
+        [attachment],
+        botToken);
+    } catch (err) {
+      BugsnagHelper.log(err);
+    }
+  }
+
   static async sendRouteRequestNotification(
     routeRequest, botToken, submission
   ) {

@@ -49,8 +49,8 @@ class RoutesController {
     }
   }
 
+  // TODO: you worked here
   static async createRoute(req, res) {
-    console.log(req.body, '........');
     let message;
     let routeInfo;
     const { body } = req;
@@ -60,7 +60,7 @@ class RoutesController {
         routeInfo = await RouteHelper.duplicateRouteBatch(batchId);
         message = `Successfully duplicated ${routeInfo.name} route`;
       } else if (!batchId) {
-        routeInfo = await RouteHelper.createNewRouteBatch(req.body);
+        routeInfo = await RouteHelper.createNewRouteBatch(body);
         slackEvents.raise(slackEventNames.SEND_PROVIDER_CREATED_ROUTE_REQUEST, routeInfo, body);
         message = 'Route created successfully';
       }

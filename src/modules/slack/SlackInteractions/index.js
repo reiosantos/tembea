@@ -186,11 +186,12 @@ class SlackInteractions {
     }
   }
 
+  // TODO: handle provider route actions
   static async handleSelectCabAndDriverAction(data, respond) {
     if (data && data.callback_id === 'providers_approval_trip') {
       await TripCabController.handleSelectCabDialogSubmission(data, respond);
     } else {
-      await ProvidersController.handleProvidersRouteApproval(data, respond);
+      await ProvidersController.handleProviderRouteApproval(data, respond);
     }
   }
 

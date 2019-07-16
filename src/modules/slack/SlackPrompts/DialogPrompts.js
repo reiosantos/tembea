@@ -14,7 +14,7 @@ import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 import { cabService } from '../../../services/CabService';
 import { driverService } from '../../../services/DriverService';
 import CabsHelper from '../helpers/slackHelpers/CabsHelper';
-import ProviderService from '../../../services/ProviderService';
+import ProviderService, { providerService } from '../../../services/ProviderService';
 import ProvidersHelper from '../helpers/slackHelpers/ProvidersHelper';
 import ProviderHelper from '../../../helpers/providerHelper';
 import UserService from '../../../services/UserService';
@@ -81,6 +81,7 @@ class DialogPrompts {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
+  // TODO: clean this up
   static async sendSelectCabDialog(payload) {
     const {
       actions: [{ value: tripId }], message_ts: timeStamp,
@@ -89,15 +90,15 @@ class DialogPrompts {
     const { callback_id: callback } = payload;
     // const { where, callbackId } = await ProvidersHelper.selectCabDialogHelper(callback, payload, userId);
     const { id } = await UserService.getUserBySlackId(userId);
-    const provider = await ProviderService.findProviderByUserId(id);
+    const provider = await providerService.findProviderByUserId(id);
     const where = { providerId: provider.id };
     const { data: cabs } = await cabService.getCabs(undefined, where);
     const cabData = CabsHelper.toCabLabelValuePairs(cabs);
     const { data: drivers } = await driverService.getPaginatedItems(undefined, where);
     const driverData = CabsHelper.toCabDriverValuePairs(drivers);
     const state = { tripId, timeStamp, channel };
-    const callbackId = callback === 'provider_accept'
-      ? 'provider_accept_route' : 'provider_accept_trip';
+    const callbackId = callback === 'provider_actions_route'
+      ? 'providers_approval_route' : 'providers_approval_trip';
     const dialog = new SlackDialog(callbackId,
       'Complete The Request', 'Submit', false, JSON.stringify(state));
     dialog.addElements([
