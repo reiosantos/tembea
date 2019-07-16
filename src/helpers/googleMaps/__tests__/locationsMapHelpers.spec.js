@@ -92,7 +92,7 @@ describe('Tests for google maps locations', () => {
     GoogleMapsSuggestions.getPlacesAutoComplete = jest.fn().mockResolvedValue(
       { predictions: [{ description: 'Test Location', place_id: 'xxxxx' }] }
     );
-    GoogleMapsStatic.getLocationScreenShotUrl = jest.fn().mockReturnValue('staticMapUrl');
+    GoogleMapsStatic.getLocationScreenshot = jest.fn().mockReturnValue('staticMapUrl');
     LocationPrompts.sendMapSuggestionsResponse = jest.fn().mockReturnValue({});
     await LocationHelpers.locationVerify(payload.submission, respond, pickUpString, 'travel_trip');
     expect(LocationPrompts.sendMapSuggestionsResponse).toHaveBeenCalled();
@@ -132,7 +132,7 @@ describe('Tests for google maps suggestions', () => {
     GoogleMapsPlaceDetails.getPlaceDetails = jest.fn().mockResolvedValue({
       result: { formatted_address: 'Test Location Address', name: 'Test Location Name' }
     });
-    GoogleMapsStatic.getLocationScreenShotUrl = jest.fn().mockReturnValue('staticMapUrl');
+    GoogleMapsStatic.getLocationScreenshot = jest.fn().mockReturnValue('staticMapUrl');
     Cache.saveObject = jest.fn().mockResolvedValue({});
     LocationPrompts.sendMapSuggestionsResponse = jest.fn().mockReturnValue({});
     LocationHelpers.sendResponse = jest.fn().mockReturnValue({});
@@ -209,7 +209,7 @@ describe('helper functions', () => {
       expect(sendTripDetailsForm).toHaveBeenCalledWith(payload, 'riderLocationConfirmationForm',
         'travel_trip_completeTravelConfirmation', 'Confirm Pickup');
     });
-    it('should rspond and call bugsnug of error caught', async () => {
+    it('should respond and call bugsnug of error caught', async () => {
       DialogPrompts.sendTripDetailsForm = jest.fn().mockImplementation(() => {
         throw new Error('Dummy error');
       });
@@ -217,6 +217,47 @@ describe('helper functions', () => {
       await LocationHelpers.callRiderLocationConfirmation(payload, respond, 'Pickup');
       expect(respond).toHaveBeenCalled();
       expect(bugsnagHelper.log).toHaveBeenCalled();
+    });
+  });
+
+  describe('getMarker', () => {
+    it('should get marker object', () => {
+      const location = 'Andela Nairobi';
+      const label = 'Dodjo';
+      const marker = LocationHelpers.getMarker(location, label);
+      expect(marker).toBeDefined();
+      expect(marker.color).toEqual('blue');
+      expect(marker.label).toEqual('Dodjo');
+    });
+  });
+
+  describe('getPredictionsOnMap', () => {
+    it('should return predictions and url', async () => {
+      jest.spyOn(GoogleMapsSuggestions, 'getPlacesAutoComplete').mockResolvedValue({
+        predictions: [{
+          description: 'Nakuru Road'
+        }]
+      });
+      jest.spyOn(GoogleMapsStatic, 'getLocationScreenshot').mockResolvedValue('https://maps.googleapis.com/maps/api/staticmap');
+      
+      const predictions = await LocationHelpers.getPredictionsOnMap('Nakuru');
+      expect(predictions.url).toBeDefined();
+      expect(predictions.predictions).toEqual([{ description: 'Nakuru Road' }]);
+    });
+
+    it('should return false when there is no prediction found', async () => {
+      const predictions = await LocationHelpers.getPredictionsOnMap('Nakuru');
+      expect(predictions).toBe(false);
+    });
+  });
+
+  describe('getLocationPredictions', () => {
+    it('should return predictions', () => {
+      jest.spyOn(GoogleMapsSuggestions, 'getPlacesAutoComplete').mockResolvedValue({
+        predictions: [{
+          description: 'Nakuru Road'
+        }]
+      });
     });
   });
 });

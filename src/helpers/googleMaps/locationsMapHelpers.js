@@ -17,8 +17,8 @@ import InteractivePromptSlackHelper from '../../modules/slack/helpers/slackHelpe
 
 
 export default class LocationHelpers {
-  static convertStringToUrl(string) {
-    return string.replace(/\s/g, '%20');
+  static convertMapStringToUrl(string) {
+    return encodeURI(string).replace('#', '%23');
   }
 
   static tripCompare(tripDetails) {
@@ -45,10 +45,13 @@ export default class LocationHelpers {
   }
 
   static getLocation(searchstring, other) {
-    if (searchstring === 'Others') {
-      return other;
-    }
-    return searchstring;
+    return searchstring === 'Others' ? other : searchstring;
+  }
+
+  static getMarker(location, label) {
+    const locationMarker = new Marker('blue', label);
+    locationMarker.addLocation(location);
+    return locationMarker;
   }
 
   static locationMarker(predictedPlacesResults) {
@@ -58,6 +61,29 @@ export default class LocationHelpers {
       locationMarker.addLocation(prediction.description);
       return locationMarker;
     });
+  }
+
+  static async getPredictionsOnMap(location) {
+    const predictions = await LocationHelpers.getLocationPredictions(location);
+    if (predictions && predictions.length > 0) {
+      const markers = predictions.map((prediction, index) => LocationHelpers.getMarker(
+        prediction.description, `${index + 1}`
+      ));
+      const mapString = GoogleMapsStatic.getLocationScreenshot(markers);
+      const url = LocationHelpers.convertMapStringToUrl(mapString);
+      return { url, predictions };
+    }
+    return false;
+  }
+
+  static async getLocationPredictions(location) {
+    try {
+      const locations = new GoogleMapsLocationSuggestionOptions(location);
+      const { predictions } = await GoogleMapsSuggestions.getPlacesAutoComplete(locations);
+      return predictions;
+    } catch {
+      return false;
+    }
   }
 
   static async locationVerify(submission, buttonType, tripType) {
@@ -74,8 +100,8 @@ export default class LocationHelpers {
 
       const locationMarkers = LocationHelpers.locationMarker(predictedPlacesResults);
 
-      const staticMapString = GoogleMapsStatic.getLocationScreenShotUrl(locationMarkers);
-      const staticMapUrl = LocationHelpers.convertStringToUrl(staticMapString);
+      const staticMapString = GoogleMapsStatic.getLocationScreenshot(locationMarkers);
+      const staticMapUrl = LocationHelpers.convertMapStringToUrl(staticMapString);
       const pickupOrDestination = buttonType === 'pickup' ? 'Pick up' : 'Destination';
 
       const locationData = {
@@ -123,8 +149,8 @@ export default class LocationHelpers {
       const address = `${placeDetails.result.name}, ${placeDetails.result.formatted_address}`;
       const locationMarker = new Marker('red', 'H');
       locationMarker.addLocation(locationGeometry);
-      const staticMapString = GoogleMapsStatic.getLocationScreenShotUrl([locationMarker]);
-      const staticMapUrl = LocationHelpers.convertStringToUrl(staticMapString);
+      const staticMapString = GoogleMapsStatic.getLocationScreenshot([locationMarker]);
+      const staticMapUrl = LocationHelpers.convertMapStringToUrl(staticMapString);
       const locationData = {
         staticMapUrl, address, latitude, longitude, locationGeometry, actionType
       };
