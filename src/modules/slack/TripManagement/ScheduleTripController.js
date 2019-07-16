@@ -1,5 +1,4 @@
 import SlackEvents from '../events';
-import Utils from '../../../utils';
 import { slackEventNames } from '../events/slackEvents';
 import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import Validators from '../../../helpers/slack/UserInputValidator/Validators';
@@ -91,13 +90,14 @@ class ScheduleTripController {
     return { originId, destinationId };
   }
 
-  static async createRequestObject(tripRequestDetails, requester, timezone) {
+  static async createRequestObject(tripRequestDetails, requester) {
     try {
       const {
         reason, dateTime, departmentId, destination, pickup, tripNote,
         othersPickup, othersDestination, passengers, tripType, distance
       } = tripRequestDetails;
-      const { originId, destinationId } = await ScheduleTripController.getLocationIds(tripRequestDetails);
+      const { originId, destinationId } = await ScheduleTripController
+        .getLocationIds(tripRequestDetails);
       const pickupName = `${pickup === 'Others' ? othersPickup : pickup}`;
       const destinationName = `${destination === 'Others' ? othersDestination : destination}`;
       return {
@@ -106,7 +106,7 @@ class ScheduleTripController {
         reason,
         departmentId,
         tripStatus: 'Pending',
-        departureTime: Utils.formatDateForDatabase(dateTime, timezone),
+        departureTime: dateTime,
         requestedById: requester.id,
         originId,
         destinationId,
@@ -145,8 +145,8 @@ class ScheduleTripController {
     try {
       const tripRequest = await ScheduleTripController.createRequest(payload, tripRequestDetails);
       const trip = await TripService.createRequest(tripRequest);
-      const { forSelf } = tripRequestDetails;
-      const riderSlackId = `${forSelf === 'true' ? tripRequestDetails.id : tripRequestDetails.rider}`;
+      const { forMe } = tripRequestDetails;
+      const riderSlackId = `${forMe ? tripRequestDetails.id : tripRequestDetails.rider}`;
       InteractivePromptSlackHelper.sendCompletionResponse(respond, trip.id, riderSlackId);
       SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, trip, respond);
       return true;

@@ -10,7 +10,7 @@ class GoogleMapsStatic {
    * @param  {string} zoom A number that represents the zoom scale
    * @returns The image URL
    */
-  static getLocationScreenShotUrl(
+  static getLocationScreenshot(
     markers,
     size = '700x700',
     zoom = ''
@@ -73,7 +73,8 @@ class GoogleMapsStatic {
 
       // Generate the URL for the image showing the path between the two locations
       const path = encodeURI(directions.routes[0].overview_polyline.points);
-      const params = `size=${size}${markersString}&path=weight:${weight}|color:${color}|enc:${path}&zoom=${zoom}$&key=${apiKey}`;
+      const params = `size=${size}${markersString}&path=weight:${weight}|color:${color}|enc:`
+        + `${path}&zoom=${zoom}$&key=${apiKey}`;
       const url = `https://maps.googleapis.com/maps/api/staticmap?${params}`;
       return url;
     } catch (err) {

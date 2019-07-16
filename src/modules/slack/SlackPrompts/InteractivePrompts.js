@@ -218,7 +218,6 @@ class InteractivePrompts {
       await DepartmentService.getDepartmentsForSlack(payload.team.id),
       attachmentCallbackId
     );
-
     attachment.push(createNavButtons(navButtonCallbackId, navButtonValue));
 
     const message = new SlackInteractiveMessage(

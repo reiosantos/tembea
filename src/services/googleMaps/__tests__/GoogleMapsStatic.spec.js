@@ -27,7 +27,7 @@ describe('Google map static', () => {
     const markers = [new Marker('blue', 'A')];
     markers[0].addLocation('The Dojo');
 
-    const imageUrl = await GoogleMapsStatic.getLocationScreenShotUrl(markers);
+    const imageUrl = await GoogleMapsStatic.getLocationScreenshot(markers);
     expect(/^https:\/\/maps.googleapis/.test(imageUrl)).toBe(true);
   });
 

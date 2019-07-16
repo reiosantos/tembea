@@ -60,7 +60,7 @@ class TripInteractions {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
-  static async resonForNotTakingTrip(data, respond) {
+  static async reasonForNotTakingTrip(data, respond) {
     const payload = CleanData.trim(data);
     const { submission } = payload;
     await tripService.updateRequest(payload.state, submission);

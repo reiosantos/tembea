@@ -119,7 +119,7 @@ describe('TripInteractions', () => {
         const respond = jest.fn(() => {});
         jest.spyOn(tripService, 'updateRequest').mockResolvedValue({});
         jest.spyOn(SlackModels, 'SlackInteractiveMessage').mockReturnValue({});
-        await TripInteractions.resonForNotTakingTrip(payload, respond);
+        await TripInteractions.reasonForNotTakingTrip(payload, respond);
   
         expect(respond).toBeCalled();
         expect(tripService.updateRequest).toBeCalledTimes(1);
