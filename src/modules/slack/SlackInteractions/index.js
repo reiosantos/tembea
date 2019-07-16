@@ -265,6 +265,12 @@ class SlackInteractions {
         + 'We could not complete this process please try again.'));
     }
   }
+
+  // TODO: find an appropriate place for this method
+  static async handleProviderApproval(payload) {
+    console.log(payload);
+    DialogPrompts.sendSelectCabDialog(payload);
+  }
 }
 
 export default SlackInteractions;

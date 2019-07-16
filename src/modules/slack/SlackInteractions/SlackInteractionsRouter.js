@@ -81,7 +81,11 @@ slackInteractionsRouter.action({ callbackId: 'reassign_driver' },
   ProvidersController.providerReassignDriver);
 slackInteractionsRouter.action({ callbackId: 'cab_reassign' },
   ProvidersController.handleCabReAssigmentNotification);
-
+slackInteractionsRouter.action({ callbackId: 'provider_accept' },
+  SlackInteractions.handleProviderApproval);
+slackInteractionsRouter.action({ callbackId: 'provider_accept_route' },
+  ProvidersController.handleProviderRouteApproval);
+  
 tripsRouter(slackInteractionsRouter);
 
 export default slackInteractionsRouter;

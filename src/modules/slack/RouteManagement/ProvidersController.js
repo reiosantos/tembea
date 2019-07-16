@@ -72,6 +72,14 @@ class ProvidersController {
     }
   }
 
+  // TODO: handle provider approval here
+  static async handleProviderRouteApproval(payload) {
+    console.log(payload);
+    // update routebatch
+    // update provider message
+    // send user routeconfirmation details
+  }
+
   static async providerReassignDriver(payload) {
     try {
       const {
