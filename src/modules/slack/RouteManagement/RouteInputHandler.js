@@ -40,7 +40,7 @@ const RouteInputHandlers = {
 
       const locationMarkers = LocationMapHelper.locationMarker(predictedPlacesResults);
 
-      const staticMapString = GoogleMapsStatic.getLocationScreenShotUrl(locationMarkers);
+      const staticMapString = GoogleMapsStatic.getLocationScreenshot(locationMarkers);
       // Convert the string to a URL by removing spaces and replacing with %20
 
       const staticMapUrl = RouteInputHandlerHelper.convertStringToUrl(staticMapString);
@@ -71,7 +71,7 @@ const RouteInputHandlers = {
       const address = `${placeDetails.result.name}, ${placeDetails.result.formatted_address}`;
       const locationMarker = new Marker('red', 'H');
       locationMarker.addLocation(locationGeometry);
-      const staticMapString = GoogleMapsStatic.getLocationScreenShotUrl([locationMarker]);
+      const staticMapString = GoogleMapsStatic.getLocationScreenshot([locationMarker]);
       // Convert the string to a URL by removing spaces and replacing with %20
       const staticMapUrl = RouteInputHandlerHelper.convertStringToUrl(staticMapString);
       await Cache.save(payload.user.id, 'homeAddress', { address, latitude, longitude });

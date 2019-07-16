@@ -5,7 +5,6 @@ class UpdateSlackMessageHelper {
   static async updateMessage(state, data) {
     try {
       const { response_url: responseUrl } = JSON.parse(state);
-
       const options = {
         url: responseUrl,
         method: 'POST',
@@ -18,6 +17,11 @@ class UpdateSlackMessageHelper {
     } catch (error) {
       BugsnagHelper.log(error);
     }
+  }
+
+  static async newUpdateMessage(responseUrl, newMessage) {
+    const state = JSON.stringify({ response_url: responseUrl });
+    return UpdateSlackMessageHelper.updateMessage(state, newMessage);
   }
 }
 export default UpdateSlackMessageHelper;
