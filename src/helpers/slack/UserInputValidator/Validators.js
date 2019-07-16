@@ -1,4 +1,5 @@
 import moment from 'moment';
+import * as Joi from '@hapi/joi';
 import { SlackDialogError } from '../../../modules/slack/SlackModels/SlackDialogModels';
 import InputValidator from './InputValidator';
 import DateDialogHelper from '../../dateHelper';
@@ -156,6 +157,19 @@ class Validators {
       return false;
     }).filter(items => items !== false);
     return inputs;
+  }
+
+  static validateSubmission(submission, schema) {
+    const result = Joi.validate(submission, schema, {
+      abortEarly: false,
+      convert: true,
+    });
+    if (result.error) {
+      const error = new Error('validation failed');
+      error.errors = result.error;
+      throw error;
+    }
+    return result.value;
   }
 }
 

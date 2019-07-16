@@ -4,6 +4,7 @@ import tripService from '../../../services/TripService';
 import { SlackAttachment, SlackButtonAction } from '../SlackModels/SlackMessageModels';
 import BatchUseRecordService from '../../../services/BatchUseRecordService';
 import CleanData from '../../../helpers/cleanData';
+import Interactions from '../../new-slack/trips/user/interactions';
 
 class RateTripController {
   static async sendRatingMessage(tripId, prop) {
@@ -27,7 +28,7 @@ class RateTripController {
     ];
   }
 
-  static async rate(data, respond) {
+  static async rate(data) {
     const payload = CleanData.trim(data);
     const { actions: [{ name, value }], callback_id } = payload;
     if (callback_id === 'rate_trip') {
@@ -36,7 +37,10 @@ class RateTripController {
     if (callback_id === 'rate_route') {
       await BatchUseRecordService.updateBatchUseRecord(value, { rating: name });
     }
-    respond(new SlackInteractiveMessage('Thank you for sharing your experience.'));
+    const state = {
+      tripId: value
+    };
+    await Interactions.sendPriceForm(payload, state);
   }
 }
 

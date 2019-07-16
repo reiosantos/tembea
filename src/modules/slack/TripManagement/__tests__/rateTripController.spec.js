@@ -1,7 +1,8 @@
-import { SlackInteractiveMessage } from '../../RouteManagement/rootFile';
 import RateTripController from '../RateTripController';
-import tripService from '../../../../services/TripService';
 import { SlackAttachment, SlackButtonAction } from '../../SlackModels/SlackMessageModels';
+import TeamDetailsService from '../../../../services/TeamDetailsService';
+import WebClientSingleton from '../../../../utils/WebClientSingleton';
+import Interactions from '../../../new-slack/trips/user/interactions';
 
 describe('RateTripController', () => {
   describe('sendTripRatingMessage', () => {
@@ -32,17 +33,22 @@ describe('RateTripController', () => {
 
   describe('rateTrip', () => {
     it('should rate trip and respond with a SlackInteractiveMessage', async () => {
-      const updateSpy = jest.spyOn(tripService, 'updateRequest')
-        .mockImplementation(jest.fn());
-      const payload = { actions: [{ name: '1', value: '3' }], callback_id: 'rate_trip' };
+      const getWebClientMock = mock => ({
+        dialog: { open: mock }
+      });
+      const open = jest.fn().mockResolvedValue({ status: true });
+      jest.spyOn(TeamDetailsService, 'getTeamDetails').mockResolvedValue({ botToken: { slackBotOauthToken: 'ABCDE' } });
+      jest.spyOn(WebClientSingleton, 'getWebClient')
+        .mockReturnValue(getWebClientMock(open));
+      jest.spyOn(Interactions, 'sendPriceForm');
+      const payload = {
+        actions: [{ name: '1', value: '3' }], callback_id: 'rate_trip', team: { id: 'random' }
+      };
       const respond = jest.fn();
 
       await RateTripController.rate(payload, respond);
 
-      expect(updateSpy).toBeCalledWith('3', { rating: '1' });
-      expect(respond).toBeCalledWith(
-        new SlackInteractiveMessage('Thank you for sharing your experience.')
-      );
+      expect(Interactions.sendPriceForm).toHaveBeenCalled();
     });
   });
 });

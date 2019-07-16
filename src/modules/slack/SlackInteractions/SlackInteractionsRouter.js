@@ -9,6 +9,7 @@ import TripInteractions from '../SlackPrompts/notifications/TripNotifications/Tr
 import TripCabController from '../TripManagement/TripCabController';
 import SlackInteractionsHelpers from '../helpers/slackHelpers/SlackInteractionsHelpers';
 import ProvidersController from '../RouteManagement/ProvidersController';
+import tripsRouter from '../../new-slack/trips/trip-router';
 
 const slackInteractionsRouter = createMessageAdapter(process.env.SLACK_SIGNING_SECRET);
 
@@ -80,4 +81,7 @@ slackInteractionsRouter.action({ callbackId: 'reassign_driver' },
   ProvidersController.providerReassignDriver);
 slackInteractionsRouter.action({ callbackId: 'cab_reassign' },
   ProvidersController.handleCabReAssigmentNotification);
+
+tripsRouter(slackInteractionsRouter);
+
 export default slackInteractionsRouter;
