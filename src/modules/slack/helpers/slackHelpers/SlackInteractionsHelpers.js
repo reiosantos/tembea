@@ -14,6 +14,7 @@ import RescheduleTripController from '../../TripManagement/RescheduleTripControl
 import tripService from '../../../../services/TripService';
 import OpsTripActions from '../../TripManagement/OpsTripActions';
 import SlackInteractions from '../../SlackInteractions';
+import UserTripBookingController from '../../../new-slack/trips/user/user-trip-booking-controller';
 
 
 class SlackInteractionsHelpers {
@@ -22,7 +23,7 @@ class SlackInteractionsHelpers {
     const action = payload.actions[0].value;
     switch (action) {
       case 'book_new_trip':
-        InteractivePrompts.sendBookNewTripResponse(payload, respond);
+        UserTripBookingController.startTripBooking(payload, respond);
         break;
       case 'view_trips_itinerary':
         InteractivePrompts.sendTripItinerary(payload, respond);

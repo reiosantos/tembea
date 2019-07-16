@@ -21,8 +21,6 @@ slackInteractionsRouter.action({ callbackId: 'travel_trip_start' },
   SlackInteractions.bookTravelTripStart);
 slackInteractionsRouter.action({ callbackId: /^travel_trip/ },
   SlackInteractions.handleTravelTripActions);
-slackInteractionsRouter.action({ callbackId: 'book_new_trip' },
-  SlackInteractionsHelpers.bookNewTrip);
 slackInteractionsRouter.action({ callbackId: /^schedule_trip/ },
   SlackInteractionsHelpers.handleUserInputs);
 slackInteractionsRouter.action({ callbackId: 'itinerary_actions' },
@@ -70,7 +68,7 @@ slackInteractionsRouter.action({ callbackId: 'rate_trip' },
 slackInteractionsRouter.action({ callbackId: 'trip_completion' },
   TripInteractions.tripCompleted);
 slackInteractionsRouter.action({ callbackId: 'trip_not_taken' },
-  TripInteractions.resonForNotTakingTrip);
+  TripInteractions.reasonForNotTakingTrip);
 slackInteractionsRouter.action({ callbackId: 'confirm_route_use' },
   JoinRouteInteractions.handleRouteBatchConfirmUse);
 slackInteractionsRouter.action({ callbackId: 'route_skipped' },
@@ -86,6 +84,8 @@ slackInteractionsRouter.action({ callbackId: 'provider_actions_route' },
 slackInteractionsRouter.action({ callbackId: 'provider_accept_route' },
   ProvidersController.handleProviderRouteApproval);
   
+
+// PLEASE DO NOT TOUCH EXCEPT YOUR NAME IS ADAEZE, BARAK OR RENE
 tripsRouter(slackInteractionsRouter);
 
 export default slackInteractionsRouter;
