@@ -141,26 +141,26 @@ export default class DateDialogHelper {
    *
    * @static
    * @param {string} input
-   * @param {string} tzOffset
+   * @param {string} tz
    * @returns
    * @memberof DateDialogHelper
    */
-  static transformDate(input, tzOffset) {
-    let date; let time; let hour; let minute;
-
+  static transformDate(input, tz) {
     try {
-      if (input) ([date, time] = input.trim().split(' '));
-      const dateValue = moment.utc(date, 'DD/MM/YYYY', true);
-
-      if (time) ([hour, minute] = time.split(':'));
-
-      dateValue.add(hour || 0, 'hours')
-        .add(minute || 0, 'minutes');
-
-      const momentDate = tzOffset ? moment.parseZone(moment.tz(dateValue, tzOffset)) : dateValue;
-      return momentDate.toDate().toISOString();
+      const dateValue = DateDialogHelper.extractDate(input, tz);
+      return moment.parseZone(moment.utc(dateValue))
+        .toDate().toISOString();
     } catch (err) {
       return null;
     }
+  }
+
+  static extractDate(input, tz) {
+    const [date, time] = input.trim().split(' ');
+    const [hour, minute] = time.split(':');
+
+    const dateValue = tz ? moment.tz(date, 'DD/MM/YYYY', tz) : moment.utc(date, 'DD/MM/YYYY');
+    
+    return dateValue.add(hour, 'hours').add(minute, 'minutes');
   }
 }

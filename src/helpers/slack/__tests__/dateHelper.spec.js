@@ -12,7 +12,7 @@ describe('dateHelpers', () => {
     it('should apply timezone difference when present', () => {
       const input = '30/06/2019 09:00';
       const dateValue = DateDialogHelper.transformDate(input, 'America/Los_Angeles');
-      const expected = new Date(Date.UTC(2019, 5, 30, 2));
+      const expected = new Date(Date.UTC(2019, 5, 30, 16));
       expect(dateValue).toEqual(expected.toISOString());
     });
 
