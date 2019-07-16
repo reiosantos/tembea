@@ -13,7 +13,16 @@ module.exports = (sequelize, DataTypes) => {
     providerUserId: {
       allowNull: false,
       type: DataTypes.INTEGER,
-    }
+    },
+    isDirectMessage: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
+    channelId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   }, {
     paranoid: true,
     timestamps: true

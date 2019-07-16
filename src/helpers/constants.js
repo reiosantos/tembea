@@ -6,6 +6,9 @@ export const MAX_INT = 4294967295;
 
 export const messages = {
   VALIDATION_ERROR: 'Validation error occurred, see error object for details',
+
+  MISSING_TEAM_URL: "Missing 'teamUrl' in request header",
+  INVALID_TEAM_URL: 'Unrecognized teamUrl',
 };
 
 export const TRIP_LIST_TYPE = Object.freeze({

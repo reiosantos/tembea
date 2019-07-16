@@ -1,7 +1,6 @@
 import ProviderService from '../../services/ProviderService';
 import HttpError from '../../helpers/errorHandler';
 import bugsnagHelper from '../../helpers/bugsnagHelper';
-import UserService from '../../services/UserService';
 import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
 import ProviderHelper from '../../helpers/providerHelper';
 import ErrorTypeChecker from '../../helpers/ErrorTypeChecker';
@@ -14,15 +13,12 @@ class ProviderController {
    * @param {object} res
    * @returns {object} Http response object
    */
-
   static async addProvider(req, res) {
-    const {
-      name, email
-    } = req.body;
+    const { locals: { providerData } } = res;
+
     try {
-      const user = await UserService.getUserByEmail(email.trim());
       const { provider, isNewProvider } = await ProviderService.createProvider(
-        name, user.id
+        providerData
       );
       if (isNewProvider) {
         delete provider.deletedAt;
@@ -35,7 +31,7 @@ class ProviderController {
       }
       return res.status(409).json({
         success: false,
-        message: `The provider with name: '${name.trim()}' already exists`
+        message: `The provider with name: '${provider.name}' already exists`
       });
     } catch (err) {
       bugsnagHelper.log(err);

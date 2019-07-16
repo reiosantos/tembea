@@ -1,7 +1,9 @@
 import request from 'supertest';
+import faker from 'faker';
 import app from '../src/app';
 import Utils from '../src/utils';
 import models from '../src/database/models';
+import { createUser } from './support/helpers';
 
 
 const apiURL = '/api/v1/providers';
@@ -9,13 +11,21 @@ const apiURL = '/api/v1/providers';
 describe('ProvidersController', () => {
   let validToken;
   let headers;
+  let mockUser;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
     headers = {
       Accept: 'application/json',
       Authorization: validToken
     };
+
+    mockUser = await createUser({
+      name: faker.name.findName(),
+      slackId: faker.random.word().toUpperCase(),
+      phoneNo: faker.phone.phoneNumber('080########'),
+      email: faker.internet.email(),
+    });
   });
   afterAll(() => {
     models.sequelize.close();
@@ -61,7 +71,7 @@ describe('ProvidersController', () => {
     it('should create provider successfully', (done) => {
       const requestData = {
         name: 'TaxiCako',
-        email: 'abishai.omari@andela.com'
+        email: mockUser.email
       };
       request(app)
         .post(apiURL)
@@ -71,7 +81,7 @@ describe('ProvidersController', () => {
         .end((err, res) => {
           expect(res.body.provider.name).toEqual('TaxiCako');
           expect(res.body.message).toEqual('Provider created successfully');
-          expect(res.body.provider.providerUserId).toEqual(3);
+          expect(res.body.provider.providerUserId).toEqual(mockUser.id);
           done();
         });
     });

@@ -80,23 +80,17 @@ class ProviderService extends BaseService {
 
   /**
    *@description Adds a provider
-   * @param name string
-   * @param providerUserId number
+   * @param {object} providerData - The Provider data
    * @returns {object }
    */
-  static async createProvider(name, providerUserId) {
-    const [provider] = await Provider.findOrCreate({
-      where: { name: { [Op.iLike]: `${name.trim()}%` } },
-      defaults: {
-        name: name.trim(),
-        providerUserId,
-      }
+  static async createProvider(providerData) {
+    const { name } = providerData;
+    const [record, isNewProvider] = await Provider.findOrCreate({
+      where: { name: { [Op.iLike]: `${name}%` } },
+      defaults: providerData
     });
-    const { _options: { isNewRecord }, dataValues } = provider;
-    return {
-      provider: dataValues,
-      isNewProvider: isNewRecord
-    };
+    const provider = record.get();
+    return { provider, isNewProvider };
   }
 
   static async findProviderByPk(pk) {

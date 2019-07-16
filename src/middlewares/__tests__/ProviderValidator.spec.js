@@ -3,7 +3,10 @@ import HttpError from '../../helpers/errorHandler';
 import GeneralValidator from '../GeneralValidator';
 import UserService from '../../services/UserService';
 import Response from '../../helpers/responseHelper';
-import ProviderService from '../../services/ProviderService';
+import ProviderService, { providerService } from '../../services/ProviderService';
+import { messages } from '../../helpers/constants';
+
+const { VALIDATION_ERROR } = messages;
 
 describe('ProviderValidator', () => {
   let res;
@@ -16,13 +19,12 @@ describe('ProviderValidator', () => {
       }))
     };
     next = jest.fn();
-    HttpError.sendErrorResponse = jest.fn();
-    Response.sendResponse = jest.fn();
+    jest.spyOn(HttpError, 'sendErrorResponse').mockReturnValue();
+    jest.spyOn(Response, 'sendResponse').mockReturnValue();
   });
 
-  afterEach((done) => {
+  afterEach(() => {
     jest.restoreAllMocks();
-    done();
   });
   describe('Provider_verifyProviderUpdateBody', () => {
     let httpSpy;
@@ -119,7 +121,9 @@ describe('ProviderValidator', () => {
 
   describe('ProviderValidator_validateReqBody', () => {
     it('returns error if there are missing params in request', () => {
-      const error = '"name" is not allowed to be empty';
+      const error = new HttpError(VALIDATION_ERROR, 400, {
+        name: '"name" is not allowed to be empty'
+      });
       req = {
         body: {
           email: 'allan@andela.com',
@@ -127,39 +131,32 @@ describe('ProviderValidator', () => {
         }
       };
       ProviderValidator.validateReqBody(req, res, next);
-      expect(Response.sendResponse).toHaveBeenCalledWith(res, 400, false, error);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledWith(error, res);
     });
 
     it('validates the PATCH method', () => {
-      const error = '"value" must have at least 1 children';
+      const error = new HttpError(VALIDATION_ERROR, 400, {
+        name: '"value" must have at least 1 children'
+      });
       req = {
         method: 'PATCH',
         body: {}
       };
       ProviderValidator.validateReqBody(req, res, next);
-      expect(Response.sendResponse).toHaveBeenCalledWith(res, 400, false, error);
-    });
-
-    it('returns next', () => {
-      req = {
-        body: {
-          email: 'allan@andela.com',
-          name: 'all'
-        }
-      };
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledWith(error, res);
     });
   });
 
   describe('ProviderValidator_validateUserExistence', () => {
     let getUserSpy;
-    req = {
-      body: {
-        email: 'allan@andela.com',
-        name: 'Uber'
-      }
-    };
 
     beforeEach(() => {
+      req = {
+        body: {
+          email: 'allan@andela.com',
+          name: 'Uber'
+        }
+      };
       getUserSpy = jest.spyOn(UserService, 'getUserByEmail');
     });
 
@@ -281,6 +278,48 @@ describe('ProviderValidator', () => {
         query: {}
       };
       await ProviderValidator.validateQueryProvider(createReq, res, next);
+      expect(next).toHaveBeenCalled();
+    });
+  });
+  describe('ProviderValidator_validateProvider', () => {
+    let getUserByEmailSpy;
+    let findProviderByUserIdSpy;
+
+    beforeEach(() => {
+      req = {
+        body: {
+          name: 'Mock Provider',
+          email: 'provider@test.com'
+        }
+      };
+      
+      getUserByEmailSpy = jest.spyOn(UserService, 'getUserByEmail');
+      findProviderByUserIdSpy = jest.spyOn(providerService, 'findProviderByUserId');
+    });
+    
+    it('should validate the existence of a provider with given user id', async () => {
+      const mockProviderUser = {
+        id: 1,
+        email: 'provider@test.com',
+      };
+      getUserByEmailSpy.mockResolvedValue(mockProviderUser);
+      findProviderByUserIdSpy.mockResolvedValue(mockProviderUser);
+
+      await ProviderValidator.validateProvider(req, res, next);
+      expect(Response.sendResponse).toBeCalledWith(
+        res, 409, false, `Provider with email '${mockProviderUser.email}' already exists`,
+      );
+    });
+    it('should call next upon successful validation', async () => {
+      const mockPrviderData = {
+        name: 'Mock Provider',
+        providerUserId: 1,
+      };
+      getUserByEmailSpy.mockResolvedValue({ id: 1 });
+      findProviderByUserIdSpy.mockResolvedValue();
+
+      await ProviderValidator.validateProvider(req, res, next);
+      expect(res.locals).toHaveProperty('providerData', mockPrviderData);
       expect(next).toHaveBeenCalled();
     });
   });

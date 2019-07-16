@@ -39,13 +39,7 @@ class CabsValidator {
     });
     const { error, value } = joi.validate(req.body, schema, { abortEarly: false });
     if (error) {
-      const { details: errorDetails } = error;
-      const inputErrors = {};
-      errorDetails.forEach((err) => {
-        const { context: { key }, message } = err;
-        inputErrors[key] = message;
-      });
-      const validationError = new HttpError(VALIDATION_ERROR, 400, inputErrors);
+      const validationError = HttpError.formatValidationError(error);
       return HttpError.sendErrorResponse(validationError, res);
     }
     req.body = value;

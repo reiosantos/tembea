@@ -434,29 +434,25 @@ export const mockGetCabsData = {
   ]
 };
 
-export const mockCreatedProvider = [{
-  dataValues: {
-    id: 1,
-    name: 'Uber Kenya',
-    providerUserId: 1,
-    createdAt: '2019-04-01T12:07:13.002Z',
-    updatedAt: '2019-04-01T12:07:13.002Z',
-    deletedAt: null
+export const mockProviderRecord = {
+  id: 1,
+  name: 'Uber Kenya',
+  providerUserId: 1,
+  createdAt: '2019-04-01T12:07:13.002Z',
+  updatedAt: '2019-04-01T12:07:13.002Z',
+  deletedAt: null
+};
+
+export const mockCreatedProvider = [
+  {
+    dataValues: mockProviderRecord,
+    get: () => mockProviderRecord
   },
-  _options: {
-    isNewRecord: true
-  }
-}];
+  true
+];
 
 export const mockReturnedProvider = {
-  provider: {
-    id: 1,
-    name: 'Uber Kenya',
-    providerUserId: 1,
-    createdAt: '2019-04-01T12:07:13.002Z',
-    updatedAt: '2019-04-01T12:07:13.002Z',
-    deletedAt: null
-  },
+  provider: mockProviderRecord,
   isNewProvider: true
 };
 

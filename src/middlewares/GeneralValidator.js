@@ -1,5 +1,10 @@
 import Response from '../helpers/responseHelper';
 import HttpError from '../helpers/errorHandler';
+import BugsnagHelper from '../helpers/bugsnagHelper';
+import { messages } from '../helpers/constants';
+import TeamDetailsService from '../services/TeamDetailsService';
+
+const { MISSING_TEAM_URL, INVALID_TEAM_URL } = messages;
 
 class GeneralValidator {
   /**
@@ -9,15 +14,15 @@ class GeneralValidator {
    * @returns {array} An array of messages of the missing properties
    */
   static validateReqBody(body, ...props) {
-    const messages = [];
+    const errorMessages = [];
 
     props.forEach((prop) => {
       if (!body[prop]) {
-        messages.push(`Please provide ${prop}.`);
+        errorMessages.push(`Please provide ${prop}.`);
       }
     });
 
-    return messages;
+    return errorMessages;
   }
 
   /**
@@ -205,6 +210,32 @@ class GeneralValidator {
       return HttpError.sendErrorResponse({ message: { checkEmptyInputData }, statusCode: 400 }, res);
     }
     next();
+  }
+
+  /**
+   * Validates that a valid teamUrl (slack) is passed to request header
+   *
+   * @static
+   * @param {object} req - Express object
+   * @param {object} res - Express response object
+   * @param {object} next - Express next function
+   * @returns {any} The next middleware or the http response
+   * @memberof GeneralValidator
+   */
+  static async validateSlackUrl(req, res, next) {
+    try {
+      const teamUrl = req.header('teamUrl');
+      HttpError.throwErrorIfNull(teamUrl, MISSING_TEAM_URL, 400);
+
+      const teamDetails = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
+      HttpError.throwErrorIfNull(teamDetails, INVALID_TEAM_URL, 400);
+
+      res.locals = { slackAuthToken: teamDetails.userToken };
+      return next();
+    } catch (error) {
+      BugsnagHelper.log(error);
+      return HttpError.sendErrorResponse(error, res);
+    }
   }
 }
 

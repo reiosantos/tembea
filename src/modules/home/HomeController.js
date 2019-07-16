@@ -3,7 +3,7 @@ import url from 'url';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import bugsnagHelper from '../../helpers/bugsnagHelper';
 
-export const SlackInstallUrl = `https://slack.com/oauth/authorize?client_id=${process.env.SLACK_CLIENT_ID}&scope=team:read,chat:write:bot,chat:write:user,bot,commands,users.profile:read,users:read.email,users:read,incoming-webhook`;
+export const SlackInstallUrl = `https://slack.com/oauth/authorize?client_id=${process.env.SLACK_CLIENT_ID}&scope=team:read,chat:write:bot,chat:write:user,bot,commands,users.profile:read,users:read.email,users:read,incoming-webhook,groups:read`;
 
 export default class HomeController {
   static index(req, res) {

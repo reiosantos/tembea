@@ -63,7 +63,9 @@ describe('ProviderService', () => {
       jest.spyOn(Provider, 'findOrCreate').mockResolvedValue(mockCreatedProvider);
     });
     it('test createProvider', async () => {
-      const result = await ProviderService.createProvider('Uber', 3);
+      const result = await ProviderService.createProvider({
+        name: 'Uber Kenya', providerUserId: 3
+      });
       expect(Provider.findOrCreate).toHaveBeenCalled();
       expect(result).toEqual(mockReturnedProvider);
     });

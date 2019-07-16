@@ -5,6 +5,11 @@ import {
   SlackCancelButtonAction
 } from './SlackModels/SlackMessageModels';
 import { isSlackSubCommand } from './helpers/slackHelpers/slackValidations';
+import WebClientSingleton from '../../utils/WebClientSingleton';
+import Response from '../../helpers/responseHelper';
+import HttpError from '../../helpers/errorHandler';
+import BugsnagHelper from '../../helpers/bugsnagHelper';
+
 
 class SlackController {
   static launch(req, res) {
@@ -82,6 +87,34 @@ class SlackController {
     } else if (isSlackSubCommand((text.toLowerCase()), 'travel')) {
       res.status(200)
         .json(SlackController.getTravelCommandMsg());
+    }
+  }
+
+  /**
+   * Fetch a list of slack channels on the workspace
+   *
+   * @static
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
+   * @returns {object} returns a response
+   * @memberof SlackController
+   */
+  static async getChannels(req, res) {
+    try {
+      const { query: { type = 'private_channel' } } = req;
+      const { locals: { slackAuthToken } } = res;
+
+      const { channels } = await WebClientSingleton
+        .getWebClient(slackAuthToken).conversations.list({
+          types: type
+        });
+      const channelList = channels.map(({ id, name, purpose }) => ({
+        id, name, description: purpose.value,
+      }));
+      return Response.sendResponse(res, 200, true, 'Request was successful', channelList);
+    } catch (error) {
+      BugsnagHelper.log(error);
+      HttpError.sendErrorResponse(error, res);
     }
   }
 }

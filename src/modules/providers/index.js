@@ -139,6 +139,10 @@ providerRouter.delete(
  *              type: string
  *            email :
  *              type: string
+ *      - isDirectMessage:
+ *          type: boolean
+ *      - channelId:
+ *          type: string
  *    responses:
  *      201:
  *        description: provider created successfully
@@ -147,6 +151,7 @@ providerRouter.post(
   '/providers',
   ProviderValidator.validateReqBody,
   ProviderValidator.validateUserExistence,
+  ProviderValidator.validateProvider,
   ProviderController.addProvider
 );
 

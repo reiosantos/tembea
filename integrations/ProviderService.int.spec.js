@@ -28,10 +28,9 @@ describe('create Provider', () => {
   it('should create a provider', async () => {
     const testProvider = {
       name: faker.random.word(),
-      id: 1
+      providerUserId: 1,
     };
-    const { name, id } = testProvider;
-    const result = await ProviderService.createProvider(name, id);
+    const result = await ProviderService.createProvider(testProvider);
     const { provider } = result;
     expect(provider.providerUserId).toEqual(1);
     expect(provider.deletedAt).toEqual(null);

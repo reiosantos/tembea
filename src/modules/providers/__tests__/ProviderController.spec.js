@@ -81,7 +81,12 @@ describe('ProviderController', () => {
   });
 
   describe('ProviderController_addProvider', () => {
+    const providerData = {
+      name: 'Uber Kenya',
+      email: 'allan@andela.com'
+    };
     let providerSpy;
+
     beforeEach(() => {
       req = {
         body: {
@@ -96,11 +101,10 @@ describe('ProviderController', () => {
 
     it('creates a provider successfully', async () => {
       providerSpy.mockResolvedValue(mockReturnedProvider);
+      res.locals = { providerData };
       await ProviderController.addProvider(req, res);
-      expect(UserService.getUserByEmail)
-        .toHaveBeenCalledWith(req.body.email);
       expect(ProviderService.createProvider)
-        .toHaveBeenCalledWith(req.body.name, mockUser.id);
+        .toHaveBeenCalledWith(providerData);
       expect(res.status)
         .toHaveBeenCalledWith(201);
       expect(res.json)
@@ -115,13 +119,13 @@ describe('ProviderController', () => {
       providerSpy.mockResolvedValue(mockExistingProvider);
       await ProviderController.addProvider(req, res);
       expect(ProviderService.createProvider)
-        .toHaveBeenCalledWith(req.body.name, mockUser.id);
+        .toHaveBeenCalledWith(providerData);
       expect(res.status)
         .toHaveBeenCalledWith(409);
       expect(res.json)
         .toHaveBeenCalledWith({
           success: false,
-          message: 'The provider with name: \'Uber\' already exists'
+          message: 'The provider with name: \'Uber Kenya\' already exists'
         });
     });
 

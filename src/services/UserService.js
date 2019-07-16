@@ -185,10 +185,11 @@ class UserService {
  * @returns user object
  * @memberof DataHelper
  */
-  static async getUserByEmail(email) {
+  static async getUserByEmail(email, option = {}) {
     const user = await User.findOne({
       where: { email },
     });
+    if (option.plain) return user.get();
     return user;
   }
 

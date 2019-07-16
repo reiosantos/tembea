@@ -1,6 +1,8 @@
 import GeneralValidator from '../GeneralValidator';
 import Response from '../../helpers/responseHelper';
 import HttpError from '../../helpers/errorHandler';
+import BugsnagHelper from '../../helpers/bugsnagHelper';
+import TeamDetailsService from '../../services/TeamDetailsService';
 
 
 describe('General Validator', () => {
@@ -297,6 +299,40 @@ describe('General Validator', () => {
       expect(HttpError.sendErrorResponse).toBeCalled();
       expect(GeneralValidator.validateNumber).toBeCalled();
       expect(results).toEqual('Invalid Param');
+    });
+  });
+  describe('validateSlackUrl', () => {
+    it('should call next middleware upon successful validation', async () => {
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({
+        userToken: 'token',
+      });
+      jest.spyOn(HttpError, 'sendErrorResponse').mockReturnValue();
+      const req = { header: () => 'team.slack.com' };
+      const res = {};
+      const next = jest.fn();
+
+      await GeneralValidator.validateSlackUrl(req, res, next);
+      expect(res.locals).toHaveProperty('slackAuthToken', 'token');
+      expect(next).toHaveBeenCalled();
+    });
+    it('should validate if slackUrl is passed to request header', async () => {
+      jest.spyOn(BugsnagHelper, 'log').mockReturnValue();
+      jest.spyOn(HttpError, 'sendErrorResponse').mockReturnValue();
+      const req = { header: () => '' };
+
+      await GeneralValidator.validateSlackUrl(req, {});
+      expect(BugsnagHelper.log).toHaveBeenCalled();
+      expect(HttpError.sendErrorResponse).toHaveBeenCalled();
+    });
+    it('should validate botToken against slackUrl', async () => {
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue();
+      jest.spyOn(BugsnagHelper, 'log').mockReturnValue();
+      jest.spyOn(HttpError, 'sendErrorResponse').mockReturnValue();
+      const req = { header: () => 'team.slack.com' };
+
+      await GeneralValidator.validateSlackUrl(req, {});
+      expect(BugsnagHelper.log).toHaveBeenCalled();
+      expect(HttpError.sendErrorResponse).toHaveBeenCalled();
     });
   });
 });

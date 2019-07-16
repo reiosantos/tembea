@@ -2,7 +2,8 @@ import joi from '@hapi/joi';
 import GeneralValidator from './GeneralValidator';
 import Response from '../helpers/responseHelper';
 import UserService from '../services/UserService';
-import ProviderService from '../services/ProviderService';
+import ProviderService, { providerService } from '../services/ProviderService';
+import HttpError from '../helpers/errorHandler';
 
 class ProviderValidator {
   /**
@@ -59,21 +60,25 @@ class ProviderValidator {
     let schema;
     schema = joi.object().keys({
       email: joi.string().trim().email().required(),
-      name: joi.string().trim().required()
-    });
+      name: joi.string().trim().required(),
+      isDirectMessage: joi.boolean(),
+      channelId: joi.string().alphanum().trim().allow(null, ''),
+    }).with('channelId', 'isDirectMessage');
     if (req.method === 'PATCH') {
       schema = joi.object().keys({
         email: joi.string().trim().email(),
         name: joi.string().trim()
       }).min(1);
     }
-    joi.validate(req.body, schema, (err) => {
-      if (err) {
-        const { message } = err.details[0];
-        return Response.sendResponse(res, 400, false, message);
-      }
-      return next();
-    });
+
+    const { error, value } = joi.validate(req.body, schema, { abortEarly: false });
+
+    if (error) {
+      const validationError = HttpError.formatValidationError(error);
+      return HttpError.sendErrorResponse(validationError, res);
+    }
+    req.body = value;
+    return next();
   }
 
   /**
@@ -135,6 +140,32 @@ class ProviderValidator {
     ) {
       return Response.sendResponse(res, 404, false, 'Please provide a positive integer value for providerID');
     }
+    return next();
+  }
+
+  /**
+   * Validate the existence of a provider with given user id
+   *
+   * @static
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
+   * @param {object} next - Express next function
+   * @returns {object} Returns an evaluated response
+   * or calls the next middlware with the **providerData** object attached to the response scope
+   * @memberof ProviderValidator
+   */
+  static async validateProvider(req, res, next) {
+    const { body: { email, ...providerData } } = req;
+    const { id: userId } = await UserService.getUserByEmail(email);
+    const isExistingProvider = await providerService.findProviderByUserId(userId);
+
+    if (isExistingProvider) {
+      return Response.sendResponse(
+        res, 409, false, `Provider with email '${email}' already exists`
+      );
+    }
+    providerData.providerUserId = userId;
+    res.locals = { providerData };
     return next();
   }
 }
