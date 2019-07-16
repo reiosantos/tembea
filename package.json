@@ -14,9 +14,9 @@
     "lint:fix": "yarn lint --fix",
     "pretest": "yarn lint:fix && NODE_ENV=test yarn db:rollback && NODE_ENV=test yarn run db:migrate yarn && NODE_ENV=test yarn run db:seed",
     "test": "jest --no-cache  --detectOpenHandles --runInBand --forceExit",
-    "db:seed": "node_modules/.bin/sequelize db:seed:all",
-    "db:migrate": "node_modules/.bin/sequelize db:migrate",
-    "db:rollback": "node_modules/.bin/sequelize db:migrate:undo:all",
+    "db:seed": "babel-node node_modules/.bin/sequelize db:seed:all",
+    "db:migrate": "babel-node node_modules/.bin/sequelize db:migrate",
+    "db:rollback": "babel-node node_modules/.bin/sequelize db:migrate:undo:all",
     "db:rollmigrate": "yarn db:rollback && yarn db:migrate && yarn db:seed"
   },
   "repository": {
