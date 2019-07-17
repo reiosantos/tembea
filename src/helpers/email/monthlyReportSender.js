@@ -53,7 +53,7 @@ class MonthlyReportSender {
   async generateSendMailAttachment() {
     const summary = await ReportGeneratorService.getOverallTripsSummary();
     const html = await this.getTemplate({
-      name: 'Kenya Travel Team',
+      name: 'Operations Team ',
       month: summary.month,
       increased: Number.parseFloat(summary.percentageChange) > 0,
       departments: MonthlyReportSender.departmentToArray(summary.departments),

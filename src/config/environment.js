@@ -9,7 +9,7 @@ const env = {
   REDIS_URL: process.env.REDIS_URL || 'no-redis',
   THE_DOJO_ADDRESS: process.env.THE_DOJO_ADDRESS || 'Andela Nairobi',
   AIS_BASE_URL: process.env.AIS_BASE_URL,
-  AIS_API_KEY: process.env.AIS_API_KEY
+  AIS_API_KEY: process.env.AIS_API_KEY,
 };
 
 module.exports = envExists(env);

@@ -26,18 +26,18 @@ class GenerateReportData {
       departments: {}
     };
     trips.forEach((trip) => {
-      if (!summary.departments[trip['department.name']]) {
-        summary.departments[trip['department.name']] = { completed: 0, declined: 0, total: 0 };
+      if (!summary.departments[trip.department.name]) {
+        summary.departments[trip.department.name] = { completed: 0, declined: 0, total: 0 };
       }
 
       if (trip.tripStatus === 'Completed') {
-        summary.departments[trip['department.name']].completed += 1;
+        summary.departments[trip.department.name].completed += 1;
         summary.totalTripsCompleted += 1;
       } else {
         summary.totalTripsDeclined += 1;
-        summary.departments[trip['department.name']].declined += 1;
+        summary.departments[trip.department.name].declined += 1;
       }
-      summary.departments[trip['department.name']].total += 1;
+      summary.departments[trip.department.name].total += 1;
     });
     return summary;
   }

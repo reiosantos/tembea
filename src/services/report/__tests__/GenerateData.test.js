@@ -10,7 +10,7 @@ describe('Report Generator Service', () => {
 
   beforeAll(() => {
     reportService = new ReportGeneratorService(1);
-    tripService.getAll = jest.fn().mockResolvedValue(response);
+    jest.spyOn(tripService, 'getAll').mockResolvedValue(response);
   });
 
   it('should return data to generate report', async () => {
