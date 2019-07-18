@@ -72,7 +72,7 @@ describe('Slack controller test', () => {
   describe('getChannels', () => {
     beforeEach(() => {
       jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({
-        slackAuthToken: 'xxxxxxx',
+        botToken: 'xxxxxxx',
       });
     });
 
@@ -92,7 +92,7 @@ describe('Slack controller test', () => {
     it('should fetch all channels on the workspace', async () => {
       jest.spyOn(Response, 'sendResponse').mockReturnValue();
       const req = { query: {} };
-      const res = { locals: { slackAuthToken: 'token' } };
+      const res = { locals: { botToken: 'token' } };
       await SlackController.getChannels(req, res);
       expect(Response.sendResponse).toHaveBeenCalled();
     });

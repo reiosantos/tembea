@@ -304,7 +304,7 @@ describe('General Validator', () => {
   describe('validateSlackUrl', () => {
     it('should call next middleware upon successful validation', async () => {
       jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({
-        userToken: 'token',
+        botToken: 'token',
       });
       jest.spyOn(HttpError, 'sendErrorResponse').mockReturnValue();
       const req = { header: () => 'team.slack.com' };
@@ -312,7 +312,7 @@ describe('General Validator', () => {
       const next = jest.fn();
 
       await GeneralValidator.validateSlackUrl(req, res, next);
-      expect(res.locals).toHaveProperty('slackAuthToken', 'token');
+      expect(res.locals).toHaveProperty('botToken', 'token');
       expect(next).toHaveBeenCalled();
     });
     it('should validate if slackUrl is passed to request header', async () => {

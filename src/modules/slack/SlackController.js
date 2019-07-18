@@ -101,10 +101,10 @@ class SlackController {
   static async getChannels(req, res) {
     try {
       const { query: { type = 'private_channel' } } = req;
-      const { locals: { slackAuthToken } } = res;
+      const { locals: { botToken } } = res;
 
       const { channels } = await WebClientSingleton
-        .getWebClient(slackAuthToken).conversations.list({
+        .getWebClient(botToken).conversations.list({
           types: type
         });
       const channelList = channels.map(({ id, name, purpose }) => ({

@@ -66,7 +66,7 @@ export default class ProviderNotifications {
    * @memberof ProviderNotifications
    */
   static async sendTripNotification(providerUserSlackId, providerName, slackBotOauthToken, tripDetails) {
-    const { id: tripId, department: { teamId } } = tripDetails;
+    const { id: tripId } = tripDetails;
     const directMessageId = await SlackNotifications.getDMChannelId(providerUserSlackId, slackBotOauthToken);
     const attachment = new SlackAttachment();
     const fields = SlackNotifications.notificationFields(tripDetails);
@@ -77,12 +77,11 @@ export default class ProviderNotifications {
       const providerUser = await ProviderService.getProviderBySlackId(providerUserSlackId);
       const { isDirectMessage, channelId } = providerUser;
       if (!isDirectMessage) {
-        const { userToken: slackUserOauthToken } = await TeamDetailsService.getTeamDetails(teamId);
         return SlackNotifications.sendNotifications(
           channelId,
           attachment,
           `Hello <@${providerUserSlackId}>\nA trip has been assigned to *${providerName}*, please assign a cab`,
-          slackUserOauthToken
+          slackBotOauthToken
         );
       }
       const message = SlackNotifications.createDirectMessage(directMessageId,

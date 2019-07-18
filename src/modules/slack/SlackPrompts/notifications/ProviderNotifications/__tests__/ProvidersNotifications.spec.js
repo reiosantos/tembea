@@ -423,7 +423,6 @@ describe("Provider's Trip Notification", () => {
     jest.spyOn(SlackNotifications, 'sendNotifications').mockResolvedValue({});
     jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('SLACKID');
     jest.spyOn(SlackNotifications, 'notificationFields').mockResolvedValue({});
-    jest.spyOn(TeamDetailsService, 'getTeamDetails').mockResolvedValue({ userToken: '' });
     jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue({});
   });
   afterEach(() => {

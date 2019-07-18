@@ -230,7 +230,7 @@ class GeneralValidator {
       const teamDetails = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
       HttpError.throwErrorIfNull(teamDetails, INVALID_TEAM_URL, 400);
 
-      res.locals = { slackAuthToken: teamDetails.userToken };
+      res.locals = { botToken: teamDetails.botToken };
       return next();
     } catch (error) {
       BugsnagHelper.log(error);
