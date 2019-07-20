@@ -517,3 +517,26 @@ describe('checkIsDirectMessage ', () => {
     expect(channelId).toEqual('sd245trfg');
   });
 });
+describe('sendRouteApprovalNotification', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+  it('Should send a provider assign cab and driver notification', async () => {
+    const provider = { id: 1, name: 'Adaeze', providerUserId: 1 };
+    jest.spyOn(UserService, 'getUserById').mockResolvedValue({ slackId: 'XXXX' });
+    jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('UXXID');
+    jest.spyOn(SlackNotifications, 'createDirectMessage').mockResolvedValue({});
+    jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue({});
+    await ProviderNotifications.sendRouteApprovalNotification(route, provider, 'xoop');
+    expect(UserService.getUserById).toHaveBeenCalled();
+    expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
+    expect(SlackNotifications.sendNotification).toHaveBeenCalled();
+  });
+  it('Should update provider approval notification', async () => {
+    jest.spyOn(InteractivePrompts, 'messageUpdate').mockResolvedValue();
+    await ProviderNotifications.updateRouteApprovalNotification(
+      'UXXID', 'xoop', '1234567', SlackAttachment
+    );
+    expect(InteractivePrompts.messageUpdate).toHaveBeenCalled();
+  });
+});

@@ -74,7 +74,26 @@ const returnedData = {
   ]
 };
 
+const viableProviders = [
+  {
+    id: 1,
+    name: 'Uber Kenya',
+    providerUserId: 1,
+    deletedAt: null,
+    user: {
+      id: 1,
+      name: 'John smith',
+      slackId: '345qq',
+      phoneNo: null,
+      email: 'john.smith@gmail.com',
+      defaultDestinationId: null,
+      routeBatchId: null,
+      createdAt: '2018-11-14T00:00:00.000Z',
+      updatedAt: '2018-11-14T00:00:00.000Z'
+    }
+  }
+];
 
 export {
-  providers, paginatedData, successMessage, returnedData
+  providers, paginatedData, successMessage, returnedData, viableProviders
 };

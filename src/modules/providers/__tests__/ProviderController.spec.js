@@ -1,5 +1,5 @@
 import {
-  providers, paginatedData, successMessage, returnedData
+  providers, paginatedData, successMessage, returnedData, viableProviders
 } from '../__mocks__/ProviderMockData';
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
 import ProviderHelper from '../../../helpers/providerHelper';
@@ -13,7 +13,7 @@ import {
   mockReturnedProvider,
   mockProvider,
   mockExistingProvider,
-  mockUser
+  mockUser,
 } from '../../../services/__mocks__';
 import ProviderController from '../ProviderController';
 
@@ -248,6 +248,20 @@ describe('ProviderController', () => {
       message = 'Provider does not exist';
       deleteProviderSpy.mockReturnValue(0);
       await ProviderController.deleteProvider(req, res);
+      expect(Response.sendResponse).toHaveBeenCalledWith(res, 404, false, message);
+    });
+  });
+  
+  describe('GetViableProviders', () => {
+    it('Should get a list of viable providers', async () => {
+      jest.spyOn(ProviderService, 'getViableProviders').mockResolvedValue(viableProviders);
+      await ProviderController.getViableProviders();
+      expect(ProviderService.getViableProviders).toHaveBeenCalled();
+    });
+    it('should return a 404 error', async () => {
+      const message = 'No viable provider exists';
+      jest.spyOn(ProviderService, 'getViableProviders').mockResolvedValue([]);
+      await ProviderController.getViableProviders(req, res);
       expect(Response.sendResponse).toHaveBeenCalledWith(res, 404, false, message);
     });
   });

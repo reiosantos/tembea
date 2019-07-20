@@ -7,7 +7,6 @@ import AddressService from './AddressService';
 import HttpError from '../helpers/errorHandler';
 import UserService from './UserService';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
-import { cabService } from './CabService';
 import RouteServiceHelper from '../helpers/RouteServiceHelper';
 import BaseService from './BaseService';
 
@@ -71,23 +70,6 @@ class RouteService extends BaseService {
     return ['RouteBatch.id', 'cabDetails.id', 'route.id', 'route->destination.id', 'driver.id'];
   }
 
-  // TODO: clean this up
-  static async createRouteBatchWeb(data) {
-    const {
-      name, imageUrl, destinationName, ...batchDetails
-    } = data;
-    const destination = await AddressService.findAddress(destinationName);
-    const routeDetails = await RouteService.createRoute(name, imageUrl, destination);
-    const { route } = routeDetails;
-
-    batchDetails.batch = 'A';
-    const routeId = route.id;
-    const batch = await RouteService.createBatch(batchDetails, routeId);
-    route.destination = destination;
-    batch.route = route;
-    return batch;
-  }
-
   /**
    * @param {{
    *     name:string, destinationName:string, vehicleRegNumber:string, capacity:number,
@@ -98,21 +80,18 @@ class RouteService extends BaseService {
    */
   static async createRouteBatch(data) {
     const {
-      name, imageUrl, destinationName, vehicleRegNumber, driverId, ...batchDetails
+      name, imageUrl, destinationName, ...batchDetails
     } = data;
-
     const destination = await AddressService.findAddress(destinationName);
     const routeDetails = await RouteService.createRoute(name, imageUrl, destination);
     const { route } = routeDetails;
-    const cabDetails = await cabService.findOrCreate(vehicleRegNumber);
 
     batchDetails.batch = RouteService.updateBatchLabel(routeDetails);
     const routeId = route.id;
-    const batch = await RouteService.createBatch(batchDetails, routeId, cabDetails.id, driverId);
-    batch.cabDetails = cabDetails;
+    const batch = await RouteService.createBatch(batchDetails, routeId);
     route.destination = destination;
     batch.route = route;
-    return RouteServiceHelper.serializeRouteBatch(batch);
+    return batch;
   }
 
   static async createBatch(batchDetails, routeId, cabId, driverId) {

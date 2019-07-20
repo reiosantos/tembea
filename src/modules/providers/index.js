@@ -51,6 +51,19 @@ providerRouter.get(
   ProviderController.getAllProviders
 );
 
+/**
+ * @swagger
+ * /providers/viableOptions:
+ *  get:
+ *    summary: get providers with cabs and drivers
+ *    tags:
+ *      - Providers
+ *    responses:
+ *      200:
+ *        description: response object containing an array of vehicles
+ *      404:
+ *        description: 'No viable provider exists'
+ */
 providerRouter.get(
   '/providers/viableOptions',
   ProviderController.getViableProviders

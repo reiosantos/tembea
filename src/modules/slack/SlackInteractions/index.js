@@ -186,7 +186,6 @@ class SlackInteractions {
     }
   }
 
-  // TODO: handle provider route actions
   static async handleSelectCabAndDriverAction(data, respond) {
     if (data && data.callback_id === 'providers_approval_trip') {
       await TripCabController.handleSelectCabDialogSubmission(data, respond);
@@ -267,9 +266,7 @@ class SlackInteractions {
     }
   }
 
-  // TODO: find an appropriate place for this method
   static async handleProviderApproval(payload) {
-    console.log(payload);
     DialogPrompts.sendSelectCabDialog(payload);
   }
 }

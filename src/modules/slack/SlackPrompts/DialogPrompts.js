@@ -81,14 +81,12 @@ class DialogPrompts {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
-  // TODO: clean this up
   static async sendSelectCabDialog(payload) {
     const {
       actions: [{ value: tripId }], message_ts: timeStamp,
       channel: { id: channel }, user: { id: userId },
     } = payload;
     const { callback_id: callback } = payload;
-    // const { where, callbackId } = await ProvidersHelper.selectCabDialogHelper(callback, payload, userId);
     const { id } = await UserService.getUserBySlackId(userId);
     const provider = await providerService.findProviderByUserId(id);
     const where = { providerId: provider.id };

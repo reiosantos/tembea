@@ -6,11 +6,21 @@ import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import ConfirmRouteUseJob from '../../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 import RouteService from '../../../../services/RouteService';
 import {
-  providersPayload, state, route, cab, reassignCabPayload, reassignDriverPayload, user, driver
+  providersPayload,
+  state,
+  route,
+  cab,
+  reassignCabPayload,
+  reassignDriverPayload,
+  user,
+  driver,
+  routeData,
+  SlackAttachment
 } from '../__mocks__/providersController.mock';
 import { driverService } from '../../../../services/DriverService';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import SlackNotifications from '../../SlackPrompts/Notifications';
+import ProviderService from '../../../../services/ProviderService';
 
 describe('Provider Controller', () => {
   let respond;
@@ -159,6 +169,74 @@ describe('Send user notification', () => {
 
     await ProvidersController.sendUserRouteUpdateMessage(user, route, driver, 'xoob-try');
     expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
+    expect(SlackNotifications.sendNotification).toHaveBeenCalled();
+  });
+});
+
+describe('handleProviderRouteApproval', () => {
+  let userMessageSpy;
+  let OpsMessageSpy;
+  let updateProviderMessageSpy;
+  beforeEach(() => {
+    jest.spyOn(ProviderService, 'findProviderByPk').mockResolvedValue({ name: 'adaeze' });
+    jest.spyOn(TeamDetailsService, 'getTeamDetails').mockResolvedValue({
+      botToken: 'xoop', opsChannelId: 'UXXID'
+    });
+    jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue(routeData);
+    userMessageSpy = jest.spyOn(
+      ProvidersController, 'sendUserProviderAssignMessage'
+    ).mockResolvedValue();
+    OpsMessageSpy = jest.spyOn(
+      ProvidersController, 'sendOpsProviderAssignMessage'
+    ).mockResolvedValue();
+    updateProviderMessageSpy = jest.spyOn(
+      ProviderNotifications, 'updateRouteApprovalNotification'
+    ).mockResolvedValue();
+  });
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+  it('should handle provider aproval', async () => {
+    const payload = {
+      team: { id: 'teamId' },
+      submission: { driver: '2, adaeze, 09090909, ', cab: '1, 4, sabaru, xxb' },
+      state: '{ "tripId": "1", "channel": "UXXID", "timestamp": "123456789" }'
+    };
+    await ProvidersController.handleProviderRouteApproval(payload);
+    expect(userMessageSpy).toHaveBeenCalled();
+    expect(OpsMessageSpy).toHaveBeenCalled();
+    expect(updateProviderMessageSpy).toHaveBeenCalled();
+  });
+});
+
+describe('sendOpsProviderAssignMessage', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+  it('Should send ops provider approval message', async () => {
+    jest.spyOn(SlackNotifications, 'createDirectMessage').mockResolvedValue();
+    jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue();
+    await ProvidersController.sendOpsProviderAssignMessage(
+      'deeCabs', 'bay-area', 'XOOP', 'UXXID', SlackAttachment
+    );
+    expect(SlackNotifications.createDirectMessage).toHaveBeenCalled();
+    expect(SlackNotifications.sendNotification).toHaveBeenCalled();
+  });
+});
+
+describe('sendUserProviderAssignMessage', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+  it('Should send users provider assign message', async () => {
+    const message = 'A driver and cab has been assigned to your route "*bay area*". :smiley:';
+    jest.spyOn(SlackNotifications, 'createDirectMessage').mockResolvedValue();
+    jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue();
+    jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('UPMX1');
+    await ProvidersController.sendUserProviderAssignMessage(
+      routeData.riders, 'xoop', 'bay area', SlackAttachment
+    );
+    expect(SlackNotifications.createDirectMessage).toHaveBeenCalledWith('UPMX1', message, [SlackAttachment]);
     expect(SlackNotifications.sendNotification).toHaveBeenCalled();
   });
 });

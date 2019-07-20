@@ -1,36 +1,49 @@
+/* eslint-disable no-unused-vars */
 import RouteRequestService from '../../../../services/RouteRequestService';
 import { cabService } from '../../../../services/CabService';
 import OperationsNotifications from '../../SlackPrompts/notifications/OperationsRouteRequest/index';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
+import { providerService } from '../../../../services/ProviderService';
+import TeamDetailsService from '../../../../services/TeamDetailsService';
+import UserService from '../../../../services/UserService';
 
 class OperationsHelper {
   static async sendOpsData(data) {
     try {
       const { team: { id: teamId }, user: { id: userId } } = data;
-      let { submission } = data;
+      const { submission } = data;
+      const { Provider } = submission;
+      const providerId = Provider.split(',')[0];
+      const provider = await providerService.getProviderById(providerId);
+      const { id } = await UserService.getUserBySlackId(userId);
       const { approve } = JSON.parse(data.state);
-      const { channelId, timeStamp, routeRequestId } = approve;
+      const {
+        channelId, timeStamp, routeRequestId, confirmationComment
+      } = approve;
       const {
         slackBotOauthToken, routeRequest
       } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
       const updatedRequest = await RouteRequestService.updateRouteRequest(routeRequest.id, {
-        status: 'Approved'
+        status: 'Approved',
+        opsReviewerId: id,
+        opsComment: confirmationComment
       });
-      const { routeName, takeOffTime } = submission;
-      const routeRequestData = { routeName, takeOffTime };
-      if (updatedRequest) {
-        submission = {
-          ...submission, ...routeRequestData
-        };
-
-        const complete = OperationsNotifications.completeOperationsApprovedAction(
-          updatedRequest, channelId, timeStamp, userId, slackBotOauthToken, submission, false
-        );
-        await complete;
-      }
+      const requestData = { ...submission, provider };
+      const opsData = {
+        opsId: userId, botToken: slackBotOauthToken, timeStamp, channelId
+      };
+      return OperationsNotifications.completeOperationsRouteApproval(
+        updatedRequest, requestData, opsData
+      );
     } catch (error) {
       bugsnagHelper.log(error);
     }
+  }
+
+  static async getBotToken(requestData) {
+    const { teamUrl } = requestData;
+    const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
+    return botToken;
   }
 
   static async getCabSubmissionDetails(data, submission) {

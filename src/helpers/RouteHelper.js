@@ -119,7 +119,7 @@ class RouteHelper {
       destinationName: destinationAddress.address
     };
 
-    const routeInfo = await RouteService.createRouteBatchWeb(data);
+    const routeInfo = await RouteService.createRouteBatch(data);
     return routeInfo;
   }
 

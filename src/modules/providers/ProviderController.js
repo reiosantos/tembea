@@ -117,7 +117,11 @@ class ProviderController {
     }
   }
 
-  // TODO: write test
+  /**
+   * @description method that gets all providers with vehicles and drivers
+   * @param req
+   * @param res
+   */
   static async getViableProviders(req, res) {
     const providers = await ProviderService.getViableProviders();
     if (!providers[0]) return Response.sendResponse(res, 404, false, 'No viable provider exists');

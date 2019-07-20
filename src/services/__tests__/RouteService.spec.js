@@ -58,7 +58,6 @@ describe('RouteService', () => {
       jest
         .spyOn(RouteBatch, 'create')
         .mockResolvedValue({ ...routeBatch, riders: undefined });
-      jest.spyOn(Cab, 'findOne').mockResolvedValue(cabDetails);
     });
 
     it('should create initial route batch', async () => {
@@ -72,7 +71,6 @@ describe('RouteService', () => {
       const result = await RouteService.createRouteBatch(createData);
       expect(AddressService.findAddress).toBeCalled();
       expect(RouteService.createRoute).toBeCalled();
-      expect(Cab.findOne).toBeCalled();
       expect(RouteService.updateBatchLabel).toHaveReturnedWith('A');
       expect(result).toHaveProperty('capacity');
       expect(result).toHaveProperty('takeOff');
@@ -80,9 +78,9 @@ describe('RouteService', () => {
       expect(result).toHaveProperty('comments');
       expect(result).toHaveProperty('name');
       expect(result).toHaveProperty('destination');
-      expect(result).toHaveProperty('regNumber');
-      expect(result).toHaveProperty('driverName');
-      expect(result).toHaveProperty('driverPhoneNo');
+      expect(result).toHaveProperty('capacity');
+      expect(result).toHaveProperty('driverId');
+      expect(result).toHaveProperty('cabId');
       expect(result).toEqual(expectedResult);
     });
 

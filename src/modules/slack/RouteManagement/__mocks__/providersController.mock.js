@@ -85,7 +85,8 @@ const route = {
     routeBatch: 1022
   }]],
   route: {
-    name: 'Segun'
+    name: 'Segun',
+    destination: { address: 'old school road' }
   }
 };
 
@@ -114,7 +115,57 @@ const cab = {
   providerId: 1,
 };
 
+export const routeData = {
+  id: 1,
+  batchUseDate: '2018-05-03',
+  cabDetails: cab,
+  riders: [user],
+  driver,
+  route: {
+    routeId: 1001,
+    name: 'Hoeger Pine',
+    destination: {
+      locationId: 1002,
+      address: '629 O\'Connell Flats'
+    }
+  }
+};
+
+const SlackAttachment = {
+  title: 'Route Creation Complete',
+  text: undefined,
+  color: '#3AAF85',
+  attachment_type: 'default',
+  author_name: undefined,
+  author_icon: undefined,
+  image_url: undefined,
+  fields: [
+    {
+      title: '*_`Route Information`_*',
+      value: null,
+      short: false
+    },
+    {
+      title: 'Route Name',
+      value: 'Hoeger Pine',
+      short: true
+    },
+  ],
+  actions: [],
+  mrkdwn_in: [],
+  callback_id: 'assignment_notification',
+  fallback: 'fallback',
+  buttonValue: 'defaultButton'
+};
 
 export {
-  providersPayload, state, reassignCabPayload, reassignDriverPayload, route, cab, user, driver
+  providersPayload,
+  state,
+  reassignCabPayload,
+  reassignDriverPayload,
+  route,
+  cab,
+  user,
+  driver,
+  SlackAttachment
 };

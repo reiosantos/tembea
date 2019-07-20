@@ -27,13 +27,19 @@ export default class ProviderNotifications {
     return slackId;
   }
 
-  static async sendRouteApprovalNotification(routeBatch, requestData) {
+  /**
+   * @method sendRouteApprovalNotification
+   * @description sends a provider a message when they have been assigned a route
+   * @param {object} routeBatch
+   * @param {object} provider
+   * @param {string} botToken
+   */
+  static async sendRouteApprovalNotification(routeBatch, provider, botToken) {
     const { id: routeBatchId } = routeBatch;
-    const { teamUrl, provider: { name, user: { slackId } } } = requestData;
-    const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
-    
+    const { name, providerUserId } = provider;
+    const { slackId } = await UserService.getUserById(providerUserId);
     const channelID = await SlackNotifications.getDMChannelId(slackId, botToken);
-    const attachment = new SlackAttachment();
+    const attachment = new SlackAttachment('Assign driver and cab');
     attachment.addFieldsOrActions('fields',
       ProviderAttachmentHelper.providerRouteFields(routeBatch));
     attachment.addFieldsOrActions('actions', [
@@ -46,7 +52,14 @@ export default class ProviderNotifications {
     return SlackNotifications.sendNotification(message, botToken);
   }
 
-  // TODO: write test
+  /**
+   * @method updateRouteApprovalNotification
+   * @description updates provider notification message
+   * @param {string} channel
+   * @param {string} botToken
+   * @param {string} timeStamp
+   * @param {array} attachment
+   */
   static async updateRouteApprovalNotification(channel, botToken, timeStamp, attachment) {
     try {
       await InteractivePrompts.messageUpdate(channel,
@@ -152,6 +165,7 @@ export default class ProviderNotifications {
     }
   }
 
+  // TODO: remove with accompanying tests
   /**
   * Updates the notification message sent to the providers
   * team to avoid approving a request
@@ -192,6 +206,7 @@ export default class ProviderNotifications {
     }
   }
 
+  // TODO: remove with accompanying tests
   static async sendToOpsDept(routeRequest, teamId, slackBotOauthToken, submission) {
     const teamDetails = await TeamDetailsService.getTeamDetails(teamId);
     const { opsChannelId } = teamDetails;
@@ -202,6 +217,7 @@ export default class ProviderNotifications {
   }
 
 
+  // TODO: remove with accompanying tests
   /**
       * Sends notification to the manager
       * when a fellow request for a new route have been approved.
@@ -226,6 +242,7 @@ export default class ProviderNotifications {
     }
   }
 
+  // TODO: remove with accompanying tests
   /**
       * This function sends a notification to the fellow
       * when the providers team approves the route request

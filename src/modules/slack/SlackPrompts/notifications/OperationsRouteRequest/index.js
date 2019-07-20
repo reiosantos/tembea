@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import SlackNotifications from '../../Notifications';
 import bugsnagHelper from '../../../../../helpers/bugsnagHelper';
 import ManagerAttachmentHelper from '../ManagerRouteRequest/helper';
@@ -7,6 +8,9 @@ import RouteRequestService from '../../../../../services/RouteRequestService';
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
 import ProviderNotifications from '../ProviderNotifications';
 import RemoveDataValues from '../../../../../helpers/removeDataValues';
+import RouteNotifications from '../RouteNotifications';
+import ProvidersController from '../../../RouteManagement/ProvidersController';
+import OperationsHelper from '../../../helpers/slackHelpers/OperationsHelper';
 
 export default class OperationsNotifications {
   /**
@@ -45,6 +49,30 @@ export default class OperationsNotifications {
     }
   }
 
+  static async completeOperationsRouteApproval(routeRequest, requestData, opsData) {
+    const { requesterId } = routeRequest;
+    const botToken = opsData ? opsData.botToken : OperationsHelper.getBotToken(requestData);
+    const routeCapacity = 4;
+    const submission = { ...requestData, routeCapacity };
+    const routeBatch = await ProvidersController.saveRoute(routeRequest, submission, requesterId);
+    const managerNotification = RouteNotifications.sendRouteApproveMessageToManager(
+      routeRequest, botToken, requestData
+    );
+    const userNotification = RouteNotifications.sendRouteApproveMessageToFellow(
+      routeRequest, botToken, requestData
+    );
+    const providerNotification = ProviderNotifications.sendRouteApprovalNotification(
+      routeBatch, requestData.provider, botToken
+    );
+    if (opsData) {
+      const { opsId, timeStamp, channelId } = opsData;
+      await OperationsNotifications.completeOperationsApprovedAction(
+        routeRequest, channelId, timeStamp, opsId, botToken, requestData
+      );
+    }
+    await Promise.all([managerNotification, userNotification, providerNotification]);
+  }
+
   /**
    * Updates the notification message sent to the operations
    * team to avoid approving or declining a request
@@ -59,7 +87,7 @@ export default class OperationsNotifications {
    * @return {Promise<void>}
    */
   static async completeOperationsApprovedAction(
-    routeRequest, channel, timestamp, opsId, botToken, submission, update
+    routeRequest, channel, timestamp, opsId, botToken, submission
   ) {
     const { engagement: { fellow } } = routeRequest;
     const title = 'Route Request Approved';
@@ -74,11 +102,6 @@ export default class OperationsNotifications {
       attachments,
       botToken
     );
-    if (!update) {
-      await ProviderNotifications.sendRouteRequestNotification(
-        routeRequest, botToken, submission
-      );
-    }
   }
 
 

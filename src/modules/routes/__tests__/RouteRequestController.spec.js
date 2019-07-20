@@ -118,7 +118,6 @@ describe('RoutesController', () => {
         opsReviewerId: 9,
         status: 'Approved',
       });
-      expect(RoutesController.sendNotificationToProvider).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(201);
     });
 

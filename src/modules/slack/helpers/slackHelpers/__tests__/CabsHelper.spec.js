@@ -3,6 +3,7 @@ import CabsHelper from '../CabsHelper';
 
 describe('ManagerActionsHelper', () => {
   const cabMock = {
+    id: 1,
     model: 'subaru',
     regNumber: 'FHD - 484',
     capacity: 8,
@@ -25,7 +26,7 @@ describe('ManagerActionsHelper', () => {
     const expectedData = [
       {
         label: `${cabMock.model.toUpperCase()} - ${cabMock.regNumber} - Seats up to ${cabMock.capacity} people`,
-        value: [cabMock.capacity, cabMock.model, cabMock.regNumber].toString()
+        value: [cabMock.id, cabMock.capacity, cabMock.model, cabMock.regNumber].toString()
       }
     ];
     expect(valuePairsData).toEqual(expectedData);
@@ -37,7 +38,7 @@ describe('ManagerActionsHelper', () => {
     const expectedData = [
       {
         text: `${cabMock.model.toUpperCase()} - ${cabMock.regNumber} - Seats up to ${cabMock.capacity} people`,
-        value: [cabMock.capacity, cabMock.model, cabMock.regNumber].toString()
+        value: [cabMock.id, cabMock.capacity, cabMock.model, cabMock.regNumber].toString()
       }
     ];
     expect(valuePairsData).toEqual(expectedData);

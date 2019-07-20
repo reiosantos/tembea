@@ -765,7 +765,7 @@ describe('SlackInteractions', () => {
         expect(TripCabControllerSpy).toHaveBeenCalled();
       });
       it('should call identify difference between trip and route request and call provider controller', () => {
-        const ProvidersControllerSpy = jest.spyOn(ProvidersController, 'handleProvidersRouteApproval').mockResolvedValue({});
+        const ProvidersControllerSpy = jest.spyOn(ProvidersController, 'handleProviderRouteApproval').mockResolvedValue({});
         const data = {
           callback_id: 'providers_approval_route'
         };

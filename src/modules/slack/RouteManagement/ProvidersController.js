@@ -15,7 +15,7 @@ class ProvidersController {
   static async saveRoute(updatedRequest, submission, userId) {
     const { busStop, routeImageUrl } = updatedRequest;
     const {
-      routeName, routeCapacity, takeOffTime, regNumber, driverId
+      routeName, routeCapacity, takeOffTime,
     } = submission;
     const data = {
       destinationName: busStop.address,
@@ -23,8 +23,6 @@ class ProvidersController {
       name: routeName,
       capacity: routeCapacity,
       takeOff: takeOffTime,
-      vehicleRegNumber: regNumber,
-      driverId,
       status: 'Active',
     };
     const batch = await RouteService.createRouteBatch(data);
@@ -32,8 +30,10 @@ class ProvidersController {
       ConfirmRouteUseJob.scheduleBatchStartJob(batch),
       RouteService.addUserToRoute(batch.id, userId),
     ]);
+    return batch;
   }
 
+  // TODO: remove with accompanying tests
   static async getFinalCabSubmissionDetails(submission) {
     const [capacity, , regNumber] = submission.cab.split(',');
     const [id, driverName, driverPhoneNo, driverNumber] = submission.driver.split(',');
@@ -47,6 +47,7 @@ class ProvidersController {
     };
   }
 
+  // TODO: remove with accompanying tests
   static async handleProvidersRouteApproval(data, respond) {
     try {
       const { team: { id: teamId } } = data;
@@ -73,7 +74,11 @@ class ProvidersController {
     }
   }
 
-  // TODO: write test
+  /**
+   * @method handleProviderRouteApproval
+   * @description this method handles further actions after the provider assigns a driver and cab
+   * @param {object} payload
+   */
   static async handleProviderRouteApproval(payload) {
     const {
       team: { id: teamId },
@@ -81,14 +86,16 @@ class ProvidersController {
       state
     } = payload;
     const driverId = driverDetails.split(',')[0];
-    const cabId = cabDetails.split(',')[0];
+    const [cabId, capacity] = cabDetails.split(',');
     const { tripId: routeBatchId, channel, timeStamp } = JSON.parse(state);
-    const routeBatch = await RouteService.updateRouteBatch(routeBatchId, { driverId, cabId });
+    const routeBatch = await RouteService.updateRouteBatch(
+      routeBatchId, { driverId, cabId, capacity }
+    );
     const { cabDetails: { providerId }, route: { name: routeName }, riders } = routeBatch;
     const { name } = await ProviderService.findProviderByPk(providerId);
     const attachment = await ProvidersController.getMessageAttachment(routeBatch);
     const { botToken, opsChannelId } = await TeamDetailsService.getTeamDetails(teamId);
-    if (routeBatch.riders[0]) {
+    if (riders[0]) {
       await ProvidersController.sendUserProviderAssignMessage(
         riders, botToken, routeName, attachment
       );
@@ -99,10 +106,18 @@ class ProvidersController {
     const updateNotification = ProviderNotifications.updateRouteApprovalNotification(
       channel, botToken, timeStamp, attachment
     );
-    await Promise.all(opsNotification, updateNotification);
+    return Promise.all([opsNotification, updateNotification]);
   }
 
-  // TODO: write test
+  /**
+   * @method sendOpsProviderAssignMessage
+   * @description sends operations provioder approval message
+   * @param {string} providerName
+   * @param {string} routeName
+   * @param {string} botToken
+   * @param {string} opsChannelId
+   * @param {object} attachment
+   */
   static async sendOpsProviderAssignMessage(
     providerName, routeName, botToken, opsChannelId, attachment
   ) {
@@ -114,21 +129,31 @@ class ProvidersController {
     return SlackNotifications.sendNotification(message, botToken);
   }
 
-  // TODO: write test
+  /**
+   * @method sendUserProviderAssignMessage
+   * @description sends users that joined the route a
+   * message after the provider assigns a driver and a cab
+   * @param {array} riders users on the route
+   * @param {srting} botToken
+   * @param {string} routeName
+   * @param {object} attachment
+   */
   static async sendUserProviderAssignMessage(riders, botToken, routeName, attachment) {
-    const { slackId } = riders[0];
-    const directMessageId = await SlackNotifications.getDMChannelId(
-      slackId, botToken
-    );
-    const message = SlackNotifications.createDirectMessage(
-      directMessageId,
-      `A driver and cab has been assigned to your route "*${routeName}*". :smiley:`,
-      [attachment]
-    );
-    return SlackNotifications.sendNotification(message, botToken);
+    const userNotifications = riders.map(async (rider) => {
+      const { slackId } = rider;
+      const directMessageId = await SlackNotifications.getDMChannelId(
+        slackId, botToken
+      );
+      const message = SlackNotifications.createDirectMessage(
+        directMessageId,
+        `A driver and cab has been assigned to your route "*${routeName}*". :smiley:`,
+        [attachment]
+      );
+      return SlackNotifications.sendNotification(message, botToken);
+    });
+    await Promise.all(userNotifications);
   }
 
-  // TODO: cover lines
   static async getMessageAttachment(route) {
     const { driver, cabDetails } = route;
     const routeFields = await ProviderAttachmentHelper.providerRouteFields(route);

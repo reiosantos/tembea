@@ -112,7 +112,7 @@ const route = {
   name: 'ZZZZZZ', imageUrl: 'https://image-url', destination, routeBatch: [{ batch: 'A' }]
 };
 const cabDetails = {
-  driverName: 'AAAAAA', driverPhoneNo: '+123456789', regNumber: 'CCCCCC'
+  id: 1, capacity: 4, regNumber: 'CCCCCC', model: 'saburu'
 };
 const batchDetails = {
   inUse: 1,

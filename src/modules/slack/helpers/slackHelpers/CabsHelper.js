@@ -33,8 +33,10 @@ export default class CabsHelper {
    */
   static toCabLabelValuePairs(cabs, hasText = false) {
     return cabs.map((val) => {
-      const { capacity, model, regNumber } = val;
-      const valueDetails = [capacity, model, regNumber].toString();
+      const {
+        id, capacity, model, regNumber
+      } = val;
+      const valueDetails = [id, capacity, model, regNumber].toString();
       let data = {
         label: CabsHelper.generateCabLabel(val),
         value: valueDetails

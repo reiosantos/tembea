@@ -3,10 +3,13 @@ import TeamDetailsService from '../../../../../services/TeamDetailsService';
 import BugsnagHelper from '../../../../../helpers/bugsnagHelper';
 import UserService from '../../../../../services/UserService';
 import RouteService from '../../../../../services/RouteService';
-import { SlackAttachmentField, SlackAttachment, SlackButtonAction } from '../../../SlackModels/SlackMessageModels';
+import {
+  SlackAttachmentField, SlackAttachment, SlackButtonAction
+} from '../../../SlackModels/SlackMessageModels';
 import RemoveDataValues from '../../../../../helpers/removeDataValues';
 import { bugsnagHelper } from '../../../RouteManagement/rootFile';
 import RouteServiceHelper from '../../../../../helpers/RouteServiceHelper';
+import RouteNotificationsHelper from './helper';
 
 class RouteNotifications {
   static async sendRouteNotificationToRouteRiders(teamUrl, routeInfo) {
@@ -90,6 +93,60 @@ class RouteNotifications {
       return SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (error) {
       bugsnagHelper.log(error);
+    }
+  }
+
+  /**
+      * Sends notification to the manager
+      * when a fellow request for a new route have been approved.
+      * @return {Promise<*>}
+      * @param routeRequest
+      * @param slackBotOauthToken
+      * @param submission
+      */
+  static async sendRouteApproveMessageToManager(
+    routeRequest, slackBotOauthToken, requestData
+  ) {
+    try {
+      const channelID = await SlackNotifications.getDMChannelId(
+        routeRequest.manager.slackId, slackBotOauthToken
+      );
+      const message = await RouteNotificationsHelper.getManagerApproveAttachment(
+        routeRequest, channelID, true, requestData
+      );
+      return await SlackNotifications.sendNotification(message, slackBotOauthToken);
+    } catch (error) {
+      BugsnagHelper.log(error);
+    }
+  }
+  
+  /**
+        * This function sends a notification to the fellow
+        * when the providers team approves the route request
+        * @return {Promise<*>}
+        * @param routeRequest
+        * @param slackBotOauthToken
+        * @param submission
+        * @param teamUrl
+        */
+  static async sendRouteApproveMessageToFellow(
+    routeRequest, slackBotOauthToken, teamUrl, requestData
+  ) {
+    try {
+      const { fellow } = routeRequest.engagement;
+      if (!slackBotOauthToken) {
+        const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
+        slackBotOauthToken = botToken; // eslint-disable-line no-param-reassign
+      }
+      const channelID = await SlackNotifications.getDMChannelId(
+        fellow.slackId, slackBotOauthToken
+      );
+      const message = await RouteNotificationsHelper.getFellowApproveAttachment(
+        routeRequest, channelID, requestData
+      );
+      return await SlackNotifications.sendNotification(message, slackBotOauthToken);
+    } catch (error) {
+      BugsnagHelper.log(error);
     }
   }
 }

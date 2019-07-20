@@ -76,7 +76,6 @@ class ProviderAttachmentHelper {
     ];
   }
 
-  // TODO: cover lines
   static providerRouteFields(routeInformation) {
     const {
       route: {

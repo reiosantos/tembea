@@ -49,7 +49,6 @@ class RoutesController {
     }
   }
 
-  // TODO: you worked here
   static async createRoute(req, res) {
     let message;
     let routeInfo;
@@ -61,7 +60,9 @@ class RoutesController {
         message = `Successfully duplicated ${routeInfo.name} route`;
       } else if (!batchId) {
         routeInfo = await RouteHelper.createNewRouteBatch(body);
-        slackEvents.raise(slackEventNames.SEND_PROVIDER_CREATED_ROUTE_REQUEST, routeInfo, body);
+        const { teamUrl, provider } = body;
+        const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
+        slackEvents.raise(slackEventNames.SEND_PROVIDER_CREATED_ROUTE_REQUEST, routeInfo, provider, botToken);
         message = 'Route created successfully';
       }
       return Response.sendResponse(res, 200, true, message, routeInfo);
@@ -223,7 +224,7 @@ class RoutesController {
   static async sendRouteRequestNotifications(updated, body, routeRequest, routeId) {
     const submission = RoutesController.formatRoute(routeRequest, body);
     if (updated.status === 'Approved') {
-      await RoutesController.sendNotificationToProvider(routeRequest, body.teamUrl, submission);
+      await RoutesController.sendNotificationToProvider(updated, submission);
     } else {
       await RoutesController.sendDeclineNotificationToFellow(routeId, body.teamUrl);
     }
@@ -251,9 +252,9 @@ class RoutesController {
     SlackEvents.raise(slackEventNames.OPERATIONS_DECLINE_ROUTE_REQUEST, routeId, '', teamUrl);
   }
 
-  static async sendNotificationToProvider(routeRequest, teamUrl, submission) {
+  static async sendNotificationToProvider(routeRequest, submission) {
     SlackEvents.raise(
-      slackEventNames.SEND_PROVIDER_APPROVED_ROUTE_REQUEST, routeRequest, teamUrl, submission
+      slackEventNames.COMPLETE_ROUTE_APPROVAL, routeRequest, submission
     );
   }
 
