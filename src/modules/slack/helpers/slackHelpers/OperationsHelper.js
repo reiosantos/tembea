@@ -23,21 +23,32 @@ class OperationsHelper {
       const {
         slackBotOauthToken, routeRequest
       } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
-      const updatedRequest = await RouteRequestService.updateRouteRequest(routeRequest.id, {
-        status: 'Approved',
-        opsReviewerId: id,
-        opsComment: confirmationComment
-      });
-      const requestData = { ...submission, provider };
-      const opsData = {
-        opsId: userId, botToken: slackBotOauthToken, timeStamp, channelId
-      };
+      const [updatedRequest, requestData, opsData] = await OperationsHelper.getCompleteOperationsRouteApprovalData(
+        routeRequest, id, confirmationComment, submission,
+        provider, userId, slackBotOauthToken, timeStamp, channelId
+      );
       return OperationsNotifications.completeOperationsRouteApproval(
         updatedRequest, requestData, opsData
       );
     } catch (error) {
       bugsnagHelper.log(error);
     }
+  }
+
+  static async getCompleteOperationsRouteApprovalData(
+    routeRequest, opsUserId, comment, submission, provider, opsId, botToken, timeStamp, channelId
+  ) {
+    const updatedRequest = await RouteRequestService.updateRouteRequest(routeRequest.id, {
+      status: 'Approved',
+      opsReviewerId: opsUserId,
+      opsComment: comment
+    });
+    const requestData = { ...submission, provider };
+    const opsData = {
+      opsId, botToken, timeStamp, channelId
+    };
+
+    return [updatedRequest, requestData, opsData];
   }
 
   static async getBotToken(requestData) {

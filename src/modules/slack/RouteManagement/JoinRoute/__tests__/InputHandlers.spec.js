@@ -15,6 +15,7 @@ import * as formHelper from '../../../helpers/formHelper';
 import UserService from '../../../../../services/UserService';
 import PartnerService from '../../../../../services/PartnerService';
 import Cache from '../../../../../cache';
+import { route } from '../../__mocks__/providersController.mock';
 
 const error = new SlackInteractiveMessage('Unsuccessful request. Kindly Try again');
 describe('JoinInputHandlers', () => {
@@ -250,6 +251,7 @@ describe('JoinInputHandlers', () => {
       jest.spyOn(PartnerService, 'updateEngagement').mockResolvedValue({ id: 1 });
       jest.spyOn(RouteService, 'addUserToRoute').mockResolvedValue({ id: 1 });
       jest.spyOn(formHelper, 'getFellowEngagementDetails').mockResolvedValue(engagement);
+      jest.spyOn(RouteService, 'getRoute').mockResolvedValue(route);
 
       await JoinRouteInputHandlers.submitJoinRoute(payload, respond);
       expect(respond).toBeCalledTimes(1);

@@ -66,9 +66,6 @@ SlackEvents.handle(slackEventNames.RIDER_CANCEL_TRIP,
 SlackEvents.handle(slackEventNames.NOTIFY_OPS_CANCELLED_TRIP,
   SlackNotifications.sendOpsCancelNotification);
 
-SlackEvents.handle(slackEventNames.SEND_PROVIDER_APPROVED_ROUTE_REQUEST,
-  ProviderNotifications.sendRouteRequestNotification);
-
 SlackEvents.handle(slackEventNames.SEND_PROVIDER_VEHICLE_REMOVAL_NOTIFICATION,
   ProviderNotifications.sendVehicleRemovalProviderNotification);
 

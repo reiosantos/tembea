@@ -3,7 +3,6 @@ import '@slack/client';
 import app from '../../../app';
 import Utils from '../../../utils';
 import models from '../../../database/models';
-import TeamDetailsService from '../../../services/TeamDetailsService';
 
 const errorMessage = 'Validation error occurred, see error object for details';
 
@@ -30,7 +29,6 @@ afterAll(() => {
 
 describe('/User update', () => {
   it('should return a not found error with wrong email', (done) => {
-    jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({ botToken: 'xoop' });
     request(app)
       .put('/api/v1/users')
       .send({

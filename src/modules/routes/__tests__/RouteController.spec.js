@@ -254,44 +254,6 @@ describe('RoutesController', () => {
       teamUrl: 'andela-tembea.slack.com'
     };
 
-    // it('should fail if props are missing', (done) => {
-    //   const message = 'The following fields are missing: vehicle';
-    //   const newData = { ...data };
-    //   delete newData.vehicle;
-    //   request(app)
-    //     .post('/api/v1/routes')
-    //     .set('Content-Type', 'application/json')
-    //     .set('Authorization', validToken)
-    //     .send(newData)
-    //     .expect(200, (err, res) => {
-    //       const { body } = res;
-    //       expect(body).toHaveProperty('message');
-    //       expect(body).toHaveProperty('success');
-    //       expect(body).toEqual({ message, success: false });
-    //       done();
-    //     });
-    // });
-
-    // it('should fail if prop values are invalid', (done) => {
-    //   const message = 'Your request contain errors';
-    //   const errorMessage = ['Enter a value for vehicle'];
-    //   const newData = { ...data, vehicle: '' };
-
-    //   request(app)
-    //     .post('/api/v1/routes')
-    //     .set('Content-Type', 'application/json')
-    //     .set('Authorization', validToken)
-    //     .send(newData)
-    //     .expect(200, (err, res) => {
-    //       const { body } = res;
-    //       expect(body).toHaveProperty('message');
-    //       expect(body).toHaveProperty('success');
-    //       expect(body).toHaveProperty('data');
-    //       expect(body).toEqual({ message, success: false, data: errorMessage });
-    //       done();
-    //     });
-    // });
-
     it('should successfully create a route', (done) => {
       jest.spyOn(AddressService, 'createNewAddress')
         .mockResolvedValue({ address: 'Epic Tower' });

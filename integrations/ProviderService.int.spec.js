@@ -29,6 +29,7 @@ describe('create Provider', () => {
     const testProvider = {
       name: faker.random.word(),
       providerUserId: 1,
+      isDirectMessage: true,
     };
     const result = await ProviderService.createProvider(testProvider);
     const { provider } = result;

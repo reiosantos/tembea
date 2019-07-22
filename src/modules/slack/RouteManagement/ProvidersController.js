@@ -1,4 +1,3 @@
-import RouteRequestService from '../../../services/RouteRequestService';
 import ProviderNotifications from '../SlackPrompts/notifications/ProviderNotifications/index';
 import { SlackInteractiveMessage, SlackAttachment } from '../SlackModels/SlackMessageModels';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
@@ -33,47 +32,6 @@ class ProvidersController {
     return batch;
   }
 
-  // TODO: remove with accompanying tests
-  static async getFinalCabSubmissionDetails(submission) {
-    const [capacity, , regNumber] = submission.cab.split(',');
-    const [id, driverName, driverPhoneNo, driverNumber] = submission.driver.split(',');
-    return {
-      regNumber,
-      routeCapacity: capacity,
-      driverName,
-      driverPhoneNumber: driverPhoneNo,
-      driverId: id,
-      driverNumber
-    };
-  }
-
-  // TODO: remove with accompanying tests
-  static async handleProvidersRouteApproval(data, respond) {
-    try {
-      const { team: { id: teamId } } = data;
-      const { tripId, channel, timeStamp } = JSON.parse(data.state);
-      const routeRequestId = tripId.split('_')[2];
-      const routeInfo = JSON.parse(tripId.split('_')[3]);
-      let { submission } = data;
-      submission = { ...submission, ...routeInfo };
-      const { slackBotOauthToken, routeRequest } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
-      const updatedRequest = await RouteRequestService.updateRouteRequest(routeRequest.id, { status: 'Approved' });
-      const cabDetails = await ProvidersController.getFinalCabSubmissionDetails(submission);
-      submission = { ...submission, ...cabDetails };
-      const { id } = updatedRequest.engagement.fellow;
-      const save = ProvidersController.saveRoute(updatedRequest, submission, id);
-      const complete = ProviderNotifications.completeProviderApprovedAction(
-        updatedRequest, channel, teamId, timeStamp, slackBotOauthToken, submission, false
-      );
-      await Promise.all([complete, save]);
-    } catch (error) {
-      bugsnagHelper.log(error);
-      respond(
-        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
-      );
-    }
-  }
-
   /**
    * @method handleProviderRouteApproval
    * @description this method handles further actions after the provider assigns a driver and cab
@@ -100,8 +58,17 @@ class ProvidersController {
         riders, botToken, routeName, attachment
       );
     }
+
+    return ProvidersController.sendNotifications(
+      name, routeName, botToken, opsChannelId, attachment, channel, timeStamp
+    );
+  }
+
+  static async sendNotifications(
+    providerName, routeName, botToken, opsChannelId, attachment, channel, timeStamp
+  ) {
     const opsNotification = ProvidersController.sendOpsProviderAssignMessage(
-      name, routeName, botToken, opsChannelId, attachment
+      providerName, routeName, botToken, opsChannelId, attachment
     );
     const updateNotification = ProviderNotifications.updateRouteApprovalNotification(
       channel, botToken, timeStamp, attachment

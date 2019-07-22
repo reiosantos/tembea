@@ -5,6 +5,7 @@ import OperationsHelper from '../OperationsHelper';
 import { cabService } from '../../../../../services/CabService';
 import cache from '../../../../../cache';
 import { bugsnagHelper } from '../../../RouteManagement/rootFile';
+import TeamDetailsService from '../../../../../services/TeamDetailsService';
 
 describe('operations approve request', () => {
   let payload;
@@ -55,19 +56,6 @@ describe('operations approve request', () => {
     jest.restoreAllMocks();
   });
 
-  // it('get cab details if number plate is selected from dropdown', async () => {
-  //   getRouteRequestAndToken.mockResolvedValue(
-  //     { routeRequest: { ...mockRouteRequestData }, slackBotOauthToken: 'dfdf' }
-  //   );
-  //   updateRouteRequest.mockResolvedValue(
-  //     { ...mockRouteRequestData, status: 'Approved' }
-  //   );
-  //   jest.spyOn(OperationsHelper, 'getCabSubmissionDetails');
-  //   await OperationsHelper.sendOpsData(payload);
-  //   expect(RouteRequestService.getRouteRequestAndToken).toHaveBeenCalled();
-  //   expect(RouteRequestService.updateRouteRequest).toHaveBeenCalled();
-  //   completeOperationsApprovedAction.mockReturnValue('Token');
-  // });
   it('get cab details if a new cab is created', async () => {
     payload.callback_id = 'operations_reason_dialog_route';
     payload.submission = {
@@ -92,5 +80,12 @@ describe('operations approve request', () => {
     await OperationsHelper.sendOpsData(payload);
     expect(bugsnagHelper.log).toHaveBeenCalled();
     completeOperationsApprovedAction.mockReturnValue('Token');
+  });
+
+  it('should get botToken', async () => {
+    const requestData = { teamUrl: 'adaeze.slackcom' };
+    jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({ botToken: 'xoop' });
+    const slackbotToken = await OperationsHelper.getBotToken(requestData);
+    expect(slackbotToken).toEqual('xoop');
   });
 });

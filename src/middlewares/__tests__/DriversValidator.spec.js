@@ -147,7 +147,7 @@ describe('DriversValidator Middleware', () => {
           body: dummyDriver,
           params: { driverId: 1 }
         };
-        await driverService.create(dummyDriver);
+        jest.spyOn(driverService, 'create').mockResolvedValue(driver);
         jest.spyOn(driverService, 'exists').mockResolvedValue(false);
         await DriversValidator.validatePhoneNoAndNumberAlreadyExists(req, res, next);
         expect(next).toHaveBeenCalled();

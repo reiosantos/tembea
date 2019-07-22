@@ -7,6 +7,7 @@ import {
 } from '../../../SlackModels/SlackMessageModels';
 import SlackNotifications from '../../Notifications';
 import { getSlackDateString } from '../../../helpers/dateHelpers';
+import OpsAttachmentHelper from '../OperationsRouteRequest/helper';
 
 
 class ProviderAttachmentHelper {
@@ -106,7 +107,7 @@ class ProviderAttachmentHelper {
   }
 
 
-  static async getManagerApproveAttachment(routeRequest, channelID, submission, managerStatus) {
+  static async getManagerApproveAttachment(routeRequest, channelID, managerStatus, submission) {
     const { engagement: { fellow }, manager, status } = routeRequest;
     const data = AttachmentHelper.getStatusLabels(status, 'Approved');
     if (!data) return;
@@ -115,8 +116,8 @@ class ProviderAttachmentHelper {
     } = data;
     const attachment = new SlackAttachment(title);
     const routeAttachment = AttachmentHelper.routeRequestAttachment(routeRequest);
-    const routeInformation = ProviderAttachmentHelper.providerRouteInformation(submission);
     const engagementAttachment = await AttachmentHelper.engagementAttachment(routeRequest);
+    const routeInformation = OpsAttachmentHelper.opsRouteInformation(submission);
     const attachments = [
       attachment, routeAttachment, engagementAttachment, routeInformation
     ];
@@ -141,8 +142,8 @@ class ProviderAttachmentHelper {
     } = data;
     const attachment = new SlackAttachment(title);
     const routeAttachment = AttachmentHelper.routeRequestAttachment(routeRequest);
-    const routeInformation = ProviderAttachmentHelper.providerRouteInformation(submission);
     const engagementAttachment = await AttachmentHelper.engagementAttachment(routeRequest);
+    const routeInformation = OpsAttachmentHelper.opsRouteInformation(submission);
     const attachments = [
       attachment, routeAttachment, engagementAttachment, routeInformation
     ];
@@ -152,7 +153,7 @@ class ProviderAttachmentHelper {
     const greeting = `Hi, <@${fellow.slackId}>`;
     return SlackNotifications.createDirectMessage(
       channelID,
-      `${greeting}, the operations team ${action} your request ${emoji}. You have also been added to the Route you requested`,
+      `${greeting}, the operations team ${action} your request ${emoji}. You have also been added to the Route you requested and it is awaiting provider action.`,
       attachments
     );
   }

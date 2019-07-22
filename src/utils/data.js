@@ -25,5 +25,5 @@ export const destinations = [
 export const extraTravelOptions = ['To Be Decided'];
 
 export const expectedCreateRouteObject = [
-  'capacity', 'destination', 'routeName', 'takeOffTime',
+  'capacity', 'destination', 'routeName', 'takeOffTime', 'provider'
 ];
