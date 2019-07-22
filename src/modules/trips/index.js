@@ -76,14 +76,14 @@ tripsRouter.get(
  * @swagger
  * /trips/{tripId}:
  *  put:
- *    summary: update trip status
+ *    summary: updates trip status
  *    tags:
  *      - Trips
  *    parameters:
  *      - name: tripId
  *        in: path
  *        required: true
- *        description: id of request to be updated
+ *        description: id of trip to be updated
  *        type: number
  *      - name: action
  *        in: query
@@ -100,27 +100,19 @@ tripsRouter.get(
  *          type: object
  *          required:
  *            - slackUrl
- *            - driverName
- *            - driverPhoneNo
- *            - regNumber
  *            - comment
  *          properties:
  *            slackUrl:
  *              type: string
  *              example: andela-tembea.slack.com
- *            driverName:
- *              type: string
- *            driverPhoneNo:
- *              type: string
- *              example: "0182947583028"
- *            regNumber:
- *              type: string
- *              description: vehichle registration number
  *            comment:
  *              type: string
+ *            providerId:
+ *              type: number
+ *              description: This is required when "action" is "confirm"
  *    responses:
  *      200:
- *        description: trip status updated succcessfully
+ *        description: trip confirmed or trip declined
  */
 tripsRouter.put(
   '/trips/:tripId',

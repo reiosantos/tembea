@@ -16,11 +16,9 @@ describe('Trip Validator', () => {
   beforeEach(() => {
     req = {
       body: {
-        driverPhoneNo: '0777777777',
-        driverName: 'nnn',
-        regNumber: 'lmnbv',
         comment: 'ns',
         slackUrl: 'sokoolworkspace.slack.com',
+        providerId: 1
       },
       params: { tripId: 15 },
       status: 200,
@@ -83,6 +81,31 @@ describe('Trip Validator', () => {
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(0);
       expect(next).toHaveBeenCalledTimes(1);
     });
+    it('should fail if action is decline and providerId is supplied', async () => {
+      req.query.action = 'decline';
+      HttpError.sendErrorResponse = jest.fn(() => { });
+      jest.spyOn(HttpError, 'sendErrorResponse')
+        .mockResolvedValue(resolved);
+      jest.spyOn(TripService, 'checkExistence')
+        .mockResolvedValue(true);
+
+      await TripValidator.validateAll(req, res, next);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
+      expect(next).toHaveBeenCalledTimes(0);
+    });
+    it('should call next middleware if providerId is not supplied and action is decline', async () => {
+      req.query.action = 'decline';
+      delete req.body.providerId;
+      HttpError.sendErrorResponse = jest.fn(() => { });
+      jest.spyOn(HttpError, 'sendErrorResponse')
+        .mockResolvedValue(resolved);
+      jest.spyOn(TripService, 'checkExistence')
+        .mockResolvedValue(true);
+
+      await TripValidator.validateAll(req, res, next);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(0);
+      expect(next).toHaveBeenCalledTimes(1);
+    });
     it('should call validateAll with all values for decline', async () => {
       HttpError.sendErrorResponse = jest.fn(() => { });
       jest.spyOn(HttpError, 'sendErrorResponse')
@@ -94,26 +117,10 @@ describe('Trip Validator', () => {
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(0);
       expect(next).toHaveBeenCalledTimes(1);
     });
-    it('should call validateAll with missing driverPhoneNo ', async () => {
-      req.body.driverPhoneNo = null;
-      HttpError.sendErrorResponse = jest.fn(() => { });
-      jest.spyOn(HttpError, 'sendErrorResponse');
-      jest.spyOn(TripService, 'checkExistence').mockResolvedValue(true);
-
-      await TripValidator.validateAll(req, res, next);
-      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(HttpError.sendErrorResponse).toHaveBeenCalledWith({
-        message: {
-          driverPhoneNo: '\"driverPhoneNo\" must be a string',
-          errorMessage: 'Validation error occurred, see error object for details',
-        },
-        statusCode: 400
-      }, res);
-      expect(next).toHaveBeenCalledTimes(0);
-    });
     it('should call validateAll with missing tripId ', async () => {
       HttpError.sendErrorResponse = jest.fn(() => { });
       req.params.tripId = null;
+      req.body.providerId = 1;
       jest.spyOn(HttpError, 'sendErrorResponse');
       jest.spyOn(TripService, 'checkExistence').mockResolvedValue(true);
 
@@ -132,6 +139,7 @@ describe('Trip Validator', () => {
 
     it('should call next middleware', async () => {
       req.params.tripId = 1;
+      req.body.providerId = 1;
       await TripValidator.validateAll(req, res, next);
       req.query.action = Boolean(null);
       req.body.providerId = 1;

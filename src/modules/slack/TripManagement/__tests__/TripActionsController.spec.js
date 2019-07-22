@@ -187,7 +187,8 @@ describe('TripActionController operations approve tests', () => {
         cab: '1, SBARU, KAA666Q',
         driver: '1, Derro, 234234324, 67876867',
         capacity: '1',
-        model: 'ferrari'
+        model: 'ferrari',
+        providerId: 1
       },
       state: '{ "tripId": "3", "isAssignProvider": true }'
     };
@@ -282,31 +283,23 @@ describe('TripActionController operations approve tests', () => {
   });
 
   describe('#getTripNotificationDetails', () => {
-    let mock;
     beforeEach(async () => {
-      mock = jest.spyOn(TripActionsController, 'getTripNotificationDetails').mockResolvedValue({
-        ops: {
-          id: 'OpsId'
-        },
-        slackBotOauthToken: 'my Slack OAuth token'
-      });
+      jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId').mockResolvedValue({ id: 'UE1FCCXXX' });
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('xoxb-xxxx-xxxx');
     });
 
     afterEach(() => {
       jest.restoreAllMocks();
-      jest.resetAllMocks();
     });
 
     it('should update trip notification details', async () => {
-      const details = await mock({
+      const { ops, slackBotOauthToken } = await TripActionsController.getTripNotificationDetails({
         user: { id: 1 }, team: { id: 1 }
       });
-      expect(details).toEqual({
-        ops: {
-          id: 'OpsId'
-        },
-        slackBotOauthToken: 'my Slack OAuth token'
-      });
+      expect(ops.id).toEqual('UE1FCCXXX');
+      expect(slackBotOauthToken).toEqual('xoxb-xxxx-xxxx');
+      expect(SlackHelpers.findOrCreateUserBySlackId).toHaveBeenCalledTimes(1);
+      expect(TeamDetailsService.getTeamDetailsBotOauthToken).toHaveBeenCalledTimes(1);
     });
   });
 });

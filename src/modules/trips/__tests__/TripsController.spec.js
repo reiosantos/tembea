@@ -14,7 +14,6 @@ import tripService from '../../../services/TripService';
 import TravelTripService from '../../../services/TravelTripService';
 import SlackProviderHelper from '../../slack/helpers/slackHelpers/ProvidersHelper';
 import ProviderNotifications from '../../slack/SlackPrompts/notifications/ProviderNotifications';
-import TripHelper from '../../../helpers/TripHelper';
 import HttpError from '../../../helpers/errorHandler';
 
 describe('TripController', () => {
@@ -224,68 +223,6 @@ describe('TripController', () => {
         await TripsController.getCommonPayloadParam('', '', '');
         expect(TeamDetailsService.getTeamDetailsByTeamUrl).toHaveBeenCalledTimes(1);
         expect(TripsController.getSlackIdFromReq).toHaveBeenCalledTimes(1);
-      });
-      it('updateTrip() with missing data', async () => {
-        jest
-          .spyOn(TripsController, 'getCommonPayloadParam')
-          .mockResolvedValue(payload);
-        jest
-          .spyOn(TripActionsController, 'changeTripStatus')
-          .mockResolvedValue({ text: 'failed' });
-        await TripsController.updateTrip(req2, res);
-        expect(res.status).toHaveBeenCalledTimes(1);
-        expect(res.status).toHaveBeenCalledWith(200);
-        expect(res.status().json).toHaveBeenCalledTimes(1);
-      });
-    });
-
-    describe('updateProviderAndNotify', () => {
-      beforeEach(async () => {
-        jest.spyOn(tripService, 'updateRequest').mockResolvedValue({});
-      });
-
-      it('should update provider and notify', async () => {
-        const resp = {
-          status: jest.fn(() => ({
-            json: jest.fn(() => ({
-              success: true,
-              message: 'The Provider for this trip was updated successfully'
-            }))
-          }))
-        };
-        const response = await TripsController.updateProviderAndNotify({}, resp, {});
-        expect(resp.status).toHaveBeenCalledTimes(1);
-        expect(response).toHaveProperty('success');
-
-        expect(response).toHaveProperty('message');
-        expect(response.success).toEqual(true);
-      });
-
-      afterEach(() => {
-        jest.restoreAllMocks();
-      });
-    });
-
-    describe('updateTrip() without action', () => {
-      beforeEach(() => {
-        jest.spyOn(TripHelper, 'tripHasProvider').mockReturnValue(true);
-        jest.spyOn(TripsController, 'updateProviderAndNotify').mockResolvedValue({});
-        jest
-          .spyOn(TripsController, 'getCommonPayloadParam')
-          .mockResolvedValue(payload);
-        jest
-          .spyOn(TripsController, 'getSlackIdFromReq')
-          .mockResolvedValue('UG9MG84U8');
-      });
-
-      it('should update a trip\'s provider', async () => {
-        const request = {
-          query: { action: undefined },
-          params: { tripId: 3 },
-          body: { slackUrl: '', providerId: 1 }
-        };
-        await TripsController.updateTrip(request, res);
-        expect(TripsController.updateProviderAndNotify).toHaveBeenCalled();
       });
       it('updateTrip() with missing data', async () => {
         jest

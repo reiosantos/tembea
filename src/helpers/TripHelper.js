@@ -2,7 +2,6 @@ import moment from 'moment';
 import Cache from '../cache';
 import AddressService from '../services/AddressService';
 import { getTripKey } from './slack/ScheduleTripInputHandlers';
-import TripUtils from '../utils';
 
 export default class TripHelper {
   static cleanDateQueryParam(query, field) {
@@ -76,9 +75,8 @@ export default class TripHelper {
    * @returns {string} The new approval date in a user-friendly format
    */
   static convertApprovalDateFormat(approvalDate) {
-    const approvalDateInMs = TripUtils.convertSecondsToMs(approvalDate);
     return moment(
-      new Date(parseInt(approvalDateInMs, 10)), 'YYYY-MM-DD HH:mm:ss'
+      new Date(approvalDate), 'YYYY-MM-DD HH:mm:ss'
     ).toISOString();
   }
 
@@ -89,18 +87,6 @@ export default class TripHelper {
    */
   static tripHasProvider(trip) {
     return trip.providerId !== null;
-  }
-
-  /**
-   * @method notConfirmingOrDecliningTrip
-   * @param {Object} reqBody
-   * @param {Object} trip
-   * @param {String} action
-   * @return {boolean} Returns true if the request is neither
-   * for declining or confirming trip
-   */
-  static notConfirmingOrDecliningTrip(reqBody, trip, action) {
-    return TripHelper.tripHasProvider(trip) && !action;
   }
 
   static async calculateSums(data) {

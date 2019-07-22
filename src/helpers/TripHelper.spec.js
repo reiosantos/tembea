@@ -52,19 +52,6 @@ describe('TripHelper', () => {
       expect(tripHasProvider).toEqual(false);
     });
   });
-
-  describe('#notConfirmingOrDecliningTrip', () => {
-    const reqBody = { providerId: 1 };
-    it('should return true', () => {
-      expect(TripHelper.notConfirmingOrDecliningTrip(reqBody, tripRequestDetails)).toEqual(true);
-    });
-
-    it('should return false', () => {
-      expect(TripHelper.notConfirmingOrDecliningTrip(
-        reqBody, tripRequestDetails, 'decline'
-      )).toEqual(false);
-    });
-  });
 });
 
 describe('TripHelper for Schedule Trip', () => {
@@ -135,9 +122,9 @@ describe('TripHelper for Schedule Trip', () => {
 
 describe('Trip approval Date test', () => {
   it('should return a new trip approval date format', () => {
-    const timeStampInSeconds = 1562017616.481;
-    const newApprovalDateFormat = TripHelper.convertApprovalDateFormat(timeStampInSeconds);
+    const timeStamp = 1564005209482;
+    const newApprovalDateFormat = TripHelper.convertApprovalDateFormat(timeStamp);
     const [date] = newApprovalDateFormat.split('T');
-    expect(date).toEqual('2019-07-01');
+    expect(date).toEqual('2019-07-24');
   });
 });

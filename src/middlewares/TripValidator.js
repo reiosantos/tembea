@@ -1,7 +1,7 @@
 import moment from 'moment';
 import GeneralValidator from './GeneralValidator';
 import HttpError from '../helpers/errorHandler';
-import tripService, { TripService } from '../services/TripService';
+import { TripService } from '../services/TripService';
 import { getTripsSchema, tripUpdateSchema, travelTripSchema } from './ValidationSchemas';
 import JoiHelper from '../helpers/JoiHelper';
 import Response from '../helpers/responseHelper';
@@ -27,9 +27,6 @@ class TripValidator {
     if (!isTrip) {
       return HttpError.sendErrorResponse({ statusCode: 404, message: 'Trip Does not exist' }, res);
     }
-
-    const trip = await tripService.getById(tripId);
-    if (TripHelper.notConfirmingOrDecliningTrip(req.body, trip, action)) return next();
     next();
   }
 

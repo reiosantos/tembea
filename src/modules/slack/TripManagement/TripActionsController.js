@@ -6,10 +6,9 @@ import UserInputValidator from '../../../helpers/slack/UserInputValidator';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import ProviderNotifications from '../SlackPrompts/notifications/ProviderNotifications';
-import UserService from '../../../services/UserService';
-import RemoveDataValues from '../../../helpers/removeDataValues';
 import TripHelper from '../../../helpers/TripHelper';
 import TripCompletionJob from '../../../services/jobScheduler/jobs/TripCompletionJob';
+import SlackProviderHelper from '../helpers/slackHelpers/ProvidersHelper';
 
 class TripActionsController {
   static getErrorMessage() {
@@ -65,29 +64,23 @@ class TripActionsController {
 
   static async changeTripStatusToConfirmed(opsUserId, payload, slackBotOauthToken) {
     const {
-      submission: { confirmationComment, selectedProviderId, providerId }, channel,
+      submission: { confirmationComment, providerId }, channel,
       state: payloadState
     } = payload;
-    const { tripId, isAssignProvider, timeStamp } = JSON.parse(payloadState);
-    if (selectedProviderId) {
-      const { slackId: providerUserSlackId } = RemoveDataValues.removeDataValues(
-        await UserService.getUserById(selectedProviderId)
-      );
-      // eslint-disable-next-line no-param-reassign
-      payload.submission.providerUserSlackId = providerUserSlackId;
-    }
+    const { tripId, actionTs: timeStamp } = JSON.parse(payloadState);
+    let newPayload = { ...payload };
+    const { providerUserSlackId, providerName } = await SlackProviderHelper.getProviderUserDetails(providerId);
+    newPayload = { ...newPayload, submission: { ...newPayload.submission, providerUserSlackId, providerName } };
     const approvalDate = TripHelper.convertApprovalDateFormat(timeStamp);
-    if (isAssignProvider) {
-      const trip = await tripService.updateRequest(tripId, {
-        tripStatus: 'Confirmed',
-        operationsComment: confirmationComment,
-        confirmedById: opsUserId,
-        providerId,
-        approvalDate
-      });
-      TripCompletionJob.createScheduleForATrip(trip);
-      await this.notifyAll(payload, trip, slackBotOauthToken, timeStamp, channel);
-    }
+    const trip = await tripService.updateRequest(tripId, {
+      tripStatus: 'Confirmed',
+      operationsComment: confirmationComment,
+      confirmedById: opsUserId,
+      providerId,
+      approvalDate
+    });
+    TripCompletionJob.createScheduleForATrip(trip);
+    await this.notifyAll(newPayload, trip, slackBotOauthToken, timeStamp, channel);
     return 'success';
   }
 

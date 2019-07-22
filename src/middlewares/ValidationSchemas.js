@@ -20,12 +20,23 @@ export const querySchema = Joi.object().keys({
   onRoute: Joi.boolean(),
 });
 
-const whenConfirm = Joi.string().when(
+const whenConfirm = type => Joi.number().when(
   'action', {
     is: 'confirm',
-    then: Joi.string().trim().required()
+    then: type === 'number'
+      ? Joi.number().required()
+      : Joi.string().trim().required()
   }
 );
+
+const whenDecline = Joi.string().when(
+  'action', {
+    is: 'decline',
+    then: Joi.any().forbidden()
+  }
+);
+
+const whenConfirmOrDecline = whenConfirm('number').concat(whenDecline);
 
 export const getTripsSchema = Joi.object().keys({
   page: Joi.number(),
@@ -39,10 +50,7 @@ export const tripUpdateSchema = Joi.object().keys({
   tripId: Joi.number().required(),
   comment: Joi.string().trim().required(),
   slackUrl: Joi.string().trim().required().regex(teamUrlRegex),
-  isAssignProvider: Joi.boolean().default(false),
-  driverName: whenConfirm,
-  driverPhoneNo: whenConfirm,
-  regNumber: whenConfirm
+  providerId: whenConfirmOrDecline
 });
 
 export const userUpdateSchema = Joi.object().keys({
