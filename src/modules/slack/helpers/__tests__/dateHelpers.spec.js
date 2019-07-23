@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import { getSlackDateTime, getSlackDateString } from '../dateHelpers';
+import { getSlackDateTime, getSlackDateString, timeTo12hrs } from '../dateHelpers';
 
 describe('dateHelpers', () => {
   const testDate = new Date(2020, 6, 22, 16, 42);
@@ -25,6 +25,13 @@ describe('dateHelpers', () => {
 
     it('should contain 2020 before at', () => {
       expect(result.indexOf('2020 at')).toBeGreaterThan(0);
+    });
+  });
+
+  describe('timeTo12hrs', () => {
+    it('should return a valid date in am or pm', () => {
+      expect(timeTo12hrs('03:00')).toEqual('03:00 am');
+      expect(timeTo12hrs('13:00')).toEqual('01:00 pm');
     });
   });
 });

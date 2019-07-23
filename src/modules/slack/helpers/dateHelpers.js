@@ -34,3 +34,5 @@ export const getSlackDateString = (dateTime) => {
   const year = date.getFullYear();
   return `<!date^${original}^{date_long} ${year} at {time}|${fallback}>`;
 };
+
+export const timeTo12hrs = hrs24 => moment(hrs24, 'HH:mm', true).format('hh:mm a').toUpperCase();

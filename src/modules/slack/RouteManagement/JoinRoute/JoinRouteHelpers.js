@@ -7,7 +7,7 @@ import { SlackAttachmentField, SlackAttachment } from '../../SlackModels/SlackMe
 import AttachmentHelper from '../../SlackPrompts/notifications/AttachmentHelper';
 import { convertIsoString } from '../ManagerController';
 import RouteService from '../../../../services/RouteService';
-import { getSlackDateString } from '../../helpers/dateHelpers';
+import { timeTo12hrs } from '../../helpers/dateHelpers';
 
 class JoinRouteHelpers {
   static getName(username) {
@@ -78,7 +78,7 @@ class JoinRouteHelpers {
       capacity, riders, takeOff,
       route: { name: routeName, destination: { address } }
     } = route;
-    const takeOffTime = getSlackDateString(takeOff);
+    const takeOffTime = timeTo12hrs(takeOff);
     return [
       new SlackAttachmentField('Route', routeName, true),
       new SlackAttachmentField('Route capacity', `${riders.length}/${capacity}`, true),
