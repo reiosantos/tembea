@@ -113,7 +113,7 @@ class TripValidator {
     return [];
   }
 
-  static async validateTravelTrip(req, res, next) {
+  static validateTravelTrip(req, res, next) {
     return GeneralValidator.joiValidation(req, res, next, req.body, travelTripSchema);
   }
 }

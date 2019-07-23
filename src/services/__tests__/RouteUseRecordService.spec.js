@@ -3,6 +3,7 @@ import models from '../../database/models';
 import BatchUseRecordService from '../BatchUseRecordService';
 import { MAX_INT as all } from '../../helpers/constants';
 import RouteService from '../RouteService';
+import { mockRecord } from '../__mocks__';
 
 
 const { RouteUseRecord, } = models;
@@ -95,6 +96,14 @@ describe('RouteUseRecordService', () => {
       expect(await RouteUseRecordService.updateRouteUseRecord).toBeCalledWith(1, {
         confirmedUsers: 1, pendingUsers: 1, skippedUsers: 1, unConfirmedUsers: 1
       });
+    });
+  });
+
+  describe('getAdditionalInfo', () => {
+    it('should get average ratings and utilization for data', () => {
+      const routeTrips = RouteUseRecordService.getAdditionalInfo(mockRecord);
+      expect(routeTrips[0].utilization).toEqual('0');
+      expect(routeTrips[0].averageRating).toEqual(4);
     });
   });
 });

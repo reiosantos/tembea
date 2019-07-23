@@ -24,6 +24,11 @@ module.exports = (sequelize, DataTypes) => {
       as: 'riders'
     });
 
+    RouteBatch.hasMany(model.BatchUseRecord, {
+      foreignKey: 'batchRecordId',
+      targetKey: 'id'
+    });
+
     RouteBatch.belongsTo(model.Route, {
       foreignKey: 'routeId',
       targetKey: 'id',

@@ -3,6 +3,7 @@ import Response from '../../helpers/responseHelper';
 import tripService, { TripService } from '../../services/TripService';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import UserService from '../../services/UserService';
+import RouteUseRecordService from '../../services/RouteUseRecordService';
 import TripActionsController from '../slack/TripManagement/TripActionsController';
 import HttpError from '../../helpers/errorHandler';
 import TripHelper from '../../helpers/TripHelper';
@@ -183,6 +184,24 @@ class TripsController {
     });
 
     return Response.sendResponse(res, 200, true, 'Request was successful', result);
+  }
+
+  static async getRouteTrips(req, res) {
+    const { page, size } = req.query;
+    try {
+      let routeTrips = await RouteUseRecordService.getRouteTripRecords({ page, size });
+      if (!routeTrips.data) {
+        return Response.sendResponse(res, 200, true, 'No route trips available yet', []);
+      }
+      
+      const { pageMeta, data } = routeTrips;
+      routeTrips = RouteUseRecordService.getAdditionalInfo(data);
+      const result = { pageMeta: { ...pageMeta }, data: routeTrips };
+      return Response
+        .sendResponse(res, 200, true, 'Route trips retrieved successfully', result);
+    } catch (error) {
+      HttpError.sendErrorResponse(error, res);
+    }
   }
 }
 

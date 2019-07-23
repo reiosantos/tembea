@@ -6,8 +6,9 @@ import RemoveDataValues from '../helpers/removeDataValues';
 import BatchUseRecordService from './BatchUseRecordService';
 import RouteService from './RouteService';
 
-
-const { RouteUseRecord } = models;
+const {
+  RouteUseRecord, RouteBatch, Cab, Route, BatchUseRecord
+} = models;
 
 class RouteUseRecordService {
   static get defaultPageable() {
@@ -94,6 +95,53 @@ class RouteUseRecordService {
         where: { id: recordId }
       });
     return result;
+  }
+
+  static async getRouteTripRecords(pageable) {
+    const { page, size } = pageable;
+    const paginatedRecord = new SequelizePaginationHelper(RouteUseRecord, null, size);
+    paginatedRecord.filter = {
+      subQuery: false,
+      include: [{
+        model: RouteBatch,
+        as: 'batch',
+        attributes: ['takeOff', 'batch'],
+        include: [
+          {
+            model: Route,
+            as: 'route',
+            attributes: ['name'],
+            include: [{ model: models.Address, as: 'destination', attributes: ['address'] }]
+          },
+          { model: Cab, as: 'cabDetails', attributes: ['regNumber'] },
+          { model: BatchUseRecord, attributes: ['rating'] }
+        ]
+      }]
+    };
+    const paginatedData = await paginatedRecord.getPageItems(page);
+    const data = RemoveDataValues.removeDataValues(paginatedData);
+    return data;
+  }
+
+  static getAdditionalInfo(routeTripsData) {
+    return routeTripsData.map((record) => {
+      const recordInfo = { ...record };
+      const {
+        confirmedUsers,
+        unConfirmedUsers,
+        skippedUsers,
+        pendingUsers
+      } = record;
+      const totalUsers = confirmedUsers + unConfirmedUsers + skippedUsers + pendingUsers;
+      const utilization = ((confirmedUsers / totalUsers) * 100).toFixed(0);
+      recordInfo.utilization = utilization;
+      const ratingsarray = record.batch.BatchUseRecords;
+      const sumOfRatings = record.batch.BatchUseRecords
+        .reduce((prev, next) => prev + next.rating, 0);
+      delete recordInfo.batch.BatchUseRecords;
+      recordInfo.averageRating = sumOfRatings / ratingsarray.length;
+      return recordInfo;
+    });
   }
 }
 

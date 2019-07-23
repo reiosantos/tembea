@@ -2,7 +2,7 @@ import { Router } from 'express';
 import middlewares from '../../middlewares';
 import TripsController from './TripsController';
 
-const { TripValidator, TokenValidator } = middlewares;
+const { TripValidator, TokenValidator, GeneralValidator } = middlewares;
 
 const tripsRouter = Router();
 
@@ -164,6 +164,32 @@ tripsRouter.post(
   '/trips/travel',
   TripValidator.validateTravelTrip,
   TripsController.getTravelTrips
+);
+
+/**
+ * @swagger
+ * /trips/routetrips:
+ *  post:
+ *    summary: fetch route trips for a specified period
+ *    tags:
+ *      - Trips
+ *    parameters:
+ *      - name: page
+ *        in: query
+ *        required: false
+ *      - name: size
+ *        in: query
+ *        required: false
+ *    responses:
+ *      200:
+ *        description: route trips fetched successfully
+ *      400:
+ *        description: bad request
+ */
+tripsRouter.get(
+  '/trips/routetrips',
+  GeneralValidator.validateQueryParams,
+  TripsController.getRouteTrips
 );
 
 export default tripsRouter;

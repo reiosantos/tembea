@@ -7,6 +7,7 @@ import TripsController from '../TripsController';
 import TripActionsController from '../../slack/TripManagement/TripActionsController';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import UserService from '../../../services/UserService';
+import RouteUseRecordService from '../../../services/RouteUseRecordService';
 
 import * as mocked from './__mocks__';
 import tripService from '../../../services/TripService';
@@ -14,6 +15,7 @@ import TravelTripService from '../../../services/TravelTripService';
 import SlackProviderHelper from '../../slack/helpers/slackHelpers/ProvidersHelper';
 import ProviderNotifications from '../../slack/SlackPrompts/notifications/ProviderNotifications';
 import TripHelper from '../../../helpers/TripHelper';
+import HttpError from '../../../helpers/errorHandler';
 
 describe('TripController', () => {
   const { mockedValue: { routes: trips }, ...rest } = mocked;
@@ -331,6 +333,33 @@ describe('TripController', () => {
             success: true,
             message: 'Request was successful',
           });
+        });
+      });
+
+      describe('TripController_getRouteTrips', () => {
+        const requestQuery = {
+          query: { page: 1 }
+        };
+        it('should get all route trips', async () => {
+          await TripsController.getRouteTrips(requestQuery, res);
+          expect(res.status).toHaveBeenCalled();
+          expect(res.status).toHaveBeenCalledWith(200);
+        });
+
+        it('should return empty array if no records are available', async () => {
+          jest.spyOn(RouteUseRecordService, 'getRouteTripRecords').mockResolvedValue({ data: null });
+          await TripsController.getRouteTrips(requestQuery, res);
+
+          expect(res.status).toHaveBeenCalled();
+          expect(res.status).toHaveBeenCalledWith(200);
+        });
+
+        it('should return error response if error is thrown', async () => {
+          RouteUseRecordService.getRouteTripRecords = jest.fn()
+            .mockRejectedValue(new Error('network error'));
+          jest.spyOn(HttpError, 'sendErrorResponse');
+          await TripsController.getRouteTrips(requestQuery, res);
+          expect(HttpError.sendErrorResponse).toHaveBeenCalled();
         });
       });
     });

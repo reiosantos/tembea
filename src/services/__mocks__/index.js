@@ -514,3 +514,26 @@ export const mockGetHomebaseResponse = {
   totalItems: 1,
   itemsPerPage: 10
 };
+
+export const mockRecord = [{
+  id: 9,
+  batchId: 1009,
+  confirmedUsers: 0,
+  unConfirmedUsers: 1,
+  skippedUsers: 0,
+  pendingUsers: 0,
+  batchUseDate: '2019-07-26',
+  createdAt: '2019-07-24T14:24:12.970Z',
+  updatedAt: '2019-07-24T15:11:01.861Z',
+  batch: {
+    takeOff: '03:00',
+    batch: 'B',
+    route: {
+      name: 'Nicholaus Wells',
+      destination: {
+        address: '77548 Smith Corner'
+      }
+    },
+    BatchUseRecords: [{ rating: 3 }, { rating: 5 }]
+  }
+}];

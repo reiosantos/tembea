@@ -33,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
     rating: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      defaultValue: 0
     },
 
   }, {});
