@@ -84,7 +84,7 @@ const handlers = {
     };
     await DialogPrompts.sendReasonDialog(payload,
       'manager_route_approvedRequestPreview',
-      JSON.stringify(state), 'Approve Route Request', 'approve', 'approvalReason', 'route');
+      JSON.stringify(state), 'Approve Route Request', 'Approve', 'approvalReason', 'route');
   },
   declinedRequest: async (payload) => {
     const { submission: { declineReason }, team: { id: teamId } } = payload;

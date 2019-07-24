@@ -77,7 +77,7 @@ class PreviewPrompts {
 
     const navAttachment = createNavButtons('back_to_launch', 'back_to_routes_launch');
 
-    return new SlackInteractiveMessage('', [attachment, navAttachment]);
+    return new SlackInteractiveMessage('*Map Preview*', [attachment, navAttachment]);
   }
 }
 

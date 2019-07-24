@@ -239,9 +239,10 @@ class DialogPrompts {
   static async sendLocationForm(payload, location = 'home') {
     const dialog = new SlackDialog(`new_route_${location}`,
       'Create New Route', 'Submit', true);
-    const hint = 'e.g Andela Kenya, Nairobi';
+    const locationText = location.charAt(0).toUpperCase() + location.slice(1);
+    const hint = 'e.g Westlands, Nairobi';
     dialog.addElements([
-      new SlackDialogText(`Enter ${location} Address: `,
+      new SlackDialogText(`Enter ${locationText} Address: `,
         'location', `Type in your ${location} address`, false, hint)
     ]);
     await DialogPrompts.sendDialog(dialog, payload);

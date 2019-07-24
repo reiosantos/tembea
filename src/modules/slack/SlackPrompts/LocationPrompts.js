@@ -27,7 +27,7 @@ class LocationPrompts {
     const navAttachment = createNavButtons('back_to_launch', 'back_to_routes_launch');
 
     return new SlackInteractiveMessage(
-      'Select Home location', [attachment, navAttachment]
+      '*Select Home location*', [attachment, navAttachment]
     );
   }
 
@@ -80,7 +80,7 @@ class LocationPrompts {
     const navAttachment = createNavButtons('back_to_launch', 'back_to_routes_launch');
 
     const message = new SlackInteractiveMessage(
-      'Confirm your home location', [attachment, navAttachment]
+      '*Confirm your home location*', [attachment, navAttachment]
     );
     respond(message);
   }
