@@ -10,6 +10,8 @@ import TripCabController from '../TripManagement/TripCabController';
 import SlackInteractionsHelpers from '../helpers/slackHelpers/SlackInteractionsHelpers';
 import ProvidersController from '../RouteManagement/ProvidersController';
 import tripsRouter from '../../new-slack/trips/trip-router';
+import userTripActions from '../../new-slack/trips/user/actions';
+import UserTripBookingController from '../../new-slack/trips/user/user-trip-booking-controller';
 
 const slackInteractionsRouter = createMessageAdapter(process.env.SLACK_SIGNING_SECRET);
 
@@ -86,6 +88,17 @@ slackInteractionsRouter.action({ callbackId: 'provider_accept_route' },
   
 
 // PLEASE DO NOT TOUCH EXCEPT YOUR NAME IS ADAEZE, BARAK OR RENE
-tripsRouter(slackInteractionsRouter);
+slackInteractionsRouter.action({ callbackId: userTripActions.reasonDialog },
+  UserTripBookingController.handleReasonSubmit);
 
+slackInteractionsRouter.action({ callbackId: userTripActions.pickupDialog },
+  UserTripBookingController.savePickupDetails);
+
+slackInteractionsRouter.action({ callbackId: userTripActions.destDialog },
+  UserTripBookingController.saveDestination);
+
+slackInteractionsRouter.action({ callbackId: userTripActions.payment },
+  UserTripBookingController.paymentRequest);
+
+tripsRouter(slackInteractionsRouter);
 export default slackInteractionsRouter;

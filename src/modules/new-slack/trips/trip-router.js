@@ -1,6 +1,7 @@
 import UserTripBookingController from './user/user-trip-booking-controller';
 import userTripActions from './user/actions';
 import userTripBlocks from './user/blocks';
+import CustomSlackRouter from './custom-slack-router';
 
 const userTripRoutes = [
   {
@@ -18,10 +19,6 @@ const userTripRoutes = [
   {
     route: { actionId: userTripActions.cancel, blockId: userTripBlocks.navBlock },
     handler: UserTripBookingController.cancel
-  },
-  {
-    route: { callbackId: userTripActions.reasonDialog },
-    handler: UserTripBookingController.handleReasonSubmit
   },
   {
     route: { actionId: userTripActions.setPassenger, blockId: userTripBlocks.setRider },
@@ -49,16 +46,8 @@ const userTripRoutes = [
     handler: UserTripBookingController.saveDepartment
   },
   {
-    route: { callbackId: userTripActions.pickupDialog },
-    handler: UserTripBookingController.savePickupDetails
-  },
-  {
     route: { actionId: userTripActions.sendDest, blockId: userTripBlocks.getDestFields },
     handler: UserTripBookingController.sendDestinations
-  },
-  {
-    route: { callbackId: userTripActions.destDialog },
-    handler: UserTripBookingController.saveDestination
   },
   {
     route: {
@@ -75,12 +64,14 @@ const userTripRoutes = [
     route: { actionId: userTripActions.cancelTripRequest, blockId: userTripBlocks.confirmTrip },
     handler: UserTripBookingController.cancel
   },
-  {
-    route: { callbackId: userTripActions.payment },
-    handler: UserTripBookingController.paymentRequest
-  }
 ];
 
-export default slackRouter => userTripRoutes.forEach((route) => {
-  slackRouter.action(route.route, route.handler);
-});
+export default (slackRouter) => {
+  const handler = new CustomSlackRouter();
+  userTripRoutes.forEach((route) => {
+    handler.use(route.route, route.handler);
+  });
+  slackRouter.action({ actionId: /^__/ }, (payload, respond) => {
+    handler.handle(payload, respond);
+  });
+};
