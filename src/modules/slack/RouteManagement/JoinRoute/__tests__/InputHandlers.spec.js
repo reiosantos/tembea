@@ -5,7 +5,7 @@ import { SlackAttachment, SlackInteractiveMessage } from '../../../SlackModels/S
 import { slackEventNames, SlackEvents } from '../../../events/slackEvents';
 import FormValidators from '../JoinRouteFormValidators';
 import JoinRouteNotifications from '../JoinRouteNotifications';
-import { Bugsnag } from '../../../../../helpers/bugsnagHelper';
+import BugsnagHelper, { Bugsnag } from '../../../../../helpers/bugsnagHelper';
 import JoinRouteDialogPrompts from '../JoinRouteDialogPrompts';
 import RouteService from '../../../../../services/RouteService';
 import { mockRouteBatchData } from '../../../../../services/__mocks__';
@@ -73,7 +73,9 @@ describe('JoinInputHandlers', () => {
     });
 
     it('should stop fellow with a route', async () => {
-      RouteService.getRoute.mockResolvedValue({ ...mockRouteBatchData, riders: [{ slackId: 'ss' }] });
+      RouteService.getRoute.mockResolvedValue(
+        { ...mockRouteBatchData, riders: [{ slackId: 'ss' }] }
+      );
       jest.spyOn(formHelper, 'getFellowEngagementDetails')
         .mockResolvedValue(engagement);
       jest.spyOn(UserService, 'getUserBySlackId')
@@ -258,6 +260,13 @@ describe('JoinInputHandlers', () => {
       expect(JoinRouteHelpers.saveJoinRouteRequest).toBeCalledWith(payload, 1);
       expect(SlackEvents.raise)
         .toBeCalledWith(slackEventNames.MANAGER_RECEIVE_JOIN_ROUTE, payload, 2);
+    });
+
+    it('Should catch all errors', async () => {
+      jest.spyOn(BugsnagHelper, 'log');
+      await JoinRouteInputHandlers.submitJoinRoute('invalid payload', respond);
+      expect(BugsnagHelper.log).toHaveBeenCalled();
+      expect(respond).toHaveBeenCalled();
     });
 
     it('should send request to ops when user trying to join a full route', async () => {

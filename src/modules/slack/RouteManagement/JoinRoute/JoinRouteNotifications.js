@@ -70,13 +70,12 @@ class JoinRouteNotifications {
     const joinRoute = await JoinRouteRequestService.getJoinRouteRequest(joinRequestId);
     const attachment = await JoinRouteHelpers.joinRouteAttachments(joinRoute);
     attachment.addOptionalProps('join_route_managerActions');
-    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-    const successOpsChannel = process.env.SUCCESS_OPS_CHANNEL;
+    const { botToken, opsChannelId } = await TeamDetailsService.getTeamDetails(teamId);
     SlackNotifications.sendNotifications(
-      successOpsChannel,
+      opsChannelId,
       attachment,
       `Hey :simple_smile: <@${slackId}> has joined a route`,
-      slackBotOauthToken
+      botToken
     );
   }
 

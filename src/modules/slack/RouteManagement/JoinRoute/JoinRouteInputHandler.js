@@ -1,4 +1,6 @@
-import { SlackInteractiveMessage } from '../../SlackModels/SlackMessageModels';
+import {
+  SlackInteractiveMessage, SlackFailureResponse
+} from '../../SlackModels/SlackMessageModels';
 import {
   bugsnagHelper, SlackEvents, slackEventNames
 } from '../rootFile';
@@ -57,10 +59,8 @@ class JoinRouteInputHandlers {
       ));
       return false;
     }
-    const hasJoinAnyRoute = route.riders
-      .filter(users => users.slackId === user.slackId);
 
-    if (hasJoinAnyRoute.length || user.routeBatchId) {
+    if (user.routeBatchId) {
       respond(new SlackInteractiveMessage(
         'You are already on a route. Cannot join another'
       ));
@@ -122,7 +122,9 @@ class JoinRouteInputHandlers {
           { routeId, teamId, requesterSlackId: id }
         ];
       } else {
-        const { id: joinId, dataValues: { engagementId } } = await JoinRouteHelpers.saveJoinRouteRequest(
+        const {
+          id: joinId, dataValues: { engagementId }
+        } = await JoinRouteHelpers.saveJoinRouteRequest(
           payload,
           routeId
         );
@@ -153,8 +155,9 @@ class JoinRouteInputHandlers {
       );
 
       SlackEvents.raise(...eventArgs);
-    } catch (e) {
-      // TODO: refactor code to ensure awareness about the error
+    } catch (error) {
+      bugsnagHelper.log(error);
+      respond(SlackFailureResponse);
     }
   }
 
