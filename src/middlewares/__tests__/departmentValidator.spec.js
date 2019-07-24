@@ -73,4 +73,32 @@ describe('Department Validator', () => {
       expect(next).toBeCalled();
     });
   });
+
+  describe('validate tripType', () => {
+    afterAll(() => {
+      jest.restoreAllMocks();
+      jest.resetAllMocks();
+    });
+    it('should throw an error when the wrong tripType is supplied', async () => {
+      HttpError.sendErrorResponse = jest.fn(() => {});
+      const req = {
+        query:
+        {
+          tripType: 'Home Visit'
+        }
+      };
+      await DepartmentValidator.validateTripType(req, res, next);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
+    });
+    it('should throw no error when correct details are supplied', async () => {
+      const req = {
+        query:
+        {
+          tripType: 'Embassy Visit'
+        }
+      };
+      await DepartmentValidator.validateTripType(req, res, next);
+      expect(next).toBeCalled();
+    });
+  });
 });

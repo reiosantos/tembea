@@ -7,6 +7,7 @@ const timeRegex = /^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
 const requiredEmail = Joi.string().trim().email().required();
 const requiredCountry = Joi.string().trim().required().regex(/^([a-zA-Z]+\s)*[a-zA-Z]+$/);
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+const Stringregex = /([A-Z])\w+/;
 
 export const querySchema = Joi.object().keys({
   page: Joi.number().min(1),
@@ -240,4 +241,10 @@ export const travelTripSchema = Joi.object().keys({
             .items(Joi.string().trim().label('Departments'))
             .min(1)
             .required()
+});
+
+export const tripTypeSchema = Joi.object().keys({
+  tripType: Joi.string().valid('Embassy Visit', 'Airport Transfer', 'Regular Trip')
+    .regex(Stringregex)
+    .error(() => 'tripType must be either Embassy Visit, Airport Transfer or Regular Trip')
 });

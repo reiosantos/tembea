@@ -5,6 +5,7 @@ import bugsnagHelper from '../../helpers/bugsnagHelper';
 import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import Response from '../../helpers/responseHelper';
+import TripHelper from '../../helpers/TripHelper';
 
 class DepartmentController {
   /**
@@ -132,17 +133,22 @@ class DepartmentController {
    */
   static async fetchDepartmentTrips(req, res) {
     try {
-      const { body: { startDate, endDate, departments } } = req;
+      const { query: { tripType }, body: { startDate, endDate, departments } } = req;
       const analyticsData = await DepartmentService.getDepartmentAnalytics(
-        startDate, endDate, departments
+        startDate, endDate, departments, tripType
       );
       const deptData = [];
+      const { finalCost, finalAverageRating, count } = await
+      TripHelper.calculateSums(analyticsData);
       analyticsData.map((departmentTrip) => {
         const deptObject = departmentTrip;
         deptObject.averageRating = parseFloat(departmentTrip.averageRating).toFixed(2);
         return deptData.push(deptObject);
       });
-      return Response.sendResponse(res, 200, true, 'Request was successful', analyticsData);
+      const data = {
+        trips: analyticsData, finalCost, finalAverageRating, count
+      };
+      return Response.sendResponse(res, 200, true, 'Request was successful', data);
     } catch (error) {
       bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);

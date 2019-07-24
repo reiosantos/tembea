@@ -102,4 +102,16 @@ export default class TripHelper {
   static notConfirmingOrDecliningTrip(reqBody, trip, action) {
     return TripHelper.tripHasProvider(trip) && !action;
   }
+
+  static async calculateSums(data) {
+    const finalValues = { finalCost: 0, finalRating: 0, count: 0 };
+    data.forEach((dataObject) => {
+      finalValues.count += 1;
+      finalValues.finalCost += parseInt(dataObject.totalCost, 10);
+      finalValues.finalRating += parseFloat(dataObject.averageRating);
+    });
+    const { finalRating, count, finalCost } = finalValues;
+    const finalAverageRating = (finalRating / count).toFixed(2);
+    return { finalCost, finalAverageRating, count };
+  }
 }

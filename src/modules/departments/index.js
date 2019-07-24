@@ -184,6 +184,7 @@ departmentRouter.delete(
 departmentRouter.post(
   '/departments/trips',
   DepartmentValidator.validateDepartmentTrips,
+  DepartmentValidator.validateTripType,
   DepartmentsController.fetchDepartmentTrips
 );
 

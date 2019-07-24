@@ -2,7 +2,8 @@ import {
   updateDepartmentSchema,
   newDepartmentSchema,
   deleteDepartmentSchema,
-  departmentTripsSchema
+  departmentTripsSchema,
+  tripTypeSchema
 } from './ValidationSchemas';
 import GeneralValidator from './GeneralValidator';
 
@@ -36,6 +37,10 @@ class DepartmentValidator {
 
   static async validateDepartmentTrips(req, res, next) {
     return GeneralValidator.joiValidation(req, res, next, req.body, departmentTripsSchema);
+  }
+
+  static async validateTripType(req, res, next) {
+    return GeneralValidator.joiValidation(req, res, next, req.query, tripTypeSchema, false, true);
   }
 }
 

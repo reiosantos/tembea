@@ -15,6 +15,9 @@ describe('DepartmentController.fetchDepartmentTrips', () => {
         startDate: '2018-11-14',
         endDate: '2018-12-25',
         departments: ['people', 'tdd']
+      },
+      query: {
+        tripType: ''
       }
     };
   });

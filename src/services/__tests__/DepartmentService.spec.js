@@ -122,7 +122,7 @@ describe('/DepartmentService', () => {
       jest.spyOn(DepartmentService, 'mapDepartmentId').mockResolvedValue(['tdd', 'travel', 'Mathematics']);
       jest.spyOn(TripRequest, 'findAll').mockResolvedValue(departmentMocks);
       const departmentData = await
-      DepartmentService.getDepartmentAnalytics(null, null, ['tdd', 'travel', 'Mathematics']);
+      DepartmentService.getDepartmentAnalytics(null, null, ['tdd', 'travel', 'Mathematics'], 'Embassy Visit');
       expect(departmentData).toBeInstanceOf(Array);
     });
     it('should return an empty array of department analytics data', async () => {
