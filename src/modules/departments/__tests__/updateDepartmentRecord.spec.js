@@ -1,22 +1,42 @@
 import request from 'supertest';
+import faker from 'faker';
 import app from '../../../app';
 import Utils from '../../../utils';
 import models from '../../../database/models';
+import { createUser, createDepartment } from '../../../../integrations/support/helpers';
 
 let validToken;
+let mockDeptHead;
+let mockDepartment;
 
-beforeAll(() => {
+beforeAll(async () => {
+  mockDeptHead = await createUser({
+    name: faker.name.findName(),
+    slackId: faker.random.word().toUpperCase(),
+    phoneNo: faker.phone.phoneNumber('080########'),
+    email: faker.internet.email(),
+  });
+  const mockUser = await createUser({
+    name: faker.name.findName(),
+    slackId: faker.random.word().toUpperCase(),
+    phoneNo: faker.phone.phoneNumber('080########'),
+    email: faker.internet.email(),
+  });
+  const departmentData = {
+    name: faker.random.word(),
+    headId: mockUser.id,
+    teamId: faker.random.word().toUpperCase(),
+  };
+  mockDepartment = await createDepartment(departmentData);
+
   validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
 });
+
 afterAll(() => {
   models.sequelize.close();
 });
 
 describe('/Departments update', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   it('should return a department not found error with wrong department name', (done) => {
     request(app)
       .put('/api/v1/departments')
@@ -100,13 +120,14 @@ describe('/Departments update', () => {
       }, done);
   });
 
-  it('should return provide value when property is defined with no value', (done) => {
+  it('should successfully create department with valid data', (done) => {
+    const newDeptName = faker.hacker.noun();
     request(app)
       .put('/api/v1/departments')
       .send({
-        name: 'Finance-demo',
-        newName: 'Finance-demo-update',
-        newHeadEmail: 'test.buddy1@andela.com'
+        name: mockDepartment.name,
+        newName: newDeptName,
+        newHeadEmail: mockDeptHead.email,
       })
       .set({
         Accept: 'application/json',

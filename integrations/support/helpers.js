@@ -6,6 +6,7 @@ const {
   Driver,
   RouteRequest,
   TripRequest,
+  Department,
 } = models;
 
 export const createModel = async (Model, payload) => {
@@ -26,4 +27,6 @@ export const createRouteRequest = async requestPayload => createModel(
 export const createTripRequests = async (payload) => {
   const result = await TripRequest.bulkCreate(payload);
   return result;
-}
+};
+
+export const createDepartment = async data => createModel(Department, data);

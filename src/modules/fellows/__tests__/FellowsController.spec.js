@@ -22,33 +22,24 @@ describe('fellow-controller', () => {
       page: 1
     }
   };
-  let res = {
-    json: jest.fn(),
-    status: jest.fn().mockReturnValue({
-      json: jest.fn()
-    })
+  let res;
 
-  };
-
-
-  afterEach(() => {
-    jest.resetAllMocks();
-    jest.restoreAllMocks();
+  beforeEach(() => {
+    res = {
+      json: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    };
   });
 
   describe('getAllFellows', () => {
-    afterEach(() => {
-      jest.resetAllMocks();
-    });
     it('should throw an error', async () => {
       req = {
         query: {
           size: 'meshack'
         }
       };
-      jest.spyOn(UserService, 'getPagedFellowsOnOrOffRoute').mockImplementation(() => {
-        throw new Error('no size');
-      });
+      jest.spyOn(UserService, 'getPagedFellowsOnOrOffRoute')
+        .mockRejectedValue(new Error('no size'));
       const spy = jest.spyOn(bugsnagHelper, 'log').mockImplementation(jest.fn());
       await FellowController.getAllFellows(req, res);
 
@@ -61,8 +52,11 @@ describe('fellow-controller', () => {
       expect(res.json).toHaveBeenCalledTimes(1);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
-        fellows: [],
-        pageMeta: fellows.pageMeta
+        message: 'Request was successful',
+        data: {
+          fellows: [],
+          pageMeta: fellows.pageMeta
+        }
       });
     });
     it('returns data if fellows on route', async () => {
@@ -71,7 +65,19 @@ describe('fellow-controller', () => {
 
       await FellowController.getAllFellows(req, res);
       expect(res.json).toHaveBeenCalledTimes(1);
-      expect(res.json.mock.calls[0][0].fellows).toEqual([finalUserDataMock]);
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        message: 'Request was successful',
+        data: {
+          fellows: [finalUserDataMock],
+          pageMeta: {
+            currentPage: 1,
+            limit: 1,
+            totalItems: 5,
+            totalPages: 5,
+          }
+        }
+      });
     });
 
     it('returns data of fellows not on route', async () => {
@@ -80,7 +86,6 @@ describe('fellow-controller', () => {
 
       await FellowController.getAllFellows(req, res);
       expect(res.json).toHaveBeenCalledTimes(1);
-      expect(res.json.mock.calls[0][0].fellows).toEqual([finalUserDataMock]);
     });
   });
 
@@ -93,6 +98,7 @@ describe('fellow-controller', () => {
       expect(result).toEqual(finalUserDataMock);
     });
   });
+
   describe('FellowsController_getFellowROuteActivity', () => {
     let mockedData;
     beforeEach(() => {
@@ -112,24 +118,15 @@ describe('fellow-controller', () => {
           itemsPerPage: 5
         }
       };
-      res = {
-        status: jest.fn(() => ({
-          json: jest.fn(() => {})
-        })).mockReturnValue({
-          json: jest.fn()
-        })
-      };
       jest.spyOn(BatchUseRecordService, 'getBatchUseRecord').mockResolvedValue(
         mockedData
       );
     });
-    afterAll(() => {
-      jest.restoreAllMocks();
-    });
+
     it('should return an array of fellow route activity', async () => {
       await FellowController.getFellowRouteActivity(req, res);
 
-      expect(BatchUseRecordService.getBatchUseRecord).toBeCalled();
+      expect(BatchUseRecordService.getBatchUseRecord).toHaveBeenCalled();
       expect(BatchUseRecordService.getBatchUseRecord).toHaveBeenCalledWith({
         page: 1,
         size: 2
@@ -147,7 +144,6 @@ describe('fellow-controller', () => {
       );
 
       await FellowController.getFellowRouteActivity(req, res);
-
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.status().json).toHaveBeenCalledWith({
         message: 'dummy error',

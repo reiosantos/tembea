@@ -71,8 +71,10 @@ fellowsRouter.get(
  *      200:
  *        description: an array of data objects containing details of fellows on routes
  */
-fellowsRouter.get('/fellows',
+fellowsRouter.get(
+  '/fellows',
   GeneralValidator.validateQueryParams,
-  FellowController.getAllFellows);
+  FellowController.getAllFellows
+);
 
 export default fellowsRouter;

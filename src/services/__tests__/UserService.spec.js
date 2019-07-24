@@ -1,12 +1,21 @@
+import faker from 'faker';
 import UserService from '../UserService';
 import models from '../../database/models';
 
 const { User } = models;
 
+afterAll(() => {
+  models.sequelize.close();
+});
+
 
 describe('/Users service', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
+  beforeEach(() => {
+    jest.spyOn(User, 'findOne').mockResolvedValue({
+      name: 'John Doe',
+      email: 'johndoe@email.com',
+      get: jest.fn().mockReturnThis(),
+    });
   });
 
   it('should not be able to create user', async () => {
@@ -45,23 +54,14 @@ describe('/Users service', () => {
   });
 
   describe('getUserById', () => {
-    beforeEach(() => {
-      jest.resetAllMocks();
-      User.findByPk = jest.fn().mockResolvedValue({});
-    });
-
     it('should return valid user when found', async () => {
+      jest.spyOn(User, 'findByPk').mockResolvedValue({});
       const user = await UserService.getUserById(1);
       expect(user).toBeInstanceOf(Object);
     });
   });
 
   describe('getUserBySlackId', () => {
-    beforeEach(() => {
-      jest.resetAllMocks();
-      User.findOne = jest.fn().mockResolvedValue({});
-    });
-
     it('should return valid user when found', async () => {
       const user = await UserService.getUserBySlackId(1);
       expect(user).toBeInstanceOf(Object);
@@ -69,14 +69,14 @@ describe('/Users service', () => {
   });
 
   describe('getUserByEmail', () => {
-    beforeEach(() => {
-      jest.resetAllMocks();
-      User.findOne = jest.fn().mockResolvedValue({});
-    });
-
     it('should return valid user when found', async () => {
       const user = await UserService.getUserByEmail(1);
       expect(user).toBeInstanceOf(Object);
+    });
+    it('should return just the user object', async () => {
+      const user = await UserService.getUserByEmail(1, { plain: true });
+      expect(user.name).toBe('John Doe');
+      expect(user.email).toBe('johndoe@email.com');
     });
   });
 
@@ -93,11 +93,6 @@ describe('/Users service', () => {
     });
   });
   describe('getPagedFellowsOnOrOffRoute', () => {
-    beforeEach(() => {
-      jest.resetAllMocks();
-      jest.restoreAllMocks();
-    });
-
     it('should get fellows not on route', async () => {
       const data = await UserService.getPagedFellowsOnOrOffRoute(false, 1, 1);
       expect(data.data).toBeDefined();
@@ -112,6 +107,22 @@ describe('/Users service', () => {
       expect(data.data).toBeInstanceOf(Array);
       expect(data.pageMeta).toBeDefined();
       expect(data.pageMeta).toBeInstanceOf(Object);
+    });
+  });
+  describe('findOrCreateNewUserWithSlackId', () => {
+    beforeEach(() => {
+      jest.restoreAllMocks();
+    });
+    
+    it('should find or create a fellow by specific slackId', async () => {
+      const userData = {
+        slackId: faker.random.word(),
+        name: faker.name.firstName(),
+        email: faker.internet.email(),
+      };
+      const result = await UserService.findOrCreateNewUserWithSlackId(userData);
+      expect(result.slackId).toBe(userData.slackId);
+      expect(result.email).toBe(userData.email);
     });
   });
 });

@@ -134,9 +134,9 @@ class UserService {
     });
   }
 
-  static async getPagedFellowsOnOrOffRoute(onRoute, size, page) {
+  static async getPagedFellowsOnOrOffRoute(onRoute = true, size, page) {
     const { Op } = Sequalize;
-    const routeBatchCriteria = onRoute ? { [Op.eq]: null } : { [Op.ne]: null };
+    const routeBatchCriteria = onRoute ? { [Op.ne]: null } : { [Op.eq]: null };
     const results = await User.findAndCountAll({
       limit: size,
       offset: (size * (page - 1)),
@@ -169,7 +169,6 @@ class UserService {
  * @description this methods queries the DB for users by slackId
  * @param {*} slackId
  * @returns user object
- * @memberof DataHelper
  */
   static async getUserBySlackId(slackId) {
     const user = await User.findOne({
@@ -181,16 +180,15 @@ class UserService {
   /**
  * @static async getUserByEmail
  * @description this methods queries the DB for users by slackId
- * @param {*} email
- * @returns user object
- * @memberof DataHelper
+ * @param {string} email - the user email to find by
+ * @param {object} options - additional options
+ * @returns {object} user object
  */
-  static async getUserByEmail(email, option = {}) {
+  static async getUserByEmail(email, options = {}) {
     const user = await User.findOne({
       where: { email },
     });
-    if (option.plain) return user.get();
-    return user;
+    return options.plain ? user.get() : user;
   }
 
   /**
@@ -199,17 +197,13 @@ class UserService {
  * @param {number} id
  * @param {object} updateObject
  * @returns user object
- * @memberof DataHelper
  */
-  static updateUser(id, updateObject) {
-    try {
-      return User.update(
-        { ...updateObject },
-        { returning: true, where: { id } }
-      );
-    } catch (error) {
-      HttpError.throwErrorIfNull(null, 'Error updating user details', 500);
-    }
+  static async updateUser(id, updateObject) {
+    const user = await User.update(
+      { ...updateObject },
+      { returning: true, where: { id } }
+    );
+    return user;
   }
 }
 

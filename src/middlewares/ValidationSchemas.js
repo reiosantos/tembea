@@ -15,7 +15,8 @@ export const querySchema = Joi.object().keys({
   providerId: Joi.number().min(1),
   sort: Joi.string(),
   name: Joi.string().replace(/[^a-z0-9\s]/gi, ''),
-  country: Joi.string().replace(/[^a-z0-9\s]/gi, '')
+  country: Joi.string().replace(/[^a-z0-9\s]/gi, ''),
+  onRoute: Joi.boolean(),
 });
 
 const whenConfirm = Joi.string().when(

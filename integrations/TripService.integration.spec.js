@@ -8,6 +8,7 @@ describe('TripService', () => {
   const [testUserId, departmentId] = [2, 2];
   const testTrips = [];
   const tripsCount = 3;
+
   beforeAll(async () => {
     for (let count = 1; count < tripsCount; count += 1) {
       testTrips.push(TripService.createRequest({
@@ -85,14 +86,14 @@ describe('TripService', () => {
           reason: 'Testing the flow',
           departmentId: mockedDepartment1.id,
           tripStatus: 'Completed',
-          departureTime: new Date('2019-07-18 08:00').toLocaleString(),
+          departureTime: new Date('2019-07-18 08:00'),
           requestedById: mockUser.id,
           originId: 1,
           destinationId: 2,
           noOfPassengers: 1,
           tripType: 'Embassy Visit',
           cost: 100,
-          createdAt: new Date('2019-07-15 08:00').toLocaleString(),
+          createdAt: new Date('2019-07-15 08:00'),
           rating: 2,
 
         },
@@ -103,14 +104,14 @@ describe('TripService', () => {
           reason: 'Testing the flow',
           departmentId: mockedDepartment1.id,
           tripStatus: 'Completed',
-          departureTime: new Date('2019-07-18 08:40').toLocaleString(),
+          departureTime: new Date('2019-07-18 08:40'),
           requestedById: mockUser.id,
           originId: 1,
           destinationId: 2,
           noOfPassengers: 1,
           tripType: 'Embassy Visit',
           cost: 150,
-          createdAt: new Date('2019-07-14 08:00').toLocaleString(),
+          createdAt: new Date('2019-07-14 08:00'),
           rating: 3,
 
         },
@@ -121,14 +122,14 @@ describe('TripService', () => {
           reason: 'Testing the flow',
           departmentId: mockedDepartment2.id,
           tripStatus: 'Completed',
-          departureTime: new Date('2019-06-17 08:00').toLocaleString(),
+          departureTime: new Date('2019-06-17 08:00'),
           requestedById: mockUser.id,
           originId: 1,
           destinationId: 2,
           noOfPassengers: 1,
           tripType: 'Airport Transfer',
           cost: 50,
-          createdAt: new Date('2019-06-15 08:00').toLocaleString(),
+          createdAt: new Date('2019-06-15 08:00'),
           rating: 2,
         }
       ];
@@ -136,12 +137,10 @@ describe('TripService', () => {
       await createTripRequests(trips);
     });
 
-    afterAll(async (done) => {
+    afterAll(async () => {
       await models.TripRequest.destroy({ where: { id: [70, 72, 73] } });
       await models.sequelize.close();
-      done();
     });
-
 
     it('should Travel trips for only specified departments', async () => {
       const startDate = '2019-06-02 08:00';

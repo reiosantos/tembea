@@ -6,6 +6,7 @@ import {
 import UserService from '../../services/UserService';
 import bugsnagHelper from '../../helpers/bugsnagHelper';
 import aisService from '../../services/AISService';
+import Response from '../../helpers/responseHelper';
 
 class FellowController {
   static async getFellowRouteActivity(req, res) {
@@ -42,24 +43,23 @@ class FellowController {
     const size = req.query.size || 100;
     const page = req.query.page || 1;
     const { query: { onRoute } } = req;
+
     try {
       const data = await UserService.getPagedFellowsOnOrOffRoute(onRoute, size, page);
       if (data.data.length < 1) {
         const { data: fellows, pageMeta } = data;
-        return res.json({
-          success: true,
+        return Response.sendResponse(res, 200, true, 'Request was successful', {
           fellows,
-          pageMeta
+          pageMeta,
         });
       }
 
-      const fellowData = await Promise.all(data.data.map(
+      const fellowsData = await Promise.all(data.data.map(
         fellow => FellowController.mergeFellowData(fellow.id, fellow.email)
       ));
-      return res.json({
-        success: true,
-        fellows: fellowData,
-        pageMeta: data.pageMeta
+      return Response.sendResponse(res, 200, true, 'Request was successful', {
+        fellows: fellowsData,
+        pageMeta: data.pageMeta,
       });
     } catch (error) {
       bugsnagHelper.log(error);
