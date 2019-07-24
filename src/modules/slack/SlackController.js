@@ -64,7 +64,7 @@ class SlackController {
   static getRouteCommandMsg() {
     const attachment = SlackController.greetings();
     attachment.addFieldsOrActions('actions', [
-      new SlackButtonAction('Request New Route', 'Request New Route', 'request_new_route'),
+      // new SlackButtonAction('Request New Route', 'Request New Route', 'request_new_route'),
       new SlackButtonAction('See Available Routes',
         'See Available Routes', 'view_available_routes'),
       new SlackCancelButtonAction()
