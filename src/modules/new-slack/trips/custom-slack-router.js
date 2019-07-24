@@ -8,21 +8,12 @@ export default class CustomSlackRouter {
     return key;
   }
 
-  static getKey(payload) {
-    const actionId = payload.actions[0].action_id;
-    if (actionId.includes('userTripActions.getDepartment_')
-      || actionId === 'user_trip_select_pickup_location'
-      || actionId === 'user_trip_select_destination_location') {
-      return CustomSlackRouter
-        .createKey(payload.actions[0].block_id);
-    }
-    return CustomSlackRouter
-      .createKey(payload.actions[0].block_id, payload.actions[0].action_id);
-  }
-
   handle(payload, respond, next) {
-    const key = CustomSlackRouter.getKey(payload);
-    const handler = this.routes.get(key);
+    const actionId = payload.actions[0].action_id;
+    const blockId = payload.actions[0].block_id;
+    const actionKey = CustomSlackRouter.createKey(blockId, actionId);
+    const blockKey = CustomSlackRouter.createKey(blockId);
+    const handler = this.routes.get(actionKey) || this.routes.get(blockKey);
     if (handler) return handler(payload, respond);
     if (next) next();
   }

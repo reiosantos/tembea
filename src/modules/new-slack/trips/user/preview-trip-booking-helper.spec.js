@@ -1,7 +1,10 @@
-import NewSlackHelpers from '../../helpers/slack-helpers';
 import PreviewTripBooking from './preview-trip-booking-helper';
-import { GoogleMapsDistanceMatrix, Cache } from '../../../slack/RouteManagement/rootFile';
+import {
+  GoogleMapsDistanceMatrix, Cache
+} from '../../../slack/RouteManagement/rootFile';
 import { userTripDetails } from './user-data-mocks';
+import PreviewScheduleTrip
+  from '../../../slack/helpers/slackHelpers/previewScheduleTripAttachments';
 
 
 describe('PreviewTripBooking', () => {
@@ -17,43 +20,10 @@ describe('PreviewTripBooking', () => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
   });
-  describe('getRider', () => {
-    it('should get rider', async () => {
-      jest.spyOn(NewSlackHelpers, 'findUserByIdOrSlackId')
-        .mockResolvedValue({ name: 'rider', id: riderId });
-      const rider = await PreviewTripBooking.getRider(riderId);
-      expect(rider).toBeDefined();
-      expect(rider.id).toEqual(riderId);
-    });
-  
-    it('should not get rider', async () => {
-      jest.spyOn(NewSlackHelpers, 'findUserByIdOrSlackId').mockResolvedValue();
-      const rider = await PreviewTripBooking.getRider(riderId);
-      expect(rider.name).toEqual('');
-      expect(rider.id).toBeUndefined();
-    });
-
-    it('should return undefined', async () => {
-      const rider = await PreviewTripBooking.getRider();
-      expect(rider).toBeUndefined();
-    });
-  });
-
-  describe('formatName', () => {
-    it('should format a name', () => {
-      const formatedName = PreviewTripBooking.formatName('joe.gomez');
-      expect(formatedName).toEqual('Joe Gomez');
-    });
-
-    it('should return undefined when name is not a string', () => {
-      const formatedName = PreviewTripBooking.formatName(7);
-      expect(formatedName).toBeUndefined();
-    });
-  });
 
   describe('getRiderName', () => {
     it('should return the name of the rider', async () => {
-      jest.spyOn(PreviewTripBooking, 'getRider').mockResolvedValue({
+      jest.spyOn(PreviewScheduleTrip, 'getRider').mockResolvedValue({
         name: 'rider', id: riderId
       });
       const riderName = await PreviewTripBooking.getRiderName(riderId);
@@ -74,22 +44,6 @@ describe('PreviewTripBooking', () => {
     it('should not get a slack text for the distance when distance is unknown', () => {
       const preview = PreviewTripBooking.previewDistance('unknown', []);
       expect(preview).toEqual([]);
-    });
-  });
-
-  describe('getDistance', () => {
-    it('should get distance in Kms', async () => {
-      const [pickup, destination] = [{
-        longitude: -8.888999,
-        latitude: 6.900999
-      }, {
-        longitude: 9.455556,
-        latitude: -4.76666
-      }];
-      const distance = await PreviewTripBooking
-        .getDistance(pickup.latitude, pickup.longitude, destination.latitude, destination.longitude);
-      expect(distance).toBeDefined();
-      expect(distance).toEqual('10 Km');
     });
   });
 

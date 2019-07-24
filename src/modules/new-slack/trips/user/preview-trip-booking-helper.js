@@ -1,26 +1,13 @@
-import NewSlackHelpers from '../../helpers/slack-helpers';
 import { SlackText, TextTypes } from '../../models/slack-block-models';
-import { GoogleMapsDistanceMatrix, Cache } from '../../../slack/RouteManagement/rootFile';
+import {
+  Cache
+} from '../../../slack/RouteManagement/rootFile';
 import { getTripKey } from '../../../../helpers/slack/ScheduleTripInputHandlers';
 import { getSlackDateString } from '../../../slack/helpers/dateHelpers';
+import PreviewScheduleTrip
+  from '../../../slack/helpers/slackHelpers/previewScheduleTripAttachments';
 
 export default class PreviewTripBooking {
-  static async getRider(riderId) {
-    if (riderId) {
-      const rider = await NewSlackHelpers.findUserByIdOrSlackId(riderId);
-      if (rider) {
-        return rider;
-      }
-      return { name: '' };
-    }
-  }
-
-  static formatName(name) {
-    if (typeof name === 'string') {
-      return name.split('.').map(txt => `${txt[0].toUpperCase()}${txt.substr(1)}`).join(' ');
-    }
-  }
-
   static returnPreview({
     passengerName, passengers, userName,
     pickup, destination, dateTime, department, reason
@@ -38,18 +25,8 @@ export default class PreviewTripBooking {
   }
 
   static async getRiderName(rider) {
-    const { name } = await this.getRider(rider);
+    const { name } = await PreviewScheduleTrip.getRider(rider);
     return name;
-  }
-
-  static async getDistance(pickupLat, pickupLong, destLat, destLong) {
-    const origins = `${pickupLat}, ${pickupLong}`;
-    const destinations = `${destLat}, ${destLong}`;
-    const {
-      distanceInKm
-    } = await GoogleMapsDistanceMatrix
-      .calculateDistance(origins, destinations);
-    return distanceInKm;
   }
 
   static async saveDistance(tripData, distance) {
@@ -69,14 +46,13 @@ export default class PreviewTripBooking {
       pickup, destination, pickupLat, destinationLat, passengers, department, forMe,
       dateTime, reason, rider, name, pickupLong, destinationLong,
     } = tripDetails;
-    const userName = PreviewTripBooking.formatName(name);
+    const userName = PreviewScheduleTrip.formatName(name);
     const passengerName = forMe ? userName : (await PreviewTripBooking.getRiderName(rider));
-    const userDetails = {
+    const preview = PreviewTripBooking.returnPreview({
       passengerName, passengers, userName, pickup, destination, dateTime, department, reason
-    };
-    const preview = PreviewTripBooking.returnPreview(userDetails);
+    });
     if (pickupLat && destinationLat) {
-      const distance = await PreviewTripBooking
+      const distance = await PreviewScheduleTrip
         .getDistance(pickupLat, pickupLong, destinationLat, destinationLong);
       await PreviewTripBooking.saveDistance(tripDetails, distance);
       const previewData = PreviewTripBooking.previewDistance(distance, preview);

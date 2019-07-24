@@ -4,7 +4,8 @@ import UpdateSlackMessageHelper from '../../../../helpers/slack/updatePastMessag
 import { userTripDetails } from './user-data-mocks';
 import UserTripHelpers from './user-trip-helpers';
 import { getTripKey } from '../../../../helpers/slack/ScheduleTripInputHandlers';
-import PreviewTripBooking from './preview-trip-booking-helper';
+import PreviewScheduleTrip
+  from '../../../slack/helpers/slackHelpers/previewScheduleTripAttachments';
 
 describe('Interactions', () => {
   let payload;
@@ -74,7 +75,7 @@ describe('Interactions', () => {
     it('should send post destination message', async () => {
       jest.spyOn(Cache, 'fetch').mockResolvedValue(userTripDetails);
       jest.spyOn(UserTripHelpers, 'getLocationVerificationMsg').mockResolvedValue();
-      jest.spyOn(PreviewTripBooking, 'getDistance').mockResolvedValue('10 Km');
+      jest.spyOn(PreviewScheduleTrip, 'getDistance').mockResolvedValue('10 Km');
       await Interactions.sendPostDestinationMessage(newPayload);
       expect(Cache.fetch).toHaveBeenCalledWith(getTripKey(newPayload.user.id));
       expect(UpdateSlackMessageHelper.newUpdateMessage).toHaveBeenCalled();

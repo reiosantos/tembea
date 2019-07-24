@@ -4,9 +4,10 @@ import { getTripKey } from '../../../../helpers/slack/ScheduleTripInputHandlers'
 import { userTripDetails } from './user-data-mocks';
 import GoogleMapsReverseGeocode from '../../../../services/googleMaps/GoogleMapsReverseGeocode';
 import NewLocationHelpers, { getPredictionsKey } from '../../helpers/location-helpers';
-import PreviewTripBooking from './preview-trip-booking-helper';
 import tripService from '../../../../services/TripService';
 import NewSlackHelpers from '../../helpers/slack-helpers';
+import PreviewScheduleTrip
+  from '../../../slack/helpers/slackHelpers/previewScheduleTripAttachments';
 
 describe('UserTripHelpers', () => {
   const testUser = { id: 'U1479' };
@@ -19,7 +20,7 @@ describe('UserTripHelpers', () => {
         id: '32YUODSDK89889'
       }
     });
-    jest.spyOn(PreviewTripBooking, 'getDistance').mockResolvedValue('10 Km');
+    jest.spyOn(PreviewScheduleTrip, 'getDistance').mockResolvedValue('10 Km');
   });
 
   afterEach(() => {

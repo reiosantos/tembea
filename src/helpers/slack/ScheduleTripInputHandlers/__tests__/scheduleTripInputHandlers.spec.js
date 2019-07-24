@@ -327,34 +327,6 @@ describe('ScheduleTripInputHandlers Tests', () => {
       expect(InteractivePrompts.sendScheduleTripResponse).toHaveBeenCalled();
     });
   });
-
-  describe('Response to "confirmation" dialog', () => {
-    const destinationPayload = createDestinationPayload('dummyData');
-    const tripDetails = createTripData();
-
-    it('should schedule a new Trip', async () => {
-      Cache.fetch = jest.fn(() => tripDetails);
-      await ScheduleTripInputHandlers.confirmation(destinationPayload, responder, tripDetails);
-      expect(ScheduleTripController.createTripRequest)
-        .toHaveBeenCalled();
-    });
-
-    it('should send a fail response when an error occurs', async () => {
-      jest.spyOn(Cache, 'fetch').mockResolvedValue({
-        id: '1',
-        department: {
-          value: 'dummy'
-        },
-        tripDetails: {}
-      });
-      ScheduleTripController.createTripRequest.mockImplementation(() => {
-        throw new Error();
-      });
-      ScheduleTripController.validateTripDetailsForm = jest.fn(() => []);
-      await ScheduleTripInputHandlers.confirmation(destinationPayload, responder);
-      expect(responder).toHaveBeenCalledTimes(1);
-    });
-  });
   describe('Response to "suggestions" dialog', () => {
     it('should return "schedule trip" route', async () => {
       await ScheduleTripInputHandlers.suggestions(payload, responder, 'name', 'schedule_trip');

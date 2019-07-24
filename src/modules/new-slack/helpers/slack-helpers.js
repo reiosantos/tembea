@@ -10,11 +10,10 @@ import {
 } from '../../slack/SlackModels/SlackDialogModels';
 import { toLabelValuePairs, dateHint } from '../../../helpers/slack/createTripDetailsForm';
 import { pickupLocations } from '../../../utils/data';
-import UserService from '../../../services/UserService';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
 import Cache from '../../../cache';
-import TeamDetailsService from '../../../services/TeamDetailsService';
 import userTripActions from '../trips/user/actions';
+
 
 export const sectionDivider = new Block(BlockTypes.divider);
 export const defaultKeyValuePairs = { text: 'text', value: 'value' };
@@ -104,18 +103,6 @@ export default class NewSlackHelpers {
     ];
   }
 
-  static async findUserByIdOrSlackId(userId) {
-    let user;
-    const normalizedId = Number.parseInt(userId, 10);
-    if (Number.isInteger(normalizedId)) {
-      user = await UserService.getUserById(normalizedId);
-    } else {
-      user = await UserService.getUserBySlackId(userId);
-    }
-    const result = user ? user.dataValues : undefined;
-    return result;
-  }
-
   static async getUserInfo(slackId, slackBotOauthToken) {
     const cacheKey = `USER_SLACK_INFO_${slackId}`;
     const result = await Cache.fetch(cacheKey);
@@ -125,36 +112,6 @@ export default class NewSlackHelpers {
     });
     await Cache.saveObject(cacheKey, user);
 
-    return user;
-  }
-
-  static async findOrCreateUserBySlackId(slackId, teamId) {
-    const OneUser = await UserService.getUserBySlackId(slackId);
-    if (OneUser) return OneUser;
-    let userInfo = await NewSlackHelpers.getUserInfoFromSlack(slackId, teamId);
-    const user = userInfo;
-    user.profile.real_name = userInfo.real_name;
-    const newUser = await UserService.createNewUser(userInfo = { user });
-    return newUser;
-  }
-
-  static async getUserInfoFromSlack(slackId, teamId) {
-    const key = `${teamId}_${slackId}`;
-    const result = await Cache.fetch(key);
-    if (result && result.slackInfo) {
-      return result.slackInfo;
-    }
-    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-    const userInfo = await NewSlackHelpers
-      .fetchUserInformationFromSlack(slackId, slackBotOauthToken);
-    await Cache.save(key, 'slackInfo', userInfo);
-    return userInfo;
-  }
-
-  static async fetchUserInformationFromSlack(slackId, token) {
-    const { user } = await WebClientSingleton.getWebClient(token).users.info({
-      user: slackId
-    });
     return user;
   }
 }

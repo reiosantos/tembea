@@ -34,6 +34,10 @@ export default class Interactions {
 
   static async sendPostDestinationMessage(payload) {
     const message = await UserTripHelpers.getPostDestinationMessage(payload);
+    await Interactions.sendMessage(payload, message);
+  }
+
+  static async sendMessage(payload, message) {
     const { origin } = JSON.parse(payload.state);
     await UpdateSlackMessageHelper.newUpdateMessage(origin, message);
   }

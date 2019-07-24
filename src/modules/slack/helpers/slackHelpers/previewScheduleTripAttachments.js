@@ -21,10 +21,11 @@ export default class PreviewScheduleTrip {
     }
   }
 
-  static returnPreview({
-    passengerName, passengers, userName,
-    pickup, destination, dateTime, department, reason
-  }) {
+  static returnPreview(userDetails) {
+    const {
+      passengerName, passengers, userName,
+      pickup, destination, dateTime, department, reason
+    } = userDetails;
     return [
       new SlackAttachmentField('Passenger\'s Name', `${passengerName}`, true),
       new SlackAttachmentField('Number of Passengers', passengers, true),

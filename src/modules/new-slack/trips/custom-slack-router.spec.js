@@ -45,19 +45,6 @@ describe('CustomSlackRouter', () => {
     expect(nextMock).toHaveBeenCalled();
   });
 
-  it('should get the key when the action id is not necessary for the route', () => {
-    const newPayload = {
-      ...payload,
-      actions: [{
-        action_id: userTripActions.selectDestinationLocation,
-        block_id: userTripBlocks.confirmLocation
-      }]
-    };
-    const key = CustomSlackRouter.getKey(newPayload);
-    expect(key).toBeDefined();
-    expect(key).toEqual('__user_trip_confirm_location__action');
-  });
-
   it('should createKey when actionId and blockId are not provided', () => {
     const key = CustomSlackRouter.createKey();
     expect(key).toBeDefined();
