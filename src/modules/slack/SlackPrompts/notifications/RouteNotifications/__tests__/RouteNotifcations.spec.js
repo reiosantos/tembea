@@ -4,6 +4,8 @@ import SlackNotifications from '../../../Notifications';
 import RouteService from '../../../../../../services/RouteService';
 import UserService from '../../../../../../services/UserService';
 import BugsnagHelper from '../../../../../../helpers/bugsnagHelper';
+import { routeRequestData } from '../../OperationsRouteRequest/__mocks__/OpsRouteRequest.mock';
+import ProviderAttachmentHelper from '../../ProviderNotifications/helper';
 
 describe('Route Notifications', () => {
   beforeEach(() => {
@@ -127,10 +129,36 @@ describe('Route Notifications', () => {
       expect(spy).toHaveBeenCalledTimes(1);
     });
   });
-});
-
-describe('Route notifications helper', () => {
-  it('Should get manager approve attachment', () => {
-    
+  describe('sendRouteApproveMessageToManager', () => {
+    it('Should get manager approve attachment', async () => {
+      const routeRequest = { manager: { slackId: 'UCCUXP' } };
+      jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('xxid');
+      jest.spyOn(ProviderAttachmentHelper, 'getManagerApproveAttachment').mockResolvedValue({});
+      jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue();
+      await RouteNotifications.sendRouteApproveMessageToManager(routeRequest, 'xoop', routeRequestData);
+      expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
+    });
+    it('should catch all errors if invalid or no parameters are provided', async () => {
+      jest.spyOn(BugsnagHelper, 'log');
+      await RouteNotifications.sendRouteApproveMessageToManager();
+      expect(BugsnagHelper.log).toHaveBeenCalled();
+    });
+  });
+  describe('sendRouteApproveMessageToFellow', () => {
+    it('Should get fellow approve attachment', async () => {
+      const routeRequest = { engagement: { fellow: { slackId: 'UCCUXP' } } };
+      jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('xxid');
+      jest.spyOn(ProviderAttachmentHelper, 'getFellowApproveAttachment').mockResolvedValue({});
+      jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue();
+      await RouteNotifications.sendRouteApproveMessageToFellow(routeRequest, 'xoop', routeRequestData);
+      expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
+      expect(ProviderAttachmentHelper.getFellowApproveAttachment).toHaveBeenCalled();
+      expect(SlackNotifications.sendNotification).toHaveBeenCalled();
+    });
+    it('should catch all errors if invalid or no parameters are provided', async () => {
+      jest.spyOn(BugsnagHelper, 'log');
+      await RouteNotifications.sendRouteApproveMessageToFellow();
+      expect(BugsnagHelper.log).toHaveBeenCalled();
+    });
   });
 });

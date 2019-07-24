@@ -38,10 +38,6 @@ const assertRouteInfo = (body) => {
   expect(body)
     .toHaveProperty('inUse');
   expect(body)
-    .toHaveProperty('name');
-  expect(body)
-    .toHaveProperty('destination');
-  expect(body)
     .toHaveProperty('id');
 };
 
@@ -77,8 +73,6 @@ describe('RoutesController', () => {
       };
     });
     it('should delete a routeBatch', async () => {
-      // RouteService.getRouteBatchByPk = jest.fn(() => mockRouteBatchData);
-      // RouteService.deleteRouteBatch = jest.fn(() => 1);
       jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue(mockRouteBatchData);
       jest.spyOn(RouteService, 'deleteRouteBatch').mockResolvedValue(1);
       SlackEvents.raise = jest.fn(() => { });
@@ -93,8 +87,6 @@ describe('RoutesController', () => {
 
     it('should return a not found error', async () => {
       const spy = jest.spyOn(HttpError, 'throwErrorIfNull');
-      // RouteService.getRouteBatchByPk = jest.fn(() => false);
-      // RouteService.deleteRouteBatch = jest.fn(() => 0);
       jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue(false);
       jest.spyOn(RouteService, 'deleteRouteBatch').mockResolvedValue(0);
 
@@ -120,7 +112,6 @@ describe('RoutesController', () => {
       };
     });
     it('should return all route requests', async () => {
-      // RouteRequestService.getAllConfirmedRouteRequests = jest.fn(() => mockRouteRequestData);
       jest.spyOn(RouteRequestService, 'getAllConfirmedRouteRequests')
         .mockResolvedValue(mockRouteRequestData);
 
@@ -132,9 +123,6 @@ describe('RoutesController', () => {
     });
 
     it('should throw an Error', async () => {
-      // RouteRequestService.getAllConfirmedRouteRequests = jest.fn(() => {
-      //   throw Error('This is an error');
-      // });
       jest.spyOn(RouteRequestService, 'getAllConfirmedRouteRequests')
         .mockImplementation(() => {
           throw Error('This is an error');
@@ -201,8 +189,8 @@ describe('RoutesController', () => {
         });
     });
   });
-  describe.only('getRoutes', () => {
-    it.only('should successfully fetch routes', (done) => {
+  describe('getRoutes', () => {
+    it('should successfully fetch routes', (done) => {
       request(app)
         .get('/api/v1/routes')
         .set('Content-Type', 'application/json')
@@ -240,7 +228,6 @@ describe('RoutesController', () => {
   });
   describe('createRoute', () => {
     const data = {
-      vehicle: 'APP 519 DT',
       routeName: 'Yaba',
       destination: {
         address: 'Some address in Yaba',
@@ -251,12 +238,45 @@ describe('RoutesController', () => {
       },
       takeOffTime: '12:12',
       capacity: 4,
-      teamUrl: 'andela-tembea.slack.com'
+      teamUrl: 'andela-tembea.slack.com',
+      provider: {
+        id: 1,
+        name: 'Provider Test Name',
+        providerUserId: 1,
+        isDirectMessage: true,
+        user: {
+          name: 'Allan',
+          email: 'provider_email@email.com',
+          phoneNo: '08001111111',
+          slackId: 'upng'
+        }
+      }
     };
 
+    it('should successfully duplicate a route', (done) => {
+      const mockRoute = { name: 'bay area' };
+      const message = 'Successfully duplicated bay area route';
+      jest.spyOn(RouteHelper, 'duplicateRouteBatch').mockResolvedValue(mockRoute);
+
+      request(app)
+        .post('/api/v1/routes?action=duplicate&batchId=1')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', validToken)
+        .send(data)
+        .expect(200, (err, res) => {
+          const { body } = res;
+          expect(body).toHaveProperty('message');
+          expect(body).toHaveProperty('success');
+          expect(body).toEqual({ message, success: true, data: mockRoute });
+          done();
+        });
+    });
+
     it('should successfully create a route', (done) => {
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({ botToken: 'xoop' });
       jest.spyOn(AddressService, 'createNewAddress')
         .mockResolvedValue({ address: 'Epic Tower' });
+      const eventsMock = jest.spyOn(SlackEvents, 'raise').mockImplementation();
       request(app)
         .post('/api/v1/routes')
         .set('Content-Type', 'application/json')
@@ -265,11 +285,10 @@ describe('RoutesController', () => {
         .expect(200, (err, res) => {
           const { body: { data: route } } = res;
           assertRouteInfo(route);
-          expect(route.name).toEqual('Yaba');
           expect(route.status).toEqual('Inactive');
           expect(route.takeOff).toEqual('12:12');
           expect(route.capacity).toEqual(4);
-          expect(route.providerId).toEqual('APP 519 DT');
+          expect(eventsMock).toHaveBeenCalled();
           done();
         });
     });

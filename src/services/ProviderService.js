@@ -125,6 +125,7 @@ class ProviderService extends BaseService {
 
   static async getViableProviders() {
     const providers = await Provider.findAll({
+      attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
       include: [{
         model: Cab,
         as: 'vehicles'

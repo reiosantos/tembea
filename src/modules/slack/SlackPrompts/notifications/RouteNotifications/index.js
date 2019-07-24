@@ -114,7 +114,7 @@ class RouteNotifications {
       const message = await ProviderAttachmentHelper.getManagerApproveAttachment(
         routeRequest, channelID, true, requestData
       );
-      return await SlackNotifications.sendNotification(message, slackBotOauthToken);
+      return SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (error) {
       BugsnagHelper.log(error);
     }
@@ -140,7 +140,7 @@ class RouteNotifications {
       const message = await ProviderAttachmentHelper.getFellowApproveAttachment(
         routeRequest, channelID, requestData
       );
-      return await SlackNotifications.sendNotification(message, slackBotOauthToken);
+      return SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (error) {
       BugsnagHelper.log(error);
     }

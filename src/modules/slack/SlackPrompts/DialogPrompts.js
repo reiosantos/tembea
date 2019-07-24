@@ -105,7 +105,7 @@ class DialogPrompts {
       new SlackDialogSelectElementWithOptions('Select A Vehicle',
         'cab', [...cabData])
     ]);
-    await DialogPrompts.sendDialog(dialog, payload);
+    return DialogPrompts.sendDialog(dialog, payload);
   }
 
   /**

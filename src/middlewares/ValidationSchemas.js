@@ -56,6 +56,22 @@ export const newUserSchema = Joi.object().keys({
   email: requiredEmail
 });
 
+const ViableProviderSchema = Joi.object().keys({
+  id: Joi.number().required(),
+  name: Joi.string().trim().required(),
+  providerUserId: Joi.number().required(),
+  isDirectMessage: Joi.boolean().required(),
+  channelId: Joi.string().allow(null).optional(),
+  vehicles: Joi.array(),
+  drivers: Joi.array(),
+  user: Joi.object().keys({
+    name: Joi.string().trim(),
+    phoneNo: Joi.string().trim().allow(null).optional(),
+    email: Joi.string().trim().email(),
+    slackId: Joi.string().trim()
+  })
+});
+
 export const newRouteSchema = Joi.object().keys({
   routeName: Joi.string().trim().required().replace(/[^a-z0-9\s]/gi, ''),
   destination: Joi.object().keys({
@@ -67,7 +83,9 @@ export const newRouteSchema = Joi.object().keys({
         .required()
     }).required()
   }).required(),
-  vehicle: Joi.string().trim().required().replace(/[^a-z0-9\s]/gi, ''),
+  teamUrl: Joi.string().trim().required().regex(teamUrlRegex),
+  destinationInputField: Joi.string().trim(),
+  provider: ViableProviderSchema.required(),
   takeOffTime: Joi.string().trim().required().regex(timeRegex),
   capacity: Joi.number().required().min(1)
 });
@@ -94,17 +112,7 @@ export const approveRouteRequestSchema = Joi.object().keys({
   comment: Joi.string().trim().required().replace(/[^a-z0-9\s]/gi, ''),
   routeName: Joi.string().trim().required().replace(/[^a-z0-9\s]/gi, ''),
   takeOff: Joi.string().trim().regex(timeRegex).required(),
-  cabRegNumber: Joi.string().trim().replace(/[^a-z0-9\s]/gi, '').required(),
-  provider: Joi.object().keys({
-    id: Joi.number().required(),
-    name: Joi.string().trim().required(),
-    providerUserId: Joi.number().required(),
-    user: Joi.object().keys({
-      name: Joi.string().trim().regex(nameRegex),
-      phoneNo: Joi.string().trim().regex(numberRegex),
-      email: Joi.string().trim().email()
-    })
-  }).required()
+  provider: ViableProviderSchema.required()
 });
 
 export const deleteRouteSchema = Joi.object().keys({

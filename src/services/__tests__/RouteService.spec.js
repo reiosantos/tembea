@@ -278,34 +278,6 @@ describe('RouteService', () => {
     it('should ', async () => {
       const result = await RouteService.getRoutes();
 
-      // const expectedResult = {
-      //   pageNo: 1,
-      //   itemsPerPage: MAX_INT,
-      //   routes: [
-      //     {
-      //       ...batchDetails,
-      //       ...cabDetails,
-      //       riders,
-      //       destination: route.destination.address,
-      //       name: route.name,
-      //       inUse: riders.length,
-      //       id: undefined
-      //     },
-      //     {
-      //       batch: undefined,
-      //       capacity: undefined,
-      //       comments: undefined,
-      //       id: undefined,
-      //       inUse: 1,
-      //       imageUrl: undefined,
-      //       status: undefined,
-      //       takeOff: undefined,
-      //       riders: [{}]
-      //     }
-      //   ],
-      //   totalItems: 10,
-      //   totalPages: 1
-      // };
       expect(result).toHaveProperty('pageNo');
       expect(result.pageNo).toEqual(1);
       expect(result).toHaveProperty('itemsPerPage');

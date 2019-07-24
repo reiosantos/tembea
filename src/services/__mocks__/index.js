@@ -7,7 +7,8 @@ const providerUserDetails = {
   id: 1,
   name: 'Andela Kenya',
   providerUserId: 15,
-  user: {}
+  user: {},
+  isDirectMessage: true,
 };
 const fellow = {
   id: 1,

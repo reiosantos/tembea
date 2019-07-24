@@ -119,10 +119,12 @@ const providerMock = {
   id: 1,
   name: 'Provider Test Name',
   providerUserId: 1,
+  isDirectMessage: true,
   user: {
     id: 1,
     email: 'provider_email@email.com',
-    phoneNo: '08001111111'
+    phoneNo: '08001111111',
+    slackId: 'upng'
   }
 };
 const mockedTravelTrips = {

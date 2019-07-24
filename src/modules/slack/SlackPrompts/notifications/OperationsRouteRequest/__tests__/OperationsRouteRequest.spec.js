@@ -48,7 +48,6 @@ describe('OperationsNotifications', () => {
     });
     describe('sendOpsDeclineMessageToFellow', () => {
       it('should send ops decline notification to fellow', async () => {
-        // should change to ops comment
         requestData = {
           id: 12,
           status: 'Declined',

@@ -160,7 +160,6 @@ class GeneralValidator {
     const validate = JoiHelper.validateSubmission(data, schema);
     if (validate.errorMessage) {
       const { errorMessage, ...rest } = validate;
-      // return Response.sendResponse(res, 400, false, errorMessage, { ...rest });
       return HttpError.sendErrorResponse({
         statusCode: 400,
         message: errorMessage,

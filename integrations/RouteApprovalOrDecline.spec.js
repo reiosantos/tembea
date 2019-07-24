@@ -15,7 +15,6 @@ describe('Route Request Approval/Decline', () => {
   let validToken;
   let reqHeaders;
 
-  let mockRouteRequest;
   let routeRequestPendingId;
 
   beforeAll(async () => {
@@ -43,7 +42,6 @@ describe('Route Request Approval/Decline', () => {
 
     let routeRequestData = generateData();
     routeRequestData = generateData();
-    mockRouteRequest = await createRouteRequest(routeRequestData);
     routeRequestData = generateData({ status: 'Pending' });
     const mockRouteRequestPending = await createRouteRequest(routeRequestData);
     routeRequestPendingId = mockRouteRequestPending.id;
@@ -114,7 +112,6 @@ describe('Route Request Approval/Decline', () => {
             message: 'Validation error occurred, see error object for details',
             error: {
               takeOff: 'please provide a valid takeOff',
-              cabRegNumber: 'Please provide cabRegNumber'
             }
           },
           done

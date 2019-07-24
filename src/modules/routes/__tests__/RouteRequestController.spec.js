@@ -4,6 +4,7 @@ import UserService from '../../../services/UserService';
 import Response from '../../../helpers/responseHelper';
 import HttpError from '../../../helpers/errorHandler';
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
+import { SlackEvents } from '../../slack/events/slackEvents';
 
 describe('RoutesController', () => {
   const declineReq = {
@@ -102,6 +103,7 @@ describe('RoutesController', () => {
     });
 
     it('should change the status of the route request to approved', async () => {
+      const eventsMock = jest.spyOn(SlackEvents, 'raise').mockImplementation();
       jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
         dataValues: {
           status: 'Confirmed'
@@ -119,6 +121,7 @@ describe('RoutesController', () => {
         status: 'Approved',
       });
       expect(res.status).toHaveBeenCalledWith(201);
+      expect(eventsMock).toHaveBeenCalled();
     });
 
     it('should throw an error if route has already been approved or declined', async () => {

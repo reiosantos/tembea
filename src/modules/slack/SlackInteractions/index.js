@@ -267,7 +267,7 @@ class SlackInteractions {
   }
 
   static async handleProviderApproval(payload) {
-    DialogPrompts.sendSelectCabDialog(payload);
+    return DialogPrompts.sendSelectCabDialog(payload);
   }
 }
 

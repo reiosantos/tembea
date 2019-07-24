@@ -24,6 +24,20 @@ let reqMock = {
   }
 };
 
+const providerMock = {
+  id: 1,
+  name: 'Provider Test Name',
+  providerUserId: 1,
+  isDirectMessage: true,
+  user: {
+    name: 'Allan',
+    email: 'provider_email@email.com',
+    phoneNo: '08001111111',
+    slackId: 'upng'
+  }
+};
+
+
 describe('Route Validator', () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -66,7 +80,7 @@ describe('Route Validator', () => {
         body: {
           routeName: 'Yaba',
           capacity: 3,
-          vehicle: 'HSJ 3893',
+          teamUrl: 'adaeze.slack.com',
           takeOffTime: '12:00',
           destination: {
             address: 'Yaba Left, EPIC Tower',
@@ -74,7 +88,8 @@ describe('Route Validator', () => {
               lat: '3.40949',
               lng: '-0.99393'
             }
-          }
+          },
+          provider: providerMock
         }
       };
       jest.spyOn(Response, 'sendResponse').mockImplementation();
@@ -149,15 +164,16 @@ describe('Route Validator', () => {
         body: {
           routeName: '',
           capacity: 'jdjdk',
-          vehicle: 'HSJ 3893',
           takeOffTime: '12:00',
+          teamUrl: 1,
           destination: {
             address: 'Yaba Left, EPIC Tower',
             coordinates: {
               lat: '500',
               lng: '-0.99393'
             }
-          }
+          },
+          provider: providerMock
         },
         query: {
           action: ''
@@ -168,7 +184,8 @@ describe('Route Validator', () => {
         capacity: 'capacity should be a number',
         errorMessage: 'Validation error occurred, see error object for details',
         lat: 'lat should not be greater than 86',
-        routeName: '\"routeName\" is not allowed to be empty'
+        routeName: '\"routeName\" is not allowed to be empty',
+        teamUrl: '\"teamUrl\" must be a string',
       };
       jest.spyOn(Response, 'sendResponse').mockImplementation();
 

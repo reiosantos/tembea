@@ -51,9 +51,8 @@ class OperationsHelper {
     return [updatedRequest, requestData, opsData];
   }
 
-  static async getBotToken(requestData) {
-    const { teamUrl } = requestData;
-    const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
+  static async getBotToken(url) {
+    const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(url);
     return botToken;
   }
 

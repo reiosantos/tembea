@@ -1,5 +1,4 @@
 import request from 'supertest';
-import '@slack/client';
 import app from '../../../app';
 import Utils from '../../../utils';
 import models from '../../../database/models';
@@ -37,7 +36,6 @@ describe('/User update', () => {
         newName: 'New name',
         newPhoneNo: '2349023746389',
         newEmail: 'me.you@test.com',
-        teamUrl: 'xaappy'
       })
       .set({
         Accept: 'application/json',

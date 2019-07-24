@@ -51,7 +51,8 @@ export default class OperationsNotifications {
 
   static async completeOperationsRouteApproval(routeRequest, requestData, opsData) {
     const { requesterId } = routeRequest;
-    const botToken = opsData ? opsData.botToken : await OperationsHelper.getBotToken(requestData);
+    const botToken = opsData
+      ? opsData.botToken : await OperationsHelper.getBotToken(requestData.teamUrl);
     const routeCapacity = 4;
     const submission = { ...requestData, routeCapacity };
     const routeBatch = await ProvidersController.saveRoute(routeRequest, submission, requesterId);

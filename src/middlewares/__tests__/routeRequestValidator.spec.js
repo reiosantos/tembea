@@ -57,11 +57,11 @@ describe('RouteRequestValidator', () => {
           teamUrl: 'stuff.slack.com',
           routeName: 'sample route',
           takeOff: '10:00',
-          cabRegNumber: 'ABC 123',
           provider: {
             id: 1,
             name: 'Andela Kenya',
             providerUserId: 15,
+            isDirectMessage: true,
             user: {}
           }
         }

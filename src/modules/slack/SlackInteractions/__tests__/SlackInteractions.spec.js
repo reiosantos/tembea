@@ -324,7 +324,6 @@ describe('SlackInteractions', () => {
     it('should test reschedule switch interaction', async () => {
       RescheduleTripController.runValidations = jest.fn(() => (expectedErrorResponse));
       RescheduleTripController.rescheduleTrip = jest.fn(() => response);
-      // TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => { });
       const payload = {
         state: 'reschedule boy',
         submission: {
@@ -342,7 +341,6 @@ describe('SlackInteractions', () => {
     it('should test reschedule switch interaction', async () => {
       RescheduleTripController.runValidations = jest.fn(() => ([]));
       RescheduleTripController.rescheduleTrip = jest.fn(() => response);
-      // TeamDetailsService.getTeamDetailsBotOauthToken = jest.fn(() => { });
       const payload = {
         state: 'reschedule boy',
         submission: {
@@ -564,10 +562,6 @@ describe('SlackInteractions', () => {
       const getTeamDetailsBotOauthToken = jest.spyOn(
         TeamDetailsService, 'getTeamDetailsBotOauthToken'
       ).mockResolvedValue('xyz');
-      // const getTeamDetailsBotOauthToken = jest.spyOn(TeamDetailsService,
-      //   'getTeamDetailsBotOauthToken')
-      //   .mockImplementationOnce(() => Promise.resolve());
-
       await SlackInteractions.handleManagerApprovalDetails(payload, respond);
       expect(SlackEvents.raise).toHaveBeenCalled();
       expect(tripService.getById).toHaveBeenCalled();
@@ -832,14 +826,33 @@ describe('SlackInteractions', () => {
 
   describe('handleSelectCabActions', () => {
     it('Should call user cancellation function if trip has been canceled', async () => {
-      // jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('xyz');
       jest.spyOn(ProviderService, 'getProviderBySlackId').mockResolvedValue({ id: 1 });
       jest.spyOn(tripService, 'getById').mockResolvedValue({ providerId: '16' });
 
       const payload = { user: { id: 1 }, actions: [{ value: 1 }], channel: { id: 1 } };
       const respond = jest.fn();
-      SlackInteractions.handleSelectCabActions(payload, respond);
+      await SlackInteractions.handleSelectCabActions(payload, respond);
       expect(ProviderService.getProviderBySlackId).toHaveBeenCalled();
+    });
+    it('Should return select cab dialog', async () => {
+      jest.spyOn(ProviderService, 'getProviderBySlackId').mockResolvedValue({ id: '16' });
+      jest.spyOn(tripService, 'getById').mockResolvedValue({ providerId: '16' });
+      jest.spyOn(DialogPrompts, 'sendSelectCabDialog').mockImplementation();
+
+      const payload = { user: { id: 1 }, actions: [{ value: 1 }], channel: { id: 1 } };
+      const respond = jest.fn();
+      await SlackInteractions.handleSelectCabActions(payload, respond);
+      expect(ProviderService.getProviderBySlackId).toHaveBeenCalled();
+      expect(DialogPrompts.sendSelectCabDialog).toBeCalled();
+    });
+  });
+  describe('handleProviderApproval', () => {
+    it('Should send select cab dialogue', async () => {
+      const payload = { user: { id: 1 }, actions: [{ value: 1 }], channel: { id: 1 } };
+      jest.spyOn(DialogPrompts, 'sendSelectCabDialog').mockResolvedValue();
+
+      await SlackInteractions.handleProviderApproval(payload);
+      expect(DialogPrompts.sendSelectCabDialog).toBeCalled();
     });
   });
 });

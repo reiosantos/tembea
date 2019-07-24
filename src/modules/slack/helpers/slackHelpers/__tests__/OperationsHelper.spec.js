@@ -1,11 +1,15 @@
 import RouteRequestService from '../../../../../services/RouteRequestService';
-import { mockRouteRequestData } from '../../../../../services/__mocks__';
+import { mockRouteRequestData, routeData } from '../../../../../services/__mocks__';
 import OperationsNotifications from '../../../SlackPrompts/notifications/OperationsRouteRequest';
 import OperationsHelper from '../OperationsHelper';
 import { cabService } from '../../../../../services/CabService';
 import cache from '../../../../../cache';
 import { bugsnagHelper } from '../../../RouteManagement/rootFile';
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
+import { providerService } from '../../../../../services/ProviderService';
+import UserService from '../../../../../services/UserService';
+import { providerMock } from '../../../../trips/__tests__/__mocks__';
+import BugsnagHelper from '../../../../../helpers/bugsnagHelper';
 
 describe('operations approve request', () => {
   let payload;
@@ -84,8 +88,40 @@ describe('operations approve request', () => {
 
   it('should get botToken', async () => {
     const requestData = { teamUrl: 'adaeze.slackcom' };
-    jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({ botToken: 'xoop' });
-    const slackbotToken = await OperationsHelper.getBotToken(requestData);
+    jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({
+      botToken: 'xoop'
+    });
+    const slackbotToken = await OperationsHelper.getBotToken(requestData.teamUrl);
     expect(slackbotToken).toEqual('xoop');
+  });
+});
+
+describe('sendOpsData', () => {
+  it('Should send operations data', async () => {
+    const data = {
+      team: { id: 'UUXXID' },
+      user: { id: 'CUXJC' },
+      submission: { Provider: '1,UberKenya,15', routeName: 'bayArea' },
+      state: '{"approve": {"channelId":"UJCSK", "timeStamp":"12345678987","routeRequestId":"1", "confirmationComment":"all good"}}'
+    };
+    jest.spyOn(providerService, 'getProviderById').mockResolvedValue(providerMock);
+    jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({ id: 1 });
+    jest.spyOn(RouteRequestService, 'getRouteRequestAndToken').mockResolvedValue({
+      slackBotOauthToken: 'xoop', routeRequest: routeData
+    });
+    jest.spyOn(RouteRequestService, 'updateRouteRequest').mockResolvedValue(routeData);
+    jest.spyOn(OperationsNotifications, 'completeOperationsRouteApproval').mockResolvedValue();
+    await OperationsHelper.sendOpsData(data);
+    expect(RouteRequestService.getRouteRequestAndToken).toHaveBeenCalledWith(
+      '1', 'UUXXID'
+    );
+    expect(providerService.getProviderById).toHaveBeenCalledWith('1');
+    expect(UserService.getUserBySlackId).toHaveBeenCalledWith('CUXJC');
+    expect(OperationsNotifications.completeOperationsRouteApproval).toHaveBeenCalled();
+  });
+  it('should catch all errors if invalid or no parameters are provided', async () => {
+    jest.spyOn(BugsnagHelper, 'log');
+    await OperationsHelper.sendOpsData();
+    expect(BugsnagHelper.log).toHaveBeenCalled();
   });
 });

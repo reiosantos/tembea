@@ -3,6 +3,7 @@ import models from '../database/models';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import RemoveDataValues from '../helpers/removeDataValues';
 import BatchUseRecordHelper from '../helpers/BatchUseRecordHelper';
+import bugsnagHelper from '../helpers/bugsnagHelper';
 
 const {
   BatchUseRecord, RouteUseRecord, RouteBatch, Route, sequelize
@@ -11,10 +12,10 @@ const {
 class BatchUseRecordService {
   static async getRoutesUsage(from, to) {
     let query = `SELECT BUR.id AS "BatchUseRecordID", BUR."userAttendStatus", RUR.id AS "RouteRecordID", RB.id As "RouteBatchID",
-     
+
     RB.batch As "RouteBatchName", R.name As "Route", R.id As "RouteID", RUR."batchUseDate"
 
-    FROM "BatchUseRecords" AS BUR 
+    FROM "BatchUseRecords" AS BUR
 
     INNER JOIN "RouteUseRecords" AS RUR ON BUR."batchRecordId" = RUR.id
 
@@ -38,22 +39,25 @@ class BatchUseRecordService {
   }
 
   static async createBatchUseRecord(batchRecord, users) {
-    users.map(async (user) => {
-      const { data: existingUser } = await BatchUseRecordService.getBatchUseRecord(
-        undefined,
-        { userId: user.id, batchRecordId: batchRecord.id }
-      );
-      if (existingUser.length > 0) {
-        return;
-      }
-      const result = await BatchUseRecord.create({
-        userId: user.id,
-        batchRecordId: batchRecord.id,
-      });
-      return RemoveDataValues.removeDataValues(result);
-    });
-
-    return true;
+    try {
+      await Promise.all(users.map(async (user) => {
+        const { data: existingUser } = await BatchUseRecordService.getBatchUseRecord(
+          undefined,
+          { userId: user.id, batchRecordId: batchRecord.id }
+        );
+        if (existingUser.length > 0) {
+          return;
+        }
+        const result = await BatchUseRecord.create({
+          userId: user.id,
+          batchRecordId: batchRecord.id,
+        });
+        return RemoveDataValues.removeDataValues(result);
+      }));
+      return true;
+    } catch (e) {
+      bugsnagHelper.log(e);
+    }
   }
 
   static async getBatchUseRecord(pageable = BatchUseRecordService.defaultPageable, where = null) {
@@ -79,8 +83,8 @@ class BatchUseRecordService {
           }]
         }]
     };
-    const pagenatedData = await paginatedRoutes.getPageItems(page);
-    const data = BatchUseRecordHelper.serializePaginatedData(pagenatedData);
+    const paginatedData = await paginatedRoutes.getPageItems(page);
+    const data = BatchUseRecordHelper.serializePaginatedData(paginatedData);
     return data;
   }
 

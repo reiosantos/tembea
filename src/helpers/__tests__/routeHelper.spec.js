@@ -29,7 +29,7 @@ describe('Route Helpers', () => {
         routeName: 'Yaba',
         destination: ''
       });
-      expect(fields).toEqual(', capacity, takeOffTime');
+      expect(fields).toEqual(', capacity, takeOffTime, provider');
     });
   });
 
