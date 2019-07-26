@@ -106,7 +106,7 @@ class ScheduleTripController {
         reason,
         departmentId,
         tripStatus: 'Pending',
-        departureTime: dateTime,
+        departureTime: dateTime.toString(),
         requestedById: requester.id,
         originId,
         destinationId,

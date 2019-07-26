@@ -165,5 +165,17 @@ describe('UserTripHelpers', () => {
       expect(NewSlackHelpers.dialogValidator).toHaveBeenCalled();
       expect(tripService.updateRequest).toHaveBeenCalled();
     });
+
+    it('should get a error when saving payment', async () => {
+      jest.spyOn(NewSlackHelpers, 'dialogValidator').mockImplementation(() => {
+        throw new Error();
+      });
+      try {
+        await UserTripHelpers.savePayment(payload);
+      } catch (error) {
+        expect(error).toBeDefined();
+        expect(NewSlackHelpers.dialogValidator).toHaveBeenCalled();
+      }
+    });
   });
 });

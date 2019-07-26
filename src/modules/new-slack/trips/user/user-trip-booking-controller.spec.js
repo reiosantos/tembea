@@ -351,10 +351,25 @@ describe('UserTripBookingController', () => {
 
   describe('paymentRequest', () => {
     it('save payment request', async () => {
-      jest.spyOn(UserTripHelpers, 'savePayment');
+      jest.spyOn(UserTripHelpers, 'savePayment').mockResolvedValue();
       await UserTripBookingController.paymentRequest(payload, res);
-  
       expect(UserTripHelpers.savePayment).toHaveBeenCalled();
+    });
+
+    it('should return errors when request fails', async () => {
+      jest.spyOn(UserTripHelpers, 'savePayment').mockResolvedValue({ errors: 'error' });
+      const result = await UserTripBookingController.paymentRequest(payload, res);
+      expect(UserTripHelpers.savePayment).toHaveBeenCalled();
+      expect(result.errors).toBeDefined();
+    });
+
+    it('respond if there is no submission', async () => {
+      const newPayload = {
+        ...payload,
+        submission: undefined
+      };
+      await UserTripBookingController.paymentRequest(newPayload, res);
+      expect(res).toHaveBeenCalled();
     });
   });
 });

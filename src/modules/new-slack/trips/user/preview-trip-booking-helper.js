@@ -49,7 +49,14 @@ export default class PreviewTripBooking {
     const userName = PreviewScheduleTrip.formatName(name);
     const passengerName = forMe ? userName : (await PreviewTripBooking.getRiderName(rider));
     const preview = PreviewTripBooking.returnPreview({
-      passengerName, passengers, userName, pickup, destination, dateTime, department, reason
+      reason,
+      passengers,
+      userName,
+      pickup,
+      department,
+      dateTime,
+      destination,
+      passengerName
     });
     if (pickupLat && destinationLat) {
       const distance = await PreviewScheduleTrip

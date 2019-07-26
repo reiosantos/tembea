@@ -141,7 +141,7 @@ export const tripRequestDetails = () => ({
   forSelf: 'false',
   departmentId: 1,
   tripStatus: 'Pending',
-  departureTime: '10/10/2018 22:00',
+  dateTime: '2019-07-26T08:55:00.000Z',
   requestedById: 4,
   originId: 1,
   destinationId: 1,

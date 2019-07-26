@@ -8,8 +8,8 @@ import { getTripKey } from '../../../../helpers/slack/ScheduleTripInputHandlers'
 import DepartmentService from '../../../../services/DepartmentService';
 import { SlackActionButtonStyles } from '../../../slack/SlackModels/SlackMessageModels';
 import NewLocationHelpers, { getPredictionsKey } from '../../helpers/location-helpers';
-import tripPaymentSchema, {
-  tripReasonSchema, createUserDestinationSchema
+import {
+  tripReasonSchema, createUserDestinationSchema, tripPaymentSchema
 } from '../schemas';
 import userTripActions from './actions';
 import userTripBlocks from './blocks';
