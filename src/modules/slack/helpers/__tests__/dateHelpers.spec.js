@@ -30,8 +30,8 @@ describe('dateHelpers', () => {
 
   describe('timeTo12hrs', () => {
     it('should return a valid date in am or pm', () => {
-      expect(timeTo12hrs('03:00')).toEqual('03:00 am');
-      expect(timeTo12hrs('13:00')).toEqual('01:00 pm');
+      expect(timeTo12hrs('03:00')).toEqual('03:00 AM');
+      expect(timeTo12hrs('13:00')).toEqual('01:00 PM');
     });
   });
 });
