@@ -8,14 +8,13 @@ export default class CustomSlackRouter {
     return key;
   }
 
-  handle(payload, respond, next) {
+  handle(payload, respond) {
     const actionId = payload.actions[0].action_id;
     const blockId = payload.actions[0].block_id;
     const actionKey = CustomSlackRouter.createKey(blockId, actionId);
     const blockKey = CustomSlackRouter.createKey(blockId);
     const handler = this.routes.get(actionKey) || this.routes.get(blockKey);
     if (handler) return handler(payload, respond);
-    if (next) next();
   }
 
   use(routeOptions, handler) {

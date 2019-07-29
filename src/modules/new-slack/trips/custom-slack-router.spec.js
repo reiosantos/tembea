@@ -38,13 +38,6 @@ describe('CustomSlackRouter', () => {
     expect(handlerMock).toHaveBeenCalledWith(payload, res);
   });
 
-  it('should handle a slack route with next as argument', () => {
-    const nextMock = jest.fn();
-    jest.spyOn(handler.routes, 'get').mockReturnValue(undefined);
-    handler.handle(payload, res, nextMock);
-    expect(nextMock).toHaveBeenCalled();
-  });
-
   it('should createKey when actionId and blockId are not provided', () => {
     const key = CustomSlackRouter.createKey();
     expect(key).toBeDefined();

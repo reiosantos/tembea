@@ -66,12 +66,13 @@ const userTripRoutes = [
   },
 ];
 
+const handler = new CustomSlackRouter();
+userTripRoutes.forEach((route) => {
+  handler.use(route.route, route.handler);
+});
+
 export default (slackRouter) => {
-  const handler = new CustomSlackRouter();
-  userTripRoutes.forEach((route) => {
-    handler.use(route.route, route.handler);
-  });
-  slackRouter.action({ actionId: /^__/ }, (payload, respond) => {
+  slackRouter.action({ actionId: /^user_trip_/ }, (payload, respond) => {
     handler.handle(payload, respond);
   });
 };

@@ -49,11 +49,10 @@ export default class Interactions {
   }
 
   static async sendPriceForm(payload, state) {
-    const text = new SlackDialogText('Price', 'price',
-      'Enter total amount of the trip in Ksh.');
     const priceDialog = new SlackDialog(userTripActions.payment,
-      'The price of the trip', 'Submit', '', JSON.stringify(state))
-      .addElements([text]);
+      'The price of the trip', 'Submit', '', JSON.stringify(state));
+    priceDialog.addElements([new SlackDialogText('Price', 'price',
+      'Enter total amount of the trip in Ksh.')]);
     await DialogPrompts.sendDialog(priceDialog, payload);
   }
 }

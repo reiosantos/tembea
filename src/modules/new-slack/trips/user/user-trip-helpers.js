@@ -92,7 +92,7 @@ export default class UserTripHelpers {
     const departmentButtons = departmentsList.map(
       department => new ButtonElement(new SlackText(department.label),
         department.value.toString(),
-        `userTripActions.getDepartment_${department.value}`,
+        `${userTripActions.getDepartment}_${department.value}`,
         SlackActionButtonStyles.primary)
     );
     departmentBlock.addElements(departmentButtons);
