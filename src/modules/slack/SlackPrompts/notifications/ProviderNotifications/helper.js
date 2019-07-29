@@ -49,7 +49,7 @@ class ProviderAttachmentHelper {
     return attachments;
   }
 
-  static providerFields(tripInformation, driverDetails) {
+  static providerFields(tripInformation) {
     const {
       noOfPassengers,
       origin: { address: pickup },
@@ -58,8 +58,8 @@ class ProviderAttachmentHelper {
       createdAt,
       departureTime,
       cab: { regNumber, model },
+      driver: { driverName, driverPhoneNo }
     } = tripInformation;
-    const [, driverName, driverPhoneNo] = driverDetails.split(',');
     return [
       new SlackAttachmentField('Pickup Location', pickup, true),
       new SlackAttachmentField('Destination', destination, true),

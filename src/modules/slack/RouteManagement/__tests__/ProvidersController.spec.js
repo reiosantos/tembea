@@ -17,6 +17,7 @@ import TeamDetailsService from '../../../../services/TeamDetailsService';
 import SlackNotifications from '../../SlackPrompts/Notifications';
 import ProviderService from '../../../../services/ProviderService';
 import ConfirmRouteUseJob from '../../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
+import { cabService } from '../../../../services/CabService';
 
 describe('Provider Controller', () => {
   let respond;
@@ -108,6 +109,7 @@ describe('handleProviderRouteApproval', () => {
     jest.spyOn(TeamDetailsService, 'getTeamDetails').mockResolvedValue({
       botToken: 'xoop', opsChannelId: 'UXXID'
     });
+    jest.spyOn(cabService, 'getById').mockResolvedValue({ capacity: 4 });
     jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue(routeData);
     userMessageSpy = jest.spyOn(
       ProvidersController, 'sendUserProviderAssignMessage'
@@ -125,7 +127,7 @@ describe('handleProviderRouteApproval', () => {
   it('should handle provider aproval', async () => {
     const payload = {
       team: { id: 'teamId' },
-      submission: { driver: '2, adaeze, 09090909, ', cab: '1, 4, sabaru, xxb' },
+      submission: { driver: '2', cab: '1' },
       state: '{ "tripId": "1", "channel": "UXXID", "timestamp": "123456789" }'
     };
     await ProvidersController.handleProviderRouteApproval(payload);

@@ -203,12 +203,12 @@ describe('ProviderNotifications', () => {
 describe('Provider notifications', () => {
   it('Should update provider notification', async () => {
     const tripDetails = responseData;
-    const [channel, botToken, trip, timeStamp, driverDetails] = [
-      'cpd33', 'xxop', tripDetails, '1555500000', 'duude, 090909090, 999999'];
+    const [channel, botToken, trip, timeStamp] = [
+      'cpd33', 'xxop', tripDetails, '1555500000'];
     jest.spyOn(ProviderService, 'findProviderByPk').mockResolvedValue({ name: 'Uber' });
     const providerFieldMock = jest.spyOn(ProviderAttachmentHelper, 'providerFields');
     await ProviderNotifications.UpdateProviderNotification(
-      channel, botToken, trip, timeStamp, driverDetails
+      channel, botToken, trip, timeStamp,
     );
     expect(providerFieldMock).toHaveBeenCalled();
   });

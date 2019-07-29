@@ -15,7 +15,9 @@ const responseData = {
   origin: {},
   noOfPassengers: 'noPa',
   managerComment: 'manager',
-  cab: { providerId: 1, model: 'jeep' }
+  cab: { providerId: 1, model: 'jeep' },
+  driver: { driverName: 'James', driverPhoneNo: '708989098' },
+  provider: { name: 'Leticia' }
 };
 
 export default responseData;

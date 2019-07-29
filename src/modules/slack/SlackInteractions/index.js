@@ -20,7 +20,6 @@ import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInterac
 import tripService from '../../../services/TripService';
 import CleanData from '../../../helpers/cleanData';
 import ProvidersController from '../RouteManagement/ProvidersController';
-import TripCabController from '../TripManagement/TripCabController';
 import SlackNotifications from '../SlackPrompts/Notifications';
 import { providerErrorMessage } from '../../../helpers/constants';
 import SlackInteractionsHelpers from '../helpers/slackHelpers/SlackInteractionsHelpers';
@@ -188,7 +187,7 @@ class SlackInteractions {
 
   static async handleSelectCabAndDriverAction(data, respond) {
     if (data && data.callback_id === 'providers_approval_trip') {
-      await TripCabController.handleSelectCabDialogSubmission(data, respond);
+      await TripActionsController.completeTripRequest(data, respond);
     } else {
       await ProvidersController.handleProviderRouteApproval(data, respond);
     }

@@ -40,11 +40,10 @@ class ProvidersController {
   static async handleProviderRouteApproval(payload) {
     const {
       team: { id: teamId },
-      submission: { driver: driverDetails, cab: cabDetails },
+      submission: { driver: driverId, cab: cabId },
       state
     } = payload;
-    const driverId = driverDetails.split(',')[0];
-    const [cabId, capacity] = cabDetails.split(',');
+    const { capacity } = await cabService.getById(cabId);
     const { tripId: routeBatchId, channel, timeStamp } = JSON.parse(state);
     const routeBatch = await RouteService.updateRouteBatch(
       routeBatchId, { driverId, cabId, capacity }
@@ -58,7 +57,6 @@ class ProvidersController {
         riders, botToken, routeName, attachment
       );
     }
-
     return ProvidersController.sendNotifications(
       name, routeName, botToken, opsChannelId, attachment, channel, timeStamp
     );
@@ -185,8 +183,8 @@ class ProvidersController {
       original_message: { ts: timestamp },
     } = payload;
     try {
-      const regNumber = payload.actions[0].selected_options[0].value.split(',')[2];
-      const { dataValues: cab } = await cabService.findByRegNumber(regNumber);
+      const cabId = payload.actions[0].selected_options[0].value;
+      const cab = await cabService.getById(cabId);
       const routeBatchId = payload.actions[0].name;
       const route = await RouteService.updateRouteBatch(routeBatchId, { cabId: cab.id });
       const { riders: users } = route;

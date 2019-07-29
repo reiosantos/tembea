@@ -6,7 +6,7 @@ import BatchUseRecordHelper from '../helpers/BatchUseRecordHelper';
 import bugsnagHelper from '../helpers/bugsnagHelper';
 
 const {
-  BatchUseRecord, RouteUseRecord, RouteBatch, Route, sequelize
+  BatchUseRecord, RouteUseRecord, RouteBatch, Route, sequelize, Address
 } = models;
 
 class BatchUseRecordService {
@@ -170,10 +170,16 @@ class BatchUseRecordService {
     const id = { status: 'Active', ...driverIdOrCabId };
     const result = await RouteBatch.findAll({
       where: id,
-      include: [{
-        model: Route,
-        as: 'route',
-      }]
+      include: [
+        {
+          model: Route,
+          as: 'route',
+          include: [{
+            model: Address,
+            as: 'destination'
+          }]
+        },
+      ]
     });
     return result ? RemoveDataValues.removeDataValues(result) : result;
   }

@@ -25,7 +25,6 @@ import ViewTripHelper from '../../helpers/slackHelpers/ViewTripHelper';
 import JoinRouteInteractions from '../../RouteManagement/JoinRoute/JoinRouteInteractions';
 import tripService from '../../../../services/TripService';
 import OpsTripActions from '../../TripManagement/OpsTripActions';
-import TripCabController from '../../TripManagement/TripCabController';
 import ProvidersController from '../../RouteManagement/ProvidersController';
 import SlackInteractionsHelpers from '../../helpers/slackHelpers/SlackInteractionsHelpers';
 import InteractivePromptSlackHelper from '../../helpers/slackHelpers/InteractivePromptSlackHelper';
@@ -753,7 +752,7 @@ describe('SlackInteractions', () => {
         const data = {
           callback_id: 'providers_approval_trip'
         };
-        const TripCabControllerSpy = jest.spyOn(TripCabController, 'handleSelectCabDialogSubmission').mockResolvedValue({});
+        const TripCabControllerSpy = jest.spyOn(TripActionsController, 'completeTripRequest').mockResolvedValue({});
 
         SlackInteractions.handleSelectCabAndDriverAction(data, respond);
         expect(TripCabControllerSpy).toHaveBeenCalled();

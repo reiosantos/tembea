@@ -46,7 +46,7 @@ const reassignDriverPayload = {
 const reassignCabPayload = {
   type: 'interactive_message',
   actions:
-   [{ name: '1005', type: 'select', selected_options: [{ value: '4,prado,APD 519 DT' }] }],
+   [{ name: '1005', type: 'select', selected_options: [{ value: '1' }] }],
   callback_id: 'cab_reassign',
   team: { id: 'TE2K8PGF8', domain: 'andela-tembea' },
   channel: { id: 'DJHPQ75RP', name: 'directmessage' },

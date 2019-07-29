@@ -3,7 +3,6 @@ import {
   SlackButtonAction,
   SlackAttachment,
   SlackSelectAction,
-  SlackCancelButtonAction,
 } from '../../../SlackModels/SlackMessageModels';
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
 import UserService from '../../../../../services/UserService';
@@ -123,15 +122,14 @@ export default class ProviderNotifications {
    * @param {string} timeStamp
    * @param {string} driverDetails
    */
-  static async UpdateProviderNotification(channel, botToken, trip, timeStamp, driverDetails) {
-    const { cab: { providerId } } = trip;
-    const provider = await ProviderService.findProviderByPk(providerId);
+  static async UpdateProviderNotification(channel, botToken, trip, timeStamp) {
+    const { provider: { name: providerName } } = trip;
 
-    const message = `Thank you *${provider.name}* for completing this trip request`;
+    const message = `Thank you *${providerName}* for completing this trip request`;
     const tripDetailsAttachment = new SlackAttachment('Trip request complete');
     tripDetailsAttachment.addOptionalProps('', '', '#3c58d7');
     tripDetailsAttachment.addFieldsOrActions('fields',
-      ProviderAttachmentHelper.providerFields(trip, driverDetails));
+      ProviderAttachmentHelper.providerFields(trip));
     try {
       await InteractivePrompts.messageUpdate(channel,
         message,
@@ -147,11 +145,14 @@ export default class ProviderNotifications {
     const { providerId, driverName } = driver;
     const provider = await ProviderService.findProviderByPk(providerId);
     const user = await UserService.getUserById(provider.providerUserId);
-    const { botToken: teamBotOauthToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl);
+    const {
+      botToken: teamBotOauthToken
+    } = await TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl);
     const where = { providerId: provider.id };
     const { data: drivers } = await driverService.getPaginatedItems(undefined, where);
-    const driverData = CabsHelper.driverLabel(drivers);
-    const directMessageId = await SlackNotifications.getDMChannelId(user.slackId, teamBotOauthToken);
+    const driverData = CabsHelper.toCabDriverValuePairs(drivers, true);
+    const directMessageId = await SlackNotifications.getDMChannelId(user.slackId,
+      teamBotOauthToken);
 
     const sendNotifucations = routes.map(route => ProviderNotifications.providerMessagePerRoute(
       route, driverData, directMessageId, driverName, teamBotOauthToken
@@ -220,7 +221,7 @@ export default class ProviderNotifications {
     const { id } = route;
     const { cab, cabData } = cabOptions;
     const attachment = new SlackAttachment('Please assign another cab');
-    attachment.addFieldsOrActions('actions', [new SlackSelectAction(`${id}`, 'Select Cab', cabData), new SlackCancelButtonAction()]);
+    attachment.addFieldsOrActions('actions', [new SlackSelectAction(`${id}`, 'Select Cab', cabData)]);
     const fields = ProviderAttachmentHelper.providerRouteFields(route);
     attachment.addFieldsOrActions('fields', fields);
     attachment.addOptionalProps('cab_reassign', 'fallback', '#FECCAE', 'default');

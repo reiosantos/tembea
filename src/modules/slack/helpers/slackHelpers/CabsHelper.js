@@ -33,46 +33,28 @@ export default class CabsHelper {
    */
   static toCabLabelValuePairs(cabs, hasText = false) {
     return cabs.map((val) => {
-      const {
-        id, capacity, model, regNumber
-      } = val;
-      const valueDetails = [id, capacity, model, regNumber].toString();
       let data = {
         label: CabsHelper.generateCabLabel(val),
-        value: valueDetails
+        value: val.id
       };
       if (hasText) {
         data = {
           text: CabsHelper.generateCabLabel(val),
-          value: valueDetails
+          value: val.id
         };
       }
       return data;
     });
   }
-  
 
-  static driverLabel(drivers) {
+  static toCabDriverValuePairs(drivers, hasText) {
     return drivers.map((val) => {
-      const { id } = val;
-      const text = {
-        text: CabsHelper.generateDriverLabel(val),
-        value: id
-      };
-      return text;
-    });
-  }
-
-  static toCabDriverValuePairs(drivers) {
-    return drivers.map((val) => {
-      const {
-        id, driverName, driverPhoneNo, driverNumber
-      } = val;
-      const valueDetails = [id, driverName, driverPhoneNo, driverNumber].toString();
-      const data = {
-        label: CabsHelper.generateDriverLabel(val),
-        value: valueDetails
-      };
+      const driverLabel = CabsHelper.generateDriverLabel(val);
+      const label = { label: driverLabel };
+      const text = { text: driverLabel };
+      const value = { value: val.id };
+      const textOrLabel = hasText ? text : label;
+      const data = { ...textOrLabel, ...value };
       return data;
     });
   }

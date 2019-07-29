@@ -3,7 +3,6 @@ import {
 } from '../SlackModels/SlackMessageModels';
 import SlackInteractions from '../SlackInteractions/index';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
-import TripActionsController from './TripActionsController';
 
 class TripCabController {
   static sendCreateCabAttachment(payload, callbackId, routeRequestData) {
@@ -20,25 +19,6 @@ class TripCabController {
     } catch (error) {
       bugsnagHelper.log(error);
     }
-  }
-
-  static async handleSelectCabDialogSubmission(data, respond) {
-    const {
-      submission: {
-        driver
-      }
-    } = data;
-    const driverDetails = driver.split(',');
-    const [driverId, driverName, driverPhoneNo, driverNumber] = driverDetails;
-    const modifiedCabData = { ...data };
-    modifiedCabData.submission = {
-      ...data.submission,
-      driverId,
-      driverName,
-      driverPhoneNo,
-      driverNumber
-    };
-    await TripActionsController.completeTripRequest(modifiedCabData, respond);
   }
 
   /**
