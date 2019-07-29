@@ -142,8 +142,10 @@ export const updateProviderSchema = Joi.object().keys({
 
 export const newProviderSchema = Joi.object().keys({
   email: Joi.string().trim().email().required(),
-  name: Joi.string().trim().required()
-});
+  name: Joi.string().trim().required(),
+  isDirectMessage: Joi.boolean().optional(),
+  channelId: Joi.string().allow(null, '').optional(),
+}).with('channelId', 'isDirectMessage');
 
 export const newHomeBaseSchema = Joi.object().keys({
   homebaseName: Joi.string().trim().required(),
