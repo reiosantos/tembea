@@ -93,7 +93,7 @@ describe('SlackInteractions', () => {
   describe('Manager decline trip', () => {
     beforeAll(() => {
       ManageTripController.declineTrip = jest.fn(() => { });
-      jest.spyOn(ManageTripController, 'declineTrip').mockImplementation(() => {});
+      jest.spyOn(ManageTripController, 'declineTrip').mockImplementation(() => { });
     });
 
     it('should handle empty decline message', async () => {
@@ -661,7 +661,15 @@ describe('SlackInteractions', () => {
       respond = respondMock();
       DialogPrompts.sendLocationForm = jest.fn();
       jest.spyOn(JoinRouteInteractions, 'handleViewAvailableRoutes').mockResolvedValue();
+      jest.spyOn(JoinRouteInteractions, 'sendCurrentRouteMessage').mockResolvedValue();
     });
+    it('should test my_current_route action', (done) => {
+      const payload = createPayload('my_current_route');
+      SlackInteractions.startRouteActions(payload, respond);
+      expect(JoinRouteInteractions.sendCurrentRouteMessage).toBeCalled();
+      done();
+    });
+
     it('should test view_available_routes action', (done) => {
       const payload = createPayload('view_available_routes');
       SlackInteractions.startRouteActions(payload, respond);

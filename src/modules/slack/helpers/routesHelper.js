@@ -8,6 +8,8 @@ import {
   SlackAttachment,
   SlackAttachmentField, SlackButtonAction
 } from '../SlackModels/SlackMessageModels';
+import ProviderAttachmentHelper from '../SlackPrompts/notifications/ProviderNotifications/helper';
+
 
 class RoutesHelpers {
   static toAvailableRoutesAttachment(allAvailableRoutes, currentPage, totalPages, isSearch = false) {
@@ -37,6 +39,28 @@ class RoutesHelpers {
     attachments.push(searchButtonAttachment);
     return new SlackInteractiveMessage(
       '*All Available Routes:slightly_smiling_face:*', [...attachments, navButtonsAttachment]
+    );
+  }
+
+  static toCurrentRouteAttachment(route) {
+    const attachments = new SlackAttachment();
+    const navButtonsAttachment = createNavButtons('back_to_launch', 'back_to_routes_launch');
+
+    if (!route) {
+      return new SlackInteractiveMessage(
+        'You are not currently on any route :disappointed:', [navButtonsAttachment]
+      );
+    }
+
+    [
+      ProviderAttachmentHelper.providerRouteFields(route),
+      ProviderAttachmentHelper.cabFields(route.cabDetails),
+      ProviderAttachmentHelper.driverFields(route.driver)
+    ].map(field => attachments.addFieldsOrActions('fields', field));
+
+
+    return new SlackInteractiveMessage(
+      '*My Current Route :slightly_smiling_face:*', [attachments, navButtonsAttachment]
     );
   }
 

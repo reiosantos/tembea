@@ -22,6 +22,7 @@ import Validators from '../../../../helpers/slack/UserInputValidator/Validators'
 import CleanData from '../../../../helpers/cleanData';
 import ConfirmRouteUseJob from '../../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 import env from '../../../../config/environment';
+import UserService from '../../../../services/UserService';
 
 class JoinRouteInteractions {
   static async handleViewAvailableRoutes(data, respond) {
@@ -57,6 +58,14 @@ class JoinRouteInteractions {
       isSearch
     );
     respond(availableRoutesMessage);
+  }
+
+  static async sendCurrentRouteMessage({ user: { id } }, respond) {
+    const { routeBatchId } = await UserService.getUserBySlackId(id);
+    const routeInfo = await RouteService.getRouteBatchByPk(routeBatchId);
+
+    const currentRouteMessage = RoutesHelpers.toCurrentRouteAttachment(routeInfo);
+    respond(currentRouteMessage);
   }
 
   static async handleSendAvailableRoutesActions(data, respond) {

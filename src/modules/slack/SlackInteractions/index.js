@@ -45,12 +45,11 @@ class SlackInteractions {
         break;
     }
   }
-  
+
   static async handleManagerActions(data, respond) {
     const payload = CleanData.trim(data);
     const { name, value } = payload.actions[0];
     const isCancelled = await SlackHelpers.handleCancellation(value);
-    // Notify manager if trip has been cancelled
     if (isCancelled) {
       respond(new SlackInteractiveMessage('The trip request has already been cancelled.'));
       return;
@@ -134,9 +133,7 @@ class SlackInteractions {
       const { callback_id: callbackId } = payload;
       const errors = (callbackId === 'operations_reason_dialog_trips')
         ? TripActionsController.runCabValidation(payload) : [];
-      if (errors && errors.length > 0) {
-        return { errors };
-      }
+      if (errors && errors.length > 0) return { errors };
       await TripActionsController.changeTripStatus(payload);
     } catch (error) {
       bugsnagHelper.log(error);
@@ -151,7 +148,6 @@ class SlackInteractions {
     const { id: providerId } = await ProviderService.getProviderBySlackId(slackId);
     const tripId = actions[0].value;
     const { providerId: assignedProviderId } = await tripService.getById(tripId);
-
     if (providerId === assignedProviderId) {
       return DialogPrompts.sendSelectCabDialog(payload);
     }
@@ -220,6 +216,9 @@ class SlackInteractions {
     const errors = UserInputValidator.validateStartRouteSubmission(payload);
     if (errors) return errors;
     switch (action) {
+      case 'my_current_route':
+        await JoinRouteInteractions.sendCurrentRouteMessage(payload, respond);
+        break;
       case 'request_new_route':
         DialogPrompts.sendLocationForm(payload);
         break;
@@ -239,9 +238,7 @@ class SlackInteractions {
       const routeHandler = RouteInputHandlers[callBackName];
       if (routeHandler) {
         const errors = RouteInputHandlers.runValidations(payload);
-        if (errors && errors.length > 0) {
-          return { errors };
-        }
+        if (errors && errors.length > 0) return { errors };
         return routeHandler(payload, respond);
       }
       respond(SlackInteractionsHelpers.goodByeMessage());

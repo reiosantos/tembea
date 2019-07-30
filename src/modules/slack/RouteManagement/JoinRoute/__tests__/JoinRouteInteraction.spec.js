@@ -6,6 +6,8 @@ import JoinRouteInputHandlers from '../JoinRouteInputHandler';
 import mockPayload from '../../__mocks__/payload.mock';
 import BatchUseRecordService from '../../../../../services/BatchUseRecordService';
 import ConfirmRouteUseJob from '../../../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
+import UserService from '../../../../../services/UserService';
+import routeBatchMock from '../__mocks__/routeBatch.mock';
 
 describe('Test JointRouteInteractions', () => {
   const res = jest.fn();
@@ -152,7 +154,7 @@ describe('Test JointRouteInteractions', () => {
       expect(BatchUseRecordService.updateBatchUseRecord).toBeCalledTimes(1);
       expect(JoinRouteInteractions.hasNotTakenTrip).toBeCalledTimes(1);
     });
-    
+
     it('should test still on trip route button', async () => {
       const payload = {
         actions: [{
@@ -214,5 +216,42 @@ describe('Test JointRouteInteractions', () => {
       await JoinRouteInteractions.hasNotTakenTrip(payload, respond);
       expect(respond).toBeCalledTimes(1);
     });
+  });
+
+  describe('sendCurrentRouteMessage', () => {
+    it('should send users current route', async () => {
+      const [payload, respond, testBatchId] = [{ user: { id: 'U1234' } }, jest.fn(), routeBatchMock.routeBatchId];
+      const getUserSpy = jest.spyOn(UserService, 'getUserBySlackId').mockImplementation(slackId => (
+        {
+          slackId,
+          routeBatchId: testBatchId
+        }));
+      const getBatchSpy = jest.spyOn(RouteService, 'getRouteBatchByPk').mockImplementation(id => ({
+        ...routeBatchMock,
+        id
+      }));
+
+      await JoinRouteInteractions.sendCurrentRouteMessage(payload, respond);
+
+      expect(getUserSpy).toHaveBeenCalledWith(payload.user.id);
+      expect(getBatchSpy).toHaveBeenCalledWith(testBatchId);
+    });
+  });
+
+  it('should display a message when the user has no route', async () => {
+    const [payload, respond] = [{ user: { id: 'U1234' } }, jest.fn()];
+    const getUserSpy = jest.spyOn(UserService, 'getUserBySlackId').mockImplementation(slackId => (
+      {
+        slackId,
+        routeBatchId: null
+      }));
+    const getBatchSpy = jest
+      .spyOn(RouteService, 'getRouteBatchByPk')
+      .mockImplementation(() => null);
+
+    await JoinRouteInteractions.sendCurrentRouteMessage(payload, respond);
+
+    expect(getUserSpy).toHaveBeenCalledWith(payload.user.id);
+    expect(getBatchSpy).toHaveBeenCalledWith(null);
   });
 });
