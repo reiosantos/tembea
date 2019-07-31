@@ -243,14 +243,14 @@ export const departmentTripsSchema = Joi.object().keys({
 
 export const travelTripSchema = Joi.object().keys({
   startDate: Joi.date().iso().label('start Date').required(),
-  endDate: Joi.date().iso().greater(Joi.ref('startDate'))
+  endDate: Joi.date().iso().min(Joi.ref('startDate'))
     .label('end Date')
     .required(),
   departmentList:
           Joi.array()
             .items(Joi.string().trim().label('Departments'))
-            .min(1)
-            .required()
+            .min(1).allow(null)
+            .optional()
 });
 
 export const tripTypeSchema = Joi.object().keys({

@@ -14,6 +14,8 @@ export default class TravelTripService {
    * @returns {object} travelTrips - array of travel trips statistics
    */
   static async getCompletedTravelTrips(startDate, endDate, departmentList) {
+    let where = {};
+    if (departmentList && departmentList.length) where = { name: { [Op.in]: [...departmentList] } };
     const travelTrips = await TripRequest.findAll({
       where: {
         tripStatus: 'Completed',
@@ -25,7 +27,7 @@ export default class TravelTripService {
         as: 'department',
         required: true,
         attributes: [],
-        where: { name: { [Op.in]: [...departmentList] } }
+        where
       }],
       ...departmentDataAttributes
     });

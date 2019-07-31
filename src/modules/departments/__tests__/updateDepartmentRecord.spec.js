@@ -128,6 +128,7 @@ describe('/Departments update', () => {
         name: mockDepartment.name,
         newName: newDeptName,
         newHeadEmail: mockDeptHead.email,
+        location: 'kenya'
       })
       .set({
         Accept: 'application/json',

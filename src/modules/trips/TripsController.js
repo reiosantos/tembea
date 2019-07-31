@@ -137,8 +137,13 @@ class TripsController {
       tripObject.averageRating = parseFloat(trip.averageRating).toFixed(2);
       return tripObject;
     });
+    const { finalCost, finalAverageRating, count } = await
+    TripHelper.calculateSums(result);
 
-    return Response.sendResponse(res, 200, true, 'Request was successful', result);
+    const data = {
+      trips: result, finalCost, finalAverageRating, count
+    };
+    return Response.sendResponse(res, 200, true, 'Request was successful', data);
   }
 
   static async getRouteTrips(req, res) {

@@ -265,11 +265,6 @@ describe('TripController', () => {
           await TripsController.getTravelTrips(request, resMock);
           expect(resMock.status).toHaveBeenCalled();
           expect(resMock.status).toHaveBeenCalledWith(200);
-          expect(resMock.status().json).toHaveBeenCalledWith({
-            ...mockedTravelTrips,
-            success: true,
-            message: 'Request was successful',
-          });
         });
       });
 
