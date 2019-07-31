@@ -7,11 +7,11 @@ const { TokenValidator, GeneralValidator } = middlewares;
 
 const fellowsRouter = Router();
 
-fellowsRouter.use('/fellowActivity',
+fellowsRouter.use('/engineerActivity',
   TokenValidator.attachJwtSecretKey,
   TokenValidator.authenticateToken);
 
-fellowsRouter.use('/fellows',
+fellowsRouter.use('/engineers',
   TokenValidator.attachJwtSecretKey,
   TokenValidator.authenticateToken);
 
@@ -44,7 +44,7 @@ fellowsRouter.use('/fellows',
  */
 
 fellowsRouter.get(
-  '/fellowActivity',
+  '/engineerActivity',
   GeneralValidator.validateQueryParams,
   FellowController.getFellowRouteActivity
 );
@@ -72,7 +72,7 @@ fellowsRouter.get(
  *        description: an array of data objects containing details of fellows on routes
  */
 fellowsRouter.get(
-  '/fellows',
+  '/engineers',
   GeneralValidator.validateQueryParams,
   FellowController.getAllFellows
 );

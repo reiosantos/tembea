@@ -595,7 +595,7 @@ describe('RouteController unit test', () => {
       expect(res.status).toBeCalledWith(200);
       expect(res.status().json).toBeCalledWith({
         success: true,
-        message: 'fellow successfully removed from the route',
+        message: 'engineer successfully removed from the route',
         undefined
       });
       expect(notificationSpy).toBeCalledWith(message, 'user', 'token');

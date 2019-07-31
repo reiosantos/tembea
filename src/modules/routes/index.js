@@ -365,7 +365,7 @@ routesRouter.get(
  *        description: fellow not found
  */
 routesRouter.delete(
-  '/routes/fellows/:userId',
+  '/routes/engineers/:userId',
   RouteValidator.validateDelete,
   RouteValidator.validateRouteIdParam,
   RoutesController.deleteFellowFromRoute

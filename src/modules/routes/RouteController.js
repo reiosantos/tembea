@@ -303,7 +303,7 @@ class RoutesController {
           `*Hey <@${slackId}>, You've been removed from \`${name}\` route.* \n ${text}.`
         );
         await RouteNotifications.sendNotificationToRider(slackMessage, slackId, teamBotOauthToken);
-        message = 'fellow successfully removed from the route';
+        message = 'engineer successfully removed from the route';
       }
       return Response.sendResponse(res, 200, true, message);
     } catch (error) {

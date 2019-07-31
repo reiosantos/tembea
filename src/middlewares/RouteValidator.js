@@ -40,7 +40,7 @@ class RouteValidator {
     } = req;
     if (path === '/routes/:routeBatchId') RouteValidator.validateIdParam(res, routeBatchId, 'routeBatchId', next);
     if (path === '/routes/:routeId') RouteValidator.validateIdParam(res, routeId, 'routeId', next);
-    if (path === '/routes/fellows/:userId') {
+    if (path === '/routes/engineers/:userId') {
       RouteValidator.validateIdParam(res, userId, 'userId', next);
     }
   }
