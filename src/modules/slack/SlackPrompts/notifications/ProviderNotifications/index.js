@@ -122,15 +122,14 @@ export default class ProviderNotifications {
    * @param {string} timeStamp
    * @param {string} driverDetails
    */
-  static async UpdateProviderNotification(channel, botToken, trip, timeStamp) {
-    const { provider: { name: providerName } } = trip;
-
-    const message = `Thank you *${providerName}* for completing this trip request`;
-    const tripDetailsAttachment = new SlackAttachment('Trip request complete');
-    tripDetailsAttachment.addOptionalProps('', '', '#3c58d7');
-    tripDetailsAttachment.addFieldsOrActions('fields',
-      ProviderAttachmentHelper.providerFields(trip));
+  static async UpdateProviderNotification(channel, botToken, trip, timeStamp, driverDetails) {
     try {
+      const { provider } = trip;
+      const message = `Thank you *${provider.name}* for completing this trip request`;
+      const tripDetailsAttachment = new SlackAttachment('Trip request complete');
+      tripDetailsAttachment.addOptionalProps('', '', '#3c58d7');
+      tripDetailsAttachment.addFieldsOrActions('fields',
+        ProviderAttachmentHelper.providerFields(trip, driverDetails));
       await InteractivePrompts.messageUpdate(channel,
         message,
         timeStamp,

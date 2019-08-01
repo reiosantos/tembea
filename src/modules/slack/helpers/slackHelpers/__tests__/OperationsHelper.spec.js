@@ -8,8 +8,9 @@ import { bugsnagHelper } from '../../../RouteManagement/rootFile';
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
 import { providerService } from '../../../../../services/ProviderService';
 import UserService from '../../../../../services/UserService';
-import { providerMock } from '../../../../trips/__tests__/__mocks__';
+import { providerMock, tripInformation } from '../../../../trips/__tests__/__mocks__';
 import BugsnagHelper from '../../../../../helpers/bugsnagHelper';
+import SlackNotifications from '../../../SlackPrompts/Notifications';
 
 describe('operations approve request', () => {
   let payload;
@@ -123,5 +124,68 @@ describe('sendOpsData', () => {
     jest.spyOn(BugsnagHelper, 'log');
     await OperationsHelper.sendOpsData();
     expect(BugsnagHelper.log).toHaveBeenCalled();
+  });
+});
+
+describe('OprationsHelper', () => {
+  describe('sendcompleteOpAssignCabMsg', () => {
+    beforeEach(() => {
+      jest.spyOn(SlackNotifications, 'sendUserConfirmOrDeclineNotification').mockResolvedValue();
+      jest.spyOn(SlackNotifications, 'sendManagerConfirmOrDeclineNotification').mockResolvedValue();
+    });
+    afterEach(() => {
+      jest.resetAllMocks();
+      jest.restoreAllMocks();
+    });
+    it('should send completion notifications', async () => {
+      const ids = {
+        requesterSlackId: 'requesterSlackId',
+        riderSlackId: 'riderSlackId'
+      };
+      await OperationsHelper.sendcompleteOpAssignCabMsg('teamId', ids, {});
+      const {
+        sendUserConfirmOrDeclineNotification,
+        sendManagerConfirmOrDeclineNotification
+      } = SlackNotifications;
+      expect(sendUserConfirmOrDeclineNotification).toBeCalledTimes(2);
+      expect(sendManagerConfirmOrDeclineNotification).toBeCalledTimes(1);
+    });
+    it('should send completion notifications', async () => {
+      const ids = {
+        requesterSlackId: 'requesterSlackId',
+        riderSlackId: 'requesterSlackId'
+      };
+      await OperationsHelper.sendcompleteOpAssignCabMsg('teamId', ids, {});
+      const {
+        sendUserConfirmOrDeclineNotification,
+        sendManagerConfirmOrDeclineNotification
+      } = SlackNotifications;
+      expect(sendUserConfirmOrDeclineNotification).toBeCalledTimes(1);
+      expect(sendManagerConfirmOrDeclineNotification).toBeCalledTimes(1);
+    });
+  });
+
+  describe('getTripDetailsAttachment', () => {
+    it('should return tripDetailsAttachment', () => {
+      jest.spyOn(OperationsHelper, 'getTripDetailsAttachment');
+      OperationsHelper.getTripDetailsAttachment(tripInformation, {});
+      expect(OperationsHelper.getTripDetailsAttachment).toHaveReturned();
+    });
+  });
+  describe('getTripDetailsAttachment', () => {
+    const payload = {
+      tripStatus: 'Confirmed',
+      tripId: 'tripId',
+      operationsComment: 'comment',
+      confirmedById: 'opsUserId',
+      approvalDate: 'timeStamp',
+    };
+    it('should return trioDetailsAttachment', () => {
+      jest.spyOn(OperationsHelper, 'getUpdateTripStatusPayload');
+      const statusPayload = OperationsHelper
+        .getUpdateTripStatusPayload('tripId', 'comment', 'opsUserId', 'timeStamp');
+      expect(OperationsHelper.getUpdateTripStatusPayload).toHaveReturned();
+      expect(statusPayload).toEqual(payload);
+    });
   });
 });

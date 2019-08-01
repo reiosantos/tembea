@@ -135,21 +135,17 @@ class InteractivePrompts {
   static async sendOpsDeclineOrApprovalCompletion(
     decline, tripInformation, timeStamp, channel, slackBotOauthToken
   ) {
-    const tripDetailsAttachment = new SlackAttachment(decline ? 'Trip Declined' : 'Trip Confirmed');
-    const confirmationDetailsAttachment = new SlackAttachment(
-      decline
-        ? `:X: <@${tripInformation.decliner.slackId}> declined this request`
-        : `:white_check_mark: <@${tripInformation.confirmer.slackId}> approved this request`
-    );
-
-    confirmationDetailsAttachment.addOptionalProps('', '', (decline ? 'danger' : 'good'));
+    const { title, color, confirmTitle } = InteractivePromptsHelpers
+      .getOpsCompletionAttachmentDetails(decline, tripInformation);
+    const tripDetailsAttachment = new SlackAttachment(title);
+    const confirmationDetailsAttachment = new SlackAttachment(confirmTitle);
+    confirmationDetailsAttachment.addOptionalProps('', '', color);
     tripDetailsAttachment.addOptionalProps('', '', '#3c58d7');
     tripDetailsAttachment.addFieldsOrActions('fields',
       InteractivePromptsHelpers.addOpsNotificationTripFields(tripInformation));
-
     try {
-      await InteractivePrompts.messageUpdate(channel.id,
-        (decline ? 'Trip request declined.' : 'Trip request approved'),
+      await InteractivePrompts.messageUpdate(channel.id || channel,
+        title,
         timeStamp,
         [tripDetailsAttachment, confirmationDetailsAttachment],
         slackBotOauthToken);

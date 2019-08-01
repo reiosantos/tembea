@@ -158,6 +158,21 @@ const SlackAttachment = {
   buttonValue: 'defaultButton'
 };
 
+const completeOpsAssignCabPayload = {
+  state,
+  ...providersPayload,
+  submission: {
+    driver: 'driver',
+    driverNumber: '000000',
+    cab: 'cab',
+    regNumber: 'OP90JK',
+    confirmationComment: 'comment',
+  },
+  origin: { address: 'pickup' },
+  destination: { address: 'destination' },
+  rider: { name: 'passenger', phoneNo: 'phone' },
+};
+
 export {
   providersPayload,
   state,
@@ -167,5 +182,6 @@ export {
   cab,
   user,
   driver,
-  SlackAttachment
+  SlackAttachment,
+  completeOpsAssignCabPayload
 };

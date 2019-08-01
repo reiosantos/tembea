@@ -145,7 +145,18 @@ const mockedTravelTrips = {
     }
   ]
 };
+
+const tripInformation = {
+  noOfPassengers: 2,
+  origin: { address: 'pickup' },
+  destination: { address: 'destination' },
+  rider: { name: 'passenger', phoneNo: '90993444' },
+  createdAt: '',
+  departureTime: '',
+  cab: { regNumber: '', model: '' },
+  driver: { driverName: '', driverPhoneNo: '' }
+};
 export {
   mockedValue, resultValue, response, tripInfo, mockTrip, updatedValue, mockAirportTransferTrip,
-  providerMock, mockedTravelTrips
+  providerMock, mockedTravelTrips, tripInformation
 };

@@ -152,7 +152,6 @@ class TripActionsController {
       channel: { id: channelId },
       state: payloadState
     } = payload;
-
     const { trip: stateTrip, actionTs } = JSON.parse(payloadState);
     const tripId = Number(stateTrip);
 

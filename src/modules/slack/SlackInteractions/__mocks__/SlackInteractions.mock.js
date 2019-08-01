@@ -177,3 +177,8 @@ export const OpsTripActionDataMock = {
     ts: '1558172628.000100',
   }
 };
+
+export const createTripActionWithOptionsMock = (value, name) => ({
+  ...OpsTripActionDataMock,
+  actions: [{ selected_options: [{ value, name }] }],
+});

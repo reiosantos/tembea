@@ -72,6 +72,16 @@ class InteractivePromptsHelpers {
     tripHistory.forEach(trip => formatTrip(trip));
     return attachments;
   }
+
+  static getOpsCompletionAttachmentDetails(decline, tripInformation) {
+    return {
+      color: decline ? 'danger' : 'good',
+      confirmTitle: decline
+        ? `:X: <@${tripInformation.decliner.slackId}> declined this request`
+        : `:white_check_mark: <@${tripInformation.confirmer.slackId}> approved this request`,
+      title: decline ? 'Trip request declined' : 'Trip request approved'
+    };
+  }
 }
 
 export default InteractivePromptsHelpers;

@@ -6,6 +6,9 @@ import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import { providerService } from '../../../../services/ProviderService';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import UserService from '../../../../services/UserService';
+import SlackNotifications from '../../SlackPrompts/Notifications';
+import { SlackAttachment } from '../../SlackModels/SlackMessageModels';
+import ProviderAttachmentHelper from '../../SlackPrompts/notifications/ProviderNotifications/helper';
 
 class OperationsHelper {
   static async sendOpsData(data) {
@@ -74,6 +77,35 @@ class OperationsHelper {
     return {
       regNumber,
       routeCapacity
+    };
+  }
+
+  static async sendcompleteOpAssignCabMsg(teamId, ids, tripInformation) {
+    const { requesterSlackId, riderSlackId } = ids;
+    const { sendUserConfirmOrDeclineNotification } = SlackNotifications;
+    SlackNotifications
+      .sendManagerConfirmOrDeclineNotification(teamId, requesterSlackId, tripInformation, false);
+    sendUserConfirmOrDeclineNotification(teamId, riderSlackId, tripInformation, false);
+    if (riderSlackId !== requesterSlackId) {
+      sendUserConfirmOrDeclineNotification(teamId, requesterSlackId, tripInformation, false);
+    }
+  }
+
+  static getTripDetailsAttachment(tripInformation, driverDetails) {
+    const tripDetailsAttachment = new SlackAttachment('Trip request complete');
+    tripDetailsAttachment.addOptionalProps('', '', '#3c58d7');
+    tripDetailsAttachment.addFieldsOrActions('fields',
+      ProviderAttachmentHelper.providerFields(tripInformation, driverDetails));
+    return tripDetailsAttachment;
+  }
+
+  static getUpdateTripStatusPayload(tripId, confirmationComment, opsUserId, timeStamp) {
+    return {
+      tripStatus: 'Confirmed',
+      tripId,
+      operationsComment: confirmationComment,
+      confirmedById: opsUserId,
+      approvalDate: timeStamp,
     };
   }
 }

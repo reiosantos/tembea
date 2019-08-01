@@ -163,7 +163,7 @@ class SlackInteractions {
    */
   static async handleSelectProviderAction(data) {
     try {
-      if (data.actions && data.actions[0].name === 'confirmTrip') {
+      if (data.actions && (data.actions[0].name === 'confirmTrip' || data.actions[0].name === 'assign-cab-or-provider')) {
         await DialogPrompts.sendSelectProviderDialog(data);
       }
     } catch (error) {

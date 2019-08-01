@@ -566,37 +566,20 @@ describe('SlackNotifications', () => {
       await SlackNotifications
         .sendRequesterApprovedNotification(responseData, jest.fn(), 'slackBotOauthToken');
 
-      expect(findSelectedDepartment).toHaveBeenCalledTimes(1);
       expect(responseForRequester).toHaveBeenCalledTimes(1);
       expect(sendNotification).toHaveBeenCalledTimes(1);
     });
     it('should handle error', async () => {
       // mock dependencies
       const error = new Error('Dummy error message');
-      findSelectedDepartment.mockImplementationOnce(() => Promise.reject(error));
+      responseForRequester.mockImplementationOnce(() => Promise.reject(error));
 
       const responseData = { ...tripInitial, requester: { slackId: 2 } };
       const respond = jest.fn();
       await SlackNotifications
         .sendRequesterApprovedNotification(responseData, respond, 'slackBotOauthToken');
 
-      expect(findSelectedDepartment).toHaveBeenCalledTimes(1);
       expect(respond).toHaveBeenCalledTimes(1);
-      expect(responseForRequester).not.toHaveBeenCalled();
-      expect(sendNotification).not.toHaveBeenCalled();
-    });
-    it('should return undefined if department is null', async () => {
-      // mock dependencies
-      findSelectedDepartment.mockImplementationOnce(() => null);
-
-      const responseData = { ...tripInitial, requester: { slackId: 2 } };
-      const respond = jest.fn();
-      await SlackNotifications
-        .sendRequesterApprovedNotification(responseData, respond, 'slackBotOauthToken');
-
-      expect(findSelectedDepartment).toHaveBeenCalledTimes(1);
-      expect(respond).not.toHaveBeenCalled();
-      expect(responseForRequester).not.toHaveBeenCalled();
       expect(sendNotification).not.toHaveBeenCalled();
     });
   });

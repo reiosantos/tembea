@@ -10,6 +10,12 @@ import ManagerFormValidator
 import RouteService from '../../../../services/RouteService';
 import OperationsHelper from '../../helpers/slackHelpers/OperationsHelper';
 import UserService from '../../../../services/UserService';
+import TripCompletionJob from '../../../../services/jobScheduler/jobs/TripCompletionJob';
+import { SlackHelpers } from '../rootFile';
+import { completeOpsAssignCabPayload } from '../__mocks__/providersController.mock';
+import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
+import TeamDetailsService from '../../../../services/TeamDetailsService';
+import tripService from '../../../../services/TripService';
 
 describe('Operations Route Controller', () => {
   let respond;
@@ -406,5 +412,34 @@ describe('Operations Route Controller', () => {
         expect(respond).toHaveBeenCalledTimes(1);
       });
     });
+  });
+});
+
+describe('OperationsHandler > completeOpsAssignCabDriver', () => {
+  beforeEach(() => {
+    jest.spyOn(OperationsHelper, 'sendcompleteOpAssignCabMsg').mockResolvedValue();
+    jest.spyOn(tripService, 'updateRequest').mockResolvedValue({
+      rider: { slackId: 'slack' },
+      requester: { slackId: 'slackx' }
+    });
+    jest.spyOn(TripCompletionJob, 'createScheduleForATrip').mockResolvedValue();
+    jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId').mockResolvedValue({ id: 'id' });
+    jest.spyOn(bugsnagHelper, 'log').mockResolvedValue();
+    jest.spyOn(InteractivePrompts, 'messageUpdate').mockResolvedValue();
+    jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('');
+  });
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+  it('should log error if it occurs', async () => {
+    await OperationsHandler.completeOpsAssignCabDriver(completeOpsAssignCabPayload);
+    expect(bugsnagHelper.log).toBeCalledTimes(1);
+    expect(OperationsHelper.sendcompleteOpAssignCabMsg).toBeCalledTimes(0);
+  });
+  it('should successfully complete trip request when ops assign cab and driver', async () => {
+    jest.spyOn(OperationsHelper, 'getTripDetailsAttachment').mockReturnValue('');
+    await OperationsHandler.completeOpsAssignCabDriver(completeOpsAssignCabPayload);
+    expect(bugsnagHelper.log).toBeCalledTimes(0);
+    expect(OperationsHelper.sendcompleteOpAssignCabMsg).toBeCalledTimes(1);
   });
 });

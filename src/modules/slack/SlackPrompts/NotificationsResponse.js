@@ -3,7 +3,8 @@ import {
   SlackAttachment,
   SlackAttachmentField,
   SlackButtonAction,
-  SlackInteractiveMessage
+  SlackInteractiveMessage,
+  SlackSelectAction
 } from '../SlackModels/SlackMessageModels';
 import { getSlackDateString } from '../helpers/dateHelpers';
 
@@ -11,11 +12,22 @@ class NotificationsResponse {
   static getRequestMessageForOperationsChannel(data, payload, channel, tripType) {
     const channelId = channel;
     const { id } = data;
-
+    const options = [
+      {
+        text: 'Confirm and assign cab and driver',
+        value: `assignCab_${id}`,
+      },
+      {
+        text: 'Confirm and assign provider',
+        value: `confirmTrip_${id}`,
+      }
+    ];
     const actions = [
-      new SlackButtonAction('confirmTrip', 'Confirm', id),
+      new SlackSelectAction('assign-cab-or-provider', 'Confirm request options', options),
       new SlackButtonAction('declineRequest', 'Decline', id, 'danger')
     ];
+
+    
     return NotificationsResponse.responseForOperations(
       data, actions, channelId, 'trips_cab_selection', payload, tripType
     );
@@ -91,7 +103,7 @@ class NotificationsResponse {
     );
     const fields = [
       new SlackAttachmentField('Passenger', `<@${rider.slackId}>`, true),
-      new SlackAttachmentField('Department', `<@${department}>`, true),
+      new SlackAttachmentField('Department', department, true),
       new SlackAttachmentField('Pickup Location', pickup.address, true),
       new SlackAttachmentField('Destination', destination.address, true),
       new SlackAttachmentField('Departure', getSlackDateString(departureTime), true),

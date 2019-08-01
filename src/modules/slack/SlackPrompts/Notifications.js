@@ -206,15 +206,6 @@ class SlackNotifications {
   ) {
     try {
       const responseData = CleanData.trim(data);
-      const dept = await DepartmentService.getById(
-        responseData.departmentId
-      );
-
-      if (!dept) return;
-
-      const { head: { name } } = dept;
-
-      Object.assign(responseData, { department: name });
 
       const imResponse = await WebClientSingleton.getWebClient(slackBotOauthToken)
         .im

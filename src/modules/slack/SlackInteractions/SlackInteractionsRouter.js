@@ -49,6 +49,8 @@ slackInteractionsRouter.action({ callbackId: 'provider_actions' },
   SlackInteractions.handleSelectCabActions);
 slackInteractionsRouter.action({ callbackId: 'confirm_ops_approval' },
   TripCabController.handleSelectProviderDialogSubmission);
+slackInteractionsRouter.action({ callbackId: 'ops_approval_trip' },
+  OperationsHandler.completeOpsAssignCabDriver);
 slackInteractionsRouter.action({ callbackId: 'tembea_route' },
   SlackInteractions.startRouteActions);
 slackInteractionsRouter.action({ callbackId: 'providers_route_approval' },

@@ -62,3 +62,25 @@ describe('InteractivePromptsHelpers', () => {
     expect(result[0]).toHaveProperty('fields');
   });
 });
+
+describe('InteractivePromptHelper > getOpsCompletionAttachmentDetails', () => {
+  const tripInfoMock = {
+    decliner: { slackId: 'YYYYY' },
+    confirmer: { slackId: 'ZZZZZ' }
+  };
+  const { getOpsCompletionAttachmentDetails } = InteractivePromptsHelpers;
+
+  it('should return attachment details for declined request', () => {
+    const { color, confirmTitle, title } = getOpsCompletionAttachmentDetails(true, tripInfoMock);
+    expect(color).toBe('danger');
+    expect(title).toBe('Trip request declined');
+    expect(confirmTitle).toBe(':X: <@YYYYY> declined this request');
+  });
+
+  it('should return attachment details for approved request', () => {
+    const { color, confirmTitle, title } = getOpsCompletionAttachmentDetails(false, tripInfoMock);
+    expect(color).toBe('good');
+    expect(title).toBe('Trip request approved');
+    expect(confirmTitle).toBe(':white_check_mark: <@ZZZZZ> approved this request');
+  });
+});

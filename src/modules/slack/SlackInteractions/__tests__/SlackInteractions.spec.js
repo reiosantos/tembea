@@ -7,7 +7,7 @@ import CancelTripController from '../../TripManagement/CancelTripController';
 import Cache from '../../../../cache';
 import ScheduleTripInputHandlers from '../../../../helpers/slack/ScheduleTripInputHandlers';
 import {
-  createPayload, respondMock, responseMessage, OpsTripActionDataMock
+  createPayload, respondMock, responseMessage, createTripActionWithOptionsMock
 } from '../__mocks__/SlackInteractions.mock';
 import TripItineraryController from '../../TripManagement/TripItineraryController';
 import TripActionsController from '../../TripManagement/TripActionsController';
@@ -30,6 +30,7 @@ import SlackInteractionsHelpers from '../../helpers/slackHelpers/SlackInteractio
 import InteractivePromptSlackHelper from '../../helpers/slackHelpers/InteractivePromptSlackHelper';
 import ProviderService from '../../../../services/ProviderService';
 import SlackNotifications from '../../SlackPrompts/Notifications';
+import OpsDialogPrompts from '../../SlackPrompts/OpsDialogPrompts';
 
 
 describe('SlackInteractions', () => {
@@ -813,20 +814,32 @@ describe('SlackInteractions', () => {
       });
       it('Should call user cancellation function if trip has been canceled', async () => {
         jest.spyOn(tripService, 'getById').mockResolvedValue({ tripStatus: 'Cancelled' });
+        const tripDataMock = createTripActionWithOptionsMock('assignProvider_1');
 
         const sendUserCancellationSpy = jest.spyOn(
           OpsTripActions, 'sendUserCancellation'
         ).mockResolvedValue({});
-        await SlackInteractionsHelpers.handleOpsAction(OpsTripActionDataMock, respond);
+        await SlackInteractionsHelpers.handleOpsAction(tripDataMock, respond);
         expect(sendUserCancellationSpy).toHaveBeenCalled();
       });
       it('Should call select trip action when trip is not cancelled', async () => {
         jest.spyOn(tripService, 'getById').mockResolvedValue({ tripStatus: 'Pending' });
         jest.spyOn(DialogPrompts, 'sendSelectProviderDialog').mockResolvedValue({});
+        const tripDataMock = createTripActionWithOptionsMock('assignProvider_1');
 
         const handleSelectProviderAction = jest.spyOn(SlackInteractions, 'handleSelectProviderAction');
-        await SlackInteractionsHelpers.handleOpsAction(OpsTripActionDataMock, respond);
+        await SlackInteractionsHelpers.handleOpsAction(tripDataMock, respond);
         expect(handleSelectProviderAction).toHaveBeenCalled();
+      });
+
+      it('Should call sendOpsSelectCabDialog when assign cap option is selected', async () => {
+        jest.spyOn(tripService, 'getById').mockResolvedValue({ tripStatus: 'Pending' });
+        jest.spyOn(DialogPrompts, 'sendSelectProviderDialog').mockResolvedValue({});
+        const tripDataMock = createTripActionWithOptionsMock('assignCab_1');
+
+        const sendOpsSelectCabDialog = jest.spyOn(OpsDialogPrompts, 'sendOpsSelectCabDialog').mockResolvedValue();
+        await SlackInteractionsHelpers.handleOpsAction(tripDataMock, respond);
+        expect(sendOpsSelectCabDialog).toHaveBeenCalled();
       });
     });
   });

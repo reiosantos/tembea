@@ -9,6 +9,12 @@ import CleanData from '../../../helpers/cleanData';
 import OperationsHelper from '../helpers/slackHelpers/OperationsHelper';
 import SlackNotifications from '../SlackPrompts/Notifications';
 import { providerErrorMessage } from '../../../helpers/constants';
+import SlackHelpers from '../../../helpers/slack/slackHelpers';
+import TripHelper from '../../../helpers/TripHelper';
+import TripCompletionJob from '../../../services/jobScheduler/jobs/TripCompletionJob';
+import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
+import TeamDetailsService from '../../../services/TeamDetailsService';
+import tripService from '../../../services/TripService';
 
 const handlers = {
   decline: async (payload) => {
@@ -119,6 +125,40 @@ class OperationsHandler {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Error:bangbang:: I was unable to do that.'));
     }
+  }
+  /**
+   * Complete the assignment of cab and driver to a trip request
+   * Update transaction state in cache and db
+   * create a trip scheduler
+   * Send notifications to requester, rider, ops channel and manager
+   *
+   * @param {object} data request object from slack
+   */
+
+  static async completeOpsAssignCabDriver(data) {
+    const {
+      submission: {
+        driver, driverNumber, cab: model, regNumber, confirmationComment
+      }, team: { id: teamId }, user: { id: userId }, state, channel
+    } = data;
+    const { tripId, timeStamp: ts } = JSON.parse(state);
+    const { id: opsUserId } = await SlackHelpers.findOrCreateUserBySlackId(userId, teamId);
+    const timeStamp = TripHelper.convertApprovalDateFormat(ts);
+    const updateTripStatusPayload = OperationsHelper
+      .getUpdateTripStatusPayload(tripId, confirmationComment, opsUserId, timeStamp);
+    try {
+      const trip = await tripService
+        .updateRequest(tripId, updateTripStatusPayload);
+      const { rider: { slackId: riderSlackId }, requester: { slackId: requesterSlackId } } = trip;
+      TripCompletionJob.createScheduleForATrip(trip);
+      const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+      const tripInformation = { ...trip, cab: { model, regNumber }, driver: { driverName: driver, driverPhoneNo: driverNumber } };
+      const driverDetails = `,${driver},${driverNumber}`;
+      const message = 'Thank you for completing this trip request';
+      const tripDetailsAttachment = OperationsHelper.getTripDetailsAttachment(tripInformation, driverDetails);
+      InteractivePrompts.messageUpdate(channel.id, message, ts, [tripDetailsAttachment], slackBotOauthToken);
+      OperationsHelper.sendcompleteOpAssignCabMsg(teamId, { requesterSlackId, riderSlackId }, tripInformation);
+    } catch (error) { bugsnagHelper.log(error); }
   }
 }
 

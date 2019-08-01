@@ -15,6 +15,7 @@ import tripService from '../../../../services/TripService';
 import OpsTripActions from '../../TripManagement/OpsTripActions';
 import SlackInteractions from '../../SlackInteractions';
 import UserTripBookingController from '../../../new-slack/trips/user/user-trip-booking-controller';
+import OpsDialogPrompts from '../../SlackPrompts/OpsDialogPrompts';
 
 
 class SlackInteractionsHelpers {
@@ -145,10 +146,12 @@ class SlackInteractionsHelpers {
   static async handleOpsAction(data, respond) {
     const payload = CleanData.trim(data);
     const {
-      actions: [{ value: tripId }], channel: { id: channelId }, team: { id: teamId },
+      actions: [{ selected_options: selectedOptions }], channel: { id: channelId }, team: { id: teamId },
       user: { id: userId }, original_message: { ts: timeStamp }
     } = payload;
-    const trip = await tripService.getById(tripId);
+    const [value, id] = selectedOptions[0].value.split('_');
+    const isOpsAssignCab = value === 'assignCab';
+    const trip = await tripService.getById(id);
     const tripIsCancelled = trip.tripStatus === 'Cancelled';
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     if (tripIsCancelled) {
@@ -156,7 +159,11 @@ class SlackInteractionsHelpers {
         channelId, slackBotOauthToken, trip, userId, timeStamp
       );
     }
-    return SlackInteractions.handleSelectProviderAction(data, respond);
+    if (isOpsAssignCab) {
+      return OpsDialogPrompts.sendOpsSelectCabDialog(payload);
+    }
+    const correctedData = { ...data, actions: [{ ...data.actions[0], value: trip.id }] };
+    return SlackInteractions.handleSelectProviderAction(correctedData, respond);
   }
 
   static async startProviderActions(data, respond) {
