@@ -99,7 +99,7 @@ class Utils {
   }
 
   static async verifyToken(token, envSecret) {
-    const secret = process.env[envSecret];
+    const secret = Buffer.from(process.env[envSecret], 'base64').toString('ascii');
     try {
       const decodedData = await jwt.verify(token, secret);
       return decodedData;
@@ -116,8 +116,8 @@ class Utils {
    * @returns {string} encrypted JWT token
    */
   static generateToken(time, payload) {
-    const secret = process.env.JWT_TEMBEA_SECRET;
-    const token = jwt.sign(payload, secret, { expiresIn: time });
+    const secret = Buffer.from(process.env.TEMBEA_PRIVATE_KEY, 'base64').toString('ascii');
+    const token = jwt.sign(payload, secret, { expiresIn: time, algorithm: 'RS256' });
     return token;
   }
 

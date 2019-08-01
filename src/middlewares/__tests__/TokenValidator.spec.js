@@ -113,7 +113,7 @@ describe('Token Validator', () => {
       const reqMock = { path: '/user' };
       await TokenValidator.attachJwtSecretKey(reqMock, 'res', nextMock);
 
-      expect(reqMock.envSecretKey).toEqual('JWT_TEMBEA_SECRET');
+      expect(reqMock.envSecretKey).toEqual('TEMBEA_PUBLIC_KEY');
       expect(nextMock).toHaveBeenCalledTimes(1);
     });
   });

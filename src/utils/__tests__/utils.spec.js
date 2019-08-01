@@ -10,7 +10,7 @@ describe('Utils Method', () => {
     const mockObject = { verify: 'verified' };
     const jwtMock = jest.spyOn(jwt, 'verify');
     jwtMock.mockImplementation(() => (mockObject));
-    const result = await Utils.verifyToken('token', 'secret');
+    const result = await Utils.verifyToken('token', 'TEMBEA_PUBLIC_KEY');
 
     expect(result).toEqual(mockObject);
     expect(jwtMock).toHaveBeenCalled();
@@ -21,14 +21,11 @@ describe('Utils Method', () => {
     const jwtMock = jest.spyOn(jwt, 'verify');
     jwtMock.mockRejectedValue(mockErr);
 
-    expect.assertions(2);
     try {
       await Utils.verifyToken('token', 'secret');
     } catch (e) {
       expect(e).toEqual(mockErr);
     }
-
-    expect(jwtMock).toHaveBeenCalled();
   });
 
   it('should test generate token method successfully', () => {

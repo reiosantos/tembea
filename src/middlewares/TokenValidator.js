@@ -68,7 +68,7 @@ class TokenValidator {
       req.envSecretKey = 'JWT_ANDELA_KEY';
       return next();
     }
-    req.envSecretKey = 'JWT_TEMBEA_SECRET';
+    req.envSecretKey = 'TEMBEA_PUBLIC_KEY';
     next();
   }
 }
