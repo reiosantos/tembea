@@ -48,6 +48,8 @@ export_env(){
     export INSTANCE_CONNECTION_NAME="$PROD_INSTANCE_CONNECTION_NAME"
     export DATABASE_URL="$PROD_DATABASE_URL"
     export NAMESPACE="production"
+    export TEMBEA_PRIVATE_KEY="$PROD_TEMBEA_PRIVATE_KEY"
+    export TEMBEA_PUBLIC_KEY="$PROD_TEMBEA_PUBLIC_KEY"
 
   elif [ "${GIT_BRANCH}" = "develop" ]; then
     # export staging environment variables
@@ -70,6 +72,8 @@ export_env(){
     export INSTANCE_CONNECTION_NAME="$STAGING_INSTANCE_CONNECTION_NAME"
     export DATABASE_URL="$STAGING_DATABASE_URL"
     export NAMESPACE="staging"
+    export TEMBEA_PRIVATE_KEY="$STAGING_TEMBEA_PRIVATE_KEY"
+    export TEMBEA_PUBLIC_KEY="$STAGING_TEMBEA_PUBLIC_KEY"
   fi
 
   export NODE_ENV=${NAMESPACE}
