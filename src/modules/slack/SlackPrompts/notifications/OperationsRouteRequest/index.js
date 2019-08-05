@@ -4,8 +4,7 @@ import ManagerAttachmentHelper from '../ManagerRouteRequest/helper';
 import OpsAttachmentHelper from './helper';
 import InteractivePrompts from '../../InteractivePrompts';
 import RouteRequestService from '../../../../../services/RouteRequestService';
-import TeamDetailsService from '../../../../../services/TeamDetailsService';
-import OperationsHelper from '../../../helpers/slackHelpers/OperationsHelper';
+import SlackHelpers from '../../../helpers/slackHelpers/index';
 
 export default class OperationsNotifications {
   /**
@@ -19,24 +18,28 @@ export default class OperationsNotifications {
   static async sendOpsDeclineMessageToFellow(routeRequestId, teamId, teamUrl) {
     try {
       const routeRequest = await RouteRequestService.findByPk(routeRequestId, true);
-      let slackBotOauthToken;
-      if (teamId) {
-        slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-      } else {
-        const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
-        slackBotOauthToken = botToken;
-      }
-      const { engagement: { fellow }, manager } = routeRequest;
+      const slackBotOauthToken = await SlackHelpers.getSlackBotOAuthToken(teamId, teamUrl);
+      const { engagement: { fellow } } = routeRequest;
       const fellowChannelID = await SlackNotifications.getDMChannelId(fellow.slackId, slackBotOauthToken);
-      const managerChannelID = await SlackNotifications.getDMChannelId(manager.slackId,
-        slackBotOauthToken);
       const fellowMessage = await OpsAttachmentHelper.getOperationDeclineAttachment(routeRequest,
         fellowChannelID, 'fellow');
+      SlackNotifications.sendNotification(fellowMessage, slackBotOauthToken);
+      return;
+    } catch (error) {
+      bugsnagHelper.log(error);
+    }
+  }
+
+  static async sendOpsDeclineMessageToManager(routeRequestId, teamId, teamUrl) {
+    try {
+      const routeRequest = await RouteRequestService.findByPk(routeRequestId, true);
+      const slackBotOauthToken = await SlackHelpers.getSlackBotOAuthToken(teamId, teamUrl);
+      const { manager: { slackId } } = routeRequest;
+      const managerChannelID = await SlackNotifications.getDMChannelId(slackId, slackBotOauthToken);
       const managerMessage = await OpsAttachmentHelper.getOperationDeclineAttachment(
         routeRequest, managerChannelID
       );
-      SlackNotifications.sendNotification(fellowMessage, slackBotOauthToken);
-      SlackNotifications.sendNotification(managerMessage, slackBotOauthToken);
+      await SlackNotifications.sendNotification(managerMessage, slackBotOauthToken);
       return;
     } catch (error) {
       bugsnagHelper.log(error);
@@ -45,7 +48,7 @@ export default class OperationsNotifications {
 
   static async completeOperationsRouteApproval(routeRequest, submission, opsData) {
     const botToken = opsData
-      ? opsData.botToken : await OperationsHelper.getBotToken(submission.teamUrl);
+      ? opsData.botToken : await SlackHelpers.getBotToken(submission.teamUrl);
     if (opsData) {
       const { opsUserId, timeStamp, channelId } = opsData;
       await OperationsNotifications.completeOperationsApprovedAction(
@@ -85,7 +88,6 @@ export default class OperationsNotifications {
     );
   }
 
-
   static async completeOperationsDeclineAction(
     routeRequest, channel, teamId, routeRequestId, timestamp, botToken, payload, update
   ) {
@@ -108,6 +110,9 @@ export default class OperationsNotifications {
         await OperationsNotifications
           .sendOpsDeclineMessageToFellow(routeRequestId, teamId);
       }
+
+      await OperationsNotifications.sendOpsDeclineMessageToFellow(routeRequestId, teamId);
+      await OperationsNotifications.sendOpsDeclineMessageToManager(routeRequestId, teamId);
     } catch (error) {
       bugsnagHelper.log(error);
     }
@@ -126,7 +131,6 @@ export default class OperationsNotifications {
           botToken, {}, true);
       return opsNotify;
     }
-
 
     if (routeRequest.status === 'Declined') {
       return OperationsNotifications

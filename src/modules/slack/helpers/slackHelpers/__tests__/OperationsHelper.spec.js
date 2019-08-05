@@ -3,7 +3,6 @@ import OperationsNotifications from '../../../SlackPrompts/notifications/Operati
 import OperationsHelper from '../OperationsHelper';
 import { cabService } from '../../../../../services/CabService';
 import cache from '../../../../../cache';
-import TeamDetailsService from '../../../../../services/TeamDetailsService';
 import { tripInformation } from '../../../../trips/__tests__/__mocks__';
 import SlackNotifications from '../../../SlackPrompts/Notifications';
 import ProviderNotifications from '../../../SlackPrompts/notifications/ProviderNotifications';
@@ -64,15 +63,6 @@ describe('operations approve request', () => {
     jest.spyOn(cabService, 'findOrCreateCab').mockResolvedValue({ data: {} });
     await OperationsHelper.getCabSubmissionDetails(payload, payload.submission);
     expect(cabService.findOrCreateCab).toBeCalled();
-  });
-
-  it('should get botToken', async () => {
-    const requestData = { teamUrl: 'adaeze.slackcom' };
-    jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({
-      botToken: 'xoop'
-    });
-    const slackbotToken = await OperationsHelper.getBotToken(requestData.teamUrl);
-    expect(slackbotToken).toEqual('xoop');
   });
 });
 

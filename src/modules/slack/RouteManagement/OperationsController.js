@@ -55,7 +55,7 @@ const handlers = {
       const {
         slackBotOauthToken: oauthToken, routeRequest
       } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
-      const updatedRequest = await RouteHelper.updateRouteRequest(routeRequest.Id,
+      const updatedRequest = await RouteHelper.updateRouteRequest(routeRequest.id,
         { status: 'Declined', opsComment: declineReason });
       await OperationsNotifications.completeOperationsDeclineAction(
         updatedRequest, channelId, teamId, routeRequestId,

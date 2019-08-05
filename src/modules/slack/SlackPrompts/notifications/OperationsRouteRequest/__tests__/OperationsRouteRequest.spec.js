@@ -9,8 +9,8 @@ import Cache from '../../../../../../cache';
 import ManagerAttachmentHelper from '../../ManagerRouteRequest/helper';
 import { routeData } from '../../../../RouteManagement/__mocks__/providersController.mock';
 import { routeRequestData, opsData } from '../__mocks__/OpsRouteRequest.mock';
-import OperationsHelper from '../../../../helpers/slackHelpers/OperationsHelper';
 import OperationsNotifications from '../index';
+import SlackHelpers from '../../../../helpers/slackHelpers/index';
 
 describe('OperationsNotifications', () => {
   beforeEach(() => {
@@ -51,7 +51,7 @@ describe('OperationsNotifications', () => {
         expect(RouteRequestService.findByPk).toHaveBeenCalled();
         expect(TeamDetailsService.getTeamDetailsByTeamUrl).toHaveBeenCalled();
         expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
-        expect(OpsAttachmentHelper.getOperationDeclineAttachment).toHaveBeenCalledTimes(2);
+        expect(OpsAttachmentHelper.getOperationDeclineAttachment).toHaveBeenCalledTimes(1);
         expect(SlackNotifications.sendNotification).toHaveBeenCalled();
         done();
       });
@@ -179,7 +179,7 @@ describe('OperationsNotifications', () => {
       jest.restoreAllMocks();
     });
     it('Should handle operations route approval', async () => {
-      jest.spyOn(OperationsHelper, 'getBotToken').mockReturnValue('sdawdas');
+      jest.spyOn(SlackHelpers, 'getBotTokenByTeamUrl').mockReturnValue('sdawdas');
       jest.spyOn(OperationsNotifications, 'completeOperationsApprovedAction')
         .mockResolvedValue();
       await OperationsNotifications.completeOperationsRouteApproval(

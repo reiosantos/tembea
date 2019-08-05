@@ -41,11 +41,6 @@ class OperationsHelper {
     );
   }
 
-  static async getBotToken(url) {
-    const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(url);
-    return botToken;
-  }
-
   static async getCabSubmissionDetails(data, submission) {
     let regNumber;
     let routeCapacity;

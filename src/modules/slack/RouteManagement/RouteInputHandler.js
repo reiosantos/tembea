@@ -123,7 +123,7 @@ const RouteInputHandlers = {
       );
       const { validationError } = previewData;
       if (validationError) return validationError;
-      
+
       await UpdateSlackMessageHelper.updateMessage(payload.state, { text: 'Noted...' });
       await RouteInputHandlerHelper.savePreviewDataToCache(payload.user.id, previewData);
       const previewMessage = PreviewPrompts.displayDestinationPreview(previewData);
