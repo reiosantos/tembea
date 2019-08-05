@@ -147,7 +147,7 @@ class TripsController {
   }
 
   static async getRouteTrips(req, res) {
-    const { page, size } = req.query;
+    const { page = 1, size = 10 } = req.query;
     try {
       let routeTrips = await RouteUseRecordService.getRouteTripRecords({ page, size });
       if (!routeTrips.data) {

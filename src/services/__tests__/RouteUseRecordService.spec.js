@@ -103,7 +103,7 @@ describe('RouteUseRecordService', () => {
     it('should get average ratings and utilization for data', () => {
       const routeTrips = RouteUseRecordService.getAdditionalInfo(mockRecord);
       expect(routeTrips[0].utilization).toEqual('0');
-      expect(routeTrips[0].averageRating).toEqual(4);
+      expect(routeTrips[0].averageRating).toEqual('4.00');
     });
   });
 });

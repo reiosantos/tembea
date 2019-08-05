@@ -9,6 +9,24 @@ import RouteService from './RouteService';
 const {
   RouteUseRecord, RouteBatch, Cab, Route, BatchUseRecord
 } = models;
+const routeRecordInclude = {
+  include: [{
+    model: RouteBatch,
+    as: 'batch',
+    paranoid: false,
+    attributes: ['takeOff', 'batch'],
+    include: [
+      {
+        model: Route,
+        as: 'route',
+        attributes: ['name'],
+        include: [{ model: models.Address, as: 'destination', attributes: ['address'] }]
+      },
+      { model: Cab, as: 'cabDetails', attributes: ['regNumber'] },
+      { model: BatchUseRecord, attributes: ['rating'] }
+    ],
+  }]
+};
 
 class RouteUseRecordService {
   static get defaultPageable() {
@@ -98,28 +116,27 @@ class RouteUseRecordService {
 
   static async getRouteTripRecords(pageable) {
     const { page, size } = pageable;
-    const paginatedRecord = new SequelizePaginationHelper(RouteUseRecord, null, size);
-    paginatedRecord.filter = {
-      subQuery: false,
-      include: [{
-        model: RouteBatch,
-        as: 'batch',
-        attributes: ['takeOff', 'batch'],
-        include: [
-          {
-            model: Route,
-            as: 'route',
-            attributes: ['name'],
-            include: [{ model: models.Address, as: 'destination', attributes: ['address'] }]
-          },
-          { model: Cab, as: 'cabDetails', attributes: ['regNumber'] },
-          { model: BatchUseRecord, attributes: ['rating'] }
-        ]
-      }]
+    const paginationConstraint = {
+      offset: (page - 1) * size,
+      limit: size
     };
-    const paginatedData = await paginatedRecord.getPageItems(page);
-    const data = RemoveDataValues.removeDataValues(paginatedData);
-    return data;
+
+    const allRouteRecords = await RouteUseRecord.findAll({
+      ...routeRecordInclude
+    });
+    const paginatedRouteRecords = await RouteUseRecord.findAll({
+      ...paginationConstraint,
+      ...routeRecordInclude
+    });
+
+    RemoveDataValues.removeDataValues(paginatedRouteRecords);
+    const paginationMeta = {
+      totalPages: Math.ceil(allRouteRecords.length / size),
+      pageNo: page,
+      totalItems: allRouteRecords.length,
+      itemsPerPage: size
+    };
+    return { data: paginatedRouteRecords, pageMeta: { ...paginationMeta } };
   }
 
   static getAdditionalInfo(routeTripsData) {
@@ -134,11 +151,11 @@ class RouteUseRecordService {
       const totalUsers = confirmedUsers + unConfirmedUsers + skippedUsers + pendingUsers;
       const utilization = ((confirmedUsers / totalUsers) * 100).toFixed(0);
       recordInfo.utilization = utilization >= 0 ? utilization : '0';
-      const ratingsarray = record.batch.BatchUseRecords;
-      const sumOfRatings = record.batch.BatchUseRecords
-        .reduce((prev, next) => prev + next.rating, 0);
+      const ratingsArray = RemoveDataValues.removeDataValues(record.batch.BatchUseRecords);
+      const sumOfRatings = ratingsArray.reduce((prev, next) => prev + next.rating, 0);
+      const averageRating = (sumOfRatings / ratingsArray.length).toFixed(2);
+      recordInfo.averageRating = averageRating > 0 ? averageRating : 0.00;
       delete recordInfo.batch.BatchUseRecords;
-      recordInfo.averageRating = sumOfRatings / ratingsarray.length;
       return recordInfo;
     });
   }
