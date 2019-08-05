@@ -99,13 +99,13 @@ class TripActionsController {
       team: { id: teamId },
       user: { id: userId },
     } = payload;
-    const { rider: { slackId: riderSlackId } } = trip;
+    
     await Promise.all([
       ProviderNotifications.sendTripNotification(providerUserSlackId, providerName, slackBotOauthToken, trip),
       InteractivePrompts.sendOpsDeclineOrApprovalCompletion(false, trip, timeStamp, channel,
         slackBotOauthToken),
       SendNotifications.sendManagerConfirmOrDeclineNotification(teamId, userId, trip, false),
-      SendNotifications.sendUserConfirmOrDeclineNotification(teamId, riderSlackId, trip, false, true)
+      SendNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, trip, false, true)
     ]);
   }
 
