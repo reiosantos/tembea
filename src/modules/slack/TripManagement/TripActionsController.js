@@ -67,7 +67,7 @@ class TripActionsController {
       submission: { confirmationComment, providerId }, channel,
       state: payloadState
     } = payload;
-    const { tripId, actionTs: timeStamp } = JSON.parse(payloadState);
+    const { tripId, timeStamp } = JSON.parse(payloadState);
     let newPayload = { ...payload };
     const { providerUserSlackId, providerName } = await SlackProviderHelper.getProviderUserDetails(providerId);
     newPayload = { ...newPayload, submission: { ...newPayload.submission, providerUserSlackId, providerName } };
