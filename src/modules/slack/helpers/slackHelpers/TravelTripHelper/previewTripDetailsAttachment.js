@@ -22,7 +22,7 @@ export default (tripDetails) => {
     new SlackAttachmentField('Pick-Up Time', dateTime, true),
     new SlackAttachmentField(timeFieldName, travelDateTime, true),
     new SlackAttachmentField('Trip Type', tripType, true),
-    new SlackAttachmentField('Flight Number', flightNumber, true),
+    flightNumber ? new SlackAttachmentField('Flight Number', flightNumber, true) : null,
     new SlackAttachmentField('TripNotes', tripNote, true),
   ];
 };
