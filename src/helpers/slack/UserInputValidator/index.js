@@ -60,6 +60,8 @@ class UserInputValidator {
     errors.push(...Validators.validateEmptyAndSpaces(riderPhoneNo, 'riderPhoneNo'));
     errors.push(...Validators.validateEmptyAndSpaces(travelTeamPhoneNo, 'travelTeamPhoneNo'));
 
+    errors.push(...Validators.checkDuplicatePhoneNo(riderPhoneNo, travelTeamPhoneNo));
+
 
     return errors;
   }

@@ -171,6 +171,15 @@ class Validators {
     }
     return result.value;
   }
+
+  static checkDuplicatePhoneNo(riderPhoneNo, travelTeamPhoneNo) {
+    const message = 'Passenger and travel team phone number cannot be the same.';
+    if (riderPhoneNo === travelTeamPhoneNo) {
+      return [new SlackDialogError('riderPhoneNo', message),
+        new SlackDialogError('travelTeamPhoneNo', message)];
+    }
+    return [];
+  }
 }
 
 export default Validators;

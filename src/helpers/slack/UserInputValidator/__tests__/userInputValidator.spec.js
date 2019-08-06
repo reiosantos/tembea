@@ -503,3 +503,21 @@ describe('validatePickupDestinationLocationEntries', () => {
     expect(errors.length).toEqual(2);
   });
 });
+
+describe('checkDuplicatePhoneNo', () => {
+  const payload = {
+    submission: {
+      riderPhoneNo: '0771239097',
+      travelTeamPhoneNo: '0771239098'
+    }
+  };
+  it('should check if the phoneNo is not duplicated', async () => {
+    const result = Validators.checkDuplicatePhoneNo(payload);
+    expect(result.length).toEqual(0);
+  });
+  it('should check if phoneNo is duplicated', async () => {
+    payload.submission.riderPhoneNo = '0771239098';
+    const result = Validators.checkDuplicatePhoneNo(payload);
+    expect(result.length).toEqual(0);
+  });
+});
