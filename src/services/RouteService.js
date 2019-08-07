@@ -270,7 +270,9 @@ class RouteService extends BaseService {
    */
   static updateDefaultInclude(where) {
     if (where && where.name) {
-      return [RouteService.defaultInclude[0],
+      return [
+        RouteService.defaultInclude[0],
+        RouteService.defaultInclude[1],
         {
           model: Route,
           as: 'route',

@@ -4,6 +4,14 @@ import models from '../../../../database/models';
 
 const { TripRequest } = models;
 
+const mockTrip = {
+  name: 'test trip',
+  approvedById: 4,
+  id: 1,
+  origin: { address: 'Nairobi' },
+  destination: { address: 'Thika' }
+};
+
 describe('cancel trip test', () => {
   beforeEach(() => {
     jest.spyOn(tripService, 'getById').mockResolvedValue();
@@ -17,7 +25,7 @@ describe('cancel trip test', () => {
 
   it('should return success', async () => {
     jest.spyOn(tripService, 'getById')
-      .mockImplementation(id => Promise.resolve({ id, name: 'Test Trip', approvedById: 4 }));
+      .mockImplementation(() => Promise.resolve(mockTrip));
     jest.spyOn(tripService, 'updateRequest').mockResolvedValue({});
 
     const result = await CancelTripController.cancelTrip(1);
@@ -26,7 +34,7 @@ describe('cancel trip test', () => {
     expect(tripService.updateRequest).toHaveBeenCalledWith(1,
       { tripStatus: 'Cancelled' });
 
-    expect(result.text).toBe('Success! Your Trip request has been cancelled');
+    expect(result.text).toBe('Success! Your Trip request from Nairobi to Thika has been cancelled');
   });
 
   it('should handle error', async () => {

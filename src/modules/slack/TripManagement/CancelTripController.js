@@ -14,7 +14,10 @@ class CancelTripController {
       } else {
         await tripService.updateRequest(tripId,
           { tripStatus: 'Cancelled' });
-        message = 'Success! Your Trip request has been cancelled';
+        const {
+          origin: { address: originAddress }, destination: { address: destinationAdress }
+        } = trip;
+        message = `Success! Your Trip request from ${originAddress} to ${destinationAdress} has been cancelled`;
         // Raise slack events to notify manager and ops that the trip has been cancelled
         if (trip.approvedById) {
           SlackEvents.raise(slackEventNames.RIDER_CANCEL_TRIP,

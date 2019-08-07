@@ -394,9 +394,9 @@ describe('RouteService', () => {
         name: 'Island'
       };
       const result = RouteService.updateDefaultInclude(where);
-      expect(result.length).toEqual(2);
-      expect(result[1]).toHaveProperty('where');
-      expect(result[1].where).toHaveProperty('name');
+      expect(result.length).toEqual(3);
+      expect(result[2]).toHaveProperty('where');
+      expect(result[2].where).toHaveProperty('name');
     });
   });
   describe('Route Ratings', () => {
