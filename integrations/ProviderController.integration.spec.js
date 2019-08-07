@@ -5,7 +5,6 @@ import Utils from '../src/utils';
 import models from '../src/database/models';
 import { createUser } from './support/helpers';
 
-
 const apiURL = '/api/v1/providers';
 
 describe('ProvidersController', () => {
@@ -14,18 +13,18 @@ describe('ProvidersController', () => {
   let mockUser;
 
   beforeAll(async () => {
-    validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
-    headers = {
-      Accept: 'application/json',
-      Authorization: validToken
-    };
-
     mockUser = await createUser({
       name: faker.name.findName(),
       slackId: faker.random.word().toUpperCase(),
       phoneNo: faker.phone.phoneNumber('080########'),
       email: faker.internet.email(),
     });
+
+    validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'], email: mockUser.email } });
+    headers = {
+      Accept: 'application/json',
+      Authorization: validToken
+    };
   });
   afterAll(() => {
     models.sequelize.close();

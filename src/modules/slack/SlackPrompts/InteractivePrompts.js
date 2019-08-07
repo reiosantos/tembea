@@ -15,6 +15,7 @@ import BugsnagHelper from '../../../helpers/bugsnagHelper';
 import DepartmentService from '../../../services/DepartmentService';
 import PreviewScheduleTrip from '../helpers/slackHelpers/previewScheduleTripAttachments';
 import InteractivePromptSlackHelper from '../helpers/slackHelpers/InteractivePromptSlackHelper';
+import HomebaseService from '../../../services/HomebaseService';
 
 
 class InteractivePrompts {
@@ -210,8 +211,9 @@ class InteractivePrompts {
     forSelf = 'true'
   ) {
     const personify = forSelf === 'true' ? 'your' : "passenger's";
+    const [homebase] = await HomebaseService.getHomeBaseBySlackId(payload.user.id);
     const attachment = SlackButtonsAttachmentFromAList.createAttachments(
-      await DepartmentService.getDepartmentsForSlack(payload.team.id),
+      await DepartmentService.getDepartmentsForSlack(payload.team.id, homebase.id),
       attachmentCallbackId
     );
     attachment.push(createNavButtons(navButtonCallbackId, navButtonValue));

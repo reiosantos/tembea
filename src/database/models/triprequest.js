@@ -110,7 +110,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     approvalDate: {
       type: DataTypes.STRING
-    }
+    },
+    homebaseId: {
+      type: DataTypes.INTEGER
+    },
   }, {});
   TripRequest.associate = (models) => {
     TripRequest.belongsTo(models.User, {
@@ -176,6 +179,10 @@ module.exports = (sequelize, DataTypes) => {
     TripRequest.belongsTo(models.Department, {
       foreignKey: 'departmentId',
       targetKey: 'id',
+    });
+    TripRequest.belongsTo(models.Homebase, {
+      foreignKey: 'homebaseId',
+      as: 'homebase'
     });
   };
   return TripRequest;

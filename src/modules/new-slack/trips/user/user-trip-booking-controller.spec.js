@@ -9,6 +9,7 @@ import SlackController from '../../../slack/SlackController';
 import ScheduleTripController from '../../../slack/TripManagement/ScheduleTripController';
 import Validators from './validators';
 import NewLocationHelpers from '../../helpers/location-helpers';
+import UserService from '../../../../services/UserService';
 
 describe('UserTripBookingController', () => {
   const [payload, res] = [{
@@ -146,7 +147,7 @@ describe('UserTripBookingController', () => {
           selected_option: { value: '2' }
         }]
       };
-      
+      jest.spyOn(UserService, 'getUserBySlackId').mockImplementation(() => ({ homebaseId: 1 }));
       await UserTripBookingController.saveExtraPassengers(newPayload, res);
       expect(Cache.save).toHaveBeenCalled();
       expect(res).toHaveBeenCalled();
@@ -159,6 +160,7 @@ describe('UserTripBookingController', () => {
           value: '0'
         }]
       };
+      jest.spyOn(UserService, 'getUserBySlackId').mockImplementation(() => ({ homebaseId: 1 }));
       await UserTripBookingController.saveExtraPassengers(newPayload, res);
       expect(Cache.save).toHaveBeenCalled();
       expect(res).toHaveBeenCalled();

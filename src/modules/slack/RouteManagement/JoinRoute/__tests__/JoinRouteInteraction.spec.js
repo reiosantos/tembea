@@ -8,6 +8,7 @@ import BatchUseRecordService from '../../../../../services/BatchUseRecordService
 import ConfirmRouteUseJob from '../../../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 import UserService from '../../../../../services/UserService';
 import routeBatchMock from '../__mocks__/routeBatch.mock';
+import HomebaseService from '../../../../../services/HomebaseService';
 
 describe('Test JointRouteInteractions', () => {
   const res = jest.fn();
@@ -25,7 +26,9 @@ describe('Test JointRouteInteractions', () => {
     });
 
     it('should test sendAvailableRoutesMessage', async () => {
-      await JoinRouteInteractions.sendAvailableRoutesMessage(1, res);
+      const payload = { user: { id: 1 } };
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockImplementation(() => ([{ id: 1 }]));
+      await JoinRouteInteractions.sendAvailableRoutesMessage(payload, res);
 
       expect(RoutesHelpers.toAvailableRoutesAttachment).toBeCalled();
       expect(RouteService.getRoutes).toBeCalled();
@@ -33,8 +36,8 @@ describe('Test JointRouteInteractions', () => {
 
     it('should skip page', async () => {
       const actions = [{ name: 'skipPage', field: 'field' }];
-      const payload = { actions, team: { id: 3 } };
-
+      const payload = { actions, team: { id: 3 }, user: { id: 1 } };
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockImplementation(() => ([{ id: 1 }]));
       const result = await JoinRouteInteractions.sendAvailableRoutesMessage(
         payload,
         res

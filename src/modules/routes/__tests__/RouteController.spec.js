@@ -114,9 +114,11 @@ describe('RoutesController', () => {
       };
     });
     it('should return all route requests', async () => {
+      req = { currentUser: { userInfo: { email: 'ddd@gmail.com' } } };
       jest.spyOn(RouteRequestService, 'getAllConfirmedRouteRequests')
         .mockResolvedValue(mockRouteRequestData);
-
+      jest.spyOn(UserService, 'getUserByEmail')
+        .mockImplementation(() => ({ homebaseId: 1 }));
       await RoutesController.getAll(req, res);
       expect(res.status).toHaveBeenCalledTimes(1);
       expect(res.status).toHaveBeenCalledWith(200);
@@ -193,6 +195,8 @@ describe('RoutesController', () => {
   });
   describe('getRoutes', () => {
     it('should successfully fetch routes', (done) => {
+      jest.spyOn(UserService, 'getUserByEmail')
+        .mockImplementation(() => ({ homebaseId: 1 }));
       request(app)
         .get('/api/v1/routes')
         .set('Content-Type', 'application/json')
@@ -215,6 +219,8 @@ describe('RoutesController', () => {
     it('should handle internal server error', (done) => {
       jest.spyOn(RouteService, 'getRoutes')
         .mockRejectedValue(new Error('dummy error'));
+      jest.spyOn(UserService, 'getUserByEmail')
+        .mockImplementation(() => ({ homebaseId: 1 }));
       request(app)
         .get('/api/v1/routes')
         .set('Content-Type', 'application/json')

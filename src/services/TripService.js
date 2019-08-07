@@ -10,7 +10,7 @@ import RemoveDataValues from '../helpers/removeDataValues';
 import WhereClauseHelper from '../helpers/WhereClauseHelper';
 
 const {
-  TripRequest, Department, Provider, User,
+  TripRequest, Department, Provider, User, Country
 } = models;
 const getTripKey = pk => `tripDetail_${pk}`;
 
@@ -26,6 +26,12 @@ export class TripService {
         model: models.Cab, as: 'cab', attributes: ['regNumber', 'model', 'providerId']
       }, {
         model: models.Driver, as: 'driver', attributes: ['driverName', 'driverPhoneNo']
+      },
+      {
+        model: models.Homebase,
+        as: 'homebase',
+        attributes: ['id', 'name'],
+        include: [{ model: Country, as: 'country', attributes: ['name', 'id', 'status'] }]
       }
     ];
   }
@@ -67,9 +73,9 @@ export class TripService {
     return trips.getPageItems(pageNo);
   }
 
-  async getTrips(pageable, where) {
+  async getTrips(pageable, where, homebaseId) {
     const { page, size } = pageable;
-    const filter = this.createFilter(where);
+    const filter = this.createFilter({ ...where, homebaseId });
     const paginatedRoutes = new SequelizePaginationHelper(TripRequest, filter, size);
     const { data, pageMeta } = await paginatedRoutes.getPageItems(page);
     const trips = data.map(trip => TripService.serializeTripRequest(trip));
@@ -100,11 +106,7 @@ export class TripService {
     if (requester) {
       const { email, slackId, name: username } = requester;
       const name = Utils.getNameFromEmail(email) || username;
-      return {
-        name,
-        email,
-        slackId
-      };
+      return { name, email, slackId };
     }
   }
 
@@ -142,7 +144,8 @@ export class TripService {
 
   static serializeTripRequest(trip) {
     const {
-      requester, origin, destination, rider, department, approver, confirmer, decliner, cab, driver, ...tripInfo
+      requester, origin, destination, rider, department, approver, confirmer,
+      decliner, cab, driver, homebase, ...tripInfo
     } = trip;
     const {
       id, name, tripStatus: status, departureTime, arrivalTime, createdAt,
@@ -175,7 +178,8 @@ export class TripService {
       provider: TripService.serializeProviderData(provider) || {},
       approvalDate,
       cab,
-      driver
+      driver,
+      homebase
     };
   }
 

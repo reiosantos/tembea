@@ -6,6 +6,7 @@ import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
 import ProviderHelper from '../../helpers/providerHelper';
 import ErrorTypeChecker from '../../helpers/ErrorTypeChecker';
 import Response from '../../helpers/responseHelper';
+import UserService from '../../services/UserService';
 
 class ProviderController {
   /**
@@ -16,7 +17,6 @@ class ProviderController {
    */
   static async addProvider(req, res) {
     const { locals: { providerData } } = res;
-
     try {
       const { provider, isNewProvider } = await ProviderService.createProvider(
         providerData
@@ -50,7 +50,9 @@ class ProviderController {
         name: { [Op.iLike]: `%${name}%` }
       } : null;
       const pageable = { page, size };
-      const providersData = await ProviderService.getProviders(pageable, where);
+      const { currentUser: { userInfo } } = req;
+      const { homebaseId } = await UserService.getUserByEmail(userInfo.email, { plain: true });
+      const providersData = await ProviderService.getProviders(pageable, where, homebaseId);
       const {
         totalPages, providers, pageNo, totalItems: totalResults, itemsPerPage: pageSize
       } = providersData;

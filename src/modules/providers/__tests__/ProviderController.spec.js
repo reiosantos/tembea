@@ -54,7 +54,8 @@ describe('ProviderController', () => {
           page: 1,
           size: 3,
           name: 'uber'
-        }
+        },
+        currentUser: { userInfo: { email: 'ddd@gmail.com' } }
       };
     });
 
@@ -62,6 +63,7 @@ describe('ProviderController', () => {
       const paginateSpy = jest.spyOn(ProviderHelper, 'paginateData');
       providerServiceSpy.mockResolvedValue(providers);
       paginateSpy.mockReturnValue(paginatedData);
+      jest.spyOn(UserService, 'getUserByEmail').mockImplementation(() => ({ email: 'ddd@gmail.com' }));
       await ProviderController.getAllProviders(req, res);
       expect(ProviderHelper.paginateData)
         .toHaveBeenCalled();
@@ -72,6 +74,7 @@ describe('ProviderController', () => {
     it('Should catch errors', async () => {
       const error = new Error('Something went wrong');
       providerServiceSpy.mockRejectedValue(error);
+      jest.spyOn(UserService, 'getUserByEmail').mockImplementation(() => ({ email: 'ddd@gmail.com' }));
       await ProviderController.getAllProviders(req, res);
       expect(BugsnagHelper.log)
         .toBeCalledWith(error);

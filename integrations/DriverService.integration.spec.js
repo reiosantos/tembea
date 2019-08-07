@@ -11,17 +11,28 @@ describe('DriverService', () => {
   let mockUser;
   let mockProvider;
   let mockDriver;
+  let homebase;
 
   beforeAll(async () => {
-    mockUser = await createUser({
+    const { id } = await models.Country.create({
+      name: faker.name.findName(),
+    });
+    homebase = await models.Homebase.create({
+      country: faker.name.findName(),
+      countryId: id
+    });
+    const userData = {
       name: faker.name.findName(),
       slackId: faker.random.word().toUpperCase(),
       phoneNo: faker.phone.phoneNumber('080########'),
       email: faker.internet.email(),
-    });
+      homebaseId: homebase.id
+    };
+    mockUser = await createUser(userData);
     mockProvider = await createProvider({
       name: faker.random.word(),
-      providerUserId: mockUser.id
+      providerUserId: mockUser.id,
+      homebaseId: homebase.id
     });
     mockDriver = await createDriver({
       driverName: faker.name.findName(),
@@ -30,7 +41,7 @@ describe('DriverService', () => {
       providerId: mockProvider.id,
       email: faker.internet.email(),
     });
-  }, 10000);
+  });
 
   afterAll(() => {
     models.sequelize.close();

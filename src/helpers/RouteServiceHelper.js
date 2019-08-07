@@ -49,7 +49,7 @@ export default class RouteServiceHelper {
    */
   static serializeRouteBatch(routeData) {
     const {
-      id, status, takeOff, capacity, batch, comments, inUse, imageUrl, routeId,
+      id, status, takeOff, capacity, batch, comments, inUse, imageUrl, routeId, homebase
     } = routeData;
     return {
       id,
@@ -60,6 +60,7 @@ export default class RouteServiceHelper {
       batch,
       comments,
       routeId,
+      homebase,
       inUse: inUse || 0,
       ...RouteServiceHelper.serializeRoute(routeData.route),
       ...RouteServiceHelper.serializeCabDetails(routeData.cabDetails),

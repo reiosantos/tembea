@@ -18,9 +18,11 @@ class TripsController {
       const query = TripsController.getRequestQuery(req);
       const where = TripService.sequelizeWhereClauseOption(query);
       const pageable = { page, size };
+      const { currentUser: { userInfo } } = req;
+      const { homebaseId } = await UserService.getUserByEmail(userInfo.email);
       const {
         totalPages, trips, pageNo, totalItems, itemsPerPage
-      } = await tripService.getTrips(pageable, where);
+      } = await tripService.getTrips(pageable, where, homebaseId);
       const message = `${pageNo} of ${totalPages} page(s).`;
       const pageData = {
         pageMeta: {
@@ -32,9 +34,7 @@ class TripsController {
         trips
       };
       return Response.sendResponse(res, 200, true, message, pageData);
-    } catch (error) {
-      HttpError.sendErrorResponse(error, res);
-    }
+    } catch (error) { HttpError.sendErrorResponse(error, res); }
   }
 
   static getRequestQuery(req) {

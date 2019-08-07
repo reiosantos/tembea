@@ -71,7 +71,7 @@ describe('TripService', () => {
     });
     it('should return trip', async () => {
       const pageable = { page: 1, size: 100 };
-      const where = {};
+      const where = { homebaseId: 5 };
       const response = await tripService.getTrips(pageable, where);
       expect(response).toHaveProperty('trips');
       expect(response).toHaveProperty('totalPages');
@@ -175,6 +175,7 @@ describe('TripService', () => {
       expect(response).toHaveProperty('confirmedBy');
       expect(response).toHaveProperty('provider');
       expect(response).toHaveProperty('approvalDate');
+      expect(response).toHaveProperty('homebase');
     });
   });
 

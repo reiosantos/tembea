@@ -7,7 +7,9 @@ import cache from '../cache';
 import RemoveDataValues from '../helpers/removeDataValues';
 
 
-const { Department, User, TripRequest } = models;
+const {
+  Department, User, TripRequest, Country
+} = models;
 const getDeptKey = id => `dept_${id}`;
 export const departmentDataAttributes = {
   attributes: [
@@ -89,12 +91,19 @@ class DepartmentService {
    * @param {number} page The page number
    * @returns {object} an array of departments
    */
-  static async getAllDepartments(size, page) {
+  static async getAllDepartments(size, page, homebaseId) {
     return Department.findAndCountAll({
       raw: true,
       limit: size,
+      where: { homebaseId },
       include: [
-        { model: User, as: 'head' }
+        { model: User, as: 'head' },
+        {
+          model: models.Homebase,
+          as: 'homebase',
+          attributes: ['id', 'name'],
+          include: [{ model: Country, as: 'country', attributes: ['name', 'id', 'status'] }]
+        }
       ],
       offset: (size * (page - 1)),
       order: [['id', 'DESC']]
@@ -145,12 +154,13 @@ class DepartmentService {
     return head;
   }
 
-  static async getDepartmentsForSlack(teamId) {
+  static async getDepartmentsForSlack(teamId, homebaseId) {
     const departments = teamId ? await Department.findAll({
-      where: { teamId },
-      include: ['head']
+      where: { teamId, homebaseId },
+      include: ['head'],
     }) : await Department.findAll({
-      include: ['head']
+      include: ['head'],
+      where: { homebaseId }
     });
     return departments.map(item => ({
       label: item.dataValues.name,

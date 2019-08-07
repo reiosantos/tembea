@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
       targetKey: 'id',
       as: 'destination',
     });
+    Route.belongsTo(models.Homebase, {
+      foreignKey: 'homebaseId',
+      as: 'homebase'
+    });
   };
   return Route;
 };

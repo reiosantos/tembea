@@ -40,6 +40,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'providerId',
       as: 'drivers'
     });
+    Provider.belongsTo(models.Homebase, {
+      foreignKey: 'homebaseId',
+      targetKey: 'id',
+      as: 'homebase'
+    });
   };
   return Provider;
 };

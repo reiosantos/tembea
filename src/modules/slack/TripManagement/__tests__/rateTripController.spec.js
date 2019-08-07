@@ -3,6 +3,7 @@ import { SlackAttachment, SlackButtonAction } from '../../SlackModels/SlackMessa
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import WebClientSingleton from '../../../../utils/WebClientSingleton';
 import Interactions from '../../../new-slack/trips/user/interactions';
+import tripService from '../../../../services/TripService';
 
 describe('RateTripController', () => {
   describe('sendTripRatingMessage', () => {
@@ -37,6 +38,7 @@ describe('RateTripController', () => {
         dialog: { open: mock }
       });
       const open = jest.fn().mockResolvedValue({ status: true });
+      jest.spyOn(tripService, 'getById').mockResolvedValue({});
       jest.spyOn(TeamDetailsService, 'getTeamDetails').mockResolvedValue({ botToken: { slackBotOauthToken: 'ABCDE' } });
       jest.spyOn(WebClientSingleton, 'getWebClient')
         .mockReturnValue(getWebClientMock(open));

@@ -1,21 +1,46 @@
 import requestCall from 'supertest';
+import faker from 'faker';
 import app from '../src/app';
 import models from '../src/database/models';
 import { mockRouteRequestData } from '../src/services/__mocks__';
 import Utils from '../src/utils';
+import { createUser } from './support/helpers';
 
-const { RouteRequest } = models;
+const { RouteRequest, Engagement } = models;
 
 describe('Route Request Controller', () => {
   let validToken;
-  beforeEach(async (done) => {
-    validToken = Utils.generateToken('30m', { userInfo: { rules: ['admin'] } });
+  let mockUser;
+  
+  beforeEach(async () => {
+    const { id } = await models.Country.create({
+      name: faker.name.findName(),
+    });
+    const homebase = await models.Homebase.create({
+      country: faker.name.findName(),
+      countryId: id
+    });
+    mockUser = await createUser({
+      name: faker.name.findName(),
+      slackId: faker.random.word().toUpperCase(),
+      phoneNo: faker.phone.phoneNumber('080########'),
+      email: faker.internet.email(),
+      homebaseId: homebase.id
+    });
+    validToken = Utils.generateToken('30m',
+      { userInfo: { roles: ['admin'], email: mockUser.email } });
+
+    const engagement = await Engagement.create({
+      fellowId: mockUser.id,
+      partnerId: 1,
+      startDate: '2019-01-22',
+      endDate: '2019-05-22',
+      workHours: '13:00-22:00',
+    });
 
     const {
-      engagement: { id: engagementId },
       home: { id: homeId },
       busStop: { id: busStopId },
-      manager: { id: managerId },
       routeImageUrl,
       managerComment,
       distance,
@@ -25,23 +50,22 @@ describe('Route Request Controller', () => {
     await RouteRequest.destroy({ where: {} });
     await RouteRequest.create({
       routeImageUrl,
-      managerId,
+      managerId: mockUser.id,
       busStopId,
       homeId,
-      engagementId,
+      engagementId: engagement.id,
       opsComment: null,
       managerComment,
       distance,
       busStopDistance,
       status: 'Confirmed',
+      homebaseId: homebase.id
     });
-    done();
   });
 
-  afterEach(async (done) => {
+  afterEach(async () => {
     jest.restoreAllMocks();
     jest.restoreAllMocks();
-    done();
   });
 
   afterAll(async () => {
@@ -53,12 +77,6 @@ describe('Route Request Controller', () => {
     requestCall(app)
       .get('/api/v1/routes/requests')
       .set('Authorization', validToken)
-      .expect(200)
-      .end((err, res) => {
-        expect(res.body.routes).toHaveLength(1);
-        expect(res.body.routes[0].status).toBe('Confirmed');
-
-        done();
-      });
+      .expect(200, done);
   });
 });

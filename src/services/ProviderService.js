@@ -7,7 +7,7 @@ import BaseService from './BaseService';
 import RemoveDataValues from '../helpers/removeDataValues';
 
 const {
-  Provider, User, Cab, Driver
+  Provider, User, Cab, Driver, Country, Homebase
 } = models;
 
 class ProviderService extends BaseService {
@@ -25,17 +25,24 @@ class ProviderService extends BaseService {
    *  { page:1, size:20 }
    * );
    */
-  static async getProviders(pageable = ProviderHelper.defaultPageable, where = {}) {
+  static async getProviders(pageable = ProviderHelper.defaultPageable, where = {}, homebaseId) {
     let providers = [];
     const { page, size } = pageable;
     const include = [{
       model: User,
       as: 'user',
       attributes: ['name', 'phoneNo', 'email', 'slackId']
-    }];
+    },
+    {
+      model: Homebase,
+      as: 'homebase',
+      attributes: ['id', 'name'],
+      include: [{ model: Country, as: 'country', attributes: ['name', 'id', 'status'] }]
+    }
+    ];
     const filter = {
       include,
-      where
+      where: { ...where, homebaseId }
     };
     const paginatedCabs = new SequelizePaginationHelper(Provider, filter, size);
     const { data, pageMeta } = await paginatedCabs.getPageItems(page);
@@ -126,7 +133,7 @@ class ProviderService extends BaseService {
     return provider;
   }
 
-  static async getViableProviders() {
+  static async getViableProviders(homebaseId) {
     const providers = await Provider.findAll({
       attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
       include: [{
@@ -140,6 +147,9 @@ class ProviderService extends BaseService {
         as: 'user',
         attributes: ['name', 'phoneNo', 'email', 'slackId']
       }],
+      where: {
+        homebaseId
+      }
     });
     return providers.filter(
       provider => provider.dataValues.vehicles.length > 0 && provider.dataValues.drivers.length > 0

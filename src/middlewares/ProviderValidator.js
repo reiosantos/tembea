@@ -99,7 +99,7 @@ class ProviderValidator {
    */
   static async validateProvider(req, res, next) {
     const { body: { email, ...providerData } } = req;
-    const { id: userId } = await UserService.getUserByEmail(email);
+    const { id: userId } = await UserService.getUserByEmail(email, { plain: true });
     const isExistingProvider = await providerService.findProviderByUserId(userId);
 
     if (isExistingProvider) {

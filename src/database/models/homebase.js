@@ -20,6 +20,10 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'cascade',
       hooks: true
     });
+    Homebase.hasMany(models.User, {
+      foreignKey: 'homebaseId',
+      as: 'users'
+    });
   };
   return Homebase;
 };

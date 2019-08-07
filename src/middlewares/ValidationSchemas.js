@@ -15,6 +15,7 @@ export const querySchema = Joi.object().keys({
   id: Joi.number().min(1),
   providerId: Joi.number().min(1),
   sort: Joi.string(),
+  status: Joi.string().valid('Active', 'Inactive'),
   name: Joi.string().replace(/[^a-z0-9\s]/gi, ''),
   country: Joi.string().replace(/[^a-z0-9\s]/gi, ''),
   onRoute: Joi.boolean(),

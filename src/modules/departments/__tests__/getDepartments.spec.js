@@ -2,6 +2,8 @@ import request from 'supertest';
 import app from '../../../app';
 import Utils from '../../../utils';
 import models from '../../../database/models';
+import UserService from '../../../services/UserService';
+import DepartmentService from '../../../services/DepartmentService';
 
 let validToken;
 
@@ -14,6 +16,8 @@ afterAll(() => {
 
 describe('Get department records', () => {
   it('should fail when page does not exist', (done) => {
+    jest.spyOn(UserService, 'getUserByEmail').mockImplementation(() => ({ homebaseId: 1 }));
+    jest.spyOn(DepartmentService, 'getAllDepartments').mockImplementation(() => ({ count: 0, rows: 0 }));
     request(app)
       .get('/api/v1/departments?page=1000000000000')
       .set({
@@ -28,6 +32,8 @@ describe('Get department records', () => {
   });
 
   it('should paginate the departments record', (done) => {
+    jest.spyOn(UserService, 'getUserByEmail').mockImplementation(() => ({ homebaseId: 1 }));
+    jest.spyOn(DepartmentService, 'getAllDepartments').mockImplementation(() => ({ count: 1, rows: 2 }));
     request(app)
       .get('/api/v1/departments?page=3&size=2')
       .set({

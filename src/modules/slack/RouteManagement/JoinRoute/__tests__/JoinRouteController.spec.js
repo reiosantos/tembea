@@ -1,6 +1,7 @@
 import JoinRouteInteractions from '../JoinRouteInteractions';
 import RoutesHelpers from '../../../helpers/routesHelper';
 import RouteService from '../../../../../services/RouteService';
+import HomebaseService from '../../../../../services/HomebaseService';
 
 describe('JoinRouteInputHandlers', () => {
   describe('JoinRouteController_sendAvailableRoutesMessage', () => {
@@ -22,7 +23,9 @@ describe('JoinRouteInputHandlers', () => {
     });
 
     it('should display all routes', async () => {
-      const payload = {};
+      const payload = { user: { id: 1 } };
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId')
+        .mockImplementation(() => ([{ id: 1, homebase: 'Kampala' }]));
       await JoinRouteInteractions.sendAvailableRoutesMessage(payload, respond);
       expect(RoutesHelpers.toAvailableRoutesAttachment).toBeCalled();
     });

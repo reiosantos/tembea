@@ -18,6 +18,7 @@ import ProviderService, { providerService } from '../../../services/ProviderServ
 import ProvidersHelper from '../helpers/slackHelpers/ProvidersHelper';
 import ProviderHelper from '../../../helpers/providerHelper';
 import UserService from '../../../services/UserService';
+import HomebaseService from '../../../services/HomebaseService';
 
 export const getPayloadKey = userId => `PAYLOAD_DETAILS${userId}`;
 
@@ -120,9 +121,11 @@ class DialogPrompts {
     const {
       actions: [{ value: tripId }],
       message_ts: timeStamp,
-      channel: { id: channel }
+      channel: { id: channel },
+      user: { id }
     } = payload;
-    const providers = await ProviderService.getViableProviders();
+    const [homebase] = await HomebaseService.getHomeBaseBySlackId(id);
+    const providers = await ProviderService.getViableProviders(homebase.id);
     const providerData = ProviderHelper.generateProvidersLabel(providers);
     const state = {
       tripId, timeStamp, channel, isAssignProvider: true
@@ -130,9 +133,7 @@ class DialogPrompts {
     const dialog = new SlackDialog('confirm_ops_approval',
       'Confirm Trip Request', 'Submit', false, JSON.stringify(state));
     dialog.addElements([
-      new SlackDialogSelectElementWithOptions(
-        'Select A Provider', 'provider', [...providerData]
-      ),
+      new SlackDialogSelectElementWithOptions('Select A Provider', 'provider', [...providerData]),
       new SlackDialogTextarea(
         'Justification',
         'confirmationComment',

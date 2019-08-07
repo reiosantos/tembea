@@ -15,6 +15,7 @@ import userTripActions from './actions';
 import userTripBlocks from './blocks';
 import PreviewTripBooking from './preview-trip-booking-helper';
 import tripService from '../../../../services/TripService';
+import HomebaseService from '../../../../services/HomebaseService';
 
 export default class UserTripHelpers {
   static createStartMessage() {
@@ -82,12 +83,11 @@ export default class UserTripHelpers {
 
   static async getDepartmentListMessage(payload) {
     const { forMe } = await Cache.fetch(getTripKey(payload.user.id));
-    const personify = forMe ? 'your' : 'passenger\'s';
-
+    const personify = forMe ? 'your' : "passenger's";
     const header = new Block(BlockTypes.section)
       .addText(new SlackText(`*Please select ${personify} department.*`, TextTypes.markdown));
-
-    const departmentsList = await DepartmentService.getDepartmentsForSlack(payload.team.id);
+    const [slackHomebase] = await HomebaseService.getHomeBaseBySlackId(payload.user.id);
+    const departmentsList = await DepartmentService.getDepartmentsForSlack(payload.team.id, slackHomebase.id);
     const departmentBlock = new Block(BlockTypes.actions, userTripBlocks.selectDepartment);
     const departmentButtons = departmentsList.map(
       department => new ButtonElement(new SlackText(department.label),

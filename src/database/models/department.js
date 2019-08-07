@@ -45,13 +45,20 @@ module.exports = (sequelize, DataTypes) => {
           status: 'Inactive'
         }
       }
-    }
+    },
+    homebaseId: {
+      type: DataTypes.INTEGER
+    },
   });
   Department.associate = (models) => {
     Department.belongsTo(models.User, {
       foreignKey: 'headId',
       targetKey: 'id',
       as: 'head',
+    });
+    Department.belongsTo(models.Homebase, {
+      foreignKey: 'homebaseId',
+      as: 'homebase'
     });
   };
   return Department;

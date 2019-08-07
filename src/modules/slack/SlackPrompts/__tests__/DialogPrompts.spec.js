@@ -6,6 +6,7 @@ import { driverService } from '../../../../services/DriverService';
 import { cabService } from '../../../../services/CabService';
 import ProviderService, { providerService } from '../../../../services/ProviderService';
 import ProviderHelper from '../../../../helpers/providerHelper';
+import HomebaseService from '../../../../services/HomebaseService';
 
 jest.mock('../../../../helpers/sendDialogTryCatch', () => jest.fn());
 jest.mock('../../../../helpers/slack/createDialogForm', () => jest.fn());
@@ -245,11 +246,14 @@ describe('sendBusStopForm dialog', () => {
         }]
       );
       jest.spyOn(ProviderHelper, 'generateProvidersLabel');
+      jest.spyOn(UserService, 'getUserBySlackId').mockImplementation(() => ({ id: 1 }));
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockImplementation(() => ([{ id: 1 }]));
       await DialogPrompts.sendSelectProviderDialog({
         actions: [{ value: 7 }],
         message_ts: '3703484984.4849',
         channel: { id: 84 },
-        team: { id: 9 }
+        team: { id: 9 },
+        user: { id: 1 }
       });
       expect(sendDialogTryCatch).toHaveBeenCalled();
     });

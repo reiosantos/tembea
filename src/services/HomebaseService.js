@@ -2,6 +2,7 @@ import { Op } from 'sequelize';
 import models from '../database/models';
 import RemoveDataValues from '../helpers/removeDataValues';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
+import UserService from './UserService';
 
 const { Homebase, Country } = models;
 
@@ -86,6 +87,15 @@ class HomebaseService {
     if (country) {
       return country.name;
     }
+  }
+
+  static async getHomeBaseBySlackId(slackId) {
+    const { homebaseId } = await UserService.getUserBySlackId(slackId);
+    const homeBase = await Homebase.findAll({
+      where: { id: homebaseId },
+      attributes: ['id', 'name']
+    });
+    return RemoveDataValues.removeDataValues(homeBase);
   }
 }
 export default HomebaseService;

@@ -76,17 +76,16 @@ class DepartmentController {
    */
   static async readRecords(req, res) {
     try {
+      const { currentUser: { userInfo } } = req;
+      const { homebaseId } = await UserService.getUserByEmail(userInfo.email);
       const page = req.query.page || 1;
       const size = req.query.size || defaultSize;
-
-      const data = await DepartmentService.getAllDepartments(size, page);
+      const data = await DepartmentService.getAllDepartments(size, page, homebaseId);
       const { count, rows } = data;
       if (rows <= 0) {
         throw new HttpError('There are no records on this page.', 404);
       }
-
       const totalPages = Math.ceil(count / size);
-
       return res.status(200).json({
         success: true,
         message: `${page} of ${totalPages} page(s).`,

@@ -33,7 +33,7 @@ describe('Get users records', () => {
 
   it('pagination should work as expected', (done) => {
     request(app)
-      .get('/api/v1/users?page=3&size=2')
+      .get('/api/v1/users?page=1&size=1')
       .set({
         Accept: 'application.json',
         authorization: validToken

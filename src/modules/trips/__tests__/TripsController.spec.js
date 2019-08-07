@@ -36,7 +36,19 @@ describe('TripController', () => {
         resultValue: { message, success, data: mockedData },
         response: res
       } = rest;
+      req = {
+        ...req,
+        currentUser: {
+          userInfo: {
+            email: 'emma.ogwal@andela.com',
+          }
+        }
+      };
       const data = { ...mockedData, trips };
+      jest.spyOn(UserService, 'getUserByEmail').mockImplementation(() => ({ homebaseId: 1 }));
+      jest.spyOn(tripService, 'getTrips').mockImplementation(() => ({
+        totalPages: 2, trips, pageNo: 1, totalItems: 1, itemsPerPage: 100
+      }));
       await TripsController.getTrips(req, res);
       expect(res.status).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);
@@ -48,9 +60,18 @@ describe('TripController', () => {
     });
     it('Should throw an error', async () => {
       const { response: res } = rest;
+      req = {
+        ...req,
+        currentUser: {
+          userInfo: {
+            email: 'emma.ogwal@andela.com',
+          }
+        }
+      };
       jest
         .spyOn(tripService, 'getTrips')
         .mockRejectedValue(new Error('dummy error'));
+      jest.spyOn(UserService, 'getUserByEmail').mockImplementation(() => ({ homebaseId: 1 }));
       await TripsController.getTrips(req, res);
       expect(res.status).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(500);

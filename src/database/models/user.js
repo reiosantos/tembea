@@ -35,7 +35,10 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id',
         as: 'routeBatch'
       },
-    }
+    },
+    homebaseId: {
+      type: DataTypes.INTEGER
+    },
   }, {});
   User.associate = (models) => {
     User.hasMany(models.TripRequest, {

@@ -13,7 +13,7 @@ import appEvents from '../modules/events/app-event.service';
 import { routeEvents } from '../modules/events/route-events.constants';
 
 const {
-  Route, RouteBatch, Cab, Address, User, sequelize, Sequelize, Driver
+  Route, RouteBatch, Cab, Address, User, sequelize, Sequelize, Driver, Homebase, Country
 } = models;
 
 class RouteService extends BaseService {
@@ -27,6 +27,7 @@ class RouteService extends BaseService {
       route: { model: Route, as: 'route' },
       riders: { model: User, as: 'riders' },
       destination: { model: Address, as: 'destination' },
+      homebase: { model: Homebase, as: 'homebase' },
     };
   }
 
@@ -47,6 +48,9 @@ class RouteService extends BaseService {
       {
         model: Route, as: 'route', include: ['destination']
       },
+      {
+        model: Homebase, as: 'homebase', attributes: ['id', 'name'], include: [{ model: Country, as: 'country', attributes: ['name', 'id', 'status'] }]
+      }
     ];
   }
 
@@ -58,7 +62,7 @@ class RouteService extends BaseService {
    * @memberof RouteService
    */
   static get defaultRouteDetails() {
-    return ['id', 'status', 'capacity', 'takeOff', 'batch', 'comments'];
+    return ['id', 'status', 'capacity', 'takeOff', 'batch', 'comments', 'homebaseId'];
   }
 
   /**
@@ -69,7 +73,7 @@ class RouteService extends BaseService {
    * @memberof RouteService
    */
   static get defaultRouteGroupBy() {
-    return ['RouteBatch.id', 'cabDetails.id', 'route.id', 'route->destination.id', 'driver.id'];
+    return ['RouteBatch.id', 'cabDetails.id', 'route.id', 'route->destination.id', 'driver.id', 'homebase.id', 'homebase->country.name', 'homebase->country.id'];
   }
 
   /**
@@ -222,11 +226,13 @@ class RouteService extends BaseService {
    *  { page:1, size:10, sort:['id','desc'] }
    * );
    */
-  static async getRoutes(pageable = RouteService.defaultPageable, where = {}) {
+  static async getRoutes(pageable = RouteService.defaultPageable, where = {}, homebaseId) {
     const { page, size, sort } = pageable;
     let [order, filter] = [];
     if (sort) { order = [...RouteService.convertToSequelizeOrderByClause(sort)]; }
-    if (where && where.status) { filter = { where: { status: where.status } }; }
+    if (where && where.status) {
+      filter = { where: { status: where.status, homebaseId } };
+    } else { filter = { where: { homebaseId } }; }
     const paginatedRoutes = new SequelizePaginationHelper(RouteBatch, filter, size);
     paginatedRoutes.filter = {
       ...filter,

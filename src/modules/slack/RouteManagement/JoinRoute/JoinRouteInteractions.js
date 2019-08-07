@@ -24,6 +24,7 @@ import ConfirmRouteUseJob from '../../../../services/jobScheduler/jobs/ConfirmRo
 import env from '../../../../config/environment';
 import UserService from '../../../../services/UserService';
 import UpdateSlackMessageHelper from '../../../../helpers/slack/updatePastMessageHelper';
+import HomebaseService from '../../../../services/HomebaseService';
 
 class JoinRouteInteractions {
   static async handleViewAvailableRoutes(data, respond) {
@@ -45,6 +46,8 @@ class JoinRouteInteractions {
     const sort = SequelizePaginationHelper.deserializeSort(
       'name,asc,batch,asc'
     );
+
+    const [homebase] = await HomebaseService.getHomeBaseBySlackId(payload.user.id);
     const pageable = { page, sort, size: SLACK_DEFAULT_SIZE };
     const where = JoinRouteInteractions.createWhereClause(payload);
     const isSearch = data.type === 'dialog_submission' && data.submission.search;
@@ -53,7 +56,7 @@ class JoinRouteInteractions {
       routes: availableRoutes,
       totalPages,
       pageNo: currentPage
-    } = await RouteService.getRoutes(pageable, where);
+    } = await RouteService.getRoutes(pageable, where, homebase.id);
     const availableRoutesMessage = RoutesHelpers.toAvailableRoutesAttachment(
       availableRoutes,
       currentPage,

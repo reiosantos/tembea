@@ -15,6 +15,7 @@ import BugsnagHelper from '../../../../helpers/bugsnagHelper';
 import { createTripData } from '../../SlackInteractions/__mocks__/SlackInteractions.mock';
 import PreviewScheduleTrip from '../../helpers/slackHelpers/previewScheduleTripAttachments';
 import InteractivePromptSlackHelper from '../../helpers/slackHelpers/InteractivePromptSlackHelper';
+import HomebaseService from '../../../../services/HomebaseService';
 
 jest.mock('../../../slack/events/', () => ({
   slackEvents: jest.fn(() => ({
@@ -140,6 +141,8 @@ describe('Interactive Prompts test', () => {
     const response = jest.fn();
     DepartmentService.getDepartmentsForSlack = jest.fn(() => 'attachment');
     SlackButtonsAttachmentFromAList.createAttachments = jest.fn(() => []);
+    jest.spyOn(HomebaseService, 'getHomeBaseBySlackId')
+      .mockImplementation(() => ([{ id: 1, homebase: 'Kampala' }]));
     const props = {
       payload: { channel: { id: 1 }, user: { id: 2 }, team: { id: '45THKULE' } },
       respond: response,
@@ -156,6 +159,8 @@ describe('Interactive Prompts test', () => {
     const response = jest.fn();
     DepartmentService.getDepartmentsForSlack = jest.fn(() => 'attachment');
     SlackButtonsAttachmentFromAList.createAttachments = jest.fn(() => []);
+    jest.spyOn(HomebaseService, 'getHomeBaseBySlackId')
+      .mockImplementation(() => ([{ id: 1, homebase: 'Kampala' }]));
     const props = {
       payload: { channel: { id: 1 }, user: { id: 2 }, team: { id: '45THKULE' } },
       respond: response,

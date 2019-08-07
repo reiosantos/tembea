@@ -36,10 +36,12 @@ class RoutesController {
       size = size || defaultSize;
       name = name || null;
       const { status } = req.query;
+      const { currentUser: { userInfo } } = req;
+      const { homebaseId } = await UserService.getUserByEmail(userInfo.email);
       sort = SequelizePaginationHelper.deserializeSort(sort || 'name,asc,id,asc');
       const pageable = { page, size, sort };
       const where = { name, status };
-      const { ...result } = await RouteService.getRoutes(pageable, where);
+      const { ...result } = await RouteService.getRoutes(pageable, where, homebaseId);
       const message = `${result.pageNo} of ${result.totalPages} page(s).`;
       const routeData = RouteHelper.pageDataObject(result);
       return Response.sendResponse(res, 200, true, message, routeData);
@@ -123,7 +125,9 @@ class RoutesController {
    */
   static async getAll(req, res) {
     try {
-      const routes = await RouteRequestService.getAllConfirmedRouteRequests();
+      const { currentUser: { userInfo } } = req;
+      const { homebaseId } = await UserService.getUserByEmail(userInfo.email);
+      const routes = await RouteRequestService.getAllConfirmedRouteRequests(homebaseId);
       return res.status(200).json({ routes });
     } catch (e) {
       return res.status(500).json({ message: 'An error has occurred', success: false });

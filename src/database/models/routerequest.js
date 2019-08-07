@@ -51,6 +51,11 @@ module.exports = (sequelize, DataTypes) => {
       targetKey: 'id',
       as: 'requester',
     });
+    RouteRequest.belongsTo(models.Homebase, {
+      foreignKey: 'homebaseId',
+      targetKey: 'id',
+      as: 'homebase',
+    });
   };
   return RouteRequest;
 };

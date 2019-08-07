@@ -4,7 +4,7 @@ import { getRequest } from './SerivceUtils';
 import RemoveDataValues from '../helpers/removeDataValues';
 
 const {
-  RouteRequest, Engagement, Cab, Address
+  RouteRequest, Engagement, Cab, Address, Country
 } = models;
 
 class RouteRequestService {
@@ -128,9 +128,9 @@ class RouteRequestService {
    * Retrieves all route requests
    * @returns {Promise<Promise<Array<Model>>|Promise<Instance[]>|Promise<TInstance[]>|*|Array>}
    */
-  static async getAllConfirmedRouteRequests() {
+  static async getAllConfirmedRouteRequests(homebaseId) {
     return RouteRequest.findAll({
-      where: { status: 'Confirmed' },
+      where: { status: 'Confirmed', homebaseId },
       include: RouteRequestService.defaultInclude
     });
   }
@@ -159,6 +159,12 @@ RouteRequestService.defaultInclude = ['opsReviewer', 'manager',
     model: Address,
     as: 'home',
     include: ['location']
+  },
+  {
+    model: models.Homebase,
+    as: 'homebase',
+    attributes: ['id', 'name'],
+    include: [{ model: Country, as: 'country', attributes: ['name', 'id', 'status'] }]
   }
 ];
 export default RouteRequestService;
