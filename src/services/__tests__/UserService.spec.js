@@ -127,11 +127,11 @@ describe('/Users service', () => {
     });
   });
   it('should update homebase id of user', async () => {
-    jest.spyOn(UserService, 'getUserBySlackId').mockReturnValue({ dataValues: [{ id: 1 }] });
+    jest.spyOn(UserService, 'getUserBySlackId').mockReturnValue({ dataValues: { id: 1 } });
     jest.spyOn(UserService, 'updateUser');
     const homeBaseId = await UserService.updateDefaultHomeBase('UDL123', 1);
     expect(homeBaseId).toBe(1);
-    expect(UserService.updateUser).toBeCalledWith(undefined, { homebaseId: 1 });
+    expect(UserService.updateUser).toBeCalledWith(1, { homebaseId: 1 });
   });
 
   describe('createUserByEmail', () => {

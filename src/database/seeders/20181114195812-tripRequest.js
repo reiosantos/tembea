@@ -8,7 +8,8 @@ module.exports = {
       destinationId: 1,
       requestedById: 1,
       createdAt: '2018-11-14',
-      updatedAt: '2018-11-14'
+      updatedAt: '2018-11-14',
+      homebaseId: 1
     },
     {
       name: 'my trip to the dojo',
@@ -18,7 +19,8 @@ module.exports = {
       destinationId: 1,
       requestedById: 1,
       createdAt: '2018-11-14',
-      updatedAt: '2018-11-14'
+      updatedAt: '2018-11-14',
+      homebaseId: 1
     }
   ]),
   down: queryInterface => queryInterface.bulkDelete('TripRequests')

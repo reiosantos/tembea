@@ -8,7 +8,6 @@ const database = {
     dialect: env.DATABASE_DIALECT || 'postgres',
     logging: false,
     use_env_variable: 'DATABASE_URL',
-    operatorsAliases: false
   }
 };
 

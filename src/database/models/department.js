@@ -1,3 +1,5 @@
+import { Op } from 'sequelize';
+
 module.exports = (sequelize, DataTypes) => {
   const Department = sequelize.define('Department', {
     id: {
@@ -34,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
     scopes: {
       all: {
         where: {
-          status: { [sequelize.Op.or]: ['Active', 'Inactive'] }
+          status: { [Op.or]: ['Active', 'Inactive'] }
         }
       },
       inactive: {

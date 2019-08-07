@@ -1,6 +1,4 @@
-import models from '../database/models';
-
-const { sequelize: { Op } } = models;
+import { Op } from 'sequelize';
 
 export default class WhereClauseHelper {
   /**

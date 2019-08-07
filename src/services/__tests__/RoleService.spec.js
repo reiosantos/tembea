@@ -47,7 +47,7 @@ describe('Role Service', () => {
   });
 
   it('should run getRoles method and return roles', async () => {
-    const findAllMock = jest.spyOn(Role, 'all');
+    const findAllMock = jest.spyOn(Role, 'findAll');
     findAllMock.mockResolvedValue('Admin');
     const httpMock = jest.spyOn(HttpError, 'throwErrorIfNull').mockImplementation();
 
@@ -60,7 +60,7 @@ describe('Role Service', () => {
 
   it('should run getRoles method and throw error', async () => {
     const mockErr = new Error('no roles');
-    const findAllMock = jest.spyOn(Role, 'all').mockRejectedValue(mockErr);
+    const findAllMock = jest.spyOn(Role, 'findAll').mockRejectedValue(mockErr);
     const httpMock = jest.spyOn(HttpError, 'throwErrorIfNull').mockImplementation();
 
     try {
@@ -105,7 +105,7 @@ describe('Role Service', () => {
 
 
   it('should run getRole method and return roles', async () => {
-    const getRoleMock = jest.spyOn(Role, 'find');
+    const getRoleMock = jest.spyOn(Role, 'findOne');
     getRoleMock.mockResolvedValue('Sales');
     const httpMock = jest
       .spyOn(HttpError, 'throwErrorIfNull')
@@ -120,7 +120,7 @@ describe('Role Service', () => {
 
   it('should run getRole method and throw error', async () => {
     const errorMock = new Error('Rolex');
-    const getRoleMock = jest.spyOn(Role, 'find').mockRejectedValue(errorMock);
+    const getRoleMock = jest.spyOn(Role, 'findOne').mockRejectedValue(errorMock);
     const httpMock = jest
       .spyOn(HttpError, 'throwErrorIfNull')
       .mockImplementation();
@@ -155,7 +155,7 @@ describe('Role Service', () => {
   });
 
   it('should run createUser method and throw error', async () => {
-    const failMock = new Error('Faileddd');
+    const failMock = new Error('Failed');
     const getUserMock = jest.spyOn(UserService, 'getUser').mockRejectedValue(failMock);
     const getRoleMock = jest.spyOn(RoleService, 'getRole').mockImplementation();
 

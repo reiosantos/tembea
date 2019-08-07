@@ -173,6 +173,7 @@ describe('Test JointRouteInteractions', () => {
       expect(BatchUseRecordService.updateBatchUseRecord).toBeCalledTimes(1);
     });
     it('should add 30 minutes on production', async () => {
+      jest.spyOn(BatchUseRecordService, 'updateBatchUseRecord').mockResolvedValue([]);
       jest.spyOn(ConfirmRouteUseJob, 'scheduleTripCompletionNotification');
       process.env.NODE_ENV = 'production';
       const payload = {

@@ -71,8 +71,8 @@ describe('TripService', () => {
     });
     it('should return trip', async () => {
       const pageable = { page: 1, size: 100 };
-      const where = { homebaseId: 5 };
-      const response = await tripService.getTrips(pageable, where);
+      const where = { };
+      const response = await tripService.getTrips(pageable, where, 1);
       expect(response).toHaveProperty('trips');
       expect(response).toHaveProperty('totalPages');
       expect(response).toHaveProperty('pageNo');
@@ -82,7 +82,7 @@ describe('TripService', () => {
     it('should return trips according to search parameter', async () => {
       const pageable = { page: 1, size: 100 };
       const where = { departmentName: 'TDD' };
-      const response = await tripService.getTrips(pageable, where);
+      const response = await tripService.getTrips(pageable, where, 1);
       expect(response).toHaveProperty('trips');
       expect(response).toHaveProperty('totalPages');
       expect(response).toHaveProperty('pageNo');
@@ -282,7 +282,7 @@ describe('TripService', () => {
 
   describe('tripService_getCompletedTravelTrips', () => {
     it('should return an empty list of travel trips if none ', async () => {
-      const result = await TravelTripService.getCompletedTravelTrips(null, null, []);
+      const result = await TravelTripService.getCompletedTravelTrips(null, null, [], 1);
       expect(result).toEqual([]);
     });
 
@@ -291,7 +291,7 @@ describe('TripService', () => {
         [
           'D0 Programs',
           'Technology',
-        ]);
+        ], 1);
       expect(result).toEqual([]);
       const mockedTravelTrips = [
         {
@@ -307,7 +307,7 @@ describe('TripService', () => {
       const result2 = await TravelTripService.getCompletedTravelTrips('2019-12-03', '2018-07-03', [
         'D0 Programs',
         'Technology',
-      ]);
+      ], 1);
       expect(result2).toEqual(mockedTravelTrips);
 
       expect(TripRequest.findAll).toBeCalled();

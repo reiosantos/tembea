@@ -79,7 +79,7 @@ describe('/Addresses post request for adding new address', () => {
     });
   });
 
-  describe('unsuccessfull creating new address', () => {
+  describe('unsuccessfully creating new address', () => {
     it('should respond unsuccessfully creating address that exists', (done) => {
       request(app)
         .post('/api/v1/addresses')
@@ -239,8 +239,10 @@ describe('/Addresses update addresses', () => {
       request(app)
         .put('/api/v1/addresses')
         .send({
-          newAddress: 'newAddress',
-          address: 'dojo'
+          newAddress: 'dojo',
+          address: 'dojo',
+          newLatitude: 80,
+          newLongitude: 80
         })
         .set({
           Accept: 'application/json',

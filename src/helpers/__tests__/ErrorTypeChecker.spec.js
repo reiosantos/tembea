@@ -1,7 +1,6 @@
+import sequelize from 'sequelize';
 import ErrorTypeChecker from '../ErrorTypeChecker';
-import models from '../../database/models';
 
-const { sequelize } = models;
 
 describe('ErrorTypeChecker', () => {
   it('should return custom message and status code incase of sequelize error', () => {

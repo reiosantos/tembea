@@ -87,7 +87,7 @@ class BatchUseRecordService {
         {
           model: User,
           as: 'user',
-          where: { homebaseId: where.homebaseId }
+          where: where && where.homebaseId ? { homebaseId: where.homebaseId } : {}
         }, batchDefaultInclude]
     };
     const paginatedData = await paginatedRoutes.getPageItems(page);

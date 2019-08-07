@@ -15,7 +15,7 @@ class RoleService {
   }
 
   static async getRoles() {
-    const roles = await Role.all();
+    const roles = await Role.findAll();
     HttpError.throwErrorIfNull(roles, 'No Existing Roles');
 
     return roles;
@@ -31,7 +31,7 @@ class RoleService {
   }
 
   static async getRole(name) {
-    const role = await Role.find({ where: { name } });
+    const role = await Role.findOne({ where: { name } });
     HttpError.throwErrorIfNull(role, 'Role not found');
 
     return role;

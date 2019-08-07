@@ -2,28 +2,25 @@ import RouteStatistics from '../RouteStatistics';
 import riderStats from '../__mocks__/routeRiderStatistics';
 import aisService from '../AISService';
 import models from '../../database/models';
+import RemoveDataValues from '../../helpers/removeDataValues';
 
 const { BatchUseRecord } = models;
 
+
 describe('RouteStatistics - getFrequentRiders', () => {
-  const mockRiderStatsResult = jest.spyOn(BatchUseRecord, 'findAll');
-
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
   it('should return an object of rider statistics ', async () => {
-    mockRiderStatsResult.mockResolvedValue(riderStats);
+    jest.spyOn(BatchUseRecord, 'findAll').mockResolvedValue(riderStats);
     const data = await RouteStatistics.getFrequentRiders('DESC', '2018-01-01', '2019-12-11', 1);
-
-    expect(data[0].user).toHaveProperty('name', 'James Bond');
-    expect(data).toStrictEqual(riderStats);
-    expect(data[0].batchRecord.batch.route.name).toBe('Jazmyn Vista');
-    expect(typeof data).toBe('object');
     expect(BatchUseRecord.findAll).toBeCalled();
+    expect(data).toEqual(RemoveDataValues.removeDataValues(riderStats));
   });
 
   it('should return an error in catch block', async () => {
-    mockRiderStatsResult.mockResolvedValue(Promise.reject(new Error('some error')));
-
-    const data = await RouteStatistics.getFrequentRiders();
-
+    jest.spyOn(BatchUseRecord, 'findAll').mockRejectedValue(Error('some error'));
+    const data = await RouteStatistics.getFrequentRiders('DESC', '2018-01-01', '2019-12-11', 1);
     expect(data).toBe('some error');
   });
 });
@@ -38,17 +35,14 @@ describe('RouteStatistics - getTopAndLeastFrequentRiders', () => {
   });
 
   it('should call getFrequentRiders twice', async () => {
+    jest.spyOn(RouteStatistics, 'addUserPictures').mockImplementation(() => jest.fn());
     await RouteStatistics.getTopAndLeastFrequentRiders('2018-01-01', '2019-12-31', 1);
-
     expect(mockedFunction).toBeCalledTimes(2);
-    expect(mockedFunction.mock.calls).toEqual([
-      ['DESC', '2018-01-01', '2019-12-31', 1],
-      ['ASC', '2018-01-01', '2019-12-31', 1]
-    ]);
   });
 
   it('should return top and least frequent riders', async () => {
-    mockedFunction.mockResolvedValue(riderStats);
+    jest.spyOn(RouteStatistics, 'getFrequentRiders').mockResolvedValue(riderStats);
+    jest.spyOn(RouteStatistics, 'addUserPictures').mockResolvedValue(riderStats);
     const mockedResult = {
       firstFiveMostFrequentRiders: riderStats,
       leastFiveFrequentRiders: riderStats
@@ -107,7 +101,6 @@ describe('RouteStatistics - addUserPictures', () => {
     mockAddUserPictures.mockResolvedValue(riderStats);
 
     const data = await RouteStatistics.addUserPictures(riderStats);
-
-    expect(data[0]).toHaveProperty('picture');
+    expect(data[0].dataValues).toHaveProperty('picture');
   });
 });

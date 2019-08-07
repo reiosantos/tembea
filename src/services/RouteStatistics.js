@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import models from '../database/models';
 import RemoveDataValues from '../helpers/removeDataValues';
 import aisService from './AISService';
@@ -23,7 +24,7 @@ class RouteStatistics {
         ],
         where: {
           userAttendStatus: 'Confirmed',
-          createdAt: { [sequelize.Op.between]: [startDate, endDate] }
+          createdAt: { [Op.between]: [startDate, endDate] }
         },
         limit: 5,
         include: [...RouteStatistics.includeUsersOnRouteQuery(homebaseId)],

@@ -1,6 +1,5 @@
-import models from '../database/models';
+import sequelize from 'sequelize';
 
-const { sequelize } = models;
 
 export default class ErrorTypeChecker {
   /**

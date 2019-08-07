@@ -104,7 +104,6 @@ class AddressService {
       modAddress.location.longitude = newLongitude || modAddress.location.dataValues.longitude;
       modAddress.location.latitude = newLatitude || modAddress.location.dataValues.latitude;
       await modAddress.save();
-
       const updatedAddressData = { ...modAddress.dataValues, ...modAddress.location.dataValues };
       return updatedAddressData;
     } catch (error) {

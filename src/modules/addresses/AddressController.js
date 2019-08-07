@@ -44,7 +44,6 @@ class AddressController {
       const {
         newLongitude, newLatitude, newAddress, address
       } = req.body;
-
       const longitude = Number(newLongitude);
       const latitude = Number(newLatitude);
 

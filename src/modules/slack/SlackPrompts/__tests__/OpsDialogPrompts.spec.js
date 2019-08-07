@@ -6,7 +6,7 @@ import { SlackDialog } from '../../SlackModels/SlackDialogModels';
 describe('OpsDialogPrompts', () => {
   beforeEach(() => {
     jest.spyOn(DialogPrompts, 'sendDialog').mockResolvedValue();
-    jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue(1);
+    jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue({ id: 1 });
   });
   afterEach(() => {
     jest.resetAllMocks();

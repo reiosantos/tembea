@@ -1,11 +1,10 @@
+import sequelize from 'sequelize';
 import {
   providers, paginatedData, successMessage, returnedData, viableProviders
 } from '../__mocks__/ProviderMockData';
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
 import ProviderHelper from '../../../helpers/providerHelper';
 import Response from '../../../helpers/responseHelper';
-import models from '../../../database/models';
-
 import ProviderService from '../../../services/ProviderService';
 import HttpError from '../../../helpers/errorHandler';
 import UserService from '../../../services/UserService';
@@ -17,7 +16,6 @@ import {
 } from '../../../services/__mocks__';
 import ProviderController from '../ProviderController';
 
-const { sequelize } = models;
 
 describe('ProviderController', () => {
   let req;
