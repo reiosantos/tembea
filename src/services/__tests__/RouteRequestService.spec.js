@@ -1,24 +1,37 @@
 import models from '../../database/models';
 import Cache from '../../cache';
 import RouteRequestService from '../RouteRequestService';
-import { mockRouteRequestData } from '../__mocks__';
+import { mockRouteData, mockRouteRequestData } from '../__mocks__';
+import RemoveDataValues from '../../helpers/removeDataValues';
+import TeamDetailsService from '../TeamDetailsService';
 
 const { RouteRequest } = models;
 
 describe('Route Request Service', () => {
   let create;
   let findByPk;
+  let updateSpy;
   let save;
 
   beforeEach(() => {
     create = jest.spyOn(RouteRequest, 'create');
     findByPk = jest.spyOn(RouteRequest, 'findByPk');
+    updateSpy = jest.spyOn(RouteRequest, 'update');
     save = jest.spyOn(Cache, 'save');
   });
 
   afterEach(() => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
+  });
+
+  describe('findByPk', () => {
+    it('should find route request by Id', async () => {
+      jest.spyOn(RemoveDataValues, 'removeDataValues');
+      findByPk.mockResolvedValue(mockRouteData);
+      const result = await RouteRequestService.findByPk(1);
+      expect(result).toEqual(mockRouteData);
+    });
   });
 
   describe('createRoute', () => {
@@ -53,33 +66,16 @@ describe('Route Request Service', () => {
       const id = 999;
 
       const mock = {
-        ...mockRouteRequestData,
+        ...RemoveDataValues.removeDataValues(mockRouteRequestData),
         id,
         update
       };
-      findByPk.mockReturnValue(mock);
+      updateSpy.mockResolvedValue([[], [mock]]);
       save.mockImplementation(() => ({}));
-      const result = await RouteRequestService.updateRouteRequest(id, {
+      const result = await RouteRequestService.update(id, {
         opsComment: 'ZZZZZZ'
       });
-      expect(findByPk)
-        .toHaveBeenCalledTimes(1);
-      expect(findByPk.mock.calls[0][0])
-        .toEqual(id);
-
-      expect(update.mock.calls[0][0].status)
-        .toBeUndefined();
-      expect(update.mock.calls[0][0].opsComment)
-        .toEqual('ZZZZZZ');
-
-      expect(save.mock.calls[0][0])
-        .toEqual(`RouteRequest_${id}`);
-      expect(save.mock.calls[0][1])
-        .toEqual('routeRequest');
-      expect(save.mock.calls[0][2])
-        .toEqual(mock);
-      expect(result)
-        .toEqual(mock);
+      expect(result).toEqual(mock);
     });
   });
 
@@ -124,6 +120,32 @@ describe('Route Request Service', () => {
       const result = await RouteRequestService.getRouteRequest(id);
       expect(findByPk).not.toHaveBeenCalled();
       expect(result).toEqual(mock);
+    });
+  });
+
+  describe('getRouteRequestAndToken', () => {
+    let detailsSpy;
+    let routeRequestSpy;
+    beforeEach(() => {
+      detailsSpy = jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken')
+        .mockResolvedValue('xoop-sadasds');
+      routeRequestSpy = jest.spyOn(RouteRequestService, 'getRouteRequest')
+        .mockResolvedValue();
+    });
+    afterEach(() => {
+      jest.restoreAllMocks();
+      jest.restoreAllMocks();
+    });
+    it('should return route request and bot token', async () => {
+      const routeRequestId = 1;
+      const teamId = 'BBBBCCC';
+      const result = await RouteRequestService.getRouteRequestAndToken(
+        routeRequestId, teamId
+      );
+
+      expect(detailsSpy).toHaveBeenCalledWith(expect.any(String));
+      expect(routeRequestSpy).toHaveBeenCalledWith(expect.any(Number));
+      expect(result).toBeDefined();
     });
   });
   afterEach(() => {

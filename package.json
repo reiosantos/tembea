@@ -100,6 +100,7 @@
     "redis": "^2.8.0",
     "request": "^2.88.0",
     "request-promise-native": "~1.0.5",
+    "rxjs": "^6.5.2",
     "sequelize": "^4.39.0",
     "sequelize-mock": "^0.10.2",
     "sequelize-replace-enum-postgres": "^1.5.0",

@@ -82,7 +82,7 @@ export default class UserTripHelpers {
 
   static async getDepartmentListMessage(payload) {
     const { forMe } = await Cache.fetch(getTripKey(payload.user.id));
-    const personify = forMe ? 'your' : "passenger's";
+    const personify = forMe ? 'your' : 'passenger\'s';
 
     const header = new Block(BlockTypes.section)
       .addText(new SlackText(`Please select ${personify} department.`));
@@ -135,7 +135,8 @@ export default class UserTripHelpers {
   static async createTripSummaryMsg(tripDetails) {
     const fields = await PreviewTripBooking.getPreviewFields(tripDetails);
     const header = new Block(BlockTypes.section)
-      .addText(new SlackText('Trip request preview')).addFields(fields);
+      .addText(new SlackText('Trip request preview'))
+      .addFields(fields);
     const previewActionsBlock = new Block(BlockTypes.actions, userTripBlocks.confirmTrip);
     previewActionsBlock.addElements([
       new ButtonElement(new SlackText('Confirm'), 'confirm',

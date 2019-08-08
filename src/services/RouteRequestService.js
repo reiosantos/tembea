@@ -1,12 +1,19 @@
 import models from '../database/models';
 import TeamDetailsService from './TeamDetailsService';
-import { getRequest, updateRequest } from './SerivceUtils';
+import { getRequest } from './SerivceUtils';
+import RemoveDataValues from '../helpers/removeDataValues';
 
 const {
-  RouteRequest, Engagement, Cab
+  RouteRequest, Engagement, Cab, Address
 } = models;
 
 class RouteRequestService {
+  static async findByPk(id, withFks = false) {
+    const include = withFks ? RouteRequestService.defaultInclude : [];
+    const route = await RouteRequest.findByPk(id, { include });
+    return RemoveDataValues.removeDataValues(route);
+  }
+
   /**
    *
    * @param {number} engagementId - user model of the fellow who is requesting for a new route
@@ -43,7 +50,7 @@ class RouteRequestService {
 
   /**
    * Get a specific route request by id from cache or database. It returns a readonly data model;
-   * to update the route information use {@link RouteRequestService#updateRouteRequest}
+   * to update the route information use {@link RouteRequestService#update}
    * @param {number} id
    * @return {Promise<{
    *   id:number, distance:number, busStopDistance:number, status:string
@@ -89,8 +96,10 @@ class RouteRequestService {
    * @see RouteRequestService#getRouteRequest for sample return data
    * @throws {Error}
    */
-  static async updateRouteRequest(id, data) {
-    return updateRequest(id, data, RouteRequestService.getRouteRequestByPk, 'Route');
+  static async update(id, data) {
+    const [, [result]] = await RouteRequest.update(data,
+      { returning: true, where: { id } });
+    return RemoveDataValues.removeDataValues(result);
   }
 
   /**
@@ -103,7 +112,8 @@ class RouteRequestService {
    * @throws {Error}
    */
   static async getRouteRequestByPk(id, include = RouteRequestService.defaultInclude) {
-    return RouteRequest.findByPk(id, { include });
+    const routeRequest = await RouteRequest.findByPk(id, { include });
+    return routeRequest;
   }
 
   static async getRouteRequestAndToken(routeRequestId, teamId) {
@@ -134,11 +144,21 @@ class RouteRequestService {
   }
 }
 
-RouteRequestService.defaultInclude = ['opsReviewer', 'manager', 'busStop', 'home',
+RouteRequestService.defaultInclude = ['opsReviewer', 'manager',
   {
     model: Engagement,
     as: 'engagement',
     include: ['partner', 'fellow'],
+  },
+  {
+    model: Address,
+    as: 'busStop',
+    include: ['location']
+  },
+  {
+    model: Address,
+    as: 'home',
+    include: ['location']
   }
 ];
 export default RouteRequestService;

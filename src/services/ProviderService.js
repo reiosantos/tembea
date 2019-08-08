@@ -90,12 +90,15 @@ class ProviderService extends BaseService {
       defaults: providerData
     });
     const provider = record.get();
-    return { provider, isNewProvider };
+    return {
+      provider,
+      isNewProvider
+    };
   }
 
-  static async findProviderByPk(pk) {
-    const provider = await Provider.findByPk(pk);
-    return provider;
+  static async findByPk(pk, withFks = false) {
+    const provider = await Provider.findByPk(pk, { include: withFks ? ['user'] : null });
+    return RemoveDataValues.removeDataValues(provider);
   }
 
   /**
@@ -147,7 +150,7 @@ class ProviderService extends BaseService {
    * @description Returns a user and its provider detail of the specified slackId
    * @param slackId {string}
    * @returns {object} the user details
-    */
+   */
   static async getProviderBySlackId(slackId) {
     const user = await Provider.findOne({
       include: [{
@@ -162,9 +165,9 @@ class ProviderService extends BaseService {
 
   /**
    * @description Returns a user and its provider detail of the specified userId
-   * @param slackId {string}
+   * @param id {number} the user id
    * @returns {object} the user details
-    */
+   */
   static async getProviderByUserId(id) {
     const user = await Provider.findOne({
       include: [{

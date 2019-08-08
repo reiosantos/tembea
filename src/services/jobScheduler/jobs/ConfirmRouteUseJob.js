@@ -1,21 +1,17 @@
 import scheduler from 'node-schedule';
 import moment from 'moment';
 import RouteService from '../../RouteService';
-import RouteUseRecordService from '../../RouteUseRecordService';
-import BatchUseRecordService from '../../BatchUseRecordService';
-import { slackEventNames, SlackEvents } from '../../../modules/slack/events/slackEvents';
+import { routeSchedules, routeEvents } from '../../../modules/events/route-events.constants';
+import appEvents from '../../../modules/events/app-event.service';
 
 class ConfirmRouteUseJob {
-  static async confirmRouteBatchUseNotification(batchUseRecord) {
-    const eventArgs = [
-      slackEventNames.RIDERS_CONFIRM_ROUTE_USE,
-      batchUseRecord
-    ];
-    SlackEvents.raise(...eventArgs);
-    return 'done';
+  static async autoStartRouteJob() {
+    const timeFromServerStart = moment(new Date(), 'MM/DD/YYYY HH:mm', 'Africa/Nairobi')
+      .add({ hours: 0, minutes: 0, seconds: 10 }).format();
+    scheduler.scheduleJob('start', timeFromServerStart, ConfirmRouteUseJob.start);
   }
 
-  static async autoStartRouteJob() {
+  static async start() {
     const rule = new scheduler.RecurrenceRule();
     rule.dayOfWeek = [new scheduler.Range(1, 5)];
     if (process.env.NODE_ENV === 'production') {
@@ -23,67 +19,62 @@ class ConfirmRouteUseJob {
     } else {
       rule.second = 1;
     }
-    const timeFromServerStart = moment(new Date(), 'MM/DD/YYYY HH:mm', 'Africa/Nairobi')
-      .add({ hours: 0, minutes: 0, seconds: 10 }).format();
-    scheduler.scheduleJob('start', timeFromServerStart, async () => {
-      ConfirmRouteUseJob.scheduleAllRoutes();
-      scheduler.scheduleJob('daily job', rule, async () => {
-        Object.keys(scheduler.scheduledJobs).map((res) => {
-          if (res.includes('batch job')) {
-            const job = scheduler.scheduledJobs[res];
-            scheduler.cancelJob(job);
-          }
-          return '';
-        });
-        ConfirmRouteUseJob.scheduleAllRoutes();
-      });
-    });
+    ConfirmRouteUseJob.schedulePreTripNotification();
+    scheduler.scheduleJob('daily job', rule, ConfirmRouteUseJob.startTripReminderJobs);
   }
 
-  static async scheduleAllRoutes() {
-    const {
-      routes
-    } = await RouteService.getRoutes(RouteService.defaultPageable, {
-      status: 'Active'
-    });
-    routes.map(async (routeBatch) => {
-      await ConfirmRouteUseJob.scheduleBatchStartJob(routeBatch);
-    });
+  static async startTripReminderJobs() {
+    Object.keys(scheduler.scheduledJobs)
+      .map(ConfirmRouteUseJob.registerTripReminderJob);
+    ConfirmRouteUseJob.schedulePreTripNotification();
   }
 
-  static async scheduleBatchStartJob(routeBatch) {
-    const res = await RouteUseRecordService.createRouteUseRecord(routeBatch.id);
-    if (res) {
-      const time = ConfirmRouteUseJob.getTodayTime(routeBatch.takeOff);
-      ConfirmRouteUseJob.notificationScheduler(res.id, time);
+  static async registerTripReminderJob(res) {
+    if (res.includes(routeSchedules.takeOffReminder)) {
+      const job = scheduler.scheduledJobs[res];
+      scheduler.cancelJob(job);
     }
   }
 
-  static notificationScheduler(batchRecordId, time) {
+  static async schedulePreTripNotification() {
+    const batches = await RouteService.getBatches({ status: 'Active' });
+    if (batches.length < 1) return;
+    batches.map(ConfirmRouteUseJob.scheduleTakeOffReminders);
+  }
+
+  static async scheduleTakeOffReminders(routeBatch) {
+    const allowance = process.env.NODE_ENV === 'production' ? { minute: -15 } : { minute: -5 };
+    const time = ConfirmRouteUseJob.getTodayTime(routeBatch.takeOff, allowance);
     scheduler.scheduleJob(
-      `batch job ${batchRecordId}${new Date().getMilliseconds().toString()}`,
+      `${routeSchedules.takeOffReminder}__${routeBatch.id}`,
       time,
-      async () => {
-        const {
-          data
-        } = await BatchUseRecordService.getBatchUseRecord(undefined, {
-          batchRecordId
-        });
-        data.map(async (batchUseRecord) => {
-          await ConfirmRouteUseJob.confirmRouteBatchUseNotification(batchUseRecord);
-        });
-      }
+      () => appEvents.broadcast(
+        routeEvents.takeOffAlert, {
+          batchId: routeBatch.id,
+        }
+      )
     );
   }
 
-  static getTodayTime(time) {
-    const date = moment(new Date(), 'MM/DD/YYYY').format('MM/DD/YYYY');
-    let timeAdded = { hours: 0, minutes: 0, seconds: 10 };
-    if (process.env.NODE_ENV === 'production') {
-      timeAdded = { hours: 2, minutes: 0, seconds: 10 };
-    }
-    return moment(`${date} ${time}`, 'MM/DD/YYYY HH:mm', 'Africa/Nairobi')
-      .add(timeAdded).format();
+  static scheduleTripCompletionNotification({ takeOff, recordId }) {
+    scheduler.scheduleJob(
+      `${routeSchedules.completionNotification}__${recordId}`,
+      takeOff,
+      () => appEvents.broadcast(routeEvents.completionNotification, { recordId })
+    );
+  }
+
+  static getTodayTime(time, { hours = 0, minutes = 0, seconds = 0 }) {
+    const date = moment(new Date(), 'MM/DD/YYYY')
+      .format('MM/DD/YYYY');
+    const timeAdded = {
+      hours,
+      minutes,
+      seconds
+    };
+    return moment(`${date} ${time}`, 'MM/DD/YYYY HH:mm')
+      .add(timeAdded)
+      .format();
   }
 }
 

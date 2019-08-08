@@ -145,7 +145,7 @@ describe('UserTripHelpers', () => {
       jest.spyOn(NewLocationHelpers, 'getLocationVerificationMsg').mockResolvedValue();
       await UserTripHelpers
         .getLocationVerificationMsg('location', testUser.id, 'selectActionId', 'backActionValue');
-      
+
       expect(NewLocationHelpers.getLocationVerificationMsg).toHaveBeenCalled();
     });
   });
@@ -159,9 +159,9 @@ describe('UserTripHelpers', () => {
     it('save payment', async () => {
       jest.spyOn(NewSlackHelpers, 'dialogValidator').mockResolvedValue();
       jest.spyOn(tripService, 'updateRequest').mockResolvedValue();
-  
+
       await UserTripHelpers.savePayment(payload);
-  
+
       expect(NewSlackHelpers.dialogValidator).toHaveBeenCalled();
       expect(tripService.updateRequest).toHaveBeenCalled();
     });

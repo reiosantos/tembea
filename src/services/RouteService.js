@@ -3,12 +3,14 @@ import moment from 'moment';
 import models from '../database/models';
 import Cache from '../cache';
 import { MAX_INT as all } from '../helpers/constants';
-import AddressService from './AddressService';
 import HttpError from '../helpers/errorHandler';
 import UserService from './UserService';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import RouteServiceHelper from '../helpers/RouteServiceHelper';
 import BaseService from './BaseService';
+import RemoveDataValues from '../helpers/removeDataValues';
+import appEvents from '../modules/events/app-event.service';
+import { routeEvents } from '../modules/events/route-events.constants';
 
 const {
   Route, RouteBatch, Cab, Address, User, sequelize, Sequelize, Driver
@@ -78,38 +80,44 @@ class RouteService extends BaseService {
    * @see RouteRequestService#serializeRouteBatch for sample of the object returned
    * @throws {Error}
    */
-  static async createRouteBatch(data) {
+  async createRouteBatch(data, first = false) {
     const {
-      name, imageUrl, destinationName, ...batchDetails
+      routeId, capacity, status, takeOff, providerId
     } = data;
-    const destination = await AddressService.findAddress(destinationName);
-    const routeDetails = await RouteService.createRoute(name, imageUrl, destination);
-    const { route } = routeDetails;
+    const route = await this.findById(routeId);
+    const routeBatchObject = {
+      batch: await RouteService.updateBatchLabel({ route, created: first }),
+      routeId,
+      capacity,
+      status,
+      takeOff,
+      providerId
+    };
 
-    batchDetails.batch = RouteService.updateBatchLabel(routeDetails);
-    const routeId = route.id;
-    const batch = await RouteService.createBatch(batchDetails, routeId);
-    route.destination = destination;
-    batch.route = route;
-    return batch;
-  }
+    const batch = await RouteService.createBatch(routeBatchObject);
 
-  static async createBatch(batchDetails, routeId, cabId, driverId) {
-    const batch = await RouteBatch.create({
-      ...batchDetails, routeId, cabId, driverId
+    appEvents.broadcast({
+      name: routeEvents.newRouteBatchCreated,
+      data: batch
     });
+
     return batch;
   }
 
-  static async createRoute(name, imageUrl, destination) {
+  static async createBatch(batchDetails) {
+    const batch = await RouteBatch.create(batchDetails);
+    return batch;
+  }
+
+  static async createRoute({ name, imageUrl, destinationId }) {
     const batchInfo = { model: RouteBatch, as: 'routeBatch' };
     const [route, created] = await Route.findOrCreate({
       where: { name: { [Op.iLike]: `${name}%` } },
-      defaults: { name, imageUrl, destinationId: destination.id },
+      defaults: { name, imageUrl, destinationId },
       order: [[batchInfo, 'createdAt', 'DESC']],
       include: [batchInfo]
     });
-    return { route, created };
+    return { route: route.dataValues, created };
   }
 
   /**
@@ -133,16 +141,18 @@ class RouteService extends BaseService {
     await sequelize.transaction(() => Promise.all([updateUserTable, updateRoute]));
   }
 
-  static async getRoute(id) {
-    let route;
-    const result = await Cache.fetch(`Route_${id}`);
-    if (result && result.route) {
-      ({ route } = result);
-    } else {
-      route = await RouteService.getRouteBatchByPk(id);
-      await Cache.saveObject(`Route_${route.id}`, { route });
+  static async getBatches(filter) {
+    const batches = await RouteBatch.findAll({ where: { ...filter } });
+    return RemoveDataValues.removeDataValues(batches);
+  }
+
+  static async getRouteById(id, withFks = false) {
+    let include;
+    if (withFks) {
+      include = ['routeBatch'];
     }
-    return route;
+    const route = await Route.findByPk(id, { include });
+    return RemoveDataValues.removeDataValues(route);
   }
 
   async getRouteByName(name) {
@@ -160,32 +170,30 @@ class RouteService extends BaseService {
    *    }
    * } data
    * @return {Promise<>}
-   * @see RouteService#getRoute for sample return data
+   * @see RouteService#getRouteById for sample return data
    * @throws {Error}
    */
   static async updateRouteBatch(id, data) {
-    const route = await RouteService.getRouteBatchByPk(id);
-    HttpError.throwErrorIfNull(route, 'Route Batch not found');
-
-    await route.update(data);
-    await Cache.save(`Route_${route.id}`, 'route', route);
+    const [, [route]] = await RouteBatch.update(data,
+      { returning: true, where: { id } });
     return route;
   }
 
   /**
    * Retrieves route batch details by id.
    * @param id
-   * @param {Array} includes
+   * @param {Boolean} withFks
    * @return {Promise<Route|*>}
    * @private
    * @throws {Error}
    */
-  static async getRouteBatchByPk(id, includes) {
+  static async getRouteBatchByPk(id, withFks = false) {
     let include;
-    if (!includes) {
+    if (withFks) {
       include = ['riders', ...RouteService.defaultInclude];
     }
-    return RouteBatch.findByPk(id, { include });
+    const batch = await RouteBatch.findByPk(id, { include });
+    return RemoveDataValues.removeDataValues(batch);
   }
 
   /**
@@ -221,11 +229,12 @@ class RouteService extends BaseService {
     return { routes, ...pageMeta };
   }
 
-  static updateBatchLabel({ route, created }) {
+  static async updateBatchLabel({ route, created }) {
     let batch = 'A';
     if (!created) {
       // Get the latest route batch
-      ([{ batch }] = route.routeBatch);
+      const fullRoute = await RouteService.getRouteById(route.id, true);
+      ({ batch } = fullRoute.routeBatch[fullRoute.RouteBatch.length - 1]);
       const batchDigit = batch.charCodeAt(0) + 1;
       batch = String.fromCharCode(batchDigit);
     }

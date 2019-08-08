@@ -2,7 +2,11 @@ import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
 import ProviderHelper from '../../helpers/providerHelper';
 import ProviderService, { providerService } from '../ProviderService';
 import UserService from '../UserService';
-import { mockGetCabsData, mockCreatedProvider, mockReturnedProvider } from '../__mocks__';
+import {
+  mockGetCabsData,
+  mockReturnedProvider,
+  mockCreatedProvider, mockProviderRecord, mockCabsData, mockDriversData
+} from '../__mocks__';
 import models from '../../database/models';
 
 const { Provider } = models;
@@ -127,43 +131,29 @@ describe('ProviderService', () => {
         Provider.destroy = jest.fn(() => 0);
 
         const result = await ProviderService.deleteProvider(1);
-        expect(result)
-          .toEqual(0);
+        expect(result).toEqual(0);
       });
     });
     it('should find provider by PK', async () => {
-      const mockResponse = {
-        dataValues: {
-          id: 1,
-          driverName: 'Test',
-          driverNumber: '0702432331',
-          driverPhoneNo: '0702432331'
-        }
-      };
+      const mockResponse = { dataValues: { ...mockProviderRecord } };
       jest.spyOn(Provider, 'findByPk').mockReturnValue(mockResponse);
-      const results = await ProviderService.findProviderByPk(1);
-      expect(results).toBeDefined();
-      expect(results).toEqual(mockResponse);
+      const results = await ProviderService.findByPk(1, true);
+      expect(Provider.findByPk).toHaveBeenCalledWith(
+        expect.any(Number), expect.any(Object)
+      );
+      expect(results).toEqual(mockProviderRecord);
     });
+
     it('should find provider by user id', async () => {
-      const mockResponse = {
-        dataValues: {
-          id: 1,
-          name: 'Test',
-          providerUserId: '16',
-          createdAt: '2019-01-01 01:00:00+01',
-          updatedAt: '2019-01-01 01:00:00+01'
-        }
-      };
-      jest.spyOn(Provider, 'findOne').mockReturnValue(mockResponse);
+      jest.spyOn(Provider, 'findOne').mockReturnValue(mockProviderRecord);
       const results = await providerService.findProviderByUserId(16);
-      expect(results).toBeDefined();
-      expect(results).toEqual(mockResponse);
+      expect(results).toEqual(mockProviderRecord);
     });
+
     it('should get viable providers in providers drop down', async () => {
       const dummyProviders = [{
         dataValues: {
-          vehicles: [{}], drivers: [{}]
+          vehicles: mockCabsData.cabs, drivers: mockDriversData
         }
       }];
       jest.spyOn(Provider, 'findAll').mockResolvedValue(dummyProviders);

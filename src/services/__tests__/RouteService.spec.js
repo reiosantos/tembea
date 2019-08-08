@@ -1,11 +1,9 @@
 import RouteService, { routeService } from '../RouteService';
 import models from '../../database/models/index';
 import Cache from '../../cache';
-import AddressService from '../AddressService';
 import HttpError from '../../helpers/errorHandler';
 import UserService from '../UserService';
 import { mockRouteBatchData as routeBatch } from '../__mocks__';
-// import { MAX_INT } from '../../helpers/constants';
 import RouteServiceHelper from '../../helpers/RouteServiceHelper';
 
 const {
@@ -26,10 +24,27 @@ describe('RouteService', () => {
       capacity: 4
     }
   };
-  const data = {
-    id: 1,
-    update: jest.fn()
+
+  const routeCreationResult = {
+    cabDetails: {
+      id: 1, capacity: 4, regNumber: 'CCCCCC', model: 'saburu'
+    },
+    route: {
+      name: 'ZZZZZZ',
+      imageUrl: 'https://image-url',
+      destination: { id: 456, address: 'BBBBBB' },
+      routeBatch: [{ batch: 'A' }]
+    },
+    riders: [],
+    inUse: 1,
+    batch: 'A',
+    capacity: 1,
+    takeOff: 'DD:DD',
+    comments: 'EEEEEE',
+    imageUrl: 'https://image-url',
+    status: 'Active'
   };
+  
   beforeEach(() => {
     jest.spyOn(Cache, 'save').mockResolvedValue();
   });
@@ -42,19 +57,15 @@ describe('RouteService', () => {
 
   describe('RouteService_createRouteBatch', () => {
     beforeEach(() => {
-      jest
-        .spyOn(AddressService, 'findAddress')
-        .mockResolvedValue(route.destination);
-      jest.spyOn(RouteService, 'createRoute');
-      jest.spyOn(RouteService, 'updateBatchLabel');
-      jest
-        .spyOn(RouteBatch, 'create')
-        .mockResolvedValue({ ...routeBatch, riders: undefined });
+      jest.spyOn(RouteService, 'createBatch').mockResolvedValue(routeCreationResult);
+      jest.spyOn(RouteService, 'updateBatchLabel').mockResolvedValue('B');
+      jest.spyOn(RouteService, 'getRouteById').mockResolvedValue(route);
+      jest.spyOn(routeService, 'findById').mockResolvedValue({ route, created: true });
     });
 
     it('should create initial route batch', async () => {
-      RouteService.createRoute.mockResolvedValue({ route, created: true });
       const createData = {
+        routeId: 1,
         imageUrl: 'www.somepicture.com',
         capacity: 1,
         takeOff: '3:00',
@@ -63,29 +74,7 @@ describe('RouteService', () => {
         destinationName: 'BBBBBB',
       };
 
-      const routeCreationResult = {
-        cabDetails: {
-          id: 1, capacity: 4, regNumber: 'CCCCCC', model: 'saburu'
-        },
-        route: {
-          name: 'ZZZZZZ',
-          imageUrl: 'https://image-url',
-          destination: { id: 456, address: 'BBBBBB' },
-          routeBatch: [{ batch: 'A' }]
-        },
-        riders: undefined,
-        inUse: 1,
-        batch: 'A',
-        capacity: 1,
-        takeOff: 'DD:DD',
-        comments: 'EEEEEE',
-        imageUrl: 'https://image-url',
-        status: 'Active'
-      };
-      const result = await RouteService.createRouteBatch(createData);
-      expect(AddressService.findAddress).toBeCalled();
-      expect(RouteService.createRoute).toBeCalled();
-      expect(RouteService.updateBatchLabel).toHaveReturnedWith('A');
+      const result = await routeService.createRouteBatch(createData);
       expect(result).toHaveProperty('capacity');
       expect(result).toHaveProperty('takeOff');
       expect(result).toHaveProperty('batch');
@@ -96,30 +85,28 @@ describe('RouteService', () => {
     });
 
     it('should automatically create new batch from existing route', async () => {
-      RouteService.createRoute.mockResolvedValue({ route, created: false });
       const createData = {
         ...batchDetails,
         name: 'AAAAAA',
         destinationName: 'BBBBBB',
         vehicleRegNumber: 'CCCCCC'
       };
-      await RouteService.createRouteBatch(createData);
-      expect(RouteService.updateBatchLabel).toHaveReturnedWith('B');
+      await routeService.createRouteBatch(createData);
+      expect(RouteService.updateBatchLabel).toHaveBeenCalled();
     });
   });
 
   describe('RouteService_createRoute', () => {
     beforeEach(() => {
       const created = true;
-      jest.spyOn(Route, 'findOrCreate').mockResolvedValue([route, created]);
+      const routeDetails = { dataValues: { ...route } };
+      jest.spyOn(Route, 'findOrCreate').mockResolvedValue([routeDetails, created]);
     });
     it('should return created route details', async () => {
       const name = 'yaba';
       const imageUrl = 'imageUrl';
       const res = await RouteService.createRoute(
-        name,
-        imageUrl,
-        routeBatch.route.destination
+        { name, imageUrl, destinationId: routeBatch.route.destination }
       );
       expect(res).toHaveProperty('route');
       expect(res).toHaveProperty('created');
@@ -204,13 +191,9 @@ describe('RouteService', () => {
   });
 
   describe('RouteService_getRoute', () => {
-    let fetch;
-    let saveObject;
     let findByPk;
     beforeEach(() => {
-      fetch = jest.spyOn(Cache, 'fetch');
-      saveObject = jest.spyOn(Cache, 'saveObject');
-      findByPk = jest.spyOn(RouteBatch, 'findByPk');
+      findByPk = jest.spyOn(Route, 'findByPk');
     });
     afterEach(() => {
       jest.restoreAllMocks();
@@ -222,27 +205,11 @@ describe('RouteService', () => {
         ...routeBatch,
         id
       };
-      fetch.mockResolvedValue(null);
-      saveObject.mockResolvedValue(() => ({}));
       findByPk.mockReturnValue(mock);
-      const result = await RouteService.getRoute(id);
+      const result = await RouteService.getRouteById(id, true);
 
       expect(findByPk).toHaveBeenCalled();
 
-      expect(result).toEqual(mock);
-
-      expect(saveObject.mock.calls[0][0]).toEqual(`Route_${id}`);
-      expect(saveObject.mock.calls[0][1]).toEqual({ route: mock });
-    });
-    it('should fetch route request from cache', async () => {
-      const id = 123;
-      const mock = {
-        ...routeBatch,
-        id
-      };
-      fetch.mockResolvedValue({ route: mock });
-      const result = await RouteService.getRoute(id);
-      expect(findByPk).not.toHaveBeenCalled();
       expect(result).toEqual(mock);
     });
   });
@@ -257,13 +224,14 @@ describe('RouteService', () => {
   });
 
   describe('RouteService_updateRouteBatch', () => {
+    const mockResponse = [[], [routeBatch]];
     beforeEach(() => {
-      jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue(data);
+      jest.spyOn(RouteBatch, 'update').mockResolvedValue(mockResponse);
     });
     it('update route info and save it to cache', async () => {
       const id = 2;
       await RouteService.updateRouteBatch(id, firstRoute);
-      expect(Cache.save).toBeCalled();
+      expect(RouteBatch.update).toBeCalled();
     });
   });
 
@@ -409,6 +377,7 @@ describe('RouteService', () => {
       expect(results).toEqual(mockData);
     });
   });
+
   describe('RouteService > defaultRouteDetails', () => {
     it('should return a list of default values (route details)', () => {
       const expected = ['id', 'status', 'capacity', 'takeOff', 'batch', 'comments'];
@@ -416,11 +385,21 @@ describe('RouteService', () => {
       expect(values).toEqual(expect.arrayContaining(expected));
     });
   });
+
   describe('RouteService > defaultRouteGroupBy', () => {
     it('should return a list of default groupBy values', () => {
       const expected = ['RouteBatch.id', 'cabDetails.id', 'route.id', 'route->destination.id'];
       const values = RouteService.defaultRouteGroupBy;
       expect(values).toEqual(expect.arrayContaining(expected));
+    });
+  });
+
+  describe('RouteService_getBatches', () => {
+    it('should return list of route batches', async (done) => {
+      jest.spyOn(RouteBatch, 'findAll').mockReturnValue({ datavalues: { routeBatch } });
+      await RouteService.getBatches({ status: 'Active' });
+      expect(RouteBatch.findAll).toHaveBeenCalled();
+      done();
     });
   });
 });
