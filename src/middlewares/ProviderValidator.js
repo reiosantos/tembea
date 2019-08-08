@@ -79,7 +79,7 @@ class ProviderValidator {
    */
   static async validateProviderExistence(req, res, next) {
     const { body: { providerId } } = req;
-    const provider = await ProviderService.findProviderByPk(providerId);
+    const provider = await ProviderService.findByPk(providerId);
     if (!provider) {
       return Response.sendResponse(res, 404, false, 'Provider doesnt exist');
     }

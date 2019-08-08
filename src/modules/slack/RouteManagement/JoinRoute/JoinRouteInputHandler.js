@@ -14,7 +14,6 @@ import { getFellowEngagementDetails } from '../../helpers/formHelper';
 import UserService from '../../../../services/UserService';
 import JoinRouteRequestService from '../../../../services/JoinRouteRequestService';
 import PartnerService from '../../../../services/PartnerService';
-import RemoveDataValues from '../../../../helpers/removeDataValues';
 import ConfirmRouteUseJob from '../../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 import RouteServiceHelper from '../../../../helpers/RouteServiceHelper';
 import SlackInteractionsHelpers from '../../helpers/slackHelpers/SlackInteractionsHelpers';
@@ -22,32 +21,28 @@ import SlackInteractionsHelpers from '../../helpers/slackHelpers/SlackInteractio
 class JoinRouteInputHandlers {
   static async joinRoute(payload, respond) {
     try {
-      const {
-        actions: [{ value: routeId }], user: { id: userId }
-      } = payload;
-      const [engagement, route] = await Promise.all([
+      const { actions: [{ value: routeId }], user: { id: userId } } = payload;
+      const [engagement, routeBatch] = await Promise.all([
         getFellowEngagementDetails(userId, payload.team.id),
-        RouteService.getRoute(routeId)]);
+        RouteService.getRouteBatchByPk(routeId, true)]);
       const user = await UserService.getUserBySlackId(userId);
 
-
-      if (!JoinRouteInputHandlers.joinRouteHandleRestrictions(user, route, engagement, respond)) {
+      if (!JoinRouteInputHandlers.joinRouteHandleRestrictions(
+        user, routeBatch, engagement, respond
+      )) {
         return;
       }
-
-      if (RouteServiceHelper.canJoinRoute(route)) {
+      if (RouteServiceHelper.canJoinRoute(routeBatch)) {
         const state = JSON.stringify({ routeId, capacityFilled: false });
-        JoinRouteDialogPrompts.sendFellowDetailsForm(payload, state, engagement);
+        await JoinRouteDialogPrompts.sendFellowDetailsForm(payload, state, engagement);
         respond(new SlackInteractiveMessage('Noted'));
       } else {
-        const notice = JoinRouteInteractions.fullRouteCapacityNotice(route.id);
+        const notice = JoinRouteInteractions.fullRouteCapacityNotice(routeBatch.id);
         respond(notice);
       }
     } catch (error) {
       bugsnagHelper.log(error);
-      respond(
-        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
-      );
+      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     }
   }
 
@@ -61,9 +56,7 @@ class JoinRouteInputHandlers {
     }
 
     if (user.routeBatchId) {
-      respond(new SlackInteractiveMessage(
-        'You are already on a route. Cannot join another'
-      ));
+      respond(new SlackInteractiveMessage('You are already on a route. Cannot join another'));
       return false;
     }
     return true;
@@ -82,7 +75,7 @@ class JoinRouteInputHandlers {
       return;
     }
     const state = JSON.stringify({ routeId, capacityFilled: true });
-    JoinRouteDialogPrompts.sendFellowDetailsForm(payload, state, engagement);
+    await JoinRouteDialogPrompts.sendFellowDetailsForm(payload, state, engagement);
     respond(new SlackInteractiveMessage('Noted'));
   }
 
@@ -128,20 +121,14 @@ class JoinRouteInputHandlers {
           payload,
           routeId
         );
-
-        await JoinRouteRequestService.updateJoinRouteRequest(joinId, {
-          status: 'Confirmed',
-        });
+        await JoinRouteRequestService.updateJoinRouteRequest(joinId, { status: 'Confirmed' });
         const user = await UserService.getUserBySlackId(id);
         const engagement = await getFellowEngagementDetails(id, teamId);
         const { startDate, endDate } = engagement;
         await PartnerService.updateEngagement(engagementId, { startDate, endDate });
-
-        await RouteService.addUserToRoute(
-          routeId, user.id
-        );
-        const route = await RouteService.getRoute(routeId);
-        ConfirmRouteUseJob.scheduleBatchStartJob(RemoveDataValues.removeDataValues(route));
+        await RouteService.addUserToRoute(routeId, user.id);
+        const route = await RouteService.getRouteById(routeId, true);
+        ConfirmRouteUseJob.scheduleTakeOffReminders(route);
         eventArgs = [
           slackEventNames.MANAGER_RECEIVE_JOIN_ROUTE,
           payload,
@@ -149,9 +136,7 @@ class JoinRouteInputHandlers {
         ];
       }
       respond(
-        new SlackInteractiveMessage(
-          `Hey <@${id}> :smiley:, request has been received.${more}`
-        )
+        new SlackInteractiveMessage(`Hey <@${id}> :smiley:, request has been received.${more}`)
       );
 
       SlackEvents.raise(...eventArgs);

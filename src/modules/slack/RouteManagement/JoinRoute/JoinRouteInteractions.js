@@ -136,7 +136,7 @@ class JoinRouteInteractions {
         });
         const extensionTime = env.NODE_ENV.includes('production') ? { hours: 0, minutes: 30, seconds: 0 } : { hours: 0, minutes: 0, seconds: 10 };
         const rescheduleTime = moment(new Date()).add(extensionTime).format();
-        ConfirmRouteUseJob.notificationScheduler(batchRecordId, rescheduleTime);
+        ConfirmRouteUseJob.scheduleTripCompletionNotification({ takeOff: rescheduleTime, recordId: batchRecordId });
         return new SlackInteractiveMessage('Noted... We will get back to you soon');
       }
     } catch (error) {

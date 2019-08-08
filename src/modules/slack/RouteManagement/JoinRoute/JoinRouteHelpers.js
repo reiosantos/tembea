@@ -28,7 +28,7 @@ class JoinRouteHelpers {
       PartnerService.findOrCreatePartner(partnerName),
       SlackHelpers.findOrCreateUserBySlackId(slackId, teamId),
       SlackHelpers.findOrCreateUserBySlackId(managerSlackId),
-      RouteService.getRoute(routeBatchId)
+      RouteService.getRouteBatchByPk(routeBatchId)
     ]);
 
     const engagement = await PartnerService.findOrCreateEngagement(

@@ -129,8 +129,6 @@ routesRouter.get(
 routesRouter.post(
   '/routes',
   RouteValidator.validateNewRoute,
-  RouteValidator.validateDestinationAddress,
-  RouteValidator.validateDestinationCoordinates,
   RoutesController.createRoute
 );
 

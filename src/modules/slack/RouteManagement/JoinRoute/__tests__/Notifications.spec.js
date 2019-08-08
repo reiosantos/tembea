@@ -110,7 +110,7 @@ describe('JoinRouteNotifications', () => {
       joinRouteRequestSubmission = submission;
       jest.spyOn(Cache, 'saveObject')
         .mockResolvedValue({ joinRouteRequestSubmission });
-      jest.spyOn(RouteService, 'getRoute')
+      jest.spyOn(RouteService, 'getRouteBatchByPk')
         .mockResolvedValue(mockRouteData);
       jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId')
         .mockReturnValue({});
@@ -125,8 +125,8 @@ describe('JoinRouteNotifications', () => {
         submission, 'routeId', 'slackId', 'teamId', engagementObject
       );
       expect(Cache.saveObject).toHaveBeenCalled();
-      expect(RouteService.getRoute)
-        .toHaveBeenCalledWith('routeId');
+      expect(RouteService.getRouteBatchByPk)
+        .toHaveBeenCalledWith('routeId', true);
       expect(SlackHelpers.findOrCreateUserBySlackId)
         .toHaveBeenCalledWith('slackId', 'teamId');
       expect(result).toHaveProperty('routeBatch');

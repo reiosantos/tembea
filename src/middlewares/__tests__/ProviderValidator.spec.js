@@ -221,7 +221,7 @@ describe('ProviderValidator', () => {
           providerId: 1
         }
       };
-      jest.spyOn(ProviderService, 'findProviderByPk').mockReturnValue(null);
+      jest.spyOn(ProviderService, 'findByPk').mockReturnValue(null);
       await ProviderValidator.validateProviderExistence(createReq, res, next);
       expect(Response.sendResponse).toBeCalledWith(res, 404, false, 'Provider doesnt exist');
     });
@@ -235,7 +235,7 @@ describe('ProviderValidator', () => {
           providerId: 1
         }
       };
-      jest.spyOn(ProviderService, 'findProviderByPk').mockReturnValue({
+      jest.spyOn(ProviderService, 'findByPk').mockReturnValue({
         name: 'Test Provider',
         email: 'test@test.com'
       });

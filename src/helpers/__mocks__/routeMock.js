@@ -1,3 +1,12 @@
+const singleRouteDetails = {
+  id: 1003,
+  name: "O'Conner Roads",
+  imageUrl: null,
+  destination: {
+    id: 1003,
+  }
+};
+
 const routeBatch = {
   id: 1,
   takeOff: '03:00',
@@ -9,14 +18,7 @@ const routeBatch = {
     id: 3,
     driverName: 'Tej Parker',
   },
-  route: {
-    id: 1003,
-    name: "O'Conner Roads",
-    imageUrl: null,
-    destination: {
-      id: 1003,
-    }
-  }
+  route: singleRouteDetails
 };
 
 const batch = {
@@ -135,7 +137,50 @@ const routeResult = {
   ]
 };
 
+const LocationCoordinates = {
+  lat: '1.34243535',
+  lng: '-1.32424324'
+};
+
+const returnedLocation = {
+  id: 1,
+  latitude: '1.34243535',
+  longitude: '-1.34243535',
+  createdAt: '2019-05-09 13:00:00.326+03',
+  updatedAt: '2019-05-09 13:00:00.326+03'
+};
+
+const returnedAddress = {
+  id: 1,
+  address: 'Andela Kenya',
+  location: {
+    latitude: '-1.34243535',
+    longitude: '1.34243535'
+  },
+  createdAt: '2019-05-09 13:00:00.326+03',
+  updatedAt: '2019-05-09 13:00:00.326+03',
+};
+
+const returnedSingleRoute = [{ ...singleRouteDetails }];
+
+const newRouteWithBatchData = {
+  routeName: 'Old Town Road',
+  destination: {
+    address: 'Roysambu Stage',
+    coordinates: {
+      lat: '-12.3242343',
+      lng: '98.34324342'
+    },
+    takeOffTime: '11:30',
+    capacity: 10,
+    providerId: 1,
+    imageUrl: 'this-url'
+  }
+};
+
 export {
   routeBatch, batch, routeDetails, returnNullPercentage, record, returnedPercentage, confirmedRecord
   , percentagesList, singlePercentageArray, returnedMaxObj, returnedMinObj, emptyRecord, routeResult
+  , LocationCoordinates, returnedLocation, returnedAddress, newRouteWithBatchData
+  , singleRouteDetails, returnedSingleRoute
 };

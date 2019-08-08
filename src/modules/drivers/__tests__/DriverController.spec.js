@@ -34,7 +34,7 @@ describe('DriverController', () => {
   });
   describe('DriverController_addDriver', () => {
     it('should create driver successfully', async () => {
-      jest.spyOn(ProviderService, 'findProviderByPk').mockReturnValue({});
+      jest.spyOn(ProviderService, 'findByPk').mockReturnValue({});
       createDriverSpy.mockReturnValue(mockData);
       await DriverController.addProviderDriver(createReq, res);
       expect(Response.sendResponse).toHaveBeenCalled();

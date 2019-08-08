@@ -1,4 +1,4 @@
-import ManagerController from '../ManagerController';
+import ManagerController, { convertIsoString } from '../ManagerController';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import ManagerNotifications from '../../SlackPrompts/notifications/ManagerRouteRequest';
@@ -12,6 +12,7 @@ import { SlackDialogError } from '../../SlackModels/SlackDialogModels';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import PartnerService from '../../../../services/PartnerService';
 import Cache from '../../../../cache';
+import RouteHelper from '../../../../helpers/RouteHelper';
 
 describe('Manager Route controller', () => {
   const dummyFunction = () => ({});
@@ -38,7 +39,7 @@ describe('Manager Route controller', () => {
     let approve;
     beforeEach(() => {
       getRouteRequest = jest.spyOn(RouteRequestService, 'getRouteRequest');
-      updateRouteRequest = jest.spyOn(RouteRequestService, 'updateRouteRequest');
+      updateRouteRequest = jest.spyOn(RouteHelper, 'updateRouteRequest');
       completeManagerAction = jest.spyOn(ManagerNotifications, 'completeManagerAction');
       payload = {
         submission: {
@@ -277,5 +278,14 @@ describe('Manager Route controller', () => {
         expect(e.message).toBe('Unknown action: manager_route_doesNotExist');
       }
     });
+  });
+});
+
+describe('convertIsoString', () => {
+  it('should convert date to proper format', () => {
+    const engagementDate = { startDate: '22 08 2019', endDate: '22 12 2019' };
+    const result = convertIsoString(engagementDate);
+    expect(result.startDate).toBeDefined();
+    expect(result.endDate).toBeDefined();
   });
 });

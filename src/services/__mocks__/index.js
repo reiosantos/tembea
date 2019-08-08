@@ -10,6 +10,7 @@ const providerUserDetails = {
   user: {},
   isDirectMessage: true,
 };
+
 const fellow = {
   id: 1,
   slackId: 'FFFFFF',
@@ -110,12 +111,12 @@ export const mockRouteData = {
 const riders = [{ email: 'AAA.BBB@CCC.DDD', slackId: 'ABCDEF', id: 123 }];
 const destination = { id: 456, address: 'BBBBBB' };
 const route = {
-  name: 'ZZZZZZ', imageUrl: 'https://image-url', destination, routeBatch: [{ batch: 'A' }]
+  id: 1, name: 'ZZZZZZ', imageUrl: 'https://image-url', destination, routeBatch: [{ batch: 'A' }]
 };
 const cabDetails = {
   id: 1, capacity: 4, regNumber: 'CCCCCC', model: 'saburu'
 };
-const batchDetails = {
+export const batchDetails = {
   inUse: 1,
   batch: 'A',
   capacity: 1,
@@ -194,8 +195,6 @@ export const mockDataCorrectRouteRequest = {
 export const mockCabsData = {
   cabs: [
     {
-      driverName: 'Dominic Toretto',
-      driverPhoneNo: '1-219-560-3666',
       regNumber: 'SMK 319 JK',
       capacity: 4,
       model: 'subaru',
@@ -203,8 +202,6 @@ export const mockCabsData = {
       location: 'Lagos'
     },
     {
-      driverName: "Brian O'Conner",
-      driverPhoneNo: '(137) 416-5270 x302',
       regNumber: 'LND 419 CN',
       capacity: 4,
       model: 'toyota',
@@ -212,8 +209,6 @@ export const mockCabsData = {
       location: 'Wakanda'
     },
     {
-      driverName: 'Tej Parker',
-      driverPhoneNo: '1-176-388-3792 x715',
       regNumber: 'IKR 409 KI',
       capacity: 8,
       model: 'toyota',
@@ -221,8 +216,6 @@ export const mockCabsData = {
       location: 'Kampala'
     },
     {
-      driverName: 'Luke Hobbs',
-      driverPhoneNo: '051-799-5051',
       regNumber: 'APP 519 DT',
       capacity: 4,
       model: 'prado',
@@ -232,8 +225,6 @@ export const mockCabsData = {
   ],
   cabsFiltered: [
     {
-      driverName: 'Dominic Toretto',
-      driverPhoneNo: '1-219-560-3666',
       regNumber: 'SMK 319 JK',
       capacity: 4,
       model: 'subaru',
@@ -241,8 +232,6 @@ export const mockCabsData = {
       location: 'Lagos'
     },
     {
-      driverName: "Brian O'Conner",
-      driverPhoneNo: '(137) 416-5270 x302',
       regNumber: 'LND 419 CN',
       capacity: 4,
       model: 'toyota',
@@ -537,3 +526,15 @@ export const mockRecord = [{
     BatchUseRecords: [{ rating: 3 }, { rating: 5 }]
   }
 }];
+
+export const mockDriver = {
+  id: 1,
+  driverPhoneNo: '07345345435',
+  driverName: 'Jarvis',
+  email: 'jarvis@mail',
+  createdAt: '2019-01-01 03:00:00+03',
+  updatedAt: '2019-01-01 03:00:00+03',
+  deletedAt: null
+};
+
+export const mockDriversData = [mockDriver, mockDriver, mockDriver];

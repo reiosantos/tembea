@@ -54,14 +54,14 @@ describe('JoinInputHandlers', () => {
         .mockResolvedValue();
       jest.spyOn(JoinRouteInteractions, 'fullRouteCapacityNotice')
         .mockResolvedValue();
-      jest.spyOn(RouteService, 'getRoute');
+      jest.spyOn(RouteService, 'getRouteBatchByPk');
     });
     afterEach(() => {
       jest.resetAllMocks();
     });
 
     it('should call sendFellowDetailsForm', async () => {
-      RouteService.getRoute.mockResolvedValue({ ...mockRouteBatchData, riders: [] });
+      RouteService.getRouteBatchByPk.mockResolvedValue({ ...mockRouteBatchData, riders: [] });
       jest.spyOn(formHelper, 'getFellowEngagementDetails')
         .mockResolvedValue(engagement);
       jest.spyOn(UserService, 'getUserBySlackId')
@@ -69,11 +69,11 @@ describe('JoinInputHandlers', () => {
       await JoinRouteInputHandlers.joinRoute(payload, respond);
       expect(detailsFormSpy)
         .toBeCalledWith(payload, JSON.stringify({ routeId: 1, capacityFilled: false }), engagement);
-      expect(RouteService.getRoute).toHaveBeenCalledWith(1);
+      expect(RouteService.getRouteBatchByPk).toHaveBeenCalledWith(1, true);
     });
 
     it('should stop fellow with a route', async () => {
-      RouteService.getRoute.mockResolvedValue(
+      RouteService.getRouteBatchByPk.mockResolvedValue(
         { ...mockRouteBatchData, riders: [{ slackId: 'ss' }] }
       );
       jest.spyOn(formHelper, 'getFellowEngagementDetails')
@@ -87,7 +87,7 @@ describe('JoinInputHandlers', () => {
     });
 
     it('should stop fellow who is not on engagement', async () => {
-      RouteService.getRoute.mockResolvedValue({ ...mockRouteBatchData, riders: [] });
+      RouteService.getRouteBatchByPk.mockResolvedValue({ ...mockRouteBatchData, riders: [] });
       const notOnEngagement = null;
       jest.spyOn(UserService, 'getUserBySlackId')
         .mockResolvedValue({ slackId: 'ss' });
@@ -114,17 +114,17 @@ describe('JoinInputHandlers', () => {
       copy.riders.push(...[{}, {}]);
       jest.spyOn(UserService, 'getUserBySlackId')
         .mockResolvedValue({ slackId: 'ss' });
-      RouteService.getRoute.mockResolvedValue(mockRouteBatchData);
+      RouteService.getRouteBatchByPk.mockResolvedValue(mockRouteBatchData);
       await JoinRouteInputHandlers.joinRoute(payload, respond);
       expect(detailsFormSpy).not.toBeCalled();
       expect(JoinRouteInteractions.fullRouteCapacityNotice)
         .toBeCalledWith(copy.id);
-      expect(RouteService.getRoute)
-        .toHaveBeenCalledWith(1);
+      expect(RouteService.getRouteBatchByPk)
+        .toHaveBeenCalledWith(1, true);
     });
 
     it('should log caught error on bugsnag', async () => {
-      RouteService.getRoute.mockRejectedValue(new Error('very error'));
+      RouteService.getRouteBatchByPk.mockRejectedValue(new Error('very error'));
       const spy = jest.spyOn(Bugsnag.prototype, 'log');
       await JoinRouteInputHandlers.joinRoute(payload, respond);
       expect(respond).toBeCalledWith(error);
@@ -253,7 +253,7 @@ describe('JoinInputHandlers', () => {
       jest.spyOn(PartnerService, 'updateEngagement').mockResolvedValue({ id: 1 });
       jest.spyOn(RouteService, 'addUserToRoute').mockResolvedValue({ id: 1 });
       jest.spyOn(formHelper, 'getFellowEngagementDetails').mockResolvedValue(engagement);
-      jest.spyOn(RouteService, 'getRoute').mockResolvedValue(route);
+      jest.spyOn(RouteService, 'getRouteById').mockResolvedValue(route);
 
       await JoinRouteInputHandlers.submitJoinRoute(payload, respond);
       expect(respond).toBeCalledTimes(1);

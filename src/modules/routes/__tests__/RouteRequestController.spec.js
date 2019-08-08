@@ -63,7 +63,7 @@ describe('RoutesController', () => {
       jest.spyOn(RoutesController, 'sendNotificationToProvider');
       jest.spyOn(RoutesController, 'sendDeclineNotificationToFellow');
       jest.spyOn(RoutesController, 'getUpdatedRouteRequest');
-      jest.spyOn(RouteRequestService, 'updateRouteRequest');
+      jest.spyOn(RouteRequestService, 'update');
       jest.spyOn(HttpError, 'sendErrorResponse');
       jest.spyOn(BugsnagHelper, 'log');
     });
@@ -74,7 +74,7 @@ describe('RoutesController', () => {
 
     it('should return a 500 response on network error', async () => {
       RouteRequestService.getRouteRequest = jest.fn(() => {
-        throw Error('random error');
+        throw new Error('random error');
       });
 
       await RoutesController.updateRouteRequestStatus(approveReq, res);
@@ -94,7 +94,7 @@ describe('RoutesController', () => {
 
       expect(RouteRequestService.getRouteRequest).toHaveBeenCalled();
       expect(RoutesController.getUpdatedRouteRequest).toHaveBeenCalled();
-      expect(RouteRequestService.updateRouteRequest).toHaveBeenCalledWith(1, {
+      expect(RouteRequestService.update).toHaveBeenCalledWith(1, {
         opsComment: 'stuff',
         opsReviewerId: 9,
         status: 'Declined',
@@ -115,7 +115,7 @@ describe('RoutesController', () => {
 
       await RoutesController.updateRouteRequestStatus(approveReq, res);
       expect(RouteRequestService.getRouteRequest).toHaveBeenCalled();
-      expect(RouteRequestService.updateRouteRequest).toHaveBeenCalledWith(1, {
+      expect(RouteRequestService.update).toHaveBeenCalledWith(1, {
         opsComment: 'stuff',
         opsReviewerId: 9,
         status: 'Approved',

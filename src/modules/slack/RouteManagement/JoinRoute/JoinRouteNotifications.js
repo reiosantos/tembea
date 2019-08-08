@@ -44,7 +44,7 @@ class JoinRouteNotifications {
     };
     const { startDate, endDate } = convertIsoString(engagementDates);
     const [routeBatch, fellow, manager] = await Promise.all([
-      RouteService.getRoute(id),
+      RouteService.getRouteBatchByPk(id, true),
       SlackHelpers.findOrCreateUserBySlackId(slackId, teamId),
       SlackHelpers.findOrCreateUserBySlackId(managerID, teamId),
       await Cache.saveObject(`joinRouteRequestSubmission_${slackId}`, submission)

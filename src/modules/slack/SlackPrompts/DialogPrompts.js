@@ -199,7 +199,7 @@ class DialogPrompts {
     const providersData = ProvidersHelper.toProviderLabelPairValues(providers);
     dialog.addElements([
       new SlackDialogSelectElementWithOptions('Select A Provider',
-        'Provider', [...providersData]),
+        'providerId', providersData),
       new SlackDialogTextarea(
         'Justification',
         'confirmationComment',

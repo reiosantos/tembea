@@ -2,10 +2,16 @@ import RouteHelper from '../RouteHelper';
 import RouteService, { routeService } from '../../services/RouteService';
 import { cabService } from '../../services/CabService';
 import {
-  routeBatch, batch, returnNullPercentage, record,
-  confirmedRecord, returnedPercentage, percentagesList,
-  singlePercentageArray, returnedMaxObj, returnedMinObj, emptyRecord, routeResult
+  routeBatch, batch, returnNullPercentage, record, confirmedRecord,
+  returnedPercentage, percentagesList, singlePercentageArray,
+  returnedMaxObj, returnedMinObj, emptyRecord, routeResult,
+  LocationCoordinates, returnedLocation, returnedAddress,
+  newRouteWithBatchData, singleRouteDetails
 } from '../__mocks__/routeMock';
+import LocationService from '../../services/LocationService';
+import AddressService from '../../services/AddressService';
+import RouteRequestService from '../../services/RouteRequestService';
+import RouteNotifications from '../../modules/slack/SlackPrompts/notifications/RouteNotifications';
 
 let status;
 
@@ -68,7 +74,7 @@ describe('Route Helpers', () => {
   describe('duplicateRouteBatch', () => {
     it('should return the newly created batch object', async () => {
       jest.spyOn(RouteService, 'getRouteBatchByPk').mockReturnValue(routeBatch);
-      jest.spyOn(RouteHelper, 'getNewBatchDetails').mockReturnValue(batch);
+      jest.spyOn(RouteHelper, 'cloneBatchDetails').mockReturnValue(batch);
 
       const result = await RouteHelper.duplicateRouteBatch(1);
       expect(result.batch).toBe('B');
@@ -85,19 +91,14 @@ describe('Route Helpers', () => {
     });
   });
 
-  describe('getNewBatchDetails', () => {
+  describe('cloneBatchDetails', () => {
     it('should get the details for updated route batch', async () => {
-      jest.spyOn(RouteService, 'createRoute').mockResolvedValue({});
-      jest.spyOn(RouteService, 'updateBatchLabel').mockResolvedValue({});
-      jest.spyOn(RouteHelper, 'batchObject').mockResolvedValue({});
-      jest.spyOn(RouteService, 'createBatch').mockResolvedValue({});
+      batch.batch = 'F';
+      jest.spyOn(routeService, 'createRouteBatch').mockReturnValue(batch);
+      const clonedBatch = await RouteHelper.cloneBatchDetails(routeBatch);
 
-      await RouteHelper.getNewBatchDetails(routeBatch);
-      
-      expect(RouteService.createRoute).toHaveBeenCalled();
-      expect(RouteService.updateBatchLabel).toHaveBeenCalled();
-      expect(RouteHelper.batchObject).toHaveBeenCalled();
-      expect(RouteService.createBatch).toHaveBeenCalled();
+      expect(clonedBatch.batch).toEqual('F');
+      expect(routeService.createRouteBatch).toHaveBeenCalled();
     });
   });
 
@@ -160,6 +161,86 @@ describe('Route Helpers', () => {
     it('should return true if request is confirmed', () => {
       status = RouteHelper.validateRouteStatus({ status: 'Confirmed' });
       expect(status).toEqual(true);
+    });
+  });
+
+  describe('Route Trip Notifications', () => {
+    it('should send route trip reminder message to rider', () => {
+      jest.spyOn(RouteNotifications, 'sendRouteTripReminder');
+      RouteHelper.sendTakeOffReminder();
+      expect(RouteNotifications.sendRouteTripReminder).toHaveBeenCalled();
+    });
+
+    it('should send route trip completion message to rider', () => {
+      jest.spyOn(RouteNotifications, 'sendRouteUseConfirmationNotificationToRider');
+      RouteHelper.sendCompletionNotification();
+      expect(RouteNotifications.sendRouteUseConfirmationNotificationToRider).toHaveBeenCalled();
+    });
+  });
+
+  describe('createNewRouteBatchFromSlack', () => {
+    it('should create a new route batch from slack', async (done) => {
+      jest.spyOn(RouteHelper, 'createNewRouteWithBatch').mockReturnValue([]);
+      jest.spyOn(RouteRequestService, 'findByPk').mockReturnValue([]);
+      const submission = {
+        routeName: 'New Route',
+        takeOffTime: '00:30',
+        capacity: 10,
+        providerId: 1
+      };
+
+      await RouteHelper.createNewRouteBatchFromSlack(submission, 1);
+      expect(RouteHelper.createNewRouteWithBatch).toHaveBeenCalled();
+      done();
+    });
+  });
+
+  describe('createNewRouteWithBatch', () => {
+    it('should create a new route batch', async (done) => {
+      const route = { ...singleRouteDetails };
+      jest.spyOn(AddressService, 'findOrCreateAddress').mockReturnValue(returnedAddress);
+      jest.spyOn(RouteService, 'createRoute').mockReturnValue({ route });
+      jest.spyOn(routeService, 'createRouteBatch').mockReturnValue(batch);
+      const result = await RouteHelper.createNewRouteWithBatch(newRouteWithBatchData);
+      expect(routeService.createRouteBatch).toHaveBeenCalled();
+      expect(result.route).toEqual(singleRouteDetails);
+      expect(result.batch).toEqual(batch);
+      done();
+    });
+  });
+
+  describe('checkThatAddressAlreadyExists', () => {
+    it('should return true when address exists', async (done) => {
+      jest.spyOn(AddressService, 'findAddress').mockReturnValue(returnedAddress);
+      const result = await RouteHelper.checkThatAddressAlreadyExists('Bus Provider');
+      expect(AddressService.findAddress).toHaveBeenCalledWith('Bus Provider');
+      expect(result).toEqual(true);
+      done();
+    });
+
+    it('should return false when address does not exist', async (done) => {
+      jest.spyOn(AddressService, 'findAddress').mockReturnValue(null);
+      const result = await RouteHelper.checkThatAddressAlreadyExists('Bus Provider');
+      expect(result).toEqual(false);
+      done();
+    });
+  });
+
+  describe('checkThatLocationAlreadyExists', () => {
+    it('should return true when location already exists', async (done) => {
+      jest.spyOn(LocationService, 'findLocation').mockReturnValue(returnedLocation);
+      const result = await RouteHelper.checkThatLocationAlreadyExists(LocationCoordinates);
+
+      expect(LocationService.findLocation).toHaveBeenCalledWith('-1.32424324', '1.34243535');
+      expect(result).toEqual(true);
+      done();
+    });
+
+    it('should return false when location does not exist', async (done) => {
+      jest.spyOn(LocationService, 'findLocation').mockReturnValue(null);
+      const result = await RouteHelper.checkThatLocationAlreadyExists(LocationCoordinates);
+      expect(result).toEqual(false);
+      done();
     });
   });
 });

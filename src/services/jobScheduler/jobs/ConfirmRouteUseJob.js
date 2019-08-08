@@ -43,7 +43,7 @@ class ConfirmRouteUseJob {
   }
 
   static async scheduleTakeOffReminders(routeBatch) {
-    const allowance = process.env.NODE_ENV === 'production' ? { minute: -15 } : { minute: -5 };
+    const allowance = process.env.NODE_ENV === 'production' ? { minutes: -15 } : { minutes: -5 };
     const time = ConfirmRouteUseJob.getTodayTime(routeBatch.takeOff, allowance);
     scheduler.scheduleJob(
       `${routeSchedules.takeOffReminder}__${routeBatch.id}`,

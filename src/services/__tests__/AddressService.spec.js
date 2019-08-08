@@ -192,3 +192,29 @@ describe('findCoordinatesByAddress', () => {
     expect(result.id).toBeDefined();
   });
 });
+
+describe('findAddressByCoordinates', () => {
+  beforeEach(() => {
+    const addressDetails = {
+      id: 1,
+      longitude: 1.2222,
+      latitude: 34.4444,
+      address: {
+        id: 1,
+        address: 'Sample Provider'
+      }
+    };
+    jest.spyOn(LocationService, 'findLocation').mockResolvedValue(addressDetails);
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('should get address when coordinated are passed', async () => {
+    const result = await AddressService.findAddressByCoordinates('1.2343', '-1.784');
+    expect(result.address).toEqual('Sample Provider');
+    expect(LocationService.findLocation).toHaveBeenCalled();
+    expect(result.id).toBeDefined();
+  });
+});

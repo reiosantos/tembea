@@ -134,4 +134,19 @@ describe('Driver Service', () => {
       expect(Driver.count).toHaveBeenCalled();
     });
   });
+
+  describe('Delete Driver', () => {
+    it('Should delete driver', async () => {
+      const driverInfo = {
+        driverName: 'Muhwezi Deo',
+        driverPhoneNo: '070533111',
+        driverNumber: 'UB5422424',
+        email: 'james@andela.com'
+      };
+      jest.spyOn(driverService, 'delete').mockResolvedValue({});
+      const result = await driverService.deleteDriver(driverInfo);
+      expect(Driver.update).toHaveBeenCalled();
+      expect(result).toEqual({});
+    });
+  });
 });
