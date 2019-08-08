@@ -1,7 +1,7 @@
 import ProviderNotifications from '../../SlackPrompts/notifications/ProviderNotifications/index';
 import ProvidersController from '../ProvidersController';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
-import RouteService from '../../../../services/RouteService';
+import RouteService, { routeService } from '../../../../services/RouteService';
 import {
   route,
   cab,
@@ -26,7 +26,7 @@ describe('Provider Controller', () => {
     jest.restoreAllMocks();
   });
 
-  
+
   describe('reassigned cab', () => {
     beforeEach(() => {
       jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue(route);
@@ -37,13 +37,13 @@ describe('Provider Controller', () => {
     afterEach(async () => {
       jest.restoreAllMocks();
     });
-  
+
     it('should reassign a cab to route', async () => {
       await ProvidersController.handleCabReAssigmentNotification(reassignCabPayload);
       expect(ProviderNotifications.updateProviderReAssignCabMessage).toHaveBeenCalled();
       expect(ProvidersController.sendUserUpdatedRouteMessage).toHaveBeenCalled();
     });
-  
+
     it('should fail when reassigning a cab to a route', async () => {
       respond = jest.fn;
       jest.spyOn(bugsnagHelper, 'log');
@@ -105,30 +105,29 @@ describe('handleProviderRouteApproval', () => {
   let OpsMessageSpy;
   let updateProviderMessageSpy;
   beforeEach(() => {
-    jest.spyOn(ProviderService, 'findProviderByPk').mockResolvedValue({ name: 'adaeze' });
+    jest.spyOn(ProviderService, 'findByPk').mockResolvedValue({ name: 'adaeze' });
     jest.spyOn(TeamDetailsService, 'getTeamDetails').mockResolvedValue({
       botToken: 'xoop', opsChannelId: 'UXXID'
     });
     jest.spyOn(cabService, 'getById').mockResolvedValue({ capacity: 4 });
-    jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue(routeData);
-    userMessageSpy = jest.spyOn(
-      ProvidersController, 'sendUserProviderAssignMessage'
-    ).mockResolvedValue();
-    OpsMessageSpy = jest.spyOn(
-      ProvidersController, 'sendOpsProviderAssignMessage'
-    ).mockResolvedValue();
-    updateProviderMessageSpy = jest.spyOn(
-      ProviderNotifications, 'updateRouteApprovalNotification'
-    ).mockResolvedValue();
+    jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue();
+    jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue(routeData);
+    userMessageSpy = jest.spyOn(ProvidersController, 'sendUserProviderAssignMessage')
+      .mockResolvedValue();
+    OpsMessageSpy = jest.spyOn(ProvidersController, 'sendOpsProviderAssignMessage')
+      .mockResolvedValue();
+    updateProviderMessageSpy = jest.spyOn(ProviderNotifications, 'updateRouteApprovalNotification')
+      .mockResolvedValue();
   });
   afterEach(() => {
     jest.restoreAllMocks();
   });
-  it('should handle provider aproval', async () => {
+  it('should handle provider approval', async () => {
+    const state = JSON.stringify({ tripId: 1, channel: 'UXXID', timestamp: '123456789' });
     const payload = {
       team: { id: 'teamId' },
       submission: { driver: '2', cab: '1' },
-      state: '{ "tripId": "1", "channel": "UXXID", "timestamp": "123456789" }'
+      state
     };
     await ProvidersController.handleProviderRouteApproval(payload);
     expect(userMessageSpy).toHaveBeenCalled();
@@ -172,12 +171,12 @@ describe('sendUserProviderAssignMessage', () => {
     it('Should save route', async () => {
       const updatedRouteData = { busStop: 'bloomsberg', routeImageUrl: 'www.pic.co' };
       const submission = { routeName: 'dee-dee', routeCapacity: 4, takeOffTime: '3:00' };
-      jest.spyOn(RouteService, 'createRouteBatch').mockResolvedValue(routeData);
-      jest.spyOn(ConfirmRouteUseJob, 'scheduleBatchStartJob').mockResolvedValue();
+      jest.spyOn(routeService, 'createRouteBatch').mockResolvedValue(routeData);
+      jest.spyOn(ConfirmRouteUseJob, 'scheduleTakeOffReminders').mockResolvedValue();
       jest.spyOn(RouteService, 'addUserToRoute').mockResolvedValue();
       await ProvidersController.saveRoute(updatedRouteData, submission, 1);
-      expect(RouteService.createRouteBatch).toHaveBeenCalled();
-      expect(ConfirmRouteUseJob.scheduleBatchStartJob).toHaveBeenCalled();
+      expect(routeService.createRouteBatch).toHaveBeenCalled();
+      expect(ConfirmRouteUseJob.scheduleTakeOffReminders).toHaveBeenCalled();
       expect(RouteService.addUserToRoute).toHaveBeenCalled();
     });
   });

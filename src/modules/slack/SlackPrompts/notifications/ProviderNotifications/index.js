@@ -13,6 +13,8 @@ import ProviderService from '../../../../../services/ProviderService';
 import { driverService } from '../../../../../services/DriverService';
 import CabsHelper from '../../../helpers/slackHelpers/CabsHelper';
 import { cabService } from '../../../../../services/CabService';
+import RemoveDataValues from '../../../../../helpers/removeDataValues';
+import RouteService from '../../../../../services/RouteService';
 
 /**
  * A class representing provider notification
@@ -30,21 +32,22 @@ export default class ProviderNotifications {
    * @method sendRouteApprovalNotification
    * @description sends a provider a message when they have been assigned a route
    * @param {object} routeBatch
-   * @param {object} provider
+   * @param {object} providerId
    * @param {string} botToken
    */
-  static async sendRouteApprovalNotification(routeBatch, provider, botToken) {
-    const { id: routeBatchId } = routeBatch;
-    const { name, providerUserId } = provider;
-    const { slackId } = await UserService.getUserById(providerUserId);
+  static async sendRouteApprovalNotification(routeBatch, providerId, botToken) {
+    const provider = await ProviderService.findByPk(providerId, true);
+    const batch = RemoveDataValues.removeDataValues(routeBatch);
+    const { user: { slackId }, name } = provider;
     const directMessageID = await SlackNotifications.getDMChannelId(slackId, botToken);
+    const route = await RouteService.getRouteBatchByPk(batch.routeId, true);
     const channel = await ProviderNotifications.checkIsDirectMessage(provider, slackId);
     const channelID = channel === slackId ? directMessageID : channel;
     const attachment = new SlackAttachment('Assign driver and cab');
     attachment.addFieldsOrActions('fields',
-      ProviderAttachmentHelper.providerRouteFields(routeBatch));
+      ProviderAttachmentHelper.providerRouteFields(route));
     attachment.addFieldsOrActions('actions', [
-      new SlackButtonAction('provider_approval', 'Accept', `${routeBatchId}`)
+      new SlackButtonAction('provider_approval', 'Accept', `${batch.id}`)
     ]);
     attachment.addOptionalProps('provider_actions_route', '', '#FFCCAA');
     const message = SlackNotifications.createDirectMessage(channelID,
@@ -108,7 +111,7 @@ export default class ProviderNotifications {
       }
       const message = SlackNotifications.createDirectMessage(directMessageId,
         `A trip has been assigned to *${providerName}*, please assign a driver and a cab`, [attachment]);
-        
+
       await SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (err) { BugsnagHelper.log(err); }
   }
@@ -142,7 +145,7 @@ export default class ProviderNotifications {
 
   static async sendProviderReasignDriverMessage(driver, routes, slackUrl) {
     const { providerId, driverName } = driver;
-    const provider = await ProviderService.findProviderByPk(providerId);
+    const provider = await ProviderService.findByPk(providerId);
     const user = await UserService.getUserById(provider.providerUserId);
     const {
       botToken: teamBotOauthToken
@@ -200,7 +203,7 @@ export default class ProviderNotifications {
   static async sendVehicleRemovalProviderNotification(cab, routeBatchData, slackUrl) {
     try {
       const { providerId } = cab;
-      const { name: providerName, providerUserId } = await ProviderService.findProviderByPk(providerId);
+      const { name: providerName, providerUserId } = await ProviderService.findByPk(providerId);
       const { slackId } = await UserService.getUserById(providerUserId);
       const { botToken: slackBotOauthToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl);
       const channelId = await SlackNotifications.getDMChannelId(slackId, slackBotOauthToken);

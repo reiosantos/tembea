@@ -1,7 +1,7 @@
 import ProviderNotifications from '../SlackPrompts/notifications/ProviderNotifications/index';
 import { SlackInteractiveMessage, SlackAttachment } from '../SlackModels/SlackMessageModels';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
-import RouteService from '../../../services/RouteService';
+import RouteService, { routeService } from '../../../services/RouteService';
 import ConfirmRouteUseJob from '../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 import SlackNotifications from '../SlackPrompts/Notifications';
 import TeamDetailsService from '../../../services/TeamDetailsService';
@@ -24,9 +24,9 @@ class ProvidersController {
       takeOff: takeOffTime,
       status: 'Active',
     };
-    const batch = await RouteService.createRouteBatch(data);
+    const batch = await routeService.createRouteBatch(data);
     await Promise.all([
-      ConfirmRouteUseJob.scheduleBatchStartJob(batch),
+      ConfirmRouteUseJob.scheduleTakeOffReminders(batch),
       RouteService.addUserToRoute(batch.id, userId),
     ]);
     return batch;
@@ -45,11 +45,10 @@ class ProvidersController {
     } = payload;
     const { capacity } = await cabService.getById(cabId);
     const { tripId: routeBatchId, channel, timeStamp } = JSON.parse(state);
-    const routeBatch = await RouteService.updateRouteBatch(
-      routeBatchId, { driverId, cabId, capacity }
-    );
+    await RouteService.updateRouteBatch(routeBatchId, { driverId, cabId, capacity });
+    const routeBatch = await RouteService.getRouteBatchByPk(routeBatchId, true);
     const { cabDetails: { providerId }, route: { name: routeName }, riders } = routeBatch;
-    const { name } = await ProviderService.findProviderByPk(providerId);
+    const { name } = await ProviderService.findByPk(providerId);
     const attachment = await ProvidersController.getMessageAttachment(routeBatch);
     const { botToken, opsChannelId } = await TeamDetailsService.getTeamDetails(teamId);
     if (riders[0]) {

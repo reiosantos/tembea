@@ -46,7 +46,7 @@ describe('BatchUseRecordService', () => {
       expect(itemsPerPage).toEqual(4294967295);
     });
 
-    it('should get getRouteUseRecords', async () => {
+    it('should get getAll', async () => {
       const { pageMeta: { itemsPerPage } } = await BatchUseRecordService.getBatchUseRecord();
       expect(itemsPerPage).toEqual(4294967295);
     });

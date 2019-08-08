@@ -11,7 +11,7 @@ import { bugsnagHelper } from '../../../RouteManagement/rootFile';
 import RouteServiceHelper from '../../../../../helpers/RouteServiceHelper';
 import ProviderAttachmentHelper from '../ProviderNotifications/helper';
 
-class RouteNotifications {
+export default class RouteNotifications {
   static async sendRouteNotificationToRouteRiders(teamUrl, routeInfo) {
     const {
       riders, route: { destination: { address } }, status, deleted
@@ -69,17 +69,16 @@ class RouteNotifications {
     await SlackNotifications.sendNotification(response, slackBotOauthToken);
   }
 
-  static async sendRouteUseConfirmationNotificationToRider(batchUseRecord) {
+  static async sendRouteUseConfirmationNotificationToRider(data, slackBotOauthToken) {
     try {
-      const slackBotOauthToken = process.env.SLACK_BOT_OAUTH_TOKEN;
-      const channelID = await SlackNotifications.getDMChannelId(batchUseRecord.user.slackId, slackBotOauthToken);
-      const batchUseRecordString = JSON.stringify(batchUseRecord);
+      const channelID = await SlackNotifications.getDMChannelId(data.rider.slackId, slackBotOauthToken);
+
       const actions = [
-        new SlackButtonAction('taken', 'Yes', batchUseRecordString),
-        new SlackButtonAction('still_on_trip', 'Still on trip', batchUseRecordString),
-        new SlackButtonAction('not_taken', 'No', batchUseRecordString, 'danger')];
+        new SlackButtonAction('taken', 'Yes', `${data.recordId}`),
+        new SlackButtonAction('still_on_trip', 'Still on trip', `${data.recordId}`),
+        new SlackButtonAction('not_taken', 'No', `${data.recordId}`, 'danger')];
       const attachment = new SlackAttachment('', '', '', '', '');
-      const routeBatch = RemoveDataValues.removeDataValues(await RouteService.getRouteBatchByPk(batchUseRecord.routeUseRecord.batch.batchId));
+      const routeBatch = RemoveDataValues.removeDataValues(await RouteService.getRouteBatchByPk(data.recordId));
       const fields = [
         new SlackAttachmentField('Batch', routeBatch.batch, true),
         new SlackAttachmentField('Took Off At', routeBatch.takeOff, true),
@@ -89,7 +88,7 @@ class RouteNotifications {
       attachment.addFieldsOrActions('actions', actions);
       attachment.addFieldsOrActions('fields', fields);
       attachment.addOptionalProps('confirm_route_use');
-      const message = SlackNotifications.createDirectMessage(channelID, `Hi! <@${batchUseRecord.user.slackId}> Did you take the trip for route ${routeBatch.route.name}?`, attachment);
+      const message = SlackNotifications.createDirectMessage(channelID, `Hi! <@${data.rider.slackId}> Did you take the trip for route ${routeBatch.route.name}?`, attachment);
       return SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (error) {
       bugsnagHelper.log(error);
@@ -119,7 +118,7 @@ class RouteNotifications {
       BugsnagHelper.log(error);
     }
   }
-  
+
   /**
         * This function sends a notification to the fellow
         * when the providers team approves the route request
@@ -145,6 +144,31 @@ class RouteNotifications {
       BugsnagHelper.log(error);
     }
   }
-}
 
-export default RouteNotifications;
+  static async getReminderMessage(channelID, payload) {
+    const reminderAttachment = new SlackAttachment('*Trip Reminder*');
+    const routeInfoFields = [
+      new SlackAttachmentField('Route Name', payload.routeName, true),
+      new SlackAttachmentField('Take Off Time', payload.takeOffTime, true)
+    ];
+    reminderAttachment.addFieldsOrActions('fields', routeInfoFields);
+    return SlackNotifications.createDirectMessage(
+      channelID,
+      `Hey, <@${payload.rider.slackId}, this is a reminder of your upcoming trip`,
+
+    );
+  }
+
+  static async sendRouteTripReminder(data, slackBotOauthToken) {
+    try {
+      const channelID = await SlackNotifications.getDMChannelId(
+        data.rider.slackId, slackBotOauthToken
+      );
+      const message = await RouteNotifications.getReminderMessage(channelID, data);
+
+      return SlackNotifications.sendNotification(message, slackBotOauthToken);
+    } catch (error) {
+      bugsnagHelper.log(error);
+    }
+  }
+}

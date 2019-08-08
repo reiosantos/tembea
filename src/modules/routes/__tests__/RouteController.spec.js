@@ -5,7 +5,6 @@ import Utils from '../../../utils';
 import RoutesController from '../RouteController';
 import RoutesUsageController from '../RouteUsageController';
 import AddressService from '../../../services/AddressService';
-import LocationService from '../../../services/LocationService';
 import { RoutesHelper } from '../../../helpers/googleMaps/googleMapsHelpers';
 import { GoogleMapsPlaceDetails, SlackInteractiveMessage } from '../../slack/RouteManagement/rootFile';
 import HttpError from '../../../helpers/errorHandler';
@@ -163,7 +162,7 @@ describe('RoutesController', () => {
         });
     });
     it('should successfully fetch one routes', async () => {
-      jest.spyOn(RouteService, 'getRoute').mockResolvedValue(mockRouteBatchData);
+      jest.spyOn(RouteService, 'getRouteById').mockResolvedValue(mockRouteBatchData);
       await RoutesController.getOne(req, res);
       expect(res.status).toHaveBeenCalledTimes(1);
       expect(res.status).toHaveBeenCalledWith(200);
@@ -253,11 +252,23 @@ describe('RoutesController', () => {
       }
     };
 
+    const routeData = {
+      batch: {
+        id: 1,
+        inUse: 1,
+        batch: 'A',
+        capacity: 4,
+        takeOff: '12:12',
+        comments: 'EEEEEE',
+        imageUrl: 'https://image-url',
+        status: 'Inactive'
+      }
+    };
+
     it('should successfully duplicate a route', (done) => {
       const mockRoute = { name: 'bay area' };
       const message = 'Successfully duplicated bay area route';
       jest.spyOn(RouteHelper, 'duplicateRouteBatch').mockResolvedValue(mockRoute);
-
       request(app)
         .post('/api/v1/routes?action=duplicate&batchId=1')
         .set('Content-Type', 'application/json')
@@ -273,9 +284,10 @@ describe('RoutesController', () => {
     });
 
     it('should successfully create a route', (done) => {
-      jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({ botToken: 'xoop' });
-      jest.spyOn(AddressService, 'createNewAddress')
-        .mockResolvedValue({ address: 'Epic Tower' });
+      jest.spyOn(RouteHelper, 'createNewRouteWithBatch').mockResolvedValue(routeData);
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl')
+        .mockResolvedValue({ botToken: 'xoop' });
+
       const eventsMock = jest.spyOn(SlackEvents, 'raise').mockImplementation();
       request(app)
         .post('/api/v1/routes')
@@ -289,48 +301,6 @@ describe('RoutesController', () => {
           expect(route.takeOff).toEqual('12:12');
           expect(route.capacity).toEqual(4);
           expect(eventsMock).toHaveBeenCalled();
-          done();
-        });
-    });
-
-    it('should successfully create a route', (done) => {
-      jest.spyOn(AddressService, 'findAddress')
-        .mockResolvedValue({ address: 'Epic Tower' });
-
-      const message = 'Address already exists';
-
-      request(app)
-        .post('/api/v1/routes')
-        .set('Content-Type', 'application/json')
-        .set('Authorization', validToken)
-        .send(data)
-        .expect(200, (err, res) => {
-          const { body } = res;
-          expect(body).toHaveProperty('message');
-          expect(body).toHaveProperty('success');
-          expect(body).toEqual({ message, success: false });
-          done();
-        });
-    });
-
-    it('should successfully create a route', (done) => {
-      jest.spyOn(AddressService, 'findAddress')
-        .mockResolvedValue(null);
-      jest.spyOn(LocationService, 'findLocation')
-        .mockResolvedValue({ longitude: 'someValue', latitude: 'someValue' });
-
-      const message = 'Provided coordinates belong to an existing address';
-
-      request(app)
-        .post('/api/v1/routes')
-        .set('Content-Type', 'application/json')
-        .set('Authorization', validToken)
-        .send(data)
-        .expect(500, (err, res) => {
-          const { body } = res;
-          expect(body).toHaveProperty('message');
-          expect(body).toHaveProperty('success');
-          expect(body).toEqual({ message, success: false });
           done();
         });
     });
@@ -581,7 +551,7 @@ describe('RouteController unit test', () => {
       jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({
         botToken: 'token'
       });
-      jest.spyOn(RouteService, 'getRoute').mockResolvedValue({
+      jest.spyOn(RouteService, 'getRouteById').mockResolvedValue({
         route: { name: 'home' }
       });
       userSpy.mockResolvedValue({

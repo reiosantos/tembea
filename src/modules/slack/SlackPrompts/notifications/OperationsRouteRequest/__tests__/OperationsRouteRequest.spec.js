@@ -1,6 +1,5 @@
 import SlackNotifications from '../../../Notifications';
 import { mockRouteRequestData } from '../../../../../../services/__mocks__';
-import OperationsNotifications from '..';
 import InteractivePrompts from '../../../InteractivePrompts';
 import bugsnagHelper from '../../../../../../helpers/bugsnagHelper';
 import RouteRequestService from '../../../../../../services/RouteRequestService';
@@ -10,10 +9,8 @@ import Cache from '../../../../../../cache';
 import ManagerAttachmentHelper from '../../ManagerRouteRequest/helper';
 import { routeData } from '../../../../RouteManagement/__mocks__/providersController.mock';
 import { routeRequestData, opsData } from '../__mocks__/OpsRouteRequest.mock';
-import ProvidersController from '../../../../RouteManagement/ProvidersController';
-import RouteNotifications from '../../RouteNotifications';
-import ProviderNotifications from '../../ProviderNotifications';
-
+import OperationsHelper from '../../../../helpers/slackHelpers/OperationsHelper';
+import OperationsNotifications from '../index';
 
 describe('OperationsNotifications', () => {
   beforeEach(() => {
@@ -40,6 +37,7 @@ describe('OperationsNotifications', () => {
       jest.spyOn(OpsAttachmentHelper, 'getOperationCompleteAttachment').mockResolvedValue({});
       jest.spyOn(ManagerAttachmentHelper, 'getManagerCompleteAttachment');
       jest.spyOn(SlackNotifications, 'sendNotification').mockReturnValue({});
+      jest.spyOn(RouteRequestService, 'findByPk').mockResolvedValue(mockRouteRequestData);
       jest.spyOn(bugsnagHelper, 'log');
     });
     afterEach(() => {
@@ -47,33 +45,31 @@ describe('OperationsNotifications', () => {
       jest.restoreAllMocks();
     });
     describe('sendOpsDeclineMessageToFellow', () => {
-      it('should send ops decline notification to fellow', async () => {
-        requestData = {
-          id: 12,
-          status: 'Declined',
-          managerComment: 'ZZZZZZZ',
-          opsComment: 'XXXXXX',
-          routeImageUrl: 'Pending',
-          distance: 3.02,
-          busStopDistance: 1.02,
-          engagement: { fellow: { slackId: '345qq' } },
-          manager: { slackId: '345qq' }
-        };
-
-        jest.spyOn(RouteRequestService, 'getRouteRequest').mockResolvedValue(requestData);
-        await OperationsNotifications.sendOpsDeclineMessageToFellow(1, '', 'andela-tembea.slack.com');
-        expect(RouteRequestService.getRouteRequest).toHaveBeenCalled();
+      it('should send ops decline notification to fellow when no teamId provided', async (done) => {
+        await OperationsNotifications
+          .sendOpsDeclineMessageToFellow(1, '', 'andela-tembea.slack.com');
+        expect(RouteRequestService.findByPk).toHaveBeenCalled();
         expect(TeamDetailsService.getTeamDetailsByTeamUrl).toHaveBeenCalled();
         expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
         expect(OpsAttachmentHelper.getOperationDeclineAttachment).toHaveBeenCalledTimes(2);
         expect(SlackNotifications.sendNotification).toHaveBeenCalled();
+        done();
       });
 
-      it('should catch errors', async () => {
-        jest.spyOn(RouteRequestService, 'getRouteRequest')
+      it('should send ops decline notification to fellow when teamId provided', async (done) => {
+        jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken')
+          .mockReturnValue('xoop-cssdad');
+        await OperationsNotifications.sendOpsDeclineMessageToFellow(1, 'TEAMID10');
+        expect(TeamDetailsService.getTeamDetailsBotOauthToken).toHaveBeenCalled();
+        done();
+      });
+
+      it('should catch errors', async (done) => {
+        jest.spyOn(RouteRequestService, 'findByPk')
           .mockRejectedValue(new Error('Failed'));
-        await OperationsNotifications.sendOpsDeclineMessageToFellow(data);
-        expect(bugsnagHelper.log.mock.calls[0][0].message).toEqual('Failed');
+        await OperationsNotifications.sendOpsDeclineMessageToFellow([]);
+        expect(bugsnagHelper.log).toHaveBeenCalled();
+        done();
       });
     });
 
@@ -122,8 +118,9 @@ describe('OperationsNotifications', () => {
         };
 
         const submission = { routeName: 'the dojo', takeOff: '10:00' };
-        await OperationsNotifications
-          .completeOperationsApprovedAction(requestData, channelId, timestamp, 1, botToken, submission, false);
+        await OperationsNotifications.completeOperationsApprovedAction(
+          requestData, channelId, timestamp, 1, botToken, submission, false
+        );
 
         expect(OpsAttachmentHelper.getOperationCompleteAttachment).toHaveBeenCalled();
       });
@@ -182,27 +179,17 @@ describe('OperationsNotifications', () => {
       jest.restoreAllMocks();
     });
     it('Should handle operations route approval', async () => {
-      jest.spyOn(ProvidersController, 'saveRoute').mockResolvedValue(routeData);
-      jest.spyOn(RouteNotifications, 'sendRouteApproveMessageToManager').mockResolvedValue();
-      jest.spyOn(RouteNotifications, 'sendRouteApproveMessageToFellow').mockResolvedValue();
-      jest.spyOn(ProviderNotifications, 'sendRouteApprovalNotification').mockResolvedValue();
-      jest.spyOn(OperationsNotifications, 'completeOperationsApprovedAction').mockResolvedValue();
+      jest.spyOn(OperationsHelper, 'getBotToken').mockReturnValue('sdawdas');
+      jest.spyOn(OperationsNotifications, 'completeOperationsApprovedAction')
+        .mockResolvedValue();
       await OperationsNotifications.completeOperationsRouteApproval(
         routeData, routeRequestData, opsData
       );
-      expect(RouteNotifications.sendRouteApproveMessageToManager).toHaveBeenCalledWith(
-        routeData, opsData.botToken, routeRequestData
-      );
-      expect(RouteNotifications.sendRouteApproveMessageToFellow).toHaveBeenCalledWith(
-        routeData, opsData.botToken, routeRequestData
-      );
-      expect(ProviderNotifications.sendRouteApprovalNotification).toHaveBeenCalledWith(
-        routeData, routeRequestData.provider, opsData.botToken
-      );
-      expect(OperationsNotifications.completeOperationsApprovedAction).toHaveBeenCalledWith(
-        routeData,
-        opsData.channelId, opsData.timeStamp, opsData.opsId, opsData.botToken, routeRequestData
-      );
+      expect(OperationsNotifications.completeOperationsApprovedAction)
+        .toHaveBeenCalledWith(
+          routeData, opsData.channelId, opsData.timeStamp,
+          opsData.opsUserId, opsData.botToken, routeRequestData
+        );
     });
   });
 });

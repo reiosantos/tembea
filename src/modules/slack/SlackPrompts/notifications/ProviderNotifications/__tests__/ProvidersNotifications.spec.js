@@ -50,7 +50,7 @@ describe('ProviderNotifications', () => {
     home: { address: 'Mirema' },
     manager: { slackId: 'Deo' }
   };
-  
+
   const mockRouteAttachment = SlackAttachment;
   mockRouteAttachment.addOptionalProps = jest.fn();
   mockRouteAttachment.addFieldsOrActions = jest.fn();
@@ -205,7 +205,7 @@ describe('Provider notifications', () => {
     const tripDetails = responseData;
     const [channel, botToken, trip, timeStamp] = [
       'cpd33', 'xxop', tripDetails, '1555500000'];
-    jest.spyOn(ProviderService, 'findProviderByPk').mockResolvedValue({ name: 'Uber' });
+    jest.spyOn(ProviderService, 'findByPk').mockResolvedValue({ name: 'Uber' });
     const providerFieldMock = jest.spyOn(ProviderAttachmentHelper, 'providerFields');
     await ProviderNotifications.UpdateProviderNotification(
       channel, botToken, trip, timeStamp,
@@ -216,7 +216,7 @@ describe('Provider notifications', () => {
 
 describe('sendProviderReasignDriverMessage', () => {
   it('Should send provider update notification', async () => {
-    jest.spyOn(ProviderService, 'findProviderByPk').mockResolvedValue(mockExistingProvider);
+    jest.spyOn(ProviderService, 'findByPk').mockResolvedValue(mockExistingProvider);
     jest.spyOn(UserService, 'getUserById').mockResolvedValue(user);
     jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue('xoop-ou99');
     jest.spyOn(driverService, 'getPaginatedItems').mockResolvedValue({ data: [driver] });
@@ -224,7 +224,7 @@ describe('sendProviderReasignDriverMessage', () => {
     jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue({});
 
     await ProviderNotifications.sendProviderReasignDriverMessage(driver, [route], 'adaeze.slack.com');
-    expect(ProviderService.findProviderByPk).toHaveBeenCalled();
+    expect(ProviderService.findByPk).toHaveBeenCalled();
     expect(TeamDetailsService.getTeamDetailsByTeamUrl).toHaveBeenCalled();
     expect(UserService.getUserById).toHaveBeenCalled();
     expect(driverService.getPaginatedItems).toHaveBeenCalled();
@@ -263,7 +263,7 @@ describe('updateProviderReasignDriverMessage', () => {
 
 describe('provider cab reassignnment', () => {
   beforeEach(() => {
-    jest.spyOn(ProviderService, 'findProviderByPk').mockResolvedValue(mockExistingProvider);
+    jest.spyOn(ProviderService, 'findByPk').mockResolvedValue(mockExistingProvider);
     jest.spyOn(UserService, 'getUserById').mockResolvedValue({ slackId: 'kdjfj' });
     jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue('xoxb-47865');
     jest.spyOn(cabService, 'getCabs').mockResolvedValue({ data: [cab] });
@@ -277,7 +277,7 @@ describe('provider cab reassignnment', () => {
 
   it('should notify the provider of the cab deletion', async () => {
     await ProviderNotifications.sendVehicleRemovalProviderNotification(cab, [route], 'segun-andela.slack.com');
-    expect(ProviderService.findProviderByPk).toHaveBeenCalled();
+    expect(ProviderService.findByPk).toHaveBeenCalled();
     expect(UserService.getUserById).toHaveBeenCalled();
     expect(cabService.getCabs).toHaveBeenCalled();
     expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
@@ -286,7 +286,7 @@ describe('provider cab reassignnment', () => {
 
   it('should enter the catch block', async () => {
     jest.spyOn(bugsnagHelper, 'log');
-    jest.spyOn(ProviderService, 'findProviderByPk').mockRejectedValue({});
+    jest.spyOn(ProviderService, 'findByPk').mockRejectedValue({});
     await ProviderNotifications.sendVehicleRemovalProviderNotification(cab, [route]);
     expect(bugsnagHelper.log).toHaveBeenCalled();
   });
@@ -332,7 +332,7 @@ describe("Provider's Trip Notification", () => {
       expect(SlackNotifications.sendNotification).toHaveBeenCalledTimes(0);
     });
   });
-  
+
   describe("Send Provider's Trip notification to Provider's DM", () => {
     beforeEach(() => {
       jest.spyOn(ProviderService, 'getProviderBySlackId').mockResolvedValue({
@@ -398,13 +398,13 @@ describe('sendRouteApprovalNotification', () => {
     jest.restoreAllMocks();
   });
   it('Should send a provider assign cab and driver notification', async () => {
-    const provider = { id: 1, name: 'Adaeze', providerUserId: 1 };
-    jest.spyOn(UserService, 'getUserById').mockResolvedValue({ slackId: 'XXXX' });
+    jest.spyOn(ProviderService, 'findByPk')
+      .mockResolvedValue({ user: { name: 'Provider X', slackId: 'xoop-seas' } });
     jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('UXXID');
     jest.spyOn(SlackNotifications, 'createDirectMessage').mockResolvedValue({});
     jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue({});
-    await ProviderNotifications.sendRouteApprovalNotification(route, provider, 'xoop');
-    expect(UserService.getUserById).toHaveBeenCalled();
+    await ProviderNotifications.sendRouteApprovalNotification(route, 1, 'xoop');
+    expect(ProviderService.findByPk).toHaveBeenCalled();
     expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();
     expect(SlackNotifications.sendNotification).toHaveBeenCalled();
   });

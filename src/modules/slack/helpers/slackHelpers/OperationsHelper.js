@@ -2,56 +2,43 @@
 import RouteRequestService from '../../../../services/RouteRequestService';
 import { cabService } from '../../../../services/CabService';
 import OperationsNotifications from '../../SlackPrompts/notifications/OperationsRouteRequest/index';
-import bugsnagHelper from '../../../../helpers/bugsnagHelper';
-import { providerService } from '../../../../services/ProviderService';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
-import UserService from '../../../../services/UserService';
 import SlackNotifications from '../../SlackPrompts/Notifications';
 import { SlackAttachment } from '../../SlackModels/SlackMessageModels';
 import ProviderAttachmentHelper from '../../SlackPrompts/notifications/ProviderNotifications/helper';
+import ProviderNotifications from '../../SlackPrompts/notifications/ProviderNotifications';
+import RouteNotifications from '../../SlackPrompts/notifications/RouteNotifications';
 
 class OperationsHelper {
-  static async sendOpsData(data) {
-    try {
-      const { team: { id: teamId }, user: { id: userId } } = data;
-      const { submission } = data;
-      const { Provider } = submission;
-      const providerId = Provider.split(',')[0];
-      const provider = await providerService.getProviderById(providerId);
-      const { id } = await UserService.getUserBySlackId(userId);
-      const { approve } = JSON.parse(data.state);
-      const {
-        channelId, timeStamp, routeRequestId, confirmationComment
-      } = approve;
-      const {
-        slackBotOauthToken, routeRequest
-      } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
-      const [updatedRequest, requestData, opsData] = await OperationsHelper.getCompleteOperationsRouteApprovalData(
-        routeRequest, id, confirmationComment, submission,
-        provider, userId, slackBotOauthToken, timeStamp, channelId
-      );
-      return OperationsNotifications.completeOperationsRouteApproval(
-        updatedRequest, requestData, opsData
-      );
-    } catch (error) {
-      bugsnagHelper.log(error);
-    }
-  }
+  static async completeRouteApproval(updatedRequest, result, {
+    channelId,
+    opsSlackId,
+    timeStamp,
+    submission,
+    botToken
+  }) {
+    // send cab and driver request to provider
+    const providerNotification = ProviderNotifications.sendRouteApprovalNotification(
+      result.batch, submission.providerId, botToken
+    );
 
-  static async getCompleteOperationsRouteApprovalData(
-    routeRequest, opsUserId, comment, submission, provider, opsId, botToken, timeStamp, channelId
-  ) {
-    const updatedRequest = await RouteRequestService.updateRouteRequest(routeRequest.id, {
-      status: 'Approved',
-      opsReviewerId: opsUserId,
-      opsComment: comment
-    });
-    const requestData = { ...submission, provider };
-    const opsData = {
-      opsId, botToken, timeStamp, channelId
-    };
+    // send completion message to ops
+    const opsNotification = OperationsNotifications.completeOperationsApprovedAction(
+      updatedRequest, channelId, timeStamp, opsSlackId, botToken, submission
+    );
 
-    return [updatedRequest, requestData, opsData];
+    // send completion message to manager
+    const managerNotification = RouteNotifications.sendRouteApproveMessageToManager(
+      updatedRequest, botToken, submission
+    );
+
+    // send completion message to user
+    const userNotification = RouteNotifications.sendRouteApproveMessageToFellow(
+      updatedRequest, botToken, submission
+    );
+    return Promise.all(
+      [providerNotification, opsNotification, managerNotification, userNotification]
+    );
   }
 
   static async getBotToken(url) {

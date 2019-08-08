@@ -4,7 +4,6 @@ import models from '../database/models';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import RemoveDataValues from '../helpers/removeDataValues';
 import BatchUseRecordService from './BatchUseRecordService';
-import RouteService from './RouteService';
 
 const {
   RouteUseRecord, RouteBatch, Cab, Route, BatchUseRecord
@@ -35,31 +34,29 @@ class RouteUseRecordService {
     };
   }
 
-  static async createRouteUseRecord(batchId) {
-    const date = moment(new Date()).add({ hours: 48, minutes: 0, seconds: 0 }).format('YYYY-MM-DD');
-    const route = await RouteService.getRoute(batchId);
-    const riders = RemoveDataValues.removeDataValues(RemoveDataValues.removeDataValues(route).riders);
-    const { data } = await RouteUseRecordService.getRouteUseRecords(undefined, { batchUseDate: date, batchId });
+  static async getByPk(id, withFks = false) {
+    const filter = {
+      include: withFks
+        ? [{
+          model: RouteBatch,
+          as: 'batch',
+          include: ['riders']
+        }] : null
+    };
+    const record = await RouteUseRecord.findByPk(id, filter);
+    return RemoveDataValues.removeDataValues(record);
+  }
 
-    if (data.length) {
-      data.forEach(async (record) => {
-        await BatchUseRecordService.createBatchUseRecord(record, riders);
-        await RouteUseRecordService.updateUsageStatistics(record.id);
-      });
-      return data[0];
-    }
+  static async create(batchId) {
+    const date = moment.utc().toISOString();
     const result = await RouteUseRecord.create({
       batchId,
       batchUseDate: date,
     });
-    const routeUseRecord = RemoveDataValues.removeDataValues(result);
-    await BatchUseRecordService.createBatchUseRecord(routeUseRecord, riders);
-    await RouteUseRecordService.updateUsageStatistics(routeUseRecord.id);
-
-    return routeUseRecord;
+    return result.dataValues;
   }
 
-  static async getRouteUseRecords(pageable = RouteUseRecordService.defaultPageable, where = null) {
+  static async getAll(pageable = RouteUseRecordService.defaultPageable, where = null) {
     const { page, size } = pageable;
     let order;
     let filter;

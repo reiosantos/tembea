@@ -3,9 +3,10 @@ import LocationService from '../services/LocationService';
 import RouteService, { routeService } from '../services/RouteService';
 import { cabService } from '../services/CabService';
 import { expectedCreateRouteObject } from '../utils/data';
-import RouteServiceHelper from './RouteServiceHelper';
+import RouteRequestService from '../services/RouteRequestService';
+import RouteNotifications from '../modules/slack/SlackPrompts/notifications/RouteNotifications';
 
-class RouteHelper {
+export default class RouteHelper {
   static checkRequestProps(createRouteRequest) {
     const receivedProps = Object.keys(createRouteRequest);
 
@@ -15,6 +16,20 @@ class RouteHelper {
       }
       return acc;
     }, '');
+  }
+
+  static sendTakeOffReminder(rider, routeName, takeOffTime, slackBotOauthToken) {
+    RouteNotifications.sendRouteTripReminder(
+      { rider, routeName, takeOffTime }, slackBotOauthToken
+    );
+  }
+
+  static sendCompletionNotification(rider, routeName, takeOffTime, recordId, slackBotOauthToken) {
+    RouteNotifications.sendRouteUseConfirmationNotificationToRider(
+      {
+        rider, routeName, takeOffTime, recordId
+      }, slackBotOauthToken
+    );
   }
 
   static findPercentageUsage(record, allUsageRecords, dormantRouteBatches) {
@@ -99,28 +114,56 @@ class RouteHelper {
     return [!!route, route];
   }
 
-  static async createNewRouteBatch(body) {
+  static async createNewRouteWithBatch(data) {
     const {
       routeName,
-      destination: {
-        address, coordinates: { lat: latitude, lng: longitude }
-      },
-      takeOffTime, capacity
-    } = body;
+      destination: { address, location, coordinates },
+      takeOffTime, capacity, providerId, imageUrl
+    } = data;
+
+    const [latitude, longitude] = location
+      ? [location.latitude, location.longitude]
+      : [coordinates.lat, coordinates.lng];
 
     const destinationAddress = await AddressService.createNewAddress(
       longitude, latitude, address
     );
 
-    const data = {
+    const routeObject = {
       name: routeName,
-      capacity,
-      takeOff: takeOffTime,
-      destinationName: destinationAddress.address
+      imageUrl,
+      destinationId: destinationAddress.id
     };
 
-    const routeInfo = await RouteService.createRouteBatch(data);
-    return routeInfo;
+    const { route } = await RouteService.createRoute(routeObject);
+
+    const batchData = {
+      capacity,
+      takeOff: takeOffTime,
+      providerId,
+      routeId: route.id
+    };
+    const batch = await routeService.createRouteBatch(batchData, true);
+    return { route, batch };
+  }
+
+  static async createNewRouteBatchFromSlack(submission, routeRequestId) {
+    const routeRequest = await RouteRequestService.findByPk(routeRequestId, true);
+    const {
+      routeName,
+      takeOffTime,
+      routeCapacity: capacity,
+      providerId
+    } = submission;
+
+    const {
+      routeImageUrl: imageUrl,
+      busStop: destination
+    } = routeRequest;
+    const data = {
+      routeName, destination, takeOffTime, capacity, providerId, imageUrl
+    };
+    return RouteHelper.createNewRouteWithBatch(data);
   }
 
   static async duplicateRouteBatch(id) {
@@ -128,25 +171,20 @@ class RouteHelper {
     if (!routeBatch) {
       return 'Route does not exist';
     }
-    const batch = await RouteHelper.getNewBatchDetails(routeBatch);
+    const batch = await RouteHelper.cloneBatchDetails(routeBatch);
     return batch;
   }
 
-  static async getNewBatchDetails(routeBatch) {
-    const {
-      route, route: { name, imageUrl, destination }, cabDetails, routeId, cabId
-    } = routeBatch;
+  static async cloneBatchDetails(routeBatch) {
+    const batch = await routeService.createRouteBatch(routeBatch, false);
+    return batch;
+  }
 
-    const routeDetails = await RouteService.createRoute(name, imageUrl, destination);
-    const updatedBatch = RouteService.updateBatchLabel(routeDetails);
-    const newBatchObject = RouteHelper.batchObject(routeBatch, updatedBatch);
-    const batch = await RouteService.createBatch(
-      newBatchObject, routeId, cabId
-    );
-    batch.cabDetails = cabDetails;
-    batch.route = route;
+  static async updateRouteRequest(routeId, data) {
+    await RouteRequestService.update(routeId, data);
 
-    return RouteServiceHelper.serializeRouteBatch(batch);
+    const updatedRequest = await RouteRequestService.findByPk(routeId, true);
+    return updatedRequest;
   }
 
   /**
@@ -193,5 +231,3 @@ class RouteHelper {
     return pageData;
   }
 }
-
-export default RouteHelper;

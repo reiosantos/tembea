@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import SlackNotifications from '../../Notifications';
 import bugsnagHelper from '../../../../../helpers/bugsnagHelper';
 import ManagerAttachmentHelper from '../ManagerRouteRequest/helper';
@@ -6,10 +5,6 @@ import OpsAttachmentHelper from './helper';
 import InteractivePrompts from '../../InteractivePrompts';
 import RouteRequestService from '../../../../../services/RouteRequestService';
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
-import ProviderNotifications from '../ProviderNotifications';
-import RemoveDataValues from '../../../../../helpers/removeDataValues';
-import RouteNotifications from '../RouteNotifications';
-import ProvidersController from '../../../RouteManagement/ProvidersController';
 import OperationsHelper from '../../../helpers/slackHelpers/OperationsHelper';
 
 export default class OperationsNotifications {
@@ -23,8 +18,7 @@ export default class OperationsNotifications {
    */
   static async sendOpsDeclineMessageToFellow(routeRequestId, teamId, teamUrl) {
     try {
-      let routeRequest = await RouteRequestService.getRouteRequest(routeRequestId);
-      routeRequest = RemoveDataValues.removeDataValues(routeRequest);
+      const routeRequest = await RouteRequestService.findByPk(routeRequestId, true);
       let slackBotOauthToken;
       if (teamId) {
         slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
@@ -49,29 +43,15 @@ export default class OperationsNotifications {
     }
   }
 
-  static async completeOperationsRouteApproval(routeRequest, requestData, opsData) {
-    const { requesterId } = routeRequest;
+  static async completeOperationsRouteApproval(routeRequest, submission, opsData) {
     const botToken = opsData
-      ? opsData.botToken : await OperationsHelper.getBotToken(requestData.teamUrl);
-    const routeCapacity = 4;
-    const submission = { ...requestData, routeCapacity };
-    const routeBatch = await ProvidersController.saveRoute(routeRequest, submission, requesterId);
-    const managerNotification = RouteNotifications.sendRouteApproveMessageToManager(
-      routeRequest, botToken, requestData
-    );
-    const userNotification = RouteNotifications.sendRouteApproveMessageToFellow(
-      routeRequest, botToken, requestData
-    );
-    const providerNotification = ProviderNotifications.sendRouteApprovalNotification(
-      routeBatch, requestData.provider, botToken
-    );
+      ? opsData.botToken : await OperationsHelper.getBotToken(submission.teamUrl);
     if (opsData) {
-      const { opsId, timeStamp, channelId } = opsData;
+      const { opsUserId, timeStamp, channelId } = opsData;
       await OperationsNotifications.completeOperationsApprovedAction(
-        routeRequest, channelId, timeStamp, opsId, botToken, requestData
+        routeRequest, channelId, timeStamp, opsUserId, botToken, submission
       );
     }
-    await Promise.all([managerNotification, userNotification, providerNotification]);
   }
 
   /**
@@ -81,14 +61,14 @@ export default class OperationsNotifications {
    * @param {RouteRequest} routeRequest - Sequelize route request model
    * @param {number} channel - Slack channel id
    * @param {string} timestamp - Timestamp of the message to update
-   * @param opsId
+   * @param {string} opsId = the slackid of the user
    * @param {string} botToken - Slack authentication token for tembea bot
    * @param submission
    * @param {boolean} update
    * @return {Promise<void>}
    */
   static async completeOperationsApprovedAction(
-    routeRequest, channel, timestamp, opsId, botToken, submission
+    routeRequest, channel, timestamp, opsSlackId, botToken, submission
   ) {
     const { engagement: { fellow } } = routeRequest;
     const title = 'Route Request Approved';
@@ -98,7 +78,7 @@ export default class OperationsNotifications {
     );
     await InteractivePrompts.messageUpdate(
       channel,
-      `<@${opsId}> have just approved <@${fellow.slackId}> route request`,
+      `<@${opsSlackId}> has just approved <@${fellow.slackId}>'s route request`,
       timestamp,
       attachments,
       botToken

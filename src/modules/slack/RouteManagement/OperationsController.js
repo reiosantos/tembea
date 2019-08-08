@@ -15,6 +15,8 @@ import TripCompletionJob from '../../../services/jobScheduler/jobs/TripCompletio
 import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import tripService from '../../../services/TripService';
+import RouteHelper from '../../../helpers/RouteHelper';
+import UserService from '../../../services/UserService';
 
 const handlers = {
   decline: async (payload) => {
@@ -53,10 +55,8 @@ const handlers = {
       const {
         slackBotOauthToken: oauthToken, routeRequest
       } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
-      const updatedRequest = await RouteRequestService.updateRouteRequest(routeRequest.id, {
-        status: 'Declined',
-        opsComment: declineReason
-      });
+      const updatedRequest = await RouteHelper.updateRouteRequest(routeRequest.Id,
+        { status: 'Declined', opsComment: declineReason });
       await OperationsNotifications.completeOperationsDeclineAction(
         updatedRequest, channelId, teamId, routeRequestId,
         timeStamp, oauthToken, payload, respond, false
@@ -99,7 +99,24 @@ const handlers = {
       const payload = CleanData.trim(data);
       const errors = ManagerFormValidator.approveRequestFormValidation(payload);
       if (errors.length > 0) { return { errors }; }
-      await OperationsHelper.sendOpsData(payload);
+      const {
+        team: { id: teamId }, user: { id: opsSlackId }, submission, state
+      } = payload;
+
+      const { id: opsUserId } = await UserService.getUserBySlackId(opsSlackId);
+      const { approve: { channelId, timeStamp, routeRequestId } } = JSON.parse(state);
+
+      const { botToken } = await TeamDetailsService.getTeamDetails(teamId);
+      const updatedRequest = await RouteHelper.updateRouteRequest(routeRequestId, {
+        opsReviewerId: opsUserId, opsComment: submission.opsComment, status: 'Approved',
+      });
+
+      const result = await RouteHelper.createNewRouteBatchFromSlack(
+        submission, routeRequestId
+      );
+      await OperationsHelper.completeRouteApproval(updatedRequest, result, {
+        channelId, opsSlackId, timeStamp, submission, botToken
+      });
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));

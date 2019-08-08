@@ -42,7 +42,7 @@ slackInteractionsRouter.action({ callbackId: /^operations_approval/ },
 slackInteractionsRouter.action({ callbackId: 'operations_reason_dialog_trips' },
   SlackInteractions.handleTripActions);
 slackInteractionsRouter.action({ callbackId: 'operations_reason_dialog_route' },
-  OperationsHelper.sendOpsData);
+  OperationsHelper.completeRouteApproval);
 slackInteractionsRouter.action({ callbackId: 'trips_cab_selection' },
   SlackInteractionsHelpers.handleOpsAction);
 slackInteractionsRouter.action({ callbackId: 'provider_actions' },
@@ -87,7 +87,7 @@ slackInteractionsRouter.action({ callbackId: 'provider_actions_route' },
   SlackInteractions.handleProviderApproval);
 slackInteractionsRouter.action({ callbackId: 'provider_accept_route' },
   ProvidersController.handleProviderRouteApproval);
-  
+
 
 // PLEASE DO NOT TOUCH EXCEPT YOUR NAME IS ADAEZE, BARAK OR RENE
 slackInteractionsRouter.action({ callbackId: userTripActions.reasonDialog },

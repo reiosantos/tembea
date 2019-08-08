@@ -51,21 +51,23 @@ class RoutesController {
 
   static async createRoute(req, res) {
     let message;
-    let routeInfo;
-    const { body } = req;
+    let batch;
+    const { query: { action, batchId }, body } = req;
     try {
-      const { action, batchId } = req.query;
       if (action === 'duplicate' && batchId) {
-        routeInfo = await RouteHelper.duplicateRouteBatch(batchId);
-        message = `Successfully duplicated ${routeInfo.name} route`;
+        batch = await RouteHelper.duplicateRouteBatch(batchId);
+        message = `Successfully duplicated ${batch.name} route`;
       } else if (!batchId) {
-        routeInfo = await RouteHelper.createNewRouteBatch(body);
+        const result = await RouteHelper.createNewRouteWithBatch(body);
+        ({ batch } = result);
         const { teamUrl, provider } = body;
         const { botToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
-        slackEvents.raise(slackEventNames.SEND_PROVIDER_CREATED_ROUTE_REQUEST, routeInfo, provider, botToken);
+        slackEvents.raise(
+          slackEventNames.SEND_PROVIDER_CREATED_ROUTE_REQUEST, batch, provider.id, botToken
+        );
         message = 'Route created successfully';
       }
-      return Response.sendResponse(res, 200, true, message, routeInfo);
+      return Response.sendResponse(res, 200, true, message, batch);
     } catch (error) {
       BugSnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
@@ -135,7 +137,7 @@ class RoutesController {
    */
   static async getOne(req, res) {
     try {
-      const route = await RouteService.getRoute(req.params.id);
+      const route = await RouteService.getRouteById(req.params.id, false);
       return res.status(200).json({
         message: 'Success',
         route
@@ -186,7 +188,7 @@ class RoutesController {
         return Response.sendResponse(res, 409, false, checkStatus);
       }
       const updated = await RoutesController.getUpdatedRouteRequest(requestId, body);
-      
+
       await RoutesController.sendRouteRequestNotifications(updated, body, routeRequest, requestId);
 
       return res.status(201).json({
@@ -210,10 +212,10 @@ class RoutesController {
         opsReviewerId: reviewer.id
       };
 
-      const updatedRouteRequest = await RouteRequestService.updateRouteRequest(
+      const updatedRouteRequest = await RouteRequestService.update(
         routeId, updateData
       );
-      return RemoveDataValues.removeDataValues(updatedRouteRequest);
+      return updatedRouteRequest;
     } catch (error) {
       BugSnagHelper.log(error);
       return HttpError.sendErrorResponse(error);
@@ -297,7 +299,7 @@ class RoutesController {
           .getTeamDetailsByTeamUrl(teamUrl);
         const {
           route: { name }
-        } = await RouteService.getRoute(routeBatchId);
+        } = await RouteService.getRouteById(routeBatchId, false);
         const text = '*:information_source: Reach out to Ops department for any questions*';
         const slackMessage = new SlackInteractiveMessage(
           `*Hey <@${slackId}>, You've been removed from \`${name}\` route.* \n ${text}.`

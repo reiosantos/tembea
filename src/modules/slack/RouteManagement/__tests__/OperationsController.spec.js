@@ -7,7 +7,7 @@ import OperationsNotifications from '../../SlackPrompts/notifications/Operations
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import ManagerFormValidator
   from '../../../../helpers/slack/UserInputValidator/managerFormValidator';
-import RouteService from '../../../../services/RouteService';
+import RouteService, { routeService } from '../../../../services/RouteService';
 import OperationsHelper from '../../helpers/slackHelpers/OperationsHelper';
 import UserService from '../../../../services/UserService';
 import TripCompletionJob from '../../../../services/jobScheduler/jobs/TripCompletionJob';
@@ -16,6 +16,8 @@ import { completeOpsAssignCabPayload } from '../__mocks__/providersController.mo
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import tripService from '../../../../services/TripService';
+import RouteHelper from '../../../../helpers/RouteHelper';
+import { batch, routeDetails } from '../../../../helpers/__mocks__/routeMock';
 
 describe('Operations Route Controller', () => {
   let respond;
@@ -38,7 +40,7 @@ describe('Operations Route Controller', () => {
 
     beforeEach(() => {
       getRouteRequestAndToken = jest.spyOn(RouteRequestService, 'getRouteRequestAndToken');
-      updateRouteRequest = jest.spyOn(RouteRequestService, 'updateRouteRequest');
+      updateRouteRequest = jest.spyOn(RouteHelper, 'updateRouteRequest');
       completeOperationsApprovedAction = jest.spyOn(
         OperationsNotifications, 'completeOperationsApprovedAction'
       );
@@ -130,20 +132,21 @@ describe('Operations Route Controller', () => {
         };
         jest.spyOn(OperationsNotifications, 'completeOperationsApprovedAction')
           .mockImplementation();
-        jest.spyOn(UserService, 'getUserBySlackId').mockReturnValue({ dataValues: { id: 1 } });
-        jest.spyOn(RouteService, 'createRouteBatch').mockResolvedValue();
+        jest.spyOn(UserService, 'getUserBySlackId').mockReturnValue({ id: 1 });
+        jest.spyOn(routeService, 'createRouteBatch').mockResolvedValue();
         jest.spyOn(RouteService, 'addUserToRoute');
         payload = { ...payload, state };
       });
 
-      it('should complete approve action if cab is selectd from dropdown', async () => {
+      it('should complete approve action if cab is selected from dropdown', async () => {
         jest.spyOn(ManagerFormValidator, 'approveRequestFormValidation')
-          .mockResolvedValue([]);
+          .mockReturnValue([]);
+        jest.spyOn(RouteHelper, 'updateRouteRequest').mockReturnValue(routeDetails);
+        jest.spyOn(RouteHelper, 'createNewRouteBatchFromSlack').mockResolvedValue(batch);
 
-        jest.spyOn(OperationsHelper, 'sendOpsData').mockResolvedValue({});
         await OperationsHandler.handleOperationsActions(payload, respond);
-        expect(OperationsHelper.sendOpsData).toHaveBeenCalled();
         expect(ManagerFormValidator.approveRequestFormValidation).toHaveBeenCalled();
+        expect(RouteHelper.updateRouteRequest).toHaveBeenCalled();
       });
 
       it('should not submit invalid user input', async () => {
@@ -163,7 +166,7 @@ describe('Operations Route Controller', () => {
         completeOperationsApprovedAction.mockReturnValue('Token');
         const result = await OperationsHandler.handleOperationsActions(payload, respond);
         expect(result.errors[0]).toBeInstanceOf(SlackDialogError);
-        expect(RouteRequestService.updateRouteRequest).not.toHaveBeenCalled();
+        expect(RouteHelper.updateRouteRequest).not.toHaveBeenCalled();
         expect(OperationsNotifications.completeOperationsApprovedAction).not.toHaveBeenCalled();
       });
 
@@ -252,7 +255,7 @@ describe('Operations Route Controller', () => {
     let channelId;
     beforeEach(() => {
       getRouteRequestAndToken = jest.spyOn(RouteRequestService, 'getRouteRequestAndToken');
-      updateRouteRequest = jest.spyOn(RouteRequestService, 'updateRouteRequest');
+      updateRouteRequest = jest.spyOn(RouteHelper, 'updateRouteRequest');
       completeOperationsDeclineAction = jest.spyOn(
         OperationsNotifications, 'completeOperationsDeclineAction'
       );
@@ -347,7 +350,7 @@ describe('Operations Route Controller', () => {
         completeOperationsDeclineAction.mockReturnValue('Token');
         await OperationsHandler.handleOperationsActions(payload, respond);
         expect(RouteRequestService.getRouteRequestAndToken).toHaveBeenCalled();
-        expect(RouteRequestService.updateRouteRequest).toHaveBeenCalled();
+        expect(RouteHelper.updateRouteRequest).toHaveBeenCalled();
         expect(OperationsNotifications.completeOperationsDeclineAction).toHaveBeenCalled();
       });
 

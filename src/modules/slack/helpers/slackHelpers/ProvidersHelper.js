@@ -3,22 +3,11 @@ import UserService from '../../../../services/UserService';
 
 export default class ProvidersHelper {
   static toProviderLabelPairValues(providers) {
-    return providers.map((val) => {
-      const { id, name, providerUserId } = val;
-      const valueDetails = [id, name, providerUserId].toString();
-      const data = {
-        label: ProvidersHelper.generateProviderLabel(val),
-        value: valueDetails
-      };
-      return data;
-    });
+    return providers.map(val => ({
+      label: `${val.name}`,
+      value: val.id
+    }));
   }
-
-  static generateProviderLabel(provider) {
-    const format = `${provider.name}`;
-    return format;
-  }
-
 
   /**
    * @method getProviderUserDetails

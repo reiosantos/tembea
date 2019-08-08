@@ -12,6 +12,7 @@ import AttachmentHelper from '../SlackPrompts/notifications/ManagerRouteRequest/
 import ManagerFormValidator from '../../../helpers/slack/UserInputValidator/managerFormValidator';
 import { getAction } from './rootFile';
 import cache from '../../../cache';
+import RouteHelper from '../../../helpers/RouteHelper';
 
 export const convertIsoString = (engagementDate) => {
   let { startDate, endDate } = engagementDate;
@@ -97,10 +98,9 @@ const handlers = {
     const {
       slackBotOauthToken, routeRequest
     } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
-    const updatedRequest = await RouteRequestService.updateRouteRequest(routeRequest.id, {
-      status: 'Declined',
-      managerComment: declineReason
-    });
+
+    const updatedRequest = await RouteHelper.updateRouteRequest(routeRequest.id,
+      { status: 'Declined', managerComment: declineReason });
 
     SlackEvents.raise(
       slackEventNames.MANAGER_DECLINED_ROUTE_REQUEST,
@@ -138,19 +138,15 @@ const handlers = {
     const { approve } = JSON.parse(state);
     const { timeStamp, channelId, routeRequestId } = approve;
     const result = cache.fetch(`userDetails${slackId}`);
-    const dateObject = {
-      startDate: result[0],
-      endDate: result[1]
-    };
+    const dateObject = { startDate: result[0], endDate: result[1] };
     const {
       slackBotOauthToken, routeRequest
     } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
-
     const { engagement } = routeRequest;
     await PartnerService.updateEngagement(engagement.id, dateObject);
-    const updatedRequest = await RouteRequestService.updateRouteRequest(routeRequest.id, {
-      status: 'Confirmed',
-    });
+
+    const updatedRequest = await RouteHelper.updateRouteRequest(routeRequest.id,
+      { status: 'Confirmed' });
 
     SlackEvents.raise(
       slackEventNames.MANAGER_APPROVED_ROUTE_REQUEST, payload, respond, { routeRequestId, teamId }
