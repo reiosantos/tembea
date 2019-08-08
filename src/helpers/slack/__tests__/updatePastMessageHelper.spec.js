@@ -25,4 +25,16 @@ describe('UpdateSlackMessageHelper', () => {
     await UpdateSlackMessageHelper.updateMessage(payload.state, data);
     expect(request).toBeCalledWith(options);
   });
+
+  it('should send request to delete slack messages using the response_url', async () => {
+    const responseUrl = 'https://webhook.com/slack/';
+    const options = {
+      url: responseUrl,
+      method: 'DELETE',
+      resolveWithFullResponse: true
+    };
+    request.delete = jest.fn().mockResolvedValue({ ok: true });
+    await UpdateSlackMessageHelper.deleteMessage(responseUrl);
+    expect(request).toBeCalledWith(options);
+  });
 });

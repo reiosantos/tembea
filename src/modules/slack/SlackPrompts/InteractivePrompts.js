@@ -44,7 +44,7 @@ class InteractivePrompts {
     ]);
     attachment.addOptionalProps('trip_itinerary', 'fallback', '#FFCCAA', 'default');
     const navAttachment = createNavButtons('back_to_launch', 'back_to_launch');
-    const message = new SlackInteractiveMessage('Please choose an option', [
+    const message = new SlackInteractiveMessage('*Please choose an option*', [
       attachment, navAttachment
     ]);
     respond(message);

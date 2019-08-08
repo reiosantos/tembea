@@ -1,7 +1,7 @@
 import { Cache, SlackHelpers } from '../../../slack/RouteManagement/rootFile';
 import {
   SlackText, Block, BlockTypes, SelectElement, ElementTypes, ButtonElement,
-  BlockMessage, CancelButtonElement
+  BlockMessage, CancelButtonElement, TextTypes
 } from '../../models/slack-block-models';
 import NewSlackHelpers, { sectionDivider } from '../../helpers/slack-helpers';
 import { getTripKey } from '../../../../helpers/slack/ScheduleTripInputHandlers';
@@ -18,7 +18,7 @@ import tripService from '../../../../services/TripService';
 
 export default class UserTripHelpers {
   static createStartMessage() {
-    const headerText = new SlackText('Who are you booking for?');
+    const headerText = new SlackText('*Who are you booking for?*', TextTypes.markdown);
     const header = new Block().addText(headerText);
     const mainButtons = [
       new ButtonElement(new SlackText('For Me'), 'forMe',
@@ -40,7 +40,7 @@ export default class UserTripHelpers {
   static getAddPassengersMessage(forSelf = 'true') {
     const noOfPassengers = NewSlackHelpers.toSlackDropdown(SlackHelpers.noOfPassengers());
 
-    const textBlock = new Block().addText(new SlackText('Any more passengers?'));
+    const textBlock = new Block().addText(new SlackText('*Any more passengers?*', TextTypes.markdown));
 
     const passengersActions = new Block(BlockTypes.actions, userTripBlocks.addPassengers);
     const selectPassengers = new SelectElement(
@@ -70,7 +70,7 @@ export default class UserTripHelpers {
     const options = new SelectElement(ElementTypes.userSelect, 'Select a passenger',
       userTripActions.setPassenger);
     const header = new Block(BlockTypes.section)
-      .addText(new SlackText('Who are you booking the ride for?'));
+      .addText(new SlackText('*Who are you booking the ride for?*', TextTypes.markdown));
 
     const actions = new Block(BlockTypes.actions, userTripBlocks.setRider).addElements([options]);
 
@@ -85,7 +85,7 @@ export default class UserTripHelpers {
     const personify = forMe ? 'your' : 'passenger\'s';
 
     const header = new Block(BlockTypes.section)
-      .addText(new SlackText(`Please select ${personify} department.`));
+      .addText(new SlackText(`*Please select ${personify} department.*`, TextTypes.markdown));
 
     const departmentsList = await DepartmentService.getDepartmentsForSlack(payload.team.id);
     const departmentBlock = new Block(BlockTypes.actions, userTripBlocks.selectDepartment);
@@ -116,7 +116,7 @@ export default class UserTripHelpers {
 
   static createContToDestMsg() {
     const header = new Block(BlockTypes.section)
-      .addText(new SlackText('Please click to continue'));
+      .addText(new SlackText('*Please click to continue*', TextTypes.markdown));
 
     const continueBlock = new Block(BlockTypes.actions, userTripBlocks.getDestFields);
 

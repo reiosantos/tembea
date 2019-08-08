@@ -19,6 +19,20 @@ class UpdateSlackMessageHelper {
     }
   }
 
+  static async deleteMessage(responseUrl) {
+    try {
+      const options = {
+        url: responseUrl,
+        method: 'DELETE',
+        resolveWithFullResponse: true
+      };
+      const response = await request(options);
+      return response;
+    } catch (error) {
+      BugsnagHelper.log(error);
+    }
+  }
+
   static async newUpdateMessage(responseUrl, newMessage) {
     const state = JSON.stringify({ response_url: responseUrl });
     return UpdateSlackMessageHelper.updateMessage(state, newMessage);
