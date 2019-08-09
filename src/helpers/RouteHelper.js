@@ -18,17 +18,17 @@ export default class RouteHelper {
     }, '');
   }
 
-  static sendTakeOffReminder(rider, routeName, takeOffTime, slackBotOauthToken) {
+  static sendTakeOffReminder(rider, batch, botToken) {
     RouteNotifications.sendRouteTripReminder(
-      { rider, routeName, takeOffTime }, slackBotOauthToken
+      { rider, batch }, botToken
     );
   }
 
-  static sendCompletionNotification(rider, routeName, takeOffTime, recordId, slackBotOauthToken) {
+  static sendCompletionNotification(rider, record, botToken) {
     RouteNotifications.sendRouteUseConfirmationNotificationToRider(
       {
-        rider, routeName, takeOffTime, recordId
-      }, slackBotOauthToken
+        rider, record
+      }, botToken
     );
   }
 

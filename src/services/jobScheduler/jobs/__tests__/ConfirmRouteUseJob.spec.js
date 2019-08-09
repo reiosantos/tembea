@@ -91,7 +91,8 @@ describe('ConfirmRouteUseJob', () => {
 
       expect(scheduler.scheduleJob).toHaveBeenCalledWith(
         expect.stringContaining(testDummy.recordId.toString()),
-        expect.stringMatching(testDummy.takeOff),
+        ConfirmRouteUseJob.getTodayTime(testDummy.takeOff,
+          { minutes: 1 }),
         expect.any(Function)
       );
       expect(appEvents.broadcast)

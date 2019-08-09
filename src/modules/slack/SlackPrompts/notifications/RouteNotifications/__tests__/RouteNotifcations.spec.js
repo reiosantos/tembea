@@ -7,6 +7,8 @@ import BugsnagHelper from '../../../../../../helpers/bugsnagHelper';
 
 import { routeRequestData } from '../../OperationsRouteRequest/__mocks__/OpsRouteRequest.mock';
 import ProviderAttachmentHelper from '../../ProviderNotifications/helper';
+import { routeBatch } from '../../../../../../helpers/__mocks__/routeMock';
+import { mockRecord } from '../../../../../../services/__mocks__';
 
 describe('Route Notifications', () => {
   beforeEach(() => {
@@ -112,30 +114,19 @@ describe('Route Notifications', () => {
     });
     it('should send route update notification to all riders', async () => {
       const getDMSpy = jest.spyOn(SlackNotifications, 'getDMChannelId')
-        .mockReturnValue('TEAMID12');
+        .mockResolvedValue('TEAMID12');
       const routeServiceSpy = jest.spyOn(RouteService, 'getRouteBatchByPk')
-        .mockReturnValue({
-          dataValues: {
-            batch: 'A',
-            takeOff: '11:30',
-            cabDetails: {
-              regNumber: 'KCS 123',
-              driverName: 'Mumen Rider',
-              driverPhoneNo: '075455454212'
-            },
-            route: {
-              name: 'Old Town Road'
-            }
-          }
-        });
+        .mockResolvedValue(routeBatch);
       const createMessageSpy = jest.spyOn(SlackNotifications, 'createDirectMessage')
         .mockImplementation(() => ({ channel: 'TEAMX', text: 'message', attachments: [] }));
       const notificationSpy = jest.spyOn(SlackNotifications, 'sendNotification')
-        .mockResolvedValue({});
+        .mockResolvedValue();
 
+      const data = {
+        record: mockRecord[0], rider: { slackId: 'ASWEQEW' }
+      };
       await RouteNotifications.sendRouteUseConfirmationNotificationToRider(
-        { recordId: 3, rider: { slackId: '78uu' } },
-        'xoop-ewrwere'
+        data, 'xoop-ewrwere'
       );
 
       expect(getDMSpy).toHaveBeenCalledTimes(1);
@@ -191,17 +182,35 @@ describe('Route Notifications', () => {
     });
   });
 
-  describe('getReminderMessage', () => {
-    it('should get reminder message', async () => {
+  describe('sendRouteTripReminder', () => {
+    const data = {
+      rider: {
+        slackId: 'AABBCCDD'
+      },
+      batch: routeBatch
+    };
+    const botToken = 'xoop-sdad';
+
+    it('should send route trip reminder message to user', async () => {
+      jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('TEAMID12');
       jest.spyOn(SlackNotifications, 'createDirectMessage');
-      const reminderInfo = {
-        rider: { slackId: 'AABBCCDD' },
-        routeName: 'Route X',
-        takeOffTime: '10:30',
-      };
-      const result = await RouteNotifications.getReminderMessage('1qazqwe', reminderInfo);
-      expect(SlackNotifications.createDirectMessage).toHaveBeenCalled();
-      expect(result.text).toEqual('Hey, <@AABBCCDD, this is a reminder of your upcoming trip');
+      jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue();
+      await RouteNotifications.sendRouteTripReminder(data, botToken);
+      expect(SlackNotifications.getDMChannelId).toHaveBeenCalledWith(
+        expect.any(String), expect.any(String)
+      );
+      expect(SlackNotifications.createDirectMessage).toHaveBeenCalledWith(
+        expect.any(String), expect.any(String), expect.any(Object)
+      );
+    });
+    
+    it('should catch and log errors', async () => {
+      jest.spyOn(SlackNotifications, 'getDMChannelId').mockRejectedValue(new Error('Error'));
+      jest.spyOn(BugsnagHelper, 'log');
+      await RouteNotifications.sendRouteTripReminder(data, botToken);
+      expect(BugsnagHelper.log).toHaveBeenCalledWith(
+        expect.any(Error)
+      );
     });
   });
 });

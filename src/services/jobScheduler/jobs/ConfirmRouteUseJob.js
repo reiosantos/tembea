@@ -43,24 +43,34 @@ class ConfirmRouteUseJob {
   }
 
   static async scheduleTakeOffReminders(routeBatch) {
-    const allowance = process.env.NODE_ENV === 'production' ? { minutes: -15 } : { minutes: -5 };
+    const allowance = process.env.NODE_ENV === 'production' ? { minutes: -15 } : { minutes: -1 };
     const time = ConfirmRouteUseJob.getTodayTime(routeBatch.takeOff, allowance);
     scheduler.scheduleJob(
       `${routeSchedules.takeOffReminder}__${routeBatch.id}`,
       time,
-      () => appEvents.broadcast(
-        routeEvents.takeOffAlert, {
-          batchId: routeBatch.id,
-        }
-      )
+      () => {
+        appEvents.broadcast(
+          {
+            name: routeEvents.takeOffAlert,
+            data: {
+              batchId: routeBatch.id,
+            }
+          }
+        );
+      }
     );
   }
 
-  static scheduleTripCompletionNotification({ takeOff, recordId }) {
+  static scheduleTripCompletionNotification({ recordId, takeOff, botToken }) {
+    const allowance = process.env.NODE_ENV === 'production' ? { hours: 2 } : { minutes: 1 };
+    const time = ConfirmRouteUseJob.getTodayTime(takeOff, allowance);
     scheduler.scheduleJob(
       `${routeSchedules.completionNotification}__${recordId}`,
-      takeOff,
-      () => appEvents.broadcast(routeEvents.completionNotification, { recordId })
+      time,
+      () => appEvents.broadcast({
+        name: routeEvents.completionNotification,
+        data: { recordId, botToken }
+      })
     );
   }
 

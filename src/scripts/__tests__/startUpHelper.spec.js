@@ -3,6 +3,7 @@ import models from '../../database/models';
 import RoleService from '../../services/RoleService';
 import LocationService from '../../services/LocationService';
 import { DEFAULT_ADDRESSES } from '../../helpers/constants';
+import RouteEventHandlers from '../../modules/events/route-event.handlers';
 
 const { User, Address } = models;
 
@@ -80,5 +81,15 @@ describe('StartUpHelper.addDefaultAddresses', () => {
     await StartUpHelper.addDefaultAddresses();
     expect(Address.create).toHaveBeenCalledTimes(0);
     expect(mockLocationData.update).toHaveBeenCalledTimes(totalAddresses);
+  });
+});
+
+describe('StartUpHelper.registerEventHandlers', () => {
+  it('should initalize and create subscriptions', async (done) => {
+    jest.spyOn(RouteEventHandlers, 'init');
+    StartUpHelper.registerEventHandlers();
+    expect(RouteEventHandlers.init).toHaveBeenCalledTimes(1);
+    expect(RouteEventHandlers.subscriptions.length).toBeGreaterThan(0);
+    done();
   });
 });

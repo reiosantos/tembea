@@ -4,6 +4,7 @@ import RoleService from '../services/RoleService';
 import cache from '../cache';
 import { DEFAULT_LOCATIONS, DEFAULT_ADDRESSES } from '../helpers/constants';
 import LocationService from '../services/LocationService';
+import RouteEventHandlers from '../modules/events/route-event.handlers';
 
 const { User, Address } = models;
 
@@ -71,6 +72,10 @@ class StartUpHelper {
     const lastName = fullName[fullName.length - 1];
     const lastNameCapitalized = lastName.charAt(0).toUpperCase() + lastName.slice(1);
     return (`${firstNameCapitalized} ${lastNameCapitalized}`);
+  }
+
+  static registerEventHandlers() {
+    RouteEventHandlers.init();
   }
 }
 

@@ -16,9 +16,39 @@ const routeBatch = {
   cabId: 3,
   cabDetails: {
     id: 3,
-    driverName: 'Tej Parker',
+    regNumber: 'IKR 409 KI',
+    capacity: '8',
+    model: 'toyota',
+    providerId: 3,
+    createdAt: '2019-01-14T00:00:00.000Z',
+    updatedAt: '2019-01-14T00:00:00.000Z',
+    deletedAt: null
   },
-  route: singleRouteDetails
+  route: singleRouteDetails,
+  driver: {
+    id: 1,
+    driverName: 'Pied Piper',
+    driverPhoneNo: '708989098',
+    driverNumber: '254234',
+    providerId: 1,
+    email: 'pp@gmail.com',
+    createdAt: '2019-01-01T00:00:00.000Z',
+    updatedAt: '2019-01-01T00:00:00.000Z',
+    deletedAt: null
+  },
+  riders: [
+    {
+      id: 14,
+      name: 'Test User',
+      slackId: 'UXXXXX',
+      phoneNo: null,
+      email: 'oneuser@mail.com',
+      defaultDestinationId: null,
+      routeBatchId: 1001,
+      createdAt: '2019-08-09T00:00:02.727Z',
+      updatedAt: '2019-08-09T00:00:02.727Z'
+    }
+  ]
 };
 
 const batch = {

@@ -40,7 +40,7 @@ class RouteUseRecordService {
         ? [{
           model: RouteBatch,
           as: 'batch',
-          include: ['riders']
+          include: ['riders', 'route']
         }] : null
     };
     const record = await RouteUseRecord.findByPk(id, filter);

@@ -17,4 +17,5 @@ server.listen(env.PORT, async () => {
 
   logger(`Find me on http://localhost:${env.PORT}`);
   await BootJobsService.scheduleJobs();
+  StartUpHelper.registerEventHandlers();
 });

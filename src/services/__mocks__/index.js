@@ -515,6 +515,7 @@ export const mockRecord = [{
   createdAt: '2019-07-24T14:24:12.970Z',
   updatedAt: '2019-07-24T15:11:01.861Z',
   batch: {
+    id: 1,
     takeOff: '03:00',
     batch: 'B',
     route: {

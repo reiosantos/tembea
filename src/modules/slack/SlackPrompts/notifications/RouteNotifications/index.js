@@ -6,7 +6,6 @@ import RouteService from '../../../../../services/RouteService';
 import {
   SlackAttachmentField, SlackAttachment, SlackButtonAction
 } from '../../../SlackModels/SlackMessageModels';
-import RemoveDataValues from '../../../../../helpers/removeDataValues';
 import { bugsnagHelper } from '../../../RouteManagement/rootFile';
 import RouteServiceHelper from '../../../../../helpers/RouteServiceHelper';
 import ProviderAttachmentHelper from '../ProviderNotifications/helper';
@@ -69,27 +68,30 @@ export default class RouteNotifications {
     await SlackNotifications.sendNotification(response, slackBotOauthToken);
   }
 
-  static async sendRouteUseConfirmationNotificationToRider(data, slackBotOauthToken) {
+  static async sendRouteUseConfirmationNotificationToRider({
+    record, rider
+  }, botToken) {
     try {
-      const channelID = await SlackNotifications.getDMChannelId(data.rider.slackId, slackBotOauthToken);
+      const channelID = await SlackNotifications.getDMChannelId(rider.slackId, botToken);
 
       const actions = [
-        new SlackButtonAction('taken', 'Yes', `${data.recordId}`),
-        new SlackButtonAction('still_on_trip', 'Still on trip', `${data.recordId}`),
-        new SlackButtonAction('not_taken', 'No', `${data.recordId}`, 'danger')];
+        new SlackButtonAction('taken', 'Yes', `${record.id}`),
+        new SlackButtonAction('still_on_trip', 'Still on trip', `${record.id}`),
+        new SlackButtonAction('not_taken', 'No', `${record.id}`, 'danger')];
       const attachment = new SlackAttachment('', '', '', '', '');
-      const routeBatch = RemoveDataValues.removeDataValues(await RouteService.getRouteBatchByPk(data.recordId));
+      const routeBatch = await RouteService.getRouteBatchByPk(record.batch.id, true);
       const fields = [
         new SlackAttachmentField('Batch', routeBatch.batch, true),
         new SlackAttachmentField('Took Off At', routeBatch.takeOff, true),
-        new SlackAttachmentField('Cab Reg No', routeBatch.cabDetails.regNumber, true),
-        new SlackAttachmentField('Driver Name', routeBatch.cabDetails.driverName, true),
-        new SlackAttachmentField('Driver Phone Number', routeBatch.cabDetails.driverPhoneNo, true)];
+        new SlackAttachmentField('Cab Reg Number', routeBatch.cabDetails.regNumber, true),
+        new SlackAttachmentField('Driver Name', routeBatch.driver.driverName, true),
+        new SlackAttachmentField('Driver Phone Number', routeBatch.driver.driverPhoneNo, true)];
       attachment.addFieldsOrActions('actions', actions);
       attachment.addFieldsOrActions('fields', fields);
       attachment.addOptionalProps('confirm_route_use');
-      const message = SlackNotifications.createDirectMessage(channelID, `Hi! <@${data.rider.slackId}> Did you take the trip for route ${routeBatch.route.name}?`, attachment);
-      return SlackNotifications.sendNotification(message, slackBotOauthToken);
+      const message = SlackNotifications.createDirectMessage(channelID,
+        `Hi! <@${rider.slackId}> Did you take the trip on route ${routeBatch.route.name}?`, attachment);
+      return SlackNotifications.sendNotification(message, botToken);
     } catch (error) {
       bugsnagHelper.log(error);
     }
@@ -145,26 +147,32 @@ export default class RouteNotifications {
     }
   }
 
-  static async getReminderMessage(channelID, payload) {
-    const reminderAttachment = new SlackAttachment('*Trip Reminder*');
+  static async getReminderMessage(channelID, { rider, batch: routeBatch }) {
+    const reminderAttachment = new SlackAttachment('Trip Reminder');
     const routeInfoFields = [
-      new SlackAttachmentField('Route Name', payload.routeName, true),
-      new SlackAttachmentField('Take Off Time', payload.takeOffTime, true)
+      new SlackAttachmentField('Batch', routeBatch.batch, true),
+      new SlackAttachmentField('Take Off Time', routeBatch.takeOff, true),
+      new SlackAttachmentField('Cab Reg Number', routeBatch.cabDetails.regNumber, true),
+      new SlackAttachmentField('Driver Name', routeBatch.driver.driverName, true),
+      new SlackAttachmentField('Driver Phone Number', routeBatch.driver.driverPhoneNo, true)
     ];
+
     reminderAttachment.addFieldsOrActions('fields', routeInfoFields);
     return SlackNotifications.createDirectMessage(
       channelID,
-      `Hey, <@${payload.rider.slackId}, this is a reminder of your upcoming trip`,
-
+      `Hey, <@${rider.slackId}>, you have an upcoming trip on route ${routeBatch.route.name}`,
+      reminderAttachment
     );
   }
 
-  static async sendRouteTripReminder(data, slackBotOauthToken) {
+  static async sendRouteTripReminder({ rider, batch }, slackBotOauthToken) {
     try {
       const channelID = await SlackNotifications.getDMChannelId(
-        data.rider.slackId, slackBotOauthToken
+        rider.slackId, slackBotOauthToken
       );
-      const message = await RouteNotifications.getReminderMessage(channelID, data);
+
+      const message = await RouteNotifications.getReminderMessage(channelID,
+        { rider, batch });
 
       return SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (error) {
