@@ -13,8 +13,8 @@ RUN mkdir -p /usr/app
 WORKDIR /usr/app
 
 # Run these commands and copy files into the usr/app directory
-RUN npm install -g yarn@1.12.x && rm -rf package-lock.json
-COPY package.json yarn.lock dist/src /usr/app/
+RUN npm install -g yarn@1.17.x typescript && rm -rf package-lock.json
+COPY package.json yarn.lock tsconfig.json tsconfig.build.json dist /usr/app/
 COPY .sequelizerc.build /usr/app/.sequelizerc
 
 # run this command

@@ -8,7 +8,8 @@ const { Country } = models;
 describe('Homebase Controller', () => {
   let validToken;
   let mockHomebaseReq;
-  beforeEach(async () => {
+
+  beforeAll(async () => {
     validToken = Utils.generateToken('30m', { userInfo: { rules: ['admin'] } });
 
     mockHomebaseReq = {
@@ -21,8 +22,8 @@ describe('Homebase Controller', () => {
     });
   }, 10000);
 
-  afterAll(() => {
-    models.sequelize.close();
+  afterAll(async () => {
+    await models.sequelize.close();
   });
 
   it('e2e Test: should create a homebase successfully', (done) => {

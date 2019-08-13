@@ -37,4 +37,29 @@ describe('RemoveDataValues', () => {
     const result = RemoveDataValues.removeDataValues(tripBefore);
     expect(result).toEqual(tripAfter);
   });
+
+  it('should apply to objects in an array', () => {
+    const nestedObj = { id: 2, name: 'Tembea' };
+    const mainObject = [
+      {
+        dataValues: {
+          id: 1,
+          name: 'Test 1',
+          users: [
+            {
+              dataValues: nestedObj
+            }
+          ]
+        }
+      }
+    ];
+    const after = [
+      {
+        ...mainObject[0].dataValues
+      }
+    ];
+    after[0].users[0] = { ...nestedObj };
+    const result = RemoveDataValues.removeDataValues(mainObject);
+    expect(result).toEqual(after);
+  });
 });

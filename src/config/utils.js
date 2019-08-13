@@ -1,3 +1,4 @@
+require('../load-env');
 
 // a function to notifyNewTripRequests when some environment variables are unset
 const generalOptionalEnvVariables = [

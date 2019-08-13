@@ -1,0 +1,6 @@
+{
+  "watch": ["src"],
+  "ext": "ts js",
+  "ignore": ["src/**/*.spec.ts", "src/**/*.spec.js"],
+  "exec": "NODE_ENV=development node --inspect-brk -r ts-node/register -r tsconfig-paths/register src/index.ts"
+}

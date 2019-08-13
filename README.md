@@ -116,6 +116,8 @@ To rollback migrations: `make rollback`
 
 To get inside the container: `make ssh`
 
+HINT: To use docker, ensure that your .env file does not contain `DATABASE_URL` as it conflicts with the value in `docker-compose.yml`
+
 ## Testing
 
 [Jest](https://jestjs.io) is used as the testing framework for both the unit tests and integration tests.

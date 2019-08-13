@@ -1,20 +1,22 @@
 class RemoveDataValues {
-  static removeDataValues(newData) {
-    let sorted = newData;
-    if (sorted.dataValues) {
-      sorted = sorted.dataValues;
-    }
+  static filter(data) {
+    return (typeof data === 'object' && Object.prototype.hasOwnProperty.call(data, 'dataValues'))
+      || Array.isArray(data);
+  }
 
-    Object.keys(sorted).map((key) => {
-      if (sorted[key] && sorted[key].dataValues) {
-        sorted[key] = sorted[key].dataValues;
-        const data = RemoveDataValues.removeDataValues(sorted[key]);
-        sorted[key] = data;
-      } else if (sorted[key]) {
-        sorted[key] = sorted[key];
-      }
-      return sorted;
-    });
+  static removeDataValues(newData) {
+    if (!RemoveDataValues.filter(newData)) { return newData; }
+
+    if (Array.isArray(newData)) return newData.map(RemoveDataValues.removeDataValues);
+    const sorted = { ...newData.dataValues };
+
+    Object.keys(sorted)
+      .filter(k => RemoveDataValues.filter(sorted[k]))
+      .forEach((key) => {
+        sorted[key] = Array.isArray(sorted[key])
+          ? sorted[key].map(RemoveDataValues.removeDataValues)
+          : RemoveDataValues.removeDataValues(sorted[key]);
+      });
     return sorted;
   }
 }
