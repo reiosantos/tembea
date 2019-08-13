@@ -1,4 +1,4 @@
-import ManagerController, { convertIsoString } from '../ManagerController';
+import ManagerController from '../ManagerController';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import ManagerNotifications from '../../SlackPrompts/notifications/ManagerRouteRequest';
@@ -278,14 +278,5 @@ describe('Manager Route controller', () => {
         expect(e.message).toBe('Unknown action: manager_route_doesNotExist');
       }
     });
-  });
-});
-
-describe('convertIsoString', () => {
-  it('should convert date to proper format', () => {
-    const engagementDate = { startDate: '22 08 2019', endDate: '22 12 2019' };
-    const result = convertIsoString(engagementDate);
-    expect(result.startDate).toBeDefined();
-    expect(result.endDate).toBeDefined();
   });
 });

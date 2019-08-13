@@ -33,8 +33,8 @@ describe('OperationsNotifications', () => {
     beforeEach(() => {
       jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({ botToken: 'XXXX' });
       jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue({});
-      jest.spyOn(OpsAttachmentHelper, 'getOperationDeclineAttachment').mockResolvedValue({});
-      jest.spyOn(OpsAttachmentHelper, 'getOperationCompleteAttachment').mockResolvedValue({});
+      jest.spyOn(OpsAttachmentHelper, 'getOperationDeclineAttachment');
+      jest.spyOn(OpsAttachmentHelper, 'getOperationCompleteAttachment');
       jest.spyOn(ManagerAttachmentHelper, 'getManagerCompleteAttachment');
       jest.spyOn(SlackNotifications, 'sendNotification').mockReturnValue({});
       jest.spyOn(RouteRequestService, 'findByPk').mockResolvedValue(mockRouteRequestData);

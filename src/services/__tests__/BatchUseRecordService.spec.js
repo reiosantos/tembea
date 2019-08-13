@@ -3,6 +3,10 @@ import BatchUseRecordService from '../BatchUseRecordService';
 import { MAX_INT as all } from '../../helpers/constants';
 import { routeData, data } from '../__mocks__';
 import { route } from '../../modules/slack/RouteManagement/__mocks__/providersController.mock';
+import {
+  data as rbData, route as rbRoute,
+  recordData
+} from '../../helpers/__mocks__/BatchUseRecordMock';
 
 
 const { BatchUseRecord, RouteBatch } = models;
@@ -157,6 +161,24 @@ describe('BatchUseRecordService', () => {
       jest.spyOn(RouteBatch, 'findAll').mockResolvedValue([route]);
       await BatchUseRecordService.findActiveRouteWithDriverOrCabId({ driverId: 1 });
       expect(RouteBatch.findAll).toBeCalled();
+    });
+  });
+});
+
+describe('BatchUseRecordHelper', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  describe('BatchUseRecordHelper.serializePaginatedData', () => {
+    it('BatchUseRecordHelper.serializePaginatedData', () => {
+      const paginatedData = { data: [{ data: rbData, route: rbRoute }], pageMeta: {} };
+
+      jest.spyOn(BatchUseRecordService, 'serializeBatchRecord')
+        .mockImplementation(() => recordData);
+      const serializedData = BatchUseRecordService.serializePaginatedData(paginatedData);
+      expect(serializedData).toEqual({ data: [recordData], pageMeta: {} });
     });
   });
 });

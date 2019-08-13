@@ -7,8 +7,8 @@ import Cache from '../../../../cache';
 import RouteService from '../../../../services/RouteService';
 import JoinRouteRequestService from '../../../../services/JoinRouteRequestService';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
-import { convertIsoString } from '../ManagerController';
 import CleanData from '../../../../helpers/cleanData';
+import DateDialogHelper from '../../../../helpers/dateHelper';
 
 class JoinRouteNotifications {
   static async sendFellowDetailsPreview(payload) {
@@ -42,7 +42,7 @@ class JoinRouteNotifications {
     const engagementDates = {
       startDate: engagement.startDate, endDate: engagement.endDate
     };
-    const { startDate, endDate } = convertIsoString(engagementDates);
+    const { startDate, endDate } = DateDialogHelper.convertIsoString(engagementDates);
     const [routeBatch, fellow, manager] = await Promise.all([
       RouteService.getRouteBatchByPk(id, true),
       SlackHelpers.findOrCreateUserBySlackId(slackId, teamId),

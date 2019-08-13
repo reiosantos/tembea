@@ -160,7 +160,21 @@ export default class DateDialogHelper {
     const [hour, minute] = time.split(':');
 
     const dateValue = tz ? moment.tz(date, 'DD/MM/YYYY', tz) : moment.utc(date, 'DD/MM/YYYY');
-    
+
     return dateValue.add(hour, 'hours').add(minute, 'minutes');
+  }
+
+  static convertIsoString(engagementDate) {
+    let { startDate, endDate } = engagementDate;
+    const sanitizedSD = DateDialogHelper.changeDateTimeFormat(startDate);
+    const sanitizedED = DateDialogHelper.changeDateTimeFormat(endDate);
+    startDate = moment(sanitizedSD, 'MM-DD-YYYY')
+      .toISOString();
+    endDate = moment(sanitizedED, 'MM-DD-YYYY')
+      .toISOString();
+    return {
+      startDate,
+      endDate
+    };
   }
 }

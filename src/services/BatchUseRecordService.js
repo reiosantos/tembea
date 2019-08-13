@@ -2,7 +2,6 @@ import { MAX_INT as all } from '../helpers/constants';
 import models from '../database/models';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import RemoveDataValues from '../helpers/removeDataValues';
-import BatchUseRecordHelper from '../helpers/BatchUseRecordHelper';
 import bugsnagHelper from '../helpers/bugsnagHelper';
 
 const {
@@ -84,7 +83,7 @@ class BatchUseRecordService {
         }]
     };
     const paginatedData = await paginatedRoutes.getPageItems(page);
-    const data = BatchUseRecordHelper.serializePaginatedData(paginatedData);
+    const data = BatchUseRecordService.serializePaginatedData(paginatedData);
     return data;
   }
 
@@ -182,6 +181,15 @@ class BatchUseRecordService {
       ]
     });
     return result ? RemoveDataValues.removeDataValues(result) : result;
+  }
+
+  static serializePaginatedData(paginatedData) {
+    const newData = Object.assign({}, paginatedData);
+    const { data, pageMeta } = newData;
+    const result = data.map(BatchUseRecordService.serializeBatchRecord);
+    newData.data = result;
+    newData.pageMeta = pageMeta;
+    return newData;
   }
 }
 

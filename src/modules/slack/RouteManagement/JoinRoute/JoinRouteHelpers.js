@@ -5,9 +5,9 @@ import PartnerService from '../../../../services/PartnerService';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import { SlackAttachmentField, SlackAttachment } from '../../SlackModels/SlackMessageModels';
 import AttachmentHelper from '../../SlackPrompts/notifications/AttachmentHelper';
-import { convertIsoString } from '../ManagerController';
 import RouteService from '../../../../services/RouteService';
 import { timeTo12hrs } from '../../helpers/dateHelpers';
+import DateDialogHelper from '../../../../helpers/dateHelper';
 
 class JoinRouteHelpers {
   static getName(username) {
@@ -23,7 +23,7 @@ class JoinRouteHelpers {
     } = await Cache.fetch(`joinRouteRequestSubmission_${slackId}`);
     const [start, end, partnerName] = await Cache.fetch(`userDetails${slackId}`);
     const engagementDates = { startDate: start, endDate: end };
-    const { startDate, endDate } = convertIsoString(engagementDates);
+    const { startDate, endDate } = DateDialogHelper.convertIsoString(engagementDates);
     const [partner, fellow, manager, routeBatch] = await Promise.all([
       PartnerService.findOrCreatePartner(partnerName),
       SlackHelpers.findOrCreateUserBySlackId(slackId, teamId),

@@ -17,6 +17,12 @@ const dummyBatches = [
     takeOff: '06:00'
   }];
 
+const toggleEnvironment = (env) => {
+  process.env.NODE_ENV = process.env.NODE_ENV === 'test' ? env : 'test';
+};
+
+const env = 'production';
+
 describe('ConfirmRouteUseJob', () => {
   beforeEach(() => {
     jest.spyOn(RouteService, 'getBatches').mockResolvedValue(dummyBatches);
@@ -49,16 +55,35 @@ describe('ConfirmRouteUseJob', () => {
   });
 
   describe('start', () => {
-    it('should start the scheduler', async () => {
-      const preNotificationSpy = jest.spyOn(ConfirmRouteUseJob, 'schedulePreTripNotification')
+    let preNotificationSpy;
+
+    beforeEach(() => {
+      preNotificationSpy = jest.spyOn(ConfirmRouteUseJob, 'schedulePreTripNotification')
         .mockResolvedValue();
       jest.spyOn(ConfirmRouteUseJob, 'startTripReminderJobs').mockReturnValue();
+    });
 
+    afterEach(() => {
+      jest.restoreAllMocks();
+      jest.resetAllMocks();
+    });
+
+    it('should start the scheduler', async () => {
       await ConfirmRouteUseJob.start();
 
       expect(preNotificationSpy).toHaveBeenCalledTimes(1);
       expect(scheduler.scheduleJob).toHaveBeenCalledWith(expect.any(String),
         expect.any(scheduler.RecurrenceRule), expect.any(Function));
+    });
+
+    it('should adjust time based on environment', async () => {
+      toggleEnvironment(env);
+      await ConfirmRouteUseJob.start();
+
+      expect(preNotificationSpy).toHaveBeenCalledTimes(1);
+      expect(scheduler.scheduleJob).toHaveBeenCalledWith(expect.any(String),
+        expect.any(scheduler.RecurrenceRule), expect.any(Function));
+      toggleEnvironment(env);
     });
   });
 
@@ -75,28 +100,50 @@ describe('ConfirmRouteUseJob', () => {
   });
 
   describe('scheduleTakeOffReminders', () => {
-    it('should send a reminder message to the user before trip', async (done) => {
+    const theTest = async () => {
       const testBatch = { id: 3 };
 
       await ConfirmRouteUseJob.scheduleTakeOffReminders(testBatch);
       expect(appEvents.broadcast).toHaveBeenCalled();
+    };
+
+    it('should send a reminder message to the user before trip', async (done) => {
+      await theTest();
+      done();
+    });
+
+    it('should toggle time based on environment', async (done) => {
+      toggleEnvironment(env);
+      await theTest();
+      toggleEnvironment(env);
       done();
     });
   });
 
   describe('scheduleTripCompleteNotifications', () => {
-    it('should send post-trip notifications successfully', async (done) => {
+    const theTest = async (allowance) => {
       const testDummy = { takeOff: '06:00', recordId: 2, botToken: 'token' };
       await ConfirmRouteUseJob.scheduleTripCompletionNotification(testDummy);
 
       expect(scheduler.scheduleJob).toHaveBeenCalledWith(
         expect.stringContaining(testDummy.recordId.toString()),
         ConfirmRouteUseJob.getTodayTime(testDummy.takeOff,
-          { minutes: 1 }),
+          allowance),
         expect.any(Function)
       );
       expect(appEvents.broadcast)
         .toHaveBeenCalled();
+    };
+
+    it('should send post-trip notifications successfully', async (done) => {
+      await theTest({ minutes: 1 });
+      done();
+    });
+
+    it('should send post-trip notifications successfully', async (done) => {
+      toggleEnvironment(env);
+      await theTest({ hours: 2 });
+      toggleEnvironment(env);
       done();
     });
   });

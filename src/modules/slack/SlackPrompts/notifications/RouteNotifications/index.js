@@ -6,7 +6,6 @@ import RouteService from '../../../../../services/RouteService';
 import {
   SlackAttachmentField, SlackAttachment, SlackButtonAction
 } from '../../../SlackModels/SlackMessageModels';
-import { bugsnagHelper } from '../../../RouteManagement/rootFile';
 import RouteServiceHelper from '../../../../../helpers/RouteServiceHelper';
 import ProviderAttachmentHelper from '../ProviderNotifications/helper';
 
@@ -15,7 +14,8 @@ export default class RouteNotifications {
     const {
       riders, route: { destination: { address } }, status, deleted
     } = routeInfo;
-    const { botToken: teamBotOauthToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
+    const { botToken: teamBotOauthToken } = await TeamDetailsService
+      .getTeamDetailsByTeamUrl(teamUrl);
     const isDeactivation = (status && status.toLowerCase() === 'inactive') || deleted;
     const details = await RouteService.getRouteBatchByPk(routeInfo.id);
     const updatedDetails = details && await RouteServiceHelper.serializeRouteBatch(details);
@@ -80,20 +80,16 @@ export default class RouteNotifications {
         new SlackButtonAction('not_taken', 'No', `${record.id}`, 'danger')];
       const attachment = new SlackAttachment('', '', '', '', '');
       const routeBatch = await RouteService.getRouteBatchByPk(record.batch.id, true);
-      const fields = [
-        new SlackAttachmentField('Batch', routeBatch.batch, true),
-        new SlackAttachmentField('Took Off At', routeBatch.takeOff, true),
-        new SlackAttachmentField('Cab Reg Number', routeBatch.cabDetails.regNumber, true),
-        new SlackAttachmentField('Driver Name', routeBatch.driver.driverName, true),
-        new SlackAttachmentField('Driver Phone Number', routeBatch.driver.driverPhoneNo, true)];
+      const fields = RouteNotifications.createDetailsFields(routeBatch);
       attachment.addFieldsOrActions('actions', actions);
       attachment.addFieldsOrActions('fields', fields);
       attachment.addOptionalProps('confirm_route_use');
       const message = SlackNotifications.createDirectMessage(channelID,
-        `Hi! <@${rider.slackId}> Did you take the trip on route ${routeBatch.route.name}?`, attachment);
+        `Hi! <@${rider.slackId}> Did you take the trip on route ${routeBatch.route.name}?`,
+        attachment);
       return SlackNotifications.sendNotification(message, botToken);
     } catch (error) {
-      bugsnagHelper.log(error);
+      BugsnagHelper.log(error);
     }
   }
 
@@ -149,14 +145,7 @@ export default class RouteNotifications {
 
   static async getReminderMessage(channelID, { rider, batch: routeBatch }) {
     const reminderAttachment = new SlackAttachment('Trip Reminder');
-    const routeInfoFields = [
-      new SlackAttachmentField('Batch', routeBatch.batch, true),
-      new SlackAttachmentField('Take Off Time', routeBatch.takeOff, true),
-      new SlackAttachmentField('Cab Reg Number', routeBatch.cabDetails.regNumber, true),
-      new SlackAttachmentField('Driver Name', routeBatch.driver.driverName, true),
-      new SlackAttachmentField('Driver Phone Number', routeBatch.driver.driverPhoneNo, true)
-    ];
-
+    const routeInfoFields = RouteNotifications.createDetailsFields(routeBatch);
     reminderAttachment.addFieldsOrActions('fields', routeInfoFields);
     return SlackNotifications.createDirectMessage(
       channelID,
@@ -176,7 +165,17 @@ export default class RouteNotifications {
 
       return SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (error) {
-      bugsnagHelper.log(error);
+      BugsnagHelper.log(error);
     }
+  }
+
+  static createDetailsFields(routeBatch) {
+    return [
+      new SlackAttachmentField('Batch', routeBatch.batch, true),
+      new SlackAttachmentField('Took Off At', routeBatch.takeOff, true),
+      new SlackAttachmentField('Cab Reg No', routeBatch.cabDetails.regNumber, true),
+      new SlackAttachmentField('Driver Name', routeBatch.cabDetails.driverName, true),
+      new SlackAttachmentField('Driver Phone Number', routeBatch.cabDetails.driverPhoneNo, true)
+    ];
   }
 }

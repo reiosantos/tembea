@@ -6,7 +6,10 @@ import RoutesController from '../RouteController';
 import RoutesUsageController from '../RouteUsageController';
 import AddressService from '../../../services/AddressService';
 import { RoutesHelper } from '../../../helpers/googleMaps/googleMapsHelpers';
-import { GoogleMapsPlaceDetails, SlackInteractiveMessage } from '../../slack/RouteManagement/rootFile';
+import {
+  GoogleMapsPlaceDetails,
+  SlackInteractiveMessage
+} from '../../slack/RouteManagement/rootFile';
 import HttpError from '../../../helpers/errorHandler';
 import RouteService from '../../../services/RouteService';
 import RouteRequestService from '../../../services/RouteRequestService';
@@ -231,8 +234,8 @@ describe('RoutesController', () => {
       destination: {
         address: 'Some address in Yaba',
         coordinates: {
-          lat: faker.address.latitude(),
-          lng: faker.address.longitude()
+          lat: 80,
+          lng: 176
         }
       },
       takeOffTime: '12:12',

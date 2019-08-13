@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { SlackAttachment, SlackAttachmentField } from '../../SlackModels/SlackMessageModels';
 import Utils from '../../../../utils/index';
-import { convertIsoString } from '../../RouteManagement/ManagerController';
+import DateDialogHelper from '../../../../helpers/dateHelper';
 
 export default class AttachmentHelper {
   static getStatusLabels(status, statusText = 'Confirmed') {
@@ -135,7 +135,7 @@ export default class AttachmentHelper {
       startDate,
       endDate
     };
-    return convertIsoString(engagementDates);
+    return DateDialogHelper.convertIsoString(engagementDates);
   }
 
   static destructEngagementDetails(routeRequest) {

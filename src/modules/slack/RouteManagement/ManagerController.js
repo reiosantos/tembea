@@ -1,4 +1,3 @@
-import moment from 'moment';
 import DialogPrompts from '../SlackPrompts/DialogPrompts';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
@@ -7,26 +6,11 @@ import InteractivePrompts from '../SlackPrompts/InteractivePrompts';
 import { slackEventNames, SlackEvents } from '../events/slackEvents';
 import ManagerNotifications from '../SlackPrompts/notifications/ManagerRouteRequest/index';
 import PartnerService from '../../../services/PartnerService';
-import DateDialogHelper from '../../../helpers/dateHelper';
 import AttachmentHelper from '../SlackPrompts/notifications/ManagerRouteRequest/helper';
 import ManagerFormValidator from '../../../helpers/slack/UserInputValidator/managerFormValidator';
 import { getAction } from './rootFile';
 import cache from '../../../cache';
 import RouteHelper from '../../../helpers/RouteHelper';
-
-export const convertIsoString = (engagementDate) => {
-  let { startDate, endDate } = engagementDate;
-  const sanitizedSD = DateDialogHelper.changeDateTimeFormat(startDate);
-  const sanitizedED = DateDialogHelper.changeDateTimeFormat(endDate);
-  startDate = moment(sanitizedSD, 'MM-DD-YYYY')
-    .toISOString();
-  endDate = moment(sanitizedED, 'MM-DD-YYYY')
-    .toISOString();
-  return {
-    startDate,
-    endDate
-  };
-};
 
 const handlers = {
   initialNotification: async (payload) => {
