@@ -128,7 +128,7 @@ describe('ExportData', () => {
       const result = await ExportData.createPDF(query);
 
       expect(fetchDataSpy).toBeCalledWith('routes');
-      expect(result).toEqual({});
+      expect(result).toBeDefined();
     });
   });
 

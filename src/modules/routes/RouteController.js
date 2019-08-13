@@ -139,6 +139,7 @@ class RoutesController {
   static async getOne(req, res) {
     try {
       const route = await RouteService.getRouteById(req.params.id, false);
+      if (!route) throw new Error('route not found');
       return res.status(200).json({
         message: 'Success',
         route

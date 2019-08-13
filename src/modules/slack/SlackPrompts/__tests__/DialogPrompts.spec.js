@@ -1,3 +1,4 @@
+import TeamDetailsService from '../../../../services/TeamDetailsService';
 import DialogPrompts from '../DialogPrompts';
 import sendDialogTryCatch from '../../../../helpers/sendDialogTryCatch';
 import UserService from '../../../../services/UserService';
@@ -5,10 +6,6 @@ import { driverService } from '../../../../services/DriverService';
 import { cabService } from '../../../../services/CabService';
 import ProviderService, { providerService } from '../../../../services/ProviderService';
 import ProviderHelper from '../../../../helpers/providerHelper';
-
-jest.mock('../../../../services/TeamDetailsService', () => ({
-  getTeamDetailsBotOauthToken: async () => 'just a random token'
-}));
 
 jest.mock('../../../../helpers/sendDialogTryCatch', () => jest.fn());
 jest.mock('../../../../helpers/slack/createDialogForm', () => jest.fn());
@@ -26,6 +23,10 @@ jest.mock('@slack/client', () => ({
 const respond = jest.fn();
 
 describe('Dialog prompts test', () => {
+  beforeEach(() => {
+    jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('token');
+  });
+
   afterEach(() => {
     jest.resetAllMocks();
   });

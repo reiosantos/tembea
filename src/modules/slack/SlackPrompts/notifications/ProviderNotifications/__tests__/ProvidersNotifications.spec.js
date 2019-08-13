@@ -276,7 +276,8 @@ describe('provider cab reassignnment', () => {
 
 
   it('should notify the provider of the cab deletion', async () => {
-    await ProviderNotifications.sendVehicleRemovalProviderNotification(cab, [route], 'segun-andela.slack.com');
+    await ProviderNotifications.sendVehicleRemovalProviderNotification(cab, [route],
+      'segun-andela.slack.com');
     expect(ProviderService.findByPk).toHaveBeenCalled();
     expect(UserService.getUserById).toHaveBeenCalled();
     expect(cabService.getCabs).toHaveBeenCalled();

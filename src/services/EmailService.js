@@ -30,7 +30,7 @@ class EmailService {
       const res = await this.client.messages().send(mailOptions);
       return res;
     }
-    return new Promise(resolve => resolve('failed'));
+    return 'failed';
   }
 }
 

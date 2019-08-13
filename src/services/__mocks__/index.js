@@ -332,30 +332,23 @@ export const mockCountryError = {
   message: 'Country not found'
 };
 
-export const mockNewHomebase = {
-  dataValues: [{
+export const mockCreatedHomebase = {
+  homebase: {
     id: 1,
     name: 'Nairobi',
     countryId: 1,
     createdAt: '2019-04-01T12:07:13.002Z',
     updatedAt: '2019-04-01T12:07:13.002Z',
     deletedAt: null
-  }],
+  },
+  isNewHomebase: true
+};
+
+export const mockNewHomebase = {
+  dataValues: { ...mockCreatedHomebase.homebase },
   _options: {
     isNewRecord: true
   }
-};
-
-export const mockCreatedHomebase = {
-  homebase: [{
-    id: 1,
-    name: 'Nairobi',
-    countryId: 1,
-    createdAt: '2019-04-01T12:07:13.002Z',
-    updatedAt: '2019-04-01T12:07:13.002Z',
-    deletedAt: null
-  }],
-  isNewHomebase: true
 };
 
 export const mockCountry = {

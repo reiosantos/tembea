@@ -259,7 +259,7 @@ class InteractivePrompts {
     respond(message);
   }
 
-  static sendPreviewTripResponse(tripDetails, respond) {
+  static sendPreviewTripResponse(tripDetails) {
     const hoursBefore = tripDetails.tripType === 'Airport Transfer' ? 3 : 2;
     const tripType = tripDetails.tripType === 'Airport Transfer' ? 'flight' : 'appointment';
     const attachment = new SlackAttachment(
@@ -288,7 +288,7 @@ class InteractivePrompts {
 
     const message = new SlackInteractiveMessage('*Trip request preview*', [
       attachment]);
-    respond(message);
+    return message;
   }
 
   static async sendScheduleTripResponse(tripDetails, respond) {

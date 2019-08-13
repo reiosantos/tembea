@@ -58,7 +58,8 @@ Follow these steps to set up the project in development mode
   ```
   yarn install
   ```
-- Create a `.env` file in the `env` directory using the `.env.sample` file in the repository
+- Create the `.env` or `.env.development` file by running `cp .env.sample .env` or `cp .env .env.development`
+- Populate the env file created above by obtaining valid values for the environment variables. (Consult your teammates).
 - Setup the database and migrations (**_see [database setup](#database-and-orm, 'setting up database')_**)
 - Start the application by running
   ```
@@ -92,7 +93,7 @@ process.env.MY_ENV_VARIABLE
 
 ### Run the Service Using Docker
 
-> NOTE: Make sure no service is running on port 5000.
+> NOTE: Make sure no service is running on port 5000 and ensure there is a `.env` file with all the necessary environment variables.
 
 To run the application just type: `make start`
 

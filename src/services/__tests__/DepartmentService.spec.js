@@ -21,7 +21,7 @@ describe('/DepartmentService', () => {
         expect(error.message).toBe('Error getting the head of department');
       }
     });
-  
+
     it('should run the saveChanges catchBlock on error', async () => {
       try {
         Department.update = jest.fn(() => 'notValid');
@@ -30,7 +30,7 @@ describe('/DepartmentService', () => {
         expect(error.message).toBe('Error updating department');
       }
     });
-  
+
     it('should create a department', async () => {
       const dept = await Department.create({
         name: 'DSTD',
@@ -38,13 +38,13 @@ describe('/DepartmentService', () => {
         teamId: '45THKULE',
         status: 'Inactive'
       });
-  
+
       const recreated = await DepartmentService.createDepartment({ id: 1 }, 'DSTD');
       expect(recreated.length).toEqual(2);
-  
+
       await dept.destroy();
     });
-  
+
     it('should return a single instance of a department', async () => {
       jest.spyOn(Department, 'findByPk').mockResolvedValue(departmentMocks[0]);
       const dept = await DepartmentService.getById(1);
@@ -53,7 +53,7 @@ describe('/DepartmentService', () => {
       expect(Department.findByPk).toBeCalled();
     });
   });
-  
+
   describe('getDepartments', () => {
     afterEach(() => {
       jest.restoreAllMocks();
@@ -119,10 +119,11 @@ describe('/DepartmentService', () => {
       jest.spyOn(Department, 'findAll').mockResolvedValue(departmentMocks);
     });
     it('should return an array with department analytics data', async () => {
-      jest.spyOn(DepartmentService, 'mapDepartmentId').mockResolvedValue(['tdd', 'travel', 'Mathematics']);
+      jest.spyOn(DepartmentService, 'mapDepartmentId')
+        .mockResolvedValue(['tdd', 'travel', 'Mathematics']);
       jest.spyOn(TripRequest, 'findAll').mockResolvedValue(departmentMocks);
-      const departmentData = await
-      DepartmentService.getDepartmentAnalytics(null, null, ['tdd', 'travel', 'Mathematics'], 'Embassy Visit');
+      const departmentData = await DepartmentService
+        .getDepartmentAnalytics(null, null, ['tdd', 'travel', 'Mathematics'], 'Embassy Visit');
       expect(departmentData).toBeInstanceOf(Array);
     });
     it('should return an empty array of department analytics data', async () => {
@@ -145,7 +146,7 @@ describe('/DepartmentService', () => {
       const departmentIds = await DepartmentService.mapDepartmentId(
         ['people', 'tdd', 'travel', 'Mathematics']
       );
-      expect(departmentIds[0]).toEqual(departmentMocks[0].id);
+      expect(departmentIds[0]).toEqual(departmentMocks[0].dataValues.id);
     });
     it('should not map departmentId to department names', async () => {
       const departmentIds = await DepartmentService.mapDepartmentId();

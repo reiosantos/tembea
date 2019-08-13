@@ -83,7 +83,7 @@ class TravelTripHelper {
       await UpdateSlackMessageHelper.updateMessage(payload.state, { text: 'Noted...' });
       const tripDetails = await createTravelTripDetails(payload, 'embassyVisitDateTime');
       await Cache.save(getTravelKey(id), 'tripDetails', tripDetails);
-      InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
+      respond(InteractivePrompts.sendPreviewTripResponse(tripDetails));
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
@@ -264,7 +264,7 @@ class TravelTripHelper {
       const data = { text: 'Noted...' };
       await UpdateSlackMessageHelper.updateMessage(payload.state, data);
     }
-    return InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
+    respond(InteractivePrompts.sendPreviewTripResponse(tripDetails));
   }
 }
 

@@ -7,7 +7,6 @@ import {
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
 import UserService from '../../../../../services/UserService';
 import ProviderAttachmentHelper from './helper';
-import { InteractivePrompts } from '../../../RouteManagement/rootFile';
 import BugsnagHelper from '../../../../../helpers/bugsnagHelper';
 import ProviderService from '../../../../../services/ProviderService';
 import { driverService } from '../../../../../services/DriverService';
@@ -15,6 +14,7 @@ import CabsHelper from '../../../helpers/slackHelpers/CabsHelper';
 import { cabService } from '../../../../../services/CabService';
 import RemoveDataValues from '../../../../../helpers/removeDataValues';
 import RouteService from '../../../../../services/RouteService';
+import InteractivePrompts from '../../InteractivePrompts';
 
 /**
  * A class representing provider notification
@@ -90,12 +90,15 @@ export default class ProviderNotifications {
    * @returns {Function} HTTP client that makes request to Slack's Web API
    * @memberof ProviderNotifications
    */
-  static async sendTripNotification(providerUserSlackId, providerName, slackBotOauthToken, tripDetails) {
+  static async sendTripNotification(providerUserSlackId, providerName,
+    slackBotOauthToken, tripDetails) {
     const { id: tripId } = tripDetails;
-    const directMessageId = await SlackNotifications.getDMChannelId(providerUserSlackId, slackBotOauthToken);
+    const directMessageId = await SlackNotifications
+      .getDMChannelId(providerUserSlackId, slackBotOauthToken);
     const attachment = new SlackAttachment();
     const fields = SlackNotifications.notificationFields(tripDetails);
-    attachment.addFieldsOrActions('actions', [new SlackButtonAction('assign-cab', 'Accept', `${tripId}`)]);
+    attachment.addFieldsOrActions('actions',
+      [new SlackButtonAction('assign-cab', 'Accept', `${tripId}`)]);
     attachment.addFieldsOrActions('fields', fields);
     attachment.addOptionalProps('provider_actions', 'fallback', '#FFCCAA', 'default');
     try {
@@ -105,12 +108,14 @@ export default class ProviderNotifications {
         return SlackNotifications.sendNotifications(
           channelId,
           attachment,
-          `Hello <@${providerUserSlackId}>\nA trip has been assigned to *${providerName}*, please assign a driver and a cab`,
+          `Hello <@${providerUserSlackId}>\nA trip has been assigned to `
+          + `*${providerName}*, please assign a driver and a cab`,
           slackBotOauthToken
         );
       }
       const message = SlackNotifications.createDirectMessage(directMessageId,
-        `A trip has been assigned to *${providerName}*, please assign a driver and a cab`, [attachment]);
+        `A trip has been assigned to *${providerName}*,`
+        + 'please assign a driver and a cab', [attachment]);
 
       await SlackNotifications.sendNotification(message, slackBotOauthToken);
     } catch (err) { BugsnagHelper.log(err); }
@@ -176,7 +181,8 @@ export default class ProviderNotifications {
     attachment.addOptionalProps('reassign_driver', 'fallback', '#FFCCAA', 'default');
 
     const message = SlackNotifications.createDirectMessage(directMessageId,
-      `Your driver *${driverName}* has been deleted by the Operations team. :slightly_frowning_face:`,
+      `Your driver *${driverName}* has been deleted by the Operations team.`
+      + ':slightly_frowning_face:',
       [attachment]);
     return SlackNotifications.sendNotification(message, teamBotOauthToken);
   }
@@ -185,8 +191,8 @@ export default class ProviderNotifications {
     const message = 'Driver update complete. Thank you! :smiley:';
     const attachment = new SlackAttachment();
     attachment.addOptionalProps('', '', '#3c58d7');
-    const routeFields = await ProviderAttachmentHelper.providerRouteFields(route);
-    const driverFields = await ProviderAttachmentHelper.driverFields(driver);
+    const routeFields = ProviderAttachmentHelper.providerRouteFields(route);
+    const driverFields = ProviderAttachmentHelper.driverFields(driver);
     attachment.addFieldsOrActions('fields', routeFields);
     attachment.addFieldsOrActions('fields', driverFields);
     try {
@@ -203,14 +209,17 @@ export default class ProviderNotifications {
   static async sendVehicleRemovalProviderNotification(cab, routeBatchData, slackUrl) {
     try {
       const { providerId } = cab;
-      const { name: providerName, providerUserId } = await ProviderService.findByPk(providerId);
+      const { name: providerName, providerUserId } = await ProviderService
+        .findByPk(providerId);
       const { slackId } = await UserService.getUserById(providerUserId);
-      const { botToken: slackBotOauthToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl);
+      const { botToken: slackBotOauthToken } = await TeamDetailsService
+        .getTeamDetailsByTeamUrl(slackUrl);
       const channelId = await SlackNotifications.getDMChannelId(slackId, slackBotOauthToken);
       const { data: cabs } = await cabService.getCabs(undefined, { providerId });
       const cabData = CabsHelper.toCabLabelValuePairs(cabs, true);
       const notificationResults = routeBatchData.map((route) => {
-        const message = ProviderNotifications.getAssignedNewCabMessage(route, { cab, cabData }, providerName, channelId);
+        const message = ProviderNotifications.getAssignedNewCabMessage(route,
+          { cab, cabData }, providerName, channelId);
         return SlackNotifications.sendNotification(message, slackBotOauthToken);
       });
       await Promise.all(notificationResults);
@@ -223,17 +232,20 @@ export default class ProviderNotifications {
     const { id } = route;
     const { cab, cabData } = cabOptions;
     const attachment = new SlackAttachment('Please assign another cab');
-    attachment.addFieldsOrActions('actions', [new SlackSelectAction(`${id}`, 'Select Cab', cabData)]);
+    attachment.addFieldsOrActions('actions',
+      [new SlackSelectAction(`${id}`, 'Select Cab', cabData)]);
     const fields = ProviderAttachmentHelper.providerRouteFields(route);
     attachment.addFieldsOrActions('fields', fields);
     attachment.addOptionalProps('cab_reassign', 'fallback', '#FECCAE', 'default');
     const message = SlackNotifications.createDirectMessage(channelId,
-      `Hi *${providerName}*, a vehicle of model *${cab.model}* and a Registration Number: *${cab.regNumber}* has been deleted by Andela Operations team.*`,
+      `Hi *${providerName}*, a vehicle of model *${cab.model}* and a Registration`
+      + `Number: *${cab.regNumber}* has been deleted by Andela Operations team.*`,
       attachment);
     return message;
   }
 
-  static async updateProviderReAssignCabMessage(channelId, slackBotOauthToken, timestamp, route, cab) {
+  static async updateProviderReAssignCabMessage(channelId,
+    slackBotOauthToken, timestamp, route, cab) {
     const attachment = new SlackAttachment();
     attachment.addOptionalProps('', '', '#CCCEED');
     const routeFields = await ProviderAttachmentHelper.providerRouteFields(route);
@@ -241,7 +253,9 @@ export default class ProviderNotifications {
     attachment.addFieldsOrActions('fields', routeFields);
     attachment.addFieldsOrActions('fields', cabFields);
     try {
-      await InteractivePrompts.messageUpdate(channelId, 'The Cab has been updated successfully! Thank you! :smiley:', timestamp, [attachment], slackBotOauthToken);
+      await InteractivePrompts.messageUpdate(channelId,
+        'The Cab has been updated successfully! Thank you! :smiley:',
+        timestamp, [attachment], slackBotOauthToken);
     } catch (error) {
       BugsnagHelper.log(error);
     }

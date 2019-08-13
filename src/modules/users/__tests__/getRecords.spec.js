@@ -3,16 +3,17 @@ import app from '../../../app';
 import Utils from '../../../utils';
 import models from '../../../database/models';
 
-let validToken; // Token for secure requests
-
-beforeAll(() => {
-  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
-});
-afterAll(() => {
-  models.sequelize.close();
-});
-
 describe('Get users records', () => {
+  let validToken; // Token for secure requests
+
+  beforeAll(() => {
+    validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+  });
+
+  afterAll(() => {
+    models.sequelize.close();
+  });
+
   it('should fail when page does not exist', (done) => {
     request(app)
       .get('/api/v1/users?page=99999999999')

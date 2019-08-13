@@ -20,7 +20,7 @@ services:
       - ../../.env
     environment:
       PORT: 5000
-      NODE_ENV: staging
+      NODE_ENV: development
       DATABASE_URL: postgres://postgres:postgres@database/tembea
       REDIS_URL: redis://tembea_redis:6379
     entrypoint:

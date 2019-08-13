@@ -79,11 +79,11 @@ const route = {
   routeId: 1003,
   cabId: 17,
   driverId: 3,
-  riders: [[{
+  riders: [{
     name: 'Segun',
     slackId: 'xyxxx',
-    routeBatch: 1022
-  }]],
+    routeBatchId: 1018
+  }],
   route: {
     name: 'Segun',
     destination: { address: 'old school road' }

@@ -46,6 +46,7 @@ const handlers = {
       'operations_route_declinedRequest',
       JSON.stringify(state), 'Decline', 'Decline', 'declineReason', 'route');
   },
+
   declinedRequest: async (data, respond) => {
     try {
       const payload = CleanData.trim(data);

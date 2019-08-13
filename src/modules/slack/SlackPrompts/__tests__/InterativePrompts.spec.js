@@ -253,10 +253,12 @@ describe('test send preview response and cancel response', () => {
     InteractivePromptsHelpers.generatePreviewTripResponse = jest.fn(() => 'called');
   });
 
-  it('should send preview response', () => {
-    const respond = jest.fn(value => value);
-    InteractivePrompts.sendPreviewTripResponse('trip', respond);
-    expect(respond).toBeCalled();
+  it('should return preview response', () => {
+    const tripDetailsMock = {
+      tripType: 'Airport Transfer',
+    };
+    const result = InteractivePrompts.sendPreviewTripResponse(tripDetailsMock);
+    expect(result).toBeDefined();
   });
 });
 

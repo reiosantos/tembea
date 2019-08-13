@@ -7,32 +7,30 @@ import {
   createDriver,
 } from './support/helpers';
 
-let mockUser;
-let mockProvider;
-let mockDriver;
-
 describe('DriverService', () => {
+  let mockUser;
+  let mockProvider;
+  let mockDriver;
+
   beforeAll(async () => {
-    beforeAll(async () => {
-      mockUser = await createUser({
-        name: faker.name.findName(),
-        slackId: faker.random.word().toUpperCase(),
-        phoneNo: faker.phone.phoneNumber('080########'),
-        email: faker.internet.email(),
-      });
-      mockProvider = await createProvider({
-        name: faker.random.word(),
-        providerUserId: mockUser.id
-      });
-      mockDriver = await createDriver({
-        driverName: faker.name.findName(),
-        driverPhoneNo: faker.phone.phoneNumber('080########'),
-        driverNumber: faker.random.number(),
-        providerId: mockProvider.id,
-        email: faker.internet.email(),
-      });
+    mockUser = await createUser({
+      name: faker.name.findName(),
+      slackId: faker.random.word().toUpperCase(),
+      phoneNo: faker.phone.phoneNumber('080########'),
+      email: faker.internet.email(),
     });
-  });
+    mockProvider = await createProvider({
+      name: faker.random.word(),
+      providerUserId: mockUser.id
+    });
+    mockDriver = await createDriver({
+      driverName: faker.name.findName(),
+      driverPhoneNo: faker.phone.phoneNumber('080########'),
+      driverNumber: faker.random.number(),
+      providerId: mockProvider.id,
+      email: faker.internet.email(),
+    });
+  }, 10000);
 
   afterAll(() => {
     models.sequelize.close();

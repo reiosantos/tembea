@@ -171,7 +171,7 @@ class DepartmentService {
         });
       });
     }
-    
+
     return departmentIds;
   }
 

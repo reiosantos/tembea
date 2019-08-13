@@ -9,8 +9,9 @@ import {
 import Notifications from '../../../SlackPrompts/Notifications';
 import InteractivePromptSlackHelper from '../InteractivePromptSlackHelper';
 import {
-  LocationPrompts, Cache, InteractivePrompts, DialogPrompts, bugsnagHelper
+  LocationPrompts, Cache, DialogPrompts, bugsnagHelper
 } from '../../../RouteManagement/rootFile';
+import InteractivePrompts from '../../../SlackPrompts/InteractivePrompts';
 import UpdateSlackMessageHelper from '../../../../../helpers/slack/updatePastMessageHelper';
 import Services from '../../../../../services/UserService';
 
@@ -86,7 +87,7 @@ export default class travelHelper {
     const value = payload.actions[0].name;
     if (value === 'no') { LocationPrompts.errorPromptMessage(respond); }
   }
-  
+
   static async riderLocationConfirmation(payload, respond) {
     const valueName = payload.actions[0].value;
     if (valueName === 'cancel') {
@@ -133,7 +134,7 @@ export default class travelHelper {
       const data = { text: 'Noted...' };
       await UpdateSlackMessageHelper.updateMessage(payload.state, data);
     }
-    return InteractivePrompts.sendPreviewTripResponse(tripDetails, respond);
+    respond(InteractivePrompts.sendPreviewTripResponse(tripDetails, respond));
   }
 
   static async notesRequest(payload) {
@@ -166,7 +167,7 @@ export default class travelHelper {
       const requesterData = await Services.getUserBySlackId(id);
       const tripData = LocationMapHelpers.tripCompare(tripDetails);
       tripData.requester = requesterData.dataValues.name;
-      return InteractivePrompts.sendPreviewTripResponse(tripData, respond);
+      respond(InteractivePrompts.sendPreviewTripResponse(tripData));
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new SlackInteractiveMessage(`${error} Unsuccessful request. Please try again`));

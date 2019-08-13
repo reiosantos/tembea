@@ -1,7 +1,7 @@
 class RemoveDataValues {
   static filter(data) {
-    return (typeof data === 'object' && Object.prototype.hasOwnProperty.call(data, 'dataValues'))
-      || Array.isArray(data);
+    return (data && typeof data === 'object' && Object.prototype.hasOwnProperty.call(data,
+      'dataValues')) || Array.isArray(data);
   }
 
   static removeDataValues(newData) {
