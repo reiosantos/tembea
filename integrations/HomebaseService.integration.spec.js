@@ -2,7 +2,6 @@ import HomebaseService from '../src/services/HomebaseService';
 import models from '../src/database/models';
 import { createCountry } from './support/helpers';
 
-
 describe('create Homebase', () => {
   let country;
   beforeAll(async () => {

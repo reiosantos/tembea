@@ -55,7 +55,10 @@ describe('ProviderController', () => {
           size: 3,
           name: 'uber'
         },
-        currentUser: { userInfo: { email: 'ddd@gmail.com' } }
+        currentUser: { userInfo: { email: 'ddd@gmail.com' } },
+        headers: {
+          homebaseid: '4'
+        }
       };
     });
 
@@ -95,6 +98,9 @@ describe('ProviderController', () => {
         body: {
           name: 'Uber',
           email: 'allan@andela.com'
+        },
+        headers: {
+          homebaseid: '4'
         }
       };
       jest.spyOn(UserService, 'getUserByEmail')
@@ -103,11 +109,12 @@ describe('ProviderController', () => {
     });
 
     it('creates a provider successfully', async () => {
+      const { homebaseid } = req.headers;
       providerSpy.mockResolvedValue(mockReturnedProvider);
       res.locals = { providerData };
       await ProviderController.addProvider(req, res);
       expect(ProviderService.createProvider)
-        .toHaveBeenCalledWith(providerData);
+        .toHaveBeenCalledWith({ ...providerData, homebaseid });
       expect(res.status)
         .toHaveBeenCalledWith(201);
       expect(res.json)
@@ -119,10 +126,11 @@ describe('ProviderController', () => {
     });
 
     it('returns a 409 error if provider exists', async () => {
+      const { homebaseid } = req.headers;
       providerSpy.mockResolvedValue(mockExistingProvider);
       await ProviderController.addProvider(req, res);
       expect(ProviderService.createProvider)
-        .toHaveBeenCalledWith(providerData);
+        .toHaveBeenCalledWith({ ...providerData, homebaseid });
       expect(res.status)
         .toHaveBeenCalledWith(409);
       expect(res.json)
@@ -222,6 +230,9 @@ describe('ProviderController', () => {
       req = {
         params: {
           id: 1
+        },
+        headers: {
+          homebaseid: '4'
         }
       };
     });
@@ -258,7 +269,7 @@ describe('ProviderController', () => {
   describe('GetViableProviders', () => {
     it('Should get a list of viable providers', async () => {
       jest.spyOn(ProviderService, 'getViableProviders').mockResolvedValue(viableProviders);
-      await ProviderController.getViableProviders();
+      await ProviderController.getViableProviders(req);
       expect(ProviderService.getViableProviders).toHaveBeenCalled();
     });
     it('should return a 404 error', async () => {

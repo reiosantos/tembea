@@ -6,7 +6,6 @@ import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
 import ProviderHelper from '../../helpers/providerHelper';
 import ErrorTypeChecker from '../../helpers/ErrorTypeChecker';
 import Response from '../../helpers/responseHelper';
-import UserService from '../../services/UserService';
 
 class ProviderController {
   /**
@@ -17,9 +16,10 @@ class ProviderController {
    */
   static async addProvider(req, res) {
     const { locals: { providerData } } = res;
+    const { headers: { homebaseid } } = req;
     try {
       const { provider, isNewProvider } = await ProviderService.createProvider(
-        providerData
+        { ...providerData, homebaseid }
       );
       if (isNewProvider) {
         delete provider.deletedAt;
@@ -43,6 +43,7 @@ class ProviderController {
   static async getAllProviders(req, res) {
     try {
       let { page, size, name } = req.query;
+      const { headers: { homebaseid } } = req;
       page = page || 1;
       size = size || defaultSize;
       name = name && name.trim();
@@ -50,9 +51,7 @@ class ProviderController {
         name: { [Op.iLike]: `%${name}%` }
       } : null;
       const pageable = { page, size };
-      const { currentUser: { userInfo } } = req;
-      const { homebaseId } = await UserService.getUserByEmail(userInfo.email, { plain: true });
-      const providersData = await ProviderService.getProviders(pageable, where, homebaseId);
+      const providersData = await ProviderService.getProviders(pageable, where, homebaseid);
       const {
         totalPages, providers, pageNo, totalItems: totalResults, itemsPerPage: pageSize
       } = providersData;
@@ -126,7 +125,8 @@ class ProviderController {
    * @param res
    */
   static async getViableProviders(req, res) {
-    const providers = await ProviderService.getViableProviders();
+    const { headers: { homebaseid } } = req;
+    const providers = await ProviderService.getViableProviders(homebaseid);
     if (!providers[0]) return Response.sendResponse(res, 404, false, 'No viable provider exists');
     return Response.sendResponse(res, 200, true, 'List of viable providers', providers);
   }

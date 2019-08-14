@@ -4,6 +4,7 @@ import app from '../src/app';
 import Utils from '../src/utils';
 import models from '../src/database/models';
 import { createUser } from './support/helpers';
+import HomeBaseFilterValidator from '../src/middlewares/HomeBaseFilterValidator';
 
 const apiURL = '/api/v1/providers';
 
@@ -20,11 +21,13 @@ describe('ProvidersController', () => {
       email: faker.internet.email(),
     });
 
-    validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'], email: mockUser.email } });
+    validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'], locations: [{ id: 4, name: 'Kigali' }], email: mockUser.email } });
     headers = {
       Accept: 'application/json',
-      Authorization: validToken
+      Authorization: validToken,
+      homebaseid: 4
     };
+    jest.spyOn(HomeBaseFilterValidator, 'validateHomeBaseAccess').mockReturnValue();
   });
   afterAll(() => {
     models.sequelize.close();

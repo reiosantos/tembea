@@ -1,6 +1,7 @@
 import express from 'express';
 import ProviderController from './ProviderController';
 import middlewares from '../../middlewares';
+import HomeBaseFilterValidator from '../../middlewares/HomeBaseFilterValidator';
 
 const {
   TokenValidator, GeneralValidator, ProviderValidator, CabsValidator
@@ -11,7 +12,8 @@ const providerRouter = express.Router();
 providerRouter.use(
   '/providers',
   TokenValidator.attachJwtSecretKey,
-  TokenValidator.authenticateToken
+  TokenValidator.authenticateToken,
+  HomeBaseFilterValidator.validateHomeBaseAccess
 );
 
 /**

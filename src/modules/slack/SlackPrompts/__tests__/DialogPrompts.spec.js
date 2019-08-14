@@ -142,9 +142,11 @@ describe('Dialog prompts test', () => {
         user: { slackId: 'DDD' }
       }]
     );
+    jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue({ HomebaseId: '4' });
     await DialogPrompts.sendOperationsNewRouteApprovalDialog({
       trigger_id: 'XXXXXXX',
-      team: { id: 'TEAMID1' }
+      team: { id: 'TEAMID1' },
+      user: { id: 'UVBGH223' }
     }, state);
 
     expect(sendDialogTryCatch).toBeCalledTimes(1);

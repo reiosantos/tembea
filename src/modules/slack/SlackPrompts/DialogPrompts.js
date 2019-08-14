@@ -196,7 +196,8 @@ class DialogPrompts {
       new SlackDialogText('Route\'s take-off time', 'takeOffTime', 'Enter take-off time',
         false, 'The time should be in the format (HH:mm), eg. 01:30')
     ]);
-    const providers = await ProviderService.getViableProviders();
+    const homebase = await HomebaseService.getHomeBaseBySlackId(payload.user.id);
+    const providers = await ProviderService.getViableProviders(homebase.id);
     const providersData = ProvidersHelper.toProviderLabelPairValues(providers);
     dialog.addElements([
       new SlackDialogSelectElementWithOptions('Select A Provider',
