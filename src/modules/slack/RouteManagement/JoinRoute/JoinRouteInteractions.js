@@ -62,7 +62,7 @@ class JoinRouteInteractions {
 
   static async sendCurrentRouteMessage({ user: { id } }, respond) {
     const { routeBatchId } = await UserService.getUserBySlackId(id);
-    const routeInfo = await RouteService.getRouteBatchByPk(routeBatchId);
+    const routeInfo = await RouteService.getRouteBatchByPk(routeBatchId, true);
 
     const currentRouteMessage = RoutesHelpers.toCurrentRouteAttachment(routeInfo);
     respond(currentRouteMessage);

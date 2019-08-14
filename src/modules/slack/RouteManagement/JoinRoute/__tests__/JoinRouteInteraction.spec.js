@@ -234,7 +234,7 @@ describe('Test JointRouteInteractions', () => {
       await JoinRouteInteractions.sendCurrentRouteMessage(payload, respond);
 
       expect(getUserSpy).toHaveBeenCalledWith(payload.user.id);
-      expect(getBatchSpy).toHaveBeenCalledWith(testBatchId);
+      expect(getBatchSpy).toHaveBeenCalledWith(testBatchId, true);
     });
   });
 
@@ -252,6 +252,6 @@ describe('Test JointRouteInteractions', () => {
     await JoinRouteInteractions.sendCurrentRouteMessage(payload, respond);
 
     expect(getUserSpy).toHaveBeenCalledWith(payload.user.id);
-    expect(getBatchSpy).toHaveBeenCalledWith(null);
+    expect(getBatchSpy).toHaveBeenCalledWith(null, true);
   });
 });

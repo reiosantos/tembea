@@ -188,6 +188,7 @@ class RouteService extends BaseService {
    * @throws {Error}
    */
   static async getRouteBatchByPk(id, withFks = false) {
+    if (!id) return null;
     let include;
     if (withFks) {
       include = ['riders', ...RouteService.defaultInclude];

@@ -97,6 +97,9 @@ class ProviderAttachmentHelper {
   }
 
   static driverFields(driverInformation) {
+    if (!driverInformation) {
+      return [new SlackAttachmentField('*`No Driver assigned`*', null, false)];
+    }
     const { driverName, driverPhoneNo } = driverInformation;
 
     return [
@@ -190,6 +193,7 @@ class ProviderAttachmentHelper {
   }
 
   static cabFields(cabInfo) {
+    if (!cabInfo) return [new SlackAttachmentField('*`No Cab assigned`*', null, false)];
     const { model, regNumber, capacity } = cabInfo;
     return [
       new SlackAttachmentField('*_`Cab Information`_*', null, false),
