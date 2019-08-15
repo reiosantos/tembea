@@ -17,8 +17,7 @@ export default class RouteNotifications {
     const { botToken: teamBotOauthToken } = await TeamDetailsService
       .getTeamDetailsByTeamUrl(teamUrl);
     const isDeactivation = (status && status.toLowerCase() === 'inactive') || deleted;
-    const details = await RouteService.getRouteBatchByPk(routeInfo.id);
-    const updatedDetails = details && await RouteServiceHelper.serializeRouteBatch(details);
+    const updatedDetails = routeInfo && await RouteServiceHelper.serializeRouteBatch(routeInfo);
     const text = isDeactivation
       ? `Sorry, Your route to *${address}* is no longer available :disappointed:`
       : `Your route to *${address}* has been updated.`;

@@ -253,7 +253,7 @@ describe('JoinInputHandlers', () => {
       jest.spyOn(PartnerService, 'updateEngagement').mockResolvedValue({ id: 1 });
       jest.spyOn(RouteService, 'addUserToRoute').mockResolvedValue({ id: 1 });
       jest.spyOn(formHelper, 'getFellowEngagementDetails').mockResolvedValue(engagement);
-      jest.spyOn(RouteService, 'getRouteById').mockResolvedValue(route);
+      jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue(route);
 
       await JoinRouteInputHandlers.submitJoinRoute(payload, respond);
       expect(respond).toBeCalledTimes(1);

@@ -270,7 +270,7 @@ class RoutesController {
     try {
       const { params: { routeBatchId }, body: { teamUrl } } = req;
       const slackTeamUrl = teamUrl.trim();
-      const routeBatch = await RouteService.getRouteBatchByPk(routeBatchId);
+      const routeBatch = await RouteService.getRouteBatchByPk(routeBatchId, true);
       if (!routeBatch) {
         message = 'route batch not found';
         HttpError.throwErrorIfNull(routeBatch, message);
@@ -297,9 +297,10 @@ class RoutesController {
         await UserService.updateUser(userId, { routeBatchId: null });
         const { botToken: teamBotOauthToken } = await TeamDetailsService
           .getTeamDetailsByTeamUrl(teamUrl);
+        const { routeId } = await RouteService.getRouteBatchByPk(routeBatchId, false);
         const {
-          route: { name }
-        } = await RouteService.getRouteById(routeBatchId, false);
+          name
+        } = await RouteService.getRouteById(routeId, false);
         const text = '*:information_source: Reach out to Ops department for any questions*';
         const slackMessage = new SlackInteractiveMessage(
           `*Hey <@${slackId}>, You've been removed from \`${name}\` route.* \n ${text}.`

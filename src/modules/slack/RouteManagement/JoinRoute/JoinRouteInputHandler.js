@@ -104,7 +104,6 @@ class JoinRouteInputHandlers {
         user: { id },
         team: { id: teamId }
       } = payload;
-
       const { routeId, capacityFilled } = JSON.parse(value);
       let more = '';
       let eventArgs;
@@ -127,8 +126,8 @@ class JoinRouteInputHandlers {
         const { startDate, endDate } = engagement;
         await PartnerService.updateEngagement(engagementId, { startDate, endDate });
         await RouteService.addUserToRoute(routeId, user.id);
-        const route = await RouteService.getRouteById(routeId, true);
-        ConfirmRouteUseJob.scheduleTakeOffReminders(route);
+        const routeBatch = await RouteService.getRouteBatchByPk(routeId, true);
+        ConfirmRouteUseJob.scheduleTakeOffReminders(routeBatch);
         eventArgs = [
           slackEventNames.MANAGER_RECEIVE_JOIN_ROUTE,
           payload,

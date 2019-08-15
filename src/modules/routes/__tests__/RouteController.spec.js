@@ -532,7 +532,7 @@ describe('RouteController unit test', () => {
     let notificationSpy;
     let res;
     const req = {
-      params: { userId: 2 },
+      params: { routeBatchId: 1 },
       body: { teamUrl: 'andela-tembea.slack.com' }
     };
 
@@ -554,14 +554,18 @@ describe('RouteController unit test', () => {
       jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl').mockResolvedValue({
         botToken: 'token'
       });
-      jest.spyOn(RouteService, 'getRouteById').mockResolvedValue({
-        route: { name: 'home' }
+      jest.spyOn(RouteService, 'getRouteBatchByPk').mockReturnValue({
+        routeId: 1
       });
+      jest.spyOn(RouteService, 'getRouteById').mockReturnValue({
+        routeId: 1,
+      });
+
       userSpy.mockResolvedValue({
         dataValues: { routeBatchId: 1, slackId: 'user' }
       });
       const message = new SlackInteractiveMessage(
-        '*Hey <@user>, You\'ve been removed from `home` route.* \n *:information_source: Reach out to Ops department for any questions*.'
+        '*Hey <@user>, You\'ve been removed from `undefined` route.* \n *:information_source: Reach out to Ops department for any questions*.'
       );
 
       await RoutesController.deleteFellowFromRoute(req, res);
