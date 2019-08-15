@@ -8,6 +8,7 @@ import TripActionsController from '../slack/TripManagement/TripActionsController
 import HttpError from '../../helpers/errorHandler';
 import TripHelper from '../../helpers/TripHelper';
 import TravelTripService from '../../services/TravelTripService';
+import HomebaseService from '../../services/HomebaseService';
 
 class TripsController {
   static async getTrips(req, res) {
@@ -90,6 +91,8 @@ class TripsController {
   static async getCommonPayloadParam(user, slackUrl, tripId) {
     const userId = await TripsController.getSlackIdFromReq(user);
     const { teamId, opsChannelId } = await TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl);
+    const trip = await tripService.getById(tripId);
+    const { channel } = await HomebaseService.getById(trip.homebaseId);
     const state = JSON.stringify({
       trip: tripId,
       tripId,
@@ -99,7 +102,7 @@ class TripsController {
       submission: {},
       user: { id: userId },
       team: { id: teamId },
-      channel: { id: opsChannelId },
+      channel: { id: channel || opsChannelId },
       state
     };
     return payload;

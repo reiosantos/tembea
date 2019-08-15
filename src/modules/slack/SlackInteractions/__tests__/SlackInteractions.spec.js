@@ -1,11 +1,9 @@
 import SlackInteractions from '../index';
 import DialogPrompts from '../../SlackPrompts/DialogPrompts';
 import ManageTripController from '../../TripManagement/ManageTripController';
-import ScheduleTripController from '../../TripManagement/ScheduleTripController';
 import RescheduleTripController from '../../TripManagement/RescheduleTripController';
 import CancelTripController from '../../TripManagement/CancelTripController';
 import Cache from '../../../../cache';
-import ScheduleTripInputHandlers from '../../../../helpers/slack/ScheduleTripInputHandlers';
 import {
   createPayload, respondMock, responseMessage, createTripActionWithOptionsMock
 } from '../__mocks__/SlackInteractions.mock';
@@ -31,6 +29,7 @@ import InteractivePromptSlackHelper from '../../helpers/slackHelpers/Interactive
 import ProviderService from '../../../../services/ProviderService';
 import SlackNotifications from '../../SlackPrompts/Notifications';
 import OpsDialogPrompts from '../../SlackPrompts/OpsDialogPrompts';
+import HomebaseService from '../../../../services/HomebaseService';
 
 
 describe('SlackInteractions', () => {
@@ -177,35 +176,32 @@ describe('SlackInteractions', () => {
       done();
     });
 
-    it('should test launch default response', (done) => {
+    it('should test launch default response', async () => {
       const payload = createPayload();
-      const result = SlackInteractions.launch(payload, respond);
+      const result = await SlackInteractions.launch(payload, respond);
       expect(result).toBe(undefined);
       expect(respond).toHaveBeenCalledWith(responseMessage());
-      done();
     });
 
-    it('should test book_new_trip action', (done) => {
+    it('should test book_new_trip action', async () => {
       const payload = createPayload('book_new_trip');
-      const result = SlackInteractionsHelpers.welcomeMessage(payload, respond);
+      const result = await SlackInteractionsHelpers.welcomeMessage(payload, respond);
       expect(result).toBe(undefined);
       expect(respond).toBeCalled();
-      done();
     });
 
-    it('should test view_trips_itinerary action', () => {
+    it('should test view_trips_itinerary action', async () => {
       const payload = createPayload('view_trips_itinerary');
-      const result = SlackInteractionsHelpers.welcomeMessage(payload, respond);
+      const result = await SlackInteractionsHelpers.welcomeMessage(payload, respond);
       expect(result).toBe(undefined);
       expect(respond).toBeCalled();
     });
 
-    it('should test Welcome message default action', (done) => {
+    it('should test Welcome message default action', async () => {
       const payload = createPayload();
-      const result = SlackInteractionsHelpers.welcomeMessage(payload, respond);
+      const result = await SlackInteractionsHelpers.welcomeMessage(payload, respond);
       expect(result).toBe(undefined);
       expect(respond).toHaveBeenCalledWith(responseMessage());
-      done();
     });
   });
 
@@ -232,32 +228,6 @@ describe('SlackInteractions', () => {
       const result = await SlackInteractionsHelpers.bookNewTrip(payload, respond);
       expect(result).toBe(undefined);
       expect(respond).toHaveBeenCalledWith(
-        responseMessage('Thank you for using Tembea. See you again.')
-      );
-    });
-  });
-
-  describe('Handle user Inputs test', () => {
-    let handleRespond;
-
-    beforeEach(() => {
-      jest.spyOn(ScheduleTripController, 'createRequest').mockResolvedValue(1);
-      handleRespond = respondMock();
-    });
-
-    it('should call scheduleTripHandler if handler exists in object', async () => {
-      const reasonhandler = jest
-        .spyOn(ScheduleTripInputHandlers, 'reason')
-        .mockImplementation(() => { });
-      const payload = createPayload('reason');
-      await SlackInteractionsHelpers.handleUserInputs(payload, 'respond');
-      expect(reasonhandler).toHaveBeenCalledWith(payload, 'respond', 'reason');
-    });
-
-    it('should respond with default message if handler does not exist in object', async () => {
-      const payload = createPayload('default');
-      await SlackInteractionsHelpers.handleUserInputs(payload, handleRespond);
-      expect(handleRespond).toHaveBeenCalledWith(
         responseMessage('Thank you for using Tembea. See you again.')
       );
     });
@@ -628,6 +598,13 @@ describe('SlackInteractions', () => {
       expect(sendTripDetailsForm).toHaveBeenCalledWith(payload,
         'travelTripContactDetailsForm', 'travel_trip_contactDetails');
     });
+
+    it('should handle changeLocation via travel command', async () => {
+      const payload = createPayload('change_location', 'changeLocation__travel');
+      jest.spyOn(InteractivePrompts, 'changeLocation');
+      await SlackInteractions.bookTravelTripStart(payload, respond);
+      expect(InteractivePrompts.changeLocation).toHaveBeenCalled();
+    });
   });
 
   describe('should test handle travelTrip actions', () => {
@@ -664,6 +641,8 @@ describe('SlackInteractions', () => {
       jest.spyOn(JoinRouteInteractions, 'handleViewAvailableRoutes').mockResolvedValue();
       jest.spyOn(JoinRouteInteractions, 'sendCurrentRouteMessage').mockResolvedValue();
     });
+
+
     it('should test my_current_route action', (done) => {
       const payload = createPayload('my_current_route');
       SlackInteractions.startRouteActions(payload, respond);
@@ -676,6 +655,13 @@ describe('SlackInteractions', () => {
       SlackInteractions.startRouteActions(payload, respond);
       expect(JoinRouteInteractions.handleViewAvailableRoutes).toBeCalled();
       done();
+    });
+
+    it('should test change location action', async () => {
+      jest.spyOn(InteractivePrompts, 'changeLocation').mockResolvedValue();
+      const payload = createPayload('change_location');
+      await SlackInteractions.startRouteActions(payload, respond);
+      expect(InteractivePrompts.changeLocation).toBeCalled();
     });
 
     it('should test request_new_route action', (done) => {
@@ -873,6 +859,34 @@ describe('SlackInteractions', () => {
 
       await SlackInteractions.handleProviderApproval(payload);
       expect(DialogPrompts.sendSelectCabDialog).toBeCalled();
+    });
+  });
+});
+
+describe('slackController - Homebases', () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+  it('should handle get homebase message', async () => {
+    jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue(
+      { id: 1, name: 'Nairobi' }
+    );
+    const homebaseMessage = await SlackController.getHomeBaseMessage(1);
+    expect(homebaseMessage).toContain('_Your current home base is *Nairobi*_');
+  });
+  it('should ask user to set their homebase', async () => {
+    jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue();
+    const homebaseMessage = await SlackController.getHomeBaseMessage(1);
+    expect(homebaseMessage).toContain('`Please set your location to continue`');
+  });
+  it('should create a change location button', async () => {
+    const changeLocationBtn = await SlackController.createChangeLocationBtn('routes');
+    expect(changeLocationBtn).toEqual({
+      name: 'changeLocation__routes',
+      style: 'primary',
+      text: 'Change Location',
+      type: 'button',
+      value: 'change_location'
     });
   });
 });

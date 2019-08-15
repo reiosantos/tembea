@@ -25,20 +25,22 @@ import { providerErrorMessage } from '../../../helpers/constants';
 import SlackInteractionsHelpers from '../helpers/slackHelpers/SlackInteractionsHelpers';
 import InteractivePromptSlackHelper from '../helpers/slackHelpers/InteractivePromptSlackHelper';
 import ProviderService from '../../../services/ProviderService';
+import UserService from '../../../services/UserService';
 
 class SlackInteractions {
-  static launch(data, respond) {
+  static async launch(data, respond) {
     const payload = CleanData.trim(data);
-    const action = payload.actions[0].value;
+    const { user: { id: slackId }, actions: [{ value: action }] } = payload;
+
     switch (action) {
       case 'back_to_launch':
-        respond(SlackController.getWelcomeMessage());
+        respond(await SlackController.getWelcomeMessage(slackId));
         break;
       case 'back_to_travel_launch':
-        respond(SlackController.getTravelCommandMsg());
+        respond(await SlackController.getTravelCommandMsg(slackId));
         break;
       case 'back_to_routes_launch':
-        respond(SlackController.getRouteCommandMsg());
+        respond(await SlackController.getRouteCommandMsg(slackId));
         break;
       default:
         respond(new SlackInteractiveMessage('Thank you for using Tembea'));
@@ -193,16 +195,21 @@ class SlackInteractions {
     const payload = CleanData.trim(data);
     const { user: { id }, actions } = payload;
     const { name } = actions[0];
-    if (name === 'cancel') {
-      respond(
-        new SlackInteractiveMessage('Thank you for using Tembea. See you again.')
-      );
-      return;
+    switch (name) {
+      case 'cancel':
+        respond(
+          new SlackInteractiveMessage('Thank you for using Tembea. See you again.')
+        );
+        break;
+      case 'changeLocation__travel':
+        InteractivePrompts.changeLocation(payload, respond);
+        break;
+      default:
+        await Cache.save(getTravelKey(id), 'tripType', name);
+        return DialogPrompts.sendTripDetailsForm(
+          payload, 'travelTripContactDetailsForm', 'travel_trip_contactDetails'
+        );
     }
-    await Cache.save(getTravelKey(id), 'tripType', name);
-    return DialogPrompts.sendTripDetailsForm(
-      payload, 'travelTripContactDetailsForm', 'travel_trip_contactDetails'
-    );
   }
 
   static handleTravelTripActions(data, respond) {
@@ -228,6 +235,9 @@ class SlackInteractions {
         break;
       case 'view_available_routes':
         await JoinRouteInteractions.handleViewAvailableRoutes(payload, respond);
+        break;
+      case 'change_location':
+        await InteractivePrompts.changeLocation(payload, respond);
         break;
       default:
         respond(SlackInteractionsHelpers.goodByeMessage());
@@ -268,6 +278,32 @@ class SlackInteractions {
 
   static async handleProviderApproval(payload) {
     return DialogPrompts.sendSelectCabDialog(payload);
+  }
+
+  static async handleChangeLocation(payload, respond) {
+    const { user: { id: slackId }, actions: [data] } = payload;
+    const { name: homebaseId, value: stateString } = data;
+    const state = JSON.parse(stateString);
+
+    await UserService.updateDefaultHomeBase(slackId, Number(homebaseId));
+    await SlackInteractions.restorePreviousState(state, slackId, respond);
+  }
+
+  static async restorePreviousState(state, slackId, respond) {
+    const { origin } = state;
+    let msg = {};
+
+    switch (origin) {
+      case 'routes':
+        msg = await SlackController.getRouteCommandMsg(slackId);
+        break;
+      case 'travel':
+        msg = await SlackController.getTravelCommandMsg(slackId);
+        break;
+      default:
+        msg = await SlackController.getWelcomeMessage(slackId);
+    }
+    respond(msg);
   }
 }
 

@@ -15,6 +15,7 @@ import userTripActions from './actions';
 import ScheduleTripController from '../../../slack/TripManagement/ScheduleTripController';
 import { bugsnagHelper } from '../../../slack/RouteManagement/rootFile';
 import Validators from './validators';
+import InteractivePromptSlackHelper from '../../../slack/helpers/slackHelpers/InteractivePromptSlackHelper';
 
 export default class UserTripBookingController {
   static startTripBooking(payload, respond) {
@@ -120,8 +121,10 @@ export default class UserTripBookingController {
     try {
       const { user: { id: userId } } = payload;
       const tripDetails = await Cache.fetch(getTripKey(userId));
-      await ScheduleTripController.createTripRequest(payload, respond, tripDetails);
+      const trip = await ScheduleTripController.createTripRequest(payload, tripDetails);
       await Cache.delete(getTripKey(userId));
+      const riderSlackId = `${tripDetails.forMe ? tripDetails.id : tripDetails.rider}`;
+      InteractivePromptSlackHelper.sendCompletionResponse(respond, trip.id, riderSlackId);
     } catch (error) {
       bugsnagHelper.log(error);
       respond(new BlockMessage([new Block().addText('Unsuccessful request. Kindly Try again')]));
@@ -138,10 +141,11 @@ export default class UserTripBookingController {
   }
 
   static async back(payload, respond) {
-    const action = payload.actions[0].value;
+    const { user: { id: slackId }, actions: [{ value: action }] } = payload;
+
     switch (action) {
       case 'back_to_launch':
-        respond(SlackController.getWelcomeMessage());
+        respond(await SlackController.getWelcomeMessage(slackId));
         break;
       case userTripActions.forMe:
         return UserTripBookingController.startTripBooking(payload, respond);

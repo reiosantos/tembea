@@ -10,6 +10,7 @@ import ScheduleTripController from '../../../slack/TripManagement/ScheduleTripCo
 import Validators from './validators';
 import NewLocationHelpers from '../../helpers/location-helpers';
 import UserService from '../../../../services/UserService';
+import HomebaseService from '../../../../services/HomebaseService';
 
 describe('UserTripBookingController', () => {
   const [payload, res] = [{
@@ -147,7 +148,7 @@ describe('UserTripBookingController', () => {
           selected_option: { value: '2' }
         }]
       };
-      jest.spyOn(UserService, 'getUserBySlackId').mockImplementation(() => ({ homebaseId: 1 }));
+      jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({ homebaseId: 1 });
       await UserTripBookingController.saveExtraPassengers(newPayload, res);
       expect(Cache.save).toHaveBeenCalled();
       expect(res).toHaveBeenCalled();
@@ -257,8 +258,11 @@ describe('UserTripBookingController', () => {
     });
 
     it('should go back to launch', async () => {
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockReturnValue(
+        [{ id: 1, name: 'Nairobi' }]
+      );
       await UserTripBookingController.back(newPayload, res);
-      expect(res).toHaveBeenCalledWith(SlackController.getWelcomeMessage());
+      expect(res).toHaveBeenCalledWith(await SlackController.getWelcomeMessage(payload.user.slackId));
     });
 
     it('should go back to start trip booking message', async () => {

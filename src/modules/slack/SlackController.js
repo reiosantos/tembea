@@ -9,11 +9,13 @@ import WebClientSingleton from '../../utils/WebClientSingleton';
 import Response from '../../helpers/responseHelper';
 import HttpError from '../../helpers/errorHandler';
 import BugsnagHelper from '../../helpers/bugsnagHelper';
+import HomebaseService from '../../services/HomebaseService';
 
 
 class SlackController {
-  static launch(req, res) {
-    const message = SlackController.getWelcomeMessage();
+  static async launch(req, res) {
+    const { body: { user_id: slackId } } = req; // get slack id from req, payload.
+    const message = await SlackController.getWelcomeMessage(slackId);
     return res.status(200).json(message);
   }
 
@@ -27,48 +29,88 @@ class SlackController {
     );
   }
 
-  static getWelcomeMessage() {
-    const attachment = SlackController.greetings();
+  static createChangeLocationBtn(callback) {
+    return new SlackButtonAction(
+      `changeLocation${callback ? '__'.concat(callback) : ''}`,
+      'Change Location',
+      'change_location'
+    );
+  }
 
-    attachment.addFieldsOrActions('actions', [
+  static async getHomeBaseMessage(slackId) {
+    const homeBase = await HomebaseService.getHomeBaseBySlackId(slackId);
+    const homeBaseMessage = homeBase
+      ? `_Your current home base is *${homeBase.name}*_` : '`Please set your location to continue`';
+    return homeBaseMessage;
+  }
+
+  static async getWelcomeMessage(slackId) {
+    const attachment = SlackController.greetings();
+    const homeBaseMessage = await SlackController.getHomeBaseMessage(slackId);
+    const actions = homeBaseMessage !== '`Please set your location to continue`' ? [
       new SlackButtonAction('book', 'Schedule a Trip', 'book_new_trip'),
       new SlackButtonAction(
         'view',
         'See Trip Itinerary',
         'view_trips_itinerary'
-      ),
+      )
+    ] : [];
+    attachment.addFieldsOrActions('actions', [
+      ...actions,
+      SlackController.createChangeLocationBtn(''),
       new SlackCancelButtonAction()
     ]);
 
     attachment.addOptionalProps('welcome_message', '/fallback', '#3AA3E3');
 
-    return new SlackInteractiveMessage('Welcome to Tembea!', [attachment]);
+    return new SlackInteractiveMessage(`Welcome to Tembea! \n ${homeBaseMessage}`, [attachment]);
   }
 
-  static getTravelCommandMsg() {
+  static async getTravelCommandMsg(slackId) {
+    const homeBaseMessage = await SlackController.getHomeBaseMessage(slackId);
+
     const attachment = SlackController.greetings();
+    const actions = homeBaseMessage !== '`Please set your location to continue`'
+      ? [new SlackButtonAction('Airport Transfer', 'Airport Transfer', 'airport_transfer'),
+        new SlackButtonAction('Embassy Visit', 'Embassy Visit', 'embassy_visit'),
+      ] : [];
 
     attachment.addFieldsOrActions('actions', [
-      new SlackButtonAction('Airport Transfer', 'Airport Transfer', 'airport_transfer'),
-      new SlackButtonAction('Embassy Visit', 'Embassy Visit', 'embassy_visit'),
+      ...actions,
+      SlackController.createChangeLocationBtn('travel'),
       new SlackCancelButtonAction()
     ]);
+
     attachment.addOptionalProps(
       'travel_trip_start',
       '/fallback',
       '#3AA3E3',
     );
-    return new SlackInteractiveMessage('Welcome to Tembea!', [attachment]);
+
+    return new SlackInteractiveMessage(`Welcome to Tembea! \n ${homeBaseMessage}`, [attachment]);
   }
 
-  static getRouteCommandMsg() {
+  static async getRouteCommandMsg(slackId) {
+    const homeBaseMessage = await SlackController.getHomeBaseMessage(slackId);
+    if (!homeBaseMessage.includes('Nairobi') && homeBaseMessage !== '`Please set your location to continue`') {
+      return new SlackInteractiveMessage(
+        '>*`The route functionality is not supported for your current location`*'
+          .concat('\nThank you for using Tembea! See you again.')
+      );
+    }
     const attachment = SlackController.greetings();
+    const actions = homeBaseMessage !== '`Please set your location to continue`'
+      ? [
+        new SlackButtonAction('My Current Route',
+          'My Current Route', 'my_current_route'),
+        new SlackButtonAction('Request New Route', 'Request New Route', 'request_new_route'),
+        new SlackButtonAction('See Available Routes',
+          'See Available Routes', 'view_available_routes'),
+
+      ] : [];
     attachment.addFieldsOrActions('actions', [
-      new SlackButtonAction('My Current Route',
-        'My Current Route', 'my_current_route'),
-      new SlackButtonAction('Request New Route', 'Request New Route', 'request_new_route'),
-      new SlackButtonAction('See Available Routes',
-        'See Available Routes', 'view_available_routes'),
+      ...actions,
+      SlackController.createChangeLocationBtn('routes'),
       new SlackCancelButtonAction()
     ]);
     attachment.addOptionalProps(
@@ -76,19 +118,22 @@ class SlackController {
       '/fallback',
       '#3AA3E3',
     );
-    
-    return new SlackInteractiveMessage('Welcome to Tembea!', [attachment]);
+
+    return new SlackInteractiveMessage(`Welcome to Tembea! \n ${homeBaseMessage}`, [attachment]);
   }
 
   static async handleSlackCommands(req, res, next) {
-    const { body: { text } } = req;
+    const { body: { text, user_id: slackId } } = req;
     if (!text) return next();
     if (isSlackSubCommand((text.toLowerCase()), 'route')) {
+      const response = await SlackController.getRouteCommandMsg(slackId);
+
       res.status(200)
-        .json(await SlackController.getRouteCommandMsg());
+        .json(response);
     } else if (isSlackSubCommand((text.toLowerCase()), 'travel')) {
+      const response = await SlackController.getTravelCommandMsg(slackId);
       res.status(200)
-        .json(SlackController.getTravelCommandMsg());
+        .json(response);
     }
   }
 

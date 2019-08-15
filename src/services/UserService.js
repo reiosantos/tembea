@@ -205,6 +205,20 @@ class UserService {
     );
     return user;
   }
+
+  /**
+   * @static async update User HomeBase
+   * @description this methods updates user's home base
+   * @param {number} userSlackId
+   * @param {string} homeBaseId
+   * @returns user's homebase ID
+   */
+  static async updateDefaultHomeBase(userSlackId, homebaseId) {
+    const user = await UserService.getUserBySlackId(userSlackId);
+    const { id: userId } = RemoveDataValues.removeDataValues(user);
+    await UserService.updateUser(userId, { homebaseId });
+    return homebaseId;
+  }
 }
 
 export default UserService;

@@ -10,6 +10,8 @@ import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import TripDetailsService from '../../../../services/TripDetailsService';
 import tripService, { TripService } from '../../../../services/TripService';
 import InteractivePromptSlackHelper from '../../helpers/slackHelpers/InteractivePromptSlackHelper';
+import HomebaseService from '../../../../services/HomebaseService';
+import TeamDetailsService from '../../../../services/TeamDetailsService';
 
 
 jest.mock('@slack/client', () => ({
@@ -79,18 +81,20 @@ describe('Test PassedStatus Method', () => {
   });
 });
 
-describe('ScheduleTripController Tests', () => {
+describe.only('ScheduleTripController Tests', () => {
   describe('validateTripDetailsForm', () => {
-    const payload = createPayload();
+    let payload;
+
+    beforeEach(() => {
+      payload = createPayload();
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('xxxx');
+      jest.spyOn(UserInputValidator, 'fetchUserInformationFromSlack').mockResolvedValue({ tz_offset: 1000 });
+    });
 
     it('should return date validation errors if they exist for pickup dialog', async () => {
-      Validators.validateDialogSubmission = jest.fn(() => []);
-      UserInputValidator.validateLocationEntries = jest.fn(() => []);
-      UserInputValidator.validateDateAndTimeEntry = jest.fn(() => []);
-      UserInputValidator
-        .validatePickupDestinationLocationEntries = jest.fn(() => []);
-      const errors = await ScheduleTripController.validateTripDetailsForm('payload', 'pickup');
-      expect(errors.length).toEqual(0);
+      const errors = await ScheduleTripController.validateTripDetailsForm(payload, 'pickup');
+      expect(errors.length).toEqual(1);
+      expect(errors).toContainEqual({ name: 'dateTime', error: 'Date cannot be in the past.' });
     });
     it('should return date validation errors if they exist for destination dialog', async () => {
       Validators.validateDialogSubmission = jest.fn(() => []);
@@ -141,14 +145,20 @@ describe('ScheduleTripController Tests', () => {
   });
 
   describe('createRequestObject', () => {
+    beforeEach(() => {
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue({ id: 1, name: 'Nairobi' });
+    });
+
     it('should return an object containing trip request details', async () => {
       ScheduleTripController.getLocationIds = jest.fn(() => 2);
       dateHelper.changeDateTimeFormat = jest.fn(() => '22/12/2018 22:00');
       const request = await ScheduleTripController
-        .createRequestObject(tripRequestDetails(), { id: 4 });
+        .createRequestObject(tripRequestDetails(), { id: 4, slackId: 'XXXX' });
       expect(request).toHaveProperty('riderId', 4);
       expect(request).toHaveProperty('reason', tripRequestDetails().reason);
+      expect(request).toHaveProperty('homebaseId', 1);
     });
+
     it('should return an object containing trip request details when "pickup" is Others', async () => {
       ScheduleTripController.getLocationIds = jest.fn(() => 2);
       dateHelper.changeDateTimeFormat = jest.fn(() => '22/12/2018 22:00');
@@ -179,6 +189,7 @@ describe('ScheduleTripController Tests', () => {
     let payload;
     beforeEach(() => {
       payload = createPayload();
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue([{ id: 1, name: 'Nairobi' }]);
     });
     it('should return an object with details of the trip to persist', async () => {
       SlackHelpers.findOrCreateUserBySlackId = jest.fn(() => 4);
@@ -236,7 +247,7 @@ describe('ScheduleTripController Tests', () => {
       const request = await ScheduleTripController
         .createTripRequest(payload, responder, tripRequestDetails());
 
-      expect(request).toEqual(true);
+      expect(request).toEqual({ dataValues: 'someValue' });
       expect(SlackEvents.raise).toBeCalled();
       expect(TripService.createRequest).toBeCalled();
     });

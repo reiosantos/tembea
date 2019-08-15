@@ -3,9 +3,7 @@ import CleanData from '../../../../helpers/cleanData';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import DialogPrompts from '../../SlackPrompts/DialogPrompts';
 import Cache from '../../../../cache';
-import ScheduleTripInputHandlers, {
-  getTripKey
-} from '../../../../helpers/slack/ScheduleTripInputHandlers';
+import { getTripKey } from '../../../../helpers/slack/ScheduleTripInputHandlers';
 import ViewTripHelper from './ViewTripHelper';
 import TripRescheduleHelper from './rescheduleHelper';
 import CancelTripController from '../../TripManagement/CancelTripController';
@@ -17,17 +15,20 @@ import SlackInteractions from '../../SlackInteractions';
 import UserTripBookingController from '../../../new-slack/trips/user/user-trip-booking-controller';
 import OpsDialogPrompts from '../../SlackPrompts/OpsDialogPrompts';
 
-
 class SlackInteractionsHelpers {
-  static welcomeMessage(data, respond) {
+  static async welcomeMessage(data, respond) {
     const payload = CleanData.trim(data);
-    const action = payload.actions[0].value;
+    const { actions: [{ value: action }] } = payload;
+
     switch (action) {
       case 'book_new_trip':
-        UserTripBookingController.startTripBooking(payload, respond);
+        await UserTripBookingController.startTripBooking(payload, respond);
         break;
       case 'view_trips_itinerary':
-        InteractivePrompts.sendTripItinerary(payload, respond);
+        await InteractivePrompts.sendTripItinerary(payload, respond);
+        break;
+      case 'change_location':
+        await InteractivePrompts.changeLocation(payload, respond);
         break;
       default:
         respond(new SlackInteractiveMessage('Thank you for using Tembea'));
@@ -56,19 +57,6 @@ class SlackInteractionsHelpers {
       default:
         respond(SlackInteractionsHelpers.goodByeMessage());
     }
-  }
-
-  static async handleUserInputs(data, respond) {
-    const payload = CleanData.trim(data);
-    const callbackId = payload.callback_id.split('_')[2];
-    const scheduleTripHandler = ScheduleTripInputHandlers[callbackId];
-    if (!(SlackInteractionsHelpers.isCancelMessage(payload)) && scheduleTripHandler) {
-      return scheduleTripHandler(payload, respond, callbackId);
-    }
-    // default response for cancel button
-    respond(
-      SlackInteractionsHelpers.goodByeMessage()
-    );
   }
 
   static sendCommentDialog(data, respond) {

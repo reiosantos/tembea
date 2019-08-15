@@ -165,8 +165,7 @@ class UserInputValidator {
 
     try {
       const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-      const user = await this.fetchUserInformationFromSlack(payload.user.id, slackBotOauthToken);
-
+      const user = await UserInputValidator.fetchUserInformationFromSlack(payload.user.id, slackBotOauthToken);
       errors.push(...Validators.checkDate(sanitizedDate, user.tz_offset, fieldName));
       errors.push(...Validators.checkDateTimeFormat(
         DateDialogHelper.changeDateTimeFormat(sanitizedDate),

@@ -89,13 +89,27 @@ class HomebaseService {
     }
   }
 
+  static async getAllHomebases() {
+    const homeBases = await Homebase.findAll({
+      attributes: { include: ['id', 'name'] }
+    });
+    return RemoveDataValues.removeDataValues(homeBases);
+  }
+
   static async getHomeBaseBySlackId(slackId) {
     const { homebaseId } = await UserService.getUserBySlackId(slackId);
-    const homeBase = await Homebase.findAll({
+    const homeBase = await Homebase.findOne({
       where: { id: homebaseId },
       attributes: ['id', 'name']
     });
-    return RemoveDataValues.removeDataValues(homeBase);
+    return homeBase;
+  }
+
+  static async getById(homebaseId) {
+    const homeBase = await Homebase.findOne({
+      where: { id: homebaseId }
+    });
+    return homeBase;
   }
 }
 export default HomebaseService;

@@ -14,7 +14,8 @@ import userTripActions from '../../new-slack/trips/user/actions';
 import UserTripBookingController from '../../new-slack/trips/user/user-trip-booking-controller';
 
 const slackInteractionsRouter = createMessageAdapter(process.env.SLACK_SIGNING_SECRET);
-
+slackInteractionsRouter.action({ callbackId: 'change_location' },
+  SlackInteractions.handleChangeLocation);
 slackInteractionsRouter.action({ callbackId: 'back_to_launch' },
   SlackInteractions.launch);
 slackInteractionsRouter.action({ callbackId: 'welcome_message' },
@@ -23,8 +24,6 @@ slackInteractionsRouter.action({ callbackId: 'travel_trip_start' },
   SlackInteractions.bookTravelTripStart);
 slackInteractionsRouter.action({ callbackId: /^travel_trip/ },
   SlackInteractions.handleTravelTripActions);
-slackInteractionsRouter.action({ callbackId: /^schedule_trip/ },
-  SlackInteractionsHelpers.handleUserInputs);
 slackInteractionsRouter.action({ callbackId: 'itinerary_actions' },
   SlackInteractionsHelpers.handleItineraryActions);
 slackInteractionsRouter.action({ callbackId: 'reschedule_trip' },
@@ -87,7 +86,6 @@ slackInteractionsRouter.action({ callbackId: 'provider_actions_route' },
   SlackInteractions.handleProviderApproval);
 slackInteractionsRouter.action({ callbackId: 'provider_accept_route' },
   ProvidersController.handleProviderRouteApproval);
-
 
 // PLEASE DO NOT TOUCH EXCEPT YOUR NAME IS ADAEZE, BARAK OR RENE
 slackInteractionsRouter.action({ callbackId: userTripActions.reasonDialog },

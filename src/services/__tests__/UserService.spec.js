@@ -113,7 +113,7 @@ describe('/Users service', () => {
     beforeEach(() => {
       jest.restoreAllMocks();
     });
-    
+
     it('should find or create a fellow by specific slackId', async () => {
       const userData = {
         slackId: faker.random.word(),
@@ -124,5 +124,12 @@ describe('/Users service', () => {
       expect(result.slackId).toBe(userData.slackId);
       expect(result.email).toBe(userData.email);
     });
+  });
+  it('should update homebase id of user', async () => {
+    jest.spyOn(UserService, 'getUserBySlackId').mockReturnValue({ dataValues: [{ id: 1 }] });
+    jest.spyOn(UserService, 'updateUser');
+    const homeBaseId = await UserService.updateDefaultHomeBase('UDL123', 1);
+    expect(homeBaseId).toBe(1);
+    expect(UserService.updateUser).toBeCalledWith(undefined, { homebaseId: 1 });
   });
 });

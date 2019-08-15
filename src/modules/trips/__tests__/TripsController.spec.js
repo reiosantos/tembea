@@ -15,6 +15,7 @@ import TravelTripService from '../../../services/TravelTripService';
 import SlackProviderHelper from '../../slack/helpers/slackHelpers/ProvidersHelper';
 import ProviderNotifications from '../../slack/SlackPrompts/notifications/ProviderNotifications';
 import HttpError from '../../../helpers/errorHandler';
+import HomebaseService from '../../../services/HomebaseService';
 
 describe('TripController', () => {
   const { mockedValue: { routes: trips }, ...rest } = mocked;
@@ -241,6 +242,9 @@ describe('TripController', () => {
         jest
           .spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl')
           .mockResolvedValue({ teamId: 'kkk', opsChannelId: 'kk' });
+        jest.spyOn(HomebaseService, 'getById').mockResolvedValue(
+          { id: 1, name: 'Nairobi', channel: 12 }
+        );
         await TripsController.getCommonPayloadParam('', '', '');
         expect(TeamDetailsService.getTeamDetailsByTeamUrl).toHaveBeenCalledTimes(1);
         expect(TripsController.getSlackIdFromReq).toHaveBeenCalledTimes(1);

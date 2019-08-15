@@ -7,7 +7,7 @@ import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import AddressService from '../../../services/AddressService';
 import TripDetailsService from '../../../services/TripDetailsService';
 import tripService, { TripService } from '../../../services/TripService';
-import InteractivePromptSlackHelper from '../helpers/slackHelpers/InteractivePromptSlackHelper';
+import HomebaseService from '../../../services/HomebaseService';
 
 class ScheduleTripController {
   static validateTravelContactDetailsForm(payload) {
@@ -98,6 +98,7 @@ class ScheduleTripController {
       } = tripRequestDetails;
       const { originId, destinationId } = await ScheduleTripController
         .getLocationIds(tripRequestDetails);
+      const homebase = await HomebaseService.getHomeBaseBySlackId(requester.slackId);
       const pickupName = `${pickup === 'Others' ? othersPickup : pickup}`;
       const destinationName = `${destination === 'Others' ? othersDestination : destination}`;
       return {
@@ -113,7 +114,8 @@ class ScheduleTripController {
         noOfPassengers: passengers,
         tripType,
         tripNote,
-        distance
+        distance,
+        homebaseId: homebase.id
       };
     } catch (error) { bugsnagHelper.log(error); throw error; }
   }
@@ -123,7 +125,7 @@ class ScheduleTripController {
       const { user: { id: slackUserId }, team: { id: teamId } } = payload;
       const [requester, slackInfo] = await Promise.all([
         SlackHelpers.findOrCreateUserBySlackId(slackUserId, teamId),
-        SlackHelpers.getUserInfoFromSlack(slackUserId, teamId)
+        SlackHelpers.getUserInfoFromSlack(slackUserId, teamId),
       ]);
 
       const request = await ScheduleTripController
@@ -141,15 +143,15 @@ class ScheduleTripController {
     }
   }
 
-  static async createTripRequest(payload, respond, tripRequestDetails) {
+  static async createTripRequest(payload, tripRequestDetails) {
     try {
       const tripRequest = await ScheduleTripController.createRequest(payload, tripRequestDetails);
       const trip = await TripService.createRequest(tripRequest);
-      const { forMe } = tripRequestDetails;
-      const riderSlackId = `${forMe ? tripRequestDetails.id : tripRequestDetails.rider}`;
-      InteractivePromptSlackHelper.sendCompletionResponse(respond, trip.id, riderSlackId);
-      SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, trip, respond);
-      return true;
+      // const { forMe } = tripRequestDetails;
+      // const riderSlackId = `${forMe ? tripRequestDetails.id : tripRequestDetails.rider}`;
+      // InteractivePromptSlackHelper.sendCompletionResponse(trip.id, riderSlackId);
+      SlackEvents.raise(slackEventNames.NEW_TRIP_REQUEST, payload, trip);
+      return trip;
     } catch (error) {
       bugsnagHelper.log(error);
       throw error;

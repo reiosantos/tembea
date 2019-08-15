@@ -2,6 +2,8 @@ import HomebaseService from '../HomebaseService';
 import models from '../../database/models';
 import { mockCreatedHomebase, mockNewHomebase } from '../__mocks__';
 import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
+import { mockedValue } from '../../modules/trips/__tests__/__mocks__';
+import UserService from '../UserService';
 
 jest.mock('../../helpers/sequelizePaginationHelper', () => jest.fn());
 const { Homebase } = models;
@@ -34,6 +36,8 @@ describe('test HomebaseService', () => {
     jest.spyOn(HomebaseService, 'formatName');
     jest.spyOn(HomebaseService, 'createFilter');
     jest.spyOn(HomebaseService, 'serializeCountry');
+    jest.spyOn(HomebaseService, 'getAllHomebases');
+    jest.spyOn(HomebaseService, 'getHomeBaseBySlackId');
   });
 
   afterEach(() => {
@@ -107,5 +111,27 @@ describe('test HomebaseService', () => {
     expect(HomebaseService.createFilter).toHaveBeenCalledWith(where);
     expect(SequelizePaginationHelper).toHaveBeenCalled();
     expect(getPageItems).toHaveBeenCalledWith(pageable.page);
+  });
+
+  it('should get all Homebases', async () => {
+    jest.spyOn(Homebase, 'findAll').mockResolvedValue(mockedValue);
+    await HomebaseService.getAllHomebases();
+    expect(Homebase.findAll).toBeCalled();
+    expect(Homebase.findAll).toBeCalledWith({ attributes: { include: ['id', 'name'] } });
+  });
+
+  it('should get homebase by User slack ID', async () => {
+    jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({ homebaseId: 1 });
+    jest.spyOn(Homebase, 'findAll').mockResolvedValue(mockedValue);
+    await HomebaseService.getHomeBaseBySlackId(1);
+    expect(Homebase.findAll).toBeCalled();
+    expect(Homebase.findAll).toBeCalledWith(
+      {
+        attributes: ['id', 'name'],
+        where: { id: 1 },
+        plain: true,
+        rejectOnEmpty: false,
+      }
+    );
   });
 });

@@ -7,7 +7,9 @@ module.exports = (sequelize, DataTypes) => {
     countryId: {
       type: DataTypes.INTEGER,
     },
-
+    channel: {
+      type: DataTypes.STRING,
+    }
   }, {
     paranoid: true,
     timestamps: true

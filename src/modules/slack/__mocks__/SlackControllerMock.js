@@ -13,6 +13,12 @@ const SlackControllerMock = {
       type: 'button',
       value: 'view_trips_itinerary'
     }, {
+      name: 'changeLocation',
+      style: 'primary',
+      text: 'Change Location',
+      type: 'button',
+      value: 'change_location',
+    }, {
       confirm: {
         dismiss_text: 'No',
         ok_text: 'Yes',
@@ -38,9 +44,8 @@ const SlackControllerMock = {
     text: 'What would you like to do today?',
     title: 'I am your trip operations assistant at Andela'
   }],
-  channel: undefined,
   response_type: 'ephemeral',
-  text: 'Welcome to Tembea!',
+  text: 'Welcome to Tembea! \n _Your current home base is *Nairobi*_',
   as_user: false
 };
 export default SlackControllerMock;

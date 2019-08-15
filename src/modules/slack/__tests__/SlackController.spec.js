@@ -6,6 +6,7 @@ import TeamDetailsService from '../../../services/TeamDetailsService';
 import Response from '../../../helpers/responseHelper';
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
 import HttpError from '../../../helpers/errorHandler';
+import HomebaseService from '../../../services/HomebaseService';
 
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
@@ -39,6 +40,13 @@ jest.mock('@slack/client', () => ({
 }));
 
 describe('Slack controller test', () => {
+  beforeEach(() => {
+    jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue(
+      { id: 1, name: 'Nairobi' }
+    );
+  });
+
+
   it('should return launch message', async () => {
     const res = await request(app)
       .post('/api/v1/slack/command');
@@ -49,7 +57,7 @@ describe('Slack controller test', () => {
     expect(res.body).toEqual(SlackControllerMock);
   });
 
-  it('should return the lunch meassage for the command /Tembea travel', async () => {
+  it('should return the lunch message for the command /Tembea travel', async () => {
     const res = await request(app)
       .post('/api/v1/slack/command')
       .send({ text: ' travel ' });
@@ -99,11 +107,22 @@ describe('Slack controller test', () => {
     it('should handle error occurence', async () => {
       jest.spyOn(BugsnagHelper, 'log').mockReturnValue();
       jest.spyOn(HttpError, 'sendErrorResponse').mockReturnValue();
-      
+
       const req = { query: {} };
       await SlackController.getChannels(req, {});
       expect(BugsnagHelper.log).toHaveBeenCalled();
       expect(HttpError.sendErrorResponse).toHaveBeenCalled();
+    });
+    it('should not limit routes to only users with Nairobi Homebase', async () => {
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue(
+        { id: 1, name: 'Kampala' }
+      );
+      expect(await SlackController.getRouteCommandMsg()).toMatchObject(
+        {
+          text: '>*`The route functionality is not supported for your current location`*'
+            .concat('\nThank you for using Tembea! See you again.')
+        }
+      );
     });
   });
 });

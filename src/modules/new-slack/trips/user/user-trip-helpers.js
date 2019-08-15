@@ -86,7 +86,7 @@ export default class UserTripHelpers {
     const personify = forMe ? 'your' : "passenger's";
     const header = new Block(BlockTypes.section)
       .addText(new SlackText(`*Please select ${personify} department.*`, TextTypes.markdown));
-    const [slackHomebase] = await HomebaseService.getHomeBaseBySlackId(payload.user.id);
+    const slackHomebase = await HomebaseService.getHomeBaseBySlackId(payload.user.id);
     const departmentsList = await DepartmentService.getDepartmentsForSlack(payload.team.id, slackHomebase.id);
     const departmentBlock = new Block(BlockTypes.actions, userTripBlocks.selectDepartment);
     const departmentButtons = departmentsList.map(

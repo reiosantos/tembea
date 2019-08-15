@@ -33,6 +33,29 @@ class InteractivePrompts {
     respond(message);
   }
 
+  static async changeLocation(payload, respond) {
+    const origin = payload.actions[0].name.split('__')[1];
+    const state = {
+      origin,
+    };
+    const attachment = new SlackAttachment();
+
+    const homeBases = await HomebaseService.getAllHomebases();
+
+    attachment.addFieldsOrActions(
+      'actions', homeBases.map(homeBase => new SlackButtonAction(
+        homeBase.id.toString(), homeBase.name, JSON.stringify(state)
+      ))
+    );
+    attachment.addOptionalProps('change_location', 'fallback', '#FFCCAA', 'default');
+    const fallBack = origin ? `back_to_${origin}_launch` : 'back_to_launch';
+    const navAttachment = createNavButtons('back_to_launch', fallBack);
+    const message = new SlackInteractiveMessage('Please choose your current location', [
+      attachment, navAttachment
+    ]);
+    respond(message);
+  }
+
   static sendTripItinerary(payload, respond) {
     const attachment = new SlackAttachment();
     attachment.addFieldsOrActions('actions', [
@@ -211,7 +234,7 @@ class InteractivePrompts {
     forSelf = 'true'
   ) {
     const personify = forSelf === 'true' ? 'your' : "passenger's";
-    const [homebase] = await HomebaseService.getHomeBaseBySlackId(payload.user.id);
+    const homebase = await HomebaseService.getHomeBaseBySlackId(payload.user.id);
     const attachment = SlackButtonsAttachmentFromAList.createAttachments(
       await DepartmentService.getDepartmentsForSlack(payload.team.id, homebase.id),
       attachmentCallbackId
