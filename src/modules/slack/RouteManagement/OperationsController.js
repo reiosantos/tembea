@@ -114,6 +114,7 @@ const handlers = {
       const result = await RouteHelper.createNewRouteBatchFromSlack(
         submission, routeRequestId
       );
+      await UserService.updateUser(updatedRequest.engagement.fellow.id, { routeBatchId: result.batch.id });
       await OperationsHelper.completeRouteApproval(updatedRequest, result, {
         channelId, opsSlackId, timeStamp, submission, botToken
       });

@@ -235,7 +235,7 @@ class RouteService extends BaseService {
     if (!created) {
       // Get the latest route batch
       const fullRoute = await RouteService.getRouteById(route.id, true);
-      ({ batch } = fullRoute.routeBatch[fullRoute.RouteBatch.length - 1]);
+      ({ batch } = fullRoute.routeBatch[fullRoute.routeBatch.length - 1]);
       const batchDigit = batch.charCodeAt(0) + 1;
       batch = String.fromCharCode(batchDigit);
     }

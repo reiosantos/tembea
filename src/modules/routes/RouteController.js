@@ -52,11 +52,12 @@ class RoutesController {
   static async createRoute(req, res) {
     let message;
     let batch;
+    let routeName;
     const { query: { action, batchId }, body } = req;
     try {
       if (action === 'duplicate' && batchId) {
-        batch = await RouteHelper.duplicateRouteBatch(batchId);
-        message = `Successfully duplicated ${batch.name} route`;
+        ({ batch, routeName } = await RouteHelper.duplicateRouteBatch(batchId));
+        message = `Successfully duplicated ${routeName} route`;
       } else if (!batchId) {
         const result = await RouteHelper.createNewRouteWithBatch(body);
         ({ batch } = result);

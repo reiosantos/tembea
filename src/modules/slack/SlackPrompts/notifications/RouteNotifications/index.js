@@ -79,7 +79,7 @@ export default class RouteNotifications {
         new SlackButtonAction('not_taken', 'No', `${record.id}`, 'danger')];
       const attachment = new SlackAttachment('', '', '', '', '');
       const routeBatch = await RouteService.getRouteBatchByPk(record.batch.id, true);
-      const fields = RouteNotifications.createDetailsFields(routeBatch);
+      const fields = RouteNotifications.createDetailsFields(routeBatch, false);
       attachment.addFieldsOrActions('actions', actions);
       attachment.addFieldsOrActions('fields', fields);
       attachment.addOptionalProps('confirm_route_use');
@@ -168,13 +168,13 @@ export default class RouteNotifications {
     }
   }
 
-  static createDetailsFields(routeBatch) {
+  static createDetailsFields(routeBatch, reminder = true) {
     return [
       new SlackAttachmentField('Batch', routeBatch.batch, true),
-      new SlackAttachmentField('Took Off At', routeBatch.takeOff, true),
+      new SlackAttachmentField(reminder ? 'Takes Off At' : 'Took Off At', routeBatch.takeOff, true),
       new SlackAttachmentField('Cab Reg No', routeBatch.cabDetails.regNumber, true),
-      new SlackAttachmentField('Driver Name', routeBatch.cabDetails.driverName, true),
-      new SlackAttachmentField('Driver Phone Number', routeBatch.cabDetails.driverPhoneNo, true)
+      new SlackAttachmentField('Driver Name', routeBatch.driver.driverName, true),
+      new SlackAttachmentField('Driver Phone Number', routeBatch.driver.driverPhoneNo, true)
     ];
   }
 }

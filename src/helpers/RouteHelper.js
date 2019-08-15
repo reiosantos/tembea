@@ -5,6 +5,7 @@ import { cabService } from '../services/CabService';
 import { expectedCreateRouteObject } from '../utils/data';
 import RouteRequestService from '../services/RouteRequestService';
 import RouteNotifications from '../modules/slack/SlackPrompts/notifications/RouteNotifications';
+import ConfirmRouteUseJob from '../services/jobScheduler/jobs/ConfirmRouteUseJob';
 
 export default class RouteHelper {
   static checkRequestProps(createRouteRequest) {
@@ -122,12 +123,10 @@ export default class RouteHelper {
     } = data;
 
     const [latitude, longitude] = location
-      ? [location.latitude, location.longitude]
-      : [coordinates.lat, coordinates.lng];
+      ? [location.latitude, location.longitude] : [coordinates.lat, coordinates.lng];
 
-    const destinationAddress = await AddressService.createNewAddress(
-      longitude, latitude, address
-    );
+    const destinationAddress = await AddressService.createNewAddress(longitude,
+      latitude, address);
 
     const routeObject = {
       name: routeName,
@@ -144,6 +143,7 @@ export default class RouteHelper {
       routeId: route.id
     };
     const batch = await routeService.createRouteBatch(batchData, true);
+    await ConfirmRouteUseJob.scheduleTakeOffReminders(batch);
     return { route, batch };
   }
 
@@ -167,12 +167,12 @@ export default class RouteHelper {
   }
 
   static async duplicateRouteBatch(id) {
-    const routeBatch = await RouteService.getRouteBatchByPk(id);
+    const routeBatch = await RouteService.getRouteBatchByPk(id, true);
     if (!routeBatch) {
       return 'Route does not exist';
     }
     const batch = await RouteHelper.cloneBatchDetails(routeBatch);
-    return batch;
+    return { batch, routeName: routeBatch.route.name };
   }
 
   static async cloneBatchDetails(routeBatch) {

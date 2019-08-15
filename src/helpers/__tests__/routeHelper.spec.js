@@ -12,6 +12,7 @@ import LocationService from '../../services/LocationService';
 import AddressService from '../../services/AddressService';
 import RouteRequestService from '../../services/RouteRequestService';
 import RouteNotifications from '../../modules/slack/SlackPrompts/notifications/RouteNotifications';
+import ConfirmRouteUseJob from '../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 
 let status;
 
@@ -73,17 +74,17 @@ describe('Route Helpers', () => {
 
   describe('duplicateRouteBatch', () => {
     it('should return the newly created batch object', async () => {
-      jest.spyOn(RouteService, 'getRouteBatchByPk').mockReturnValue(routeBatch);
-      jest.spyOn(RouteHelper, 'cloneBatchDetails').mockReturnValue(batch);
+      jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue(routeBatch);
+      jest.spyOn(RouteHelper, 'cloneBatchDetails').mockResolvedValue(batch);
 
-      const result = await RouteHelper.duplicateRouteBatch(1);
-      expect(result.batch).toBe('B');
-      expect(result.inUse).toBe(0);
-      expect(result).toBe(batch);
+      const { batch: batchInfo, routeName } = await RouteHelper.duplicateRouteBatch(1);
+      expect(batchInfo.batch).toBe('B');
+      expect(batchInfo.inUse).toBe(0);
+      expect(routeName).toBe('O\'Conner Roads');
     });
 
     it('should not create batch if route batch does not exist', async () => {
-      jest.spyOn(RouteService, 'getRouteBatchByPk').mockReturnValue(null);
+      jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue(null);
 
       const result = await RouteHelper.duplicateRouteBatch(10);
 
@@ -198,9 +199,10 @@ describe('Route Helpers', () => {
   describe('createNewRouteWithBatch', () => {
     it('should create a new route batch', async (done) => {
       const route = { ...singleRouteDetails };
-      jest.spyOn(AddressService, 'findOrCreateAddress').mockReturnValue(returnedAddress);
+      jest.spyOn(AddressService, 'createNewAddress').mockReturnValue(returnedAddress);
       jest.spyOn(RouteService, 'createRoute').mockReturnValue({ route });
-      jest.spyOn(routeService, 'createRouteBatch').mockReturnValue(batch);
+      jest.spyOn(routeService, 'createRouteBatch').mockResolvedValue(batch);
+      jest.spyOn(ConfirmRouteUseJob, 'scheduleTakeOffReminders').mockResolvedValue();
       const result = await RouteHelper.createNewRouteWithBatch(newRouteWithBatchData);
       expect(routeService.createRouteBatch).toHaveBeenCalled();
       expect(result.route).toEqual(singleRouteDetails);

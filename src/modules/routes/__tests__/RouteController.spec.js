@@ -271,7 +271,9 @@ describe('RoutesController', () => {
     it('should successfully duplicate a route', (done) => {
       const mockRoute = { name: 'bay area' };
       const message = 'Successfully duplicated bay area route';
-      jest.spyOn(RouteHelper, 'duplicateRouteBatch').mockResolvedValue(mockRoute);
+      jest.spyOn(RouteHelper, 'duplicateRouteBatch').mockResolvedValue(
+        { batch: mockRoute, routeName: mockRoute.name }
+      );
       request(app)
         .post('/api/v1/routes?action=duplicate&batchId=1')
         .set('Content-Type', 'application/json')

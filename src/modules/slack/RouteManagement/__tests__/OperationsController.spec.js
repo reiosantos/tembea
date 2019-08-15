@@ -143,6 +143,8 @@ describe('Operations Route Controller', () => {
           .mockReturnValue([]);
         jest.spyOn(RouteHelper, 'updateRouteRequest').mockReturnValue(routeDetails);
         jest.spyOn(RouteHelper, 'createNewRouteBatchFromSlack').mockResolvedValue(batch);
+        jest.spyOn(TeamDetailsService, 'getTeamDetails').mockResolvedValue('xoop-asdad');
+        
 
         await OperationsHandler.handleOperationsActions(payload, respond);
         expect(ManagerFormValidator.approveRequestFormValidation).toHaveBeenCalled();

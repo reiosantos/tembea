@@ -68,12 +68,13 @@ class RoutesHelpers {
     const {
       id: routeId, takeOff: departureTime, regNumber, batch, capacity, name: routeName, inUse: passenger
     } = routesInfo;
+    
     const attachment = new SlackAttachment();
     const route = `Route: ${routeName}`;
     const takeOffTime = `Departure Time:  ${departureTime}`;
     const availablePassenger = `Available Passengers: ${passenger} `;
-    const cabCapacity = `Cab Capacity: ${capacity} `;
-    const routeDriverName = `Cab Registration Number: ${regNumber} `;
+    const cabCapacity = `Cab Capacity: ${capacity !== null ? capacity : 'any'} `;
+    const routeDriverName = `Cab Registration Number: ${regNumber !== undefined ? regNumber : 'any'} `;
     const cabBatch = `Batch: ${batch} `;
 
     attachment.addFieldsOrActions('fields', [new SlackAttachmentField(route, takeOffTime)]);
