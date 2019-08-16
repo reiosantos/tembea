@@ -259,7 +259,7 @@ describe('UserTripBookingController', () => {
 
     it('should go back to launch', async () => {
       jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockReturnValue(
-        [{ id: 1, name: 'Nairobi' }]
+        { id: 1, name: 'Nairobi' }
       );
       await UserTripBookingController.back(newPayload, res);
       expect(res).toHaveBeenCalledWith(await SlackController.getWelcomeMessage(payload.user.slackId));

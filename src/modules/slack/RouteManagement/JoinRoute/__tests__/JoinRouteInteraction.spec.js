@@ -27,7 +27,7 @@ describe('Test JointRouteInteractions', () => {
 
     it('should test sendAvailableRoutesMessage', async () => {
       const payload = { user: { id: 1 } };
-      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockImplementation(() => ([{ id: 1 }]));
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockImplementation(() => ({ id: 1 }));
       await JoinRouteInteractions.sendAvailableRoutesMessage(payload, res);
 
       expect(RoutesHelpers.toAvailableRoutesAttachment).toBeCalled();
@@ -37,7 +37,7 @@ describe('Test JointRouteInteractions', () => {
     it('should skip page', async () => {
       const actions = [{ name: 'skipPage', field: 'field' }];
       const payload = { actions, team: { id: 3 }, user: { id: 1 } };
-      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockImplementation(() => ([{ id: 1 }]));
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockImplementation(() => ({ id: 1 }));
       const result = await JoinRouteInteractions.sendAvailableRoutesMessage(
         payload,
         res

@@ -247,7 +247,7 @@ describe('sendBusStopForm dialog', () => {
       );
       jest.spyOn(ProviderHelper, 'generateProvidersLabel');
       jest.spyOn(UserService, 'getUserBySlackId').mockImplementation(() => ({ id: 1 }));
-      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockImplementation(() => ([{ id: 1 }]));
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockImplementation(() => ({ id: 1 }));
       await DialogPrompts.sendSelectProviderDialog({
         actions: [{ value: 7 }],
         message_ts: '3703484984.4849',

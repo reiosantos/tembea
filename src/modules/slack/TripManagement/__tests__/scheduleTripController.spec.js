@@ -189,7 +189,7 @@ describe.only('ScheduleTripController Tests', () => {
     let payload;
     beforeEach(() => {
       payload = createPayload();
-      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue([{ id: 1, name: 'Nairobi' }]);
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue({ id: 1, name: 'Nairobi' });
     });
     it('should return an object with details of the trip to persist', async () => {
       SlackHelpers.findOrCreateUserBySlackId = jest.fn(() => 4);

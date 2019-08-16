@@ -25,7 +25,7 @@ describe('JoinRouteInputHandlers', () => {
     it('should display all routes', async () => {
       const payload = { user: { id: 1 } };
       jest.spyOn(HomebaseService, 'getHomeBaseBySlackId')
-        .mockImplementation(() => ([{ id: 1, homebase: 'Kampala' }]));
+        .mockImplementation(() => ({ id: 1, homebase: 'Kampala' }));
       await JoinRouteInteractions.sendAvailableRoutesMessage(payload, respond);
       expect(RoutesHelpers.toAvailableRoutesAttachment).toBeCalled();
     });

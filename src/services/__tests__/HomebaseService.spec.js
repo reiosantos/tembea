@@ -122,15 +122,13 @@ describe('test HomebaseService', () => {
 
   it('should get homebase by User slack ID', async () => {
     jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({ homebaseId: 1 });
-    jest.spyOn(Homebase, 'findAll').mockResolvedValue(mockedValue);
+    jest.spyOn(Homebase, 'findOne').mockResolvedValue(mockedValue);
     await HomebaseService.getHomeBaseBySlackId(1);
-    expect(Homebase.findAll).toBeCalled();
-    expect(Homebase.findAll).toBeCalledWith(
+    expect(Homebase.findOne).toBeCalled();
+    expect(Homebase.findOne).toBeCalledWith(
       {
         attributes: ['id', 'name'],
-        where: { id: 1 },
-        plain: true,
-        rejectOnEmpty: false,
+        where: { id: 1 }
       }
     );
   });

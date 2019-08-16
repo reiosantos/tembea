@@ -47,7 +47,7 @@ class JoinRouteInteractions {
       'name,asc,batch,asc'
     );
 
-    const [homebase] = await HomebaseService.getHomeBaseBySlackId(payload.user.id);
+    const homebase = await HomebaseService.getHomeBaseBySlackId(payload.user.id);
     const pageable = { page, sort, size: SLACK_DEFAULT_SIZE };
     const where = JoinRouteInteractions.createWhereClause(payload);
     const isSearch = data.type === 'dialog_submission' && data.submission.search;
@@ -69,7 +69,6 @@ class JoinRouteInteractions {
   static async sendCurrentRouteMessage({ user: { id } }, respond) {
     const { routeBatchId } = await UserService.getUserBySlackId(id);
     const routeInfo = await RouteService.getRouteBatchByPk(routeBatchId, true);
-
     const currentRouteMessage = RoutesHelpers.toCurrentRouteAttachment(routeInfo);
     respond(currentRouteMessage);
   }

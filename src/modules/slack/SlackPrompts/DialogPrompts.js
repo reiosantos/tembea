@@ -124,7 +124,7 @@ class DialogPrompts {
       channel: { id: channel },
       user: { id }
     } = payload;
-    const [homebase] = await HomebaseService.getHomeBaseBySlackId(id);
+    const homebase = await HomebaseService.getHomeBaseBySlackId(id);
     const providers = await ProviderService.getViableProviders(homebase.id);
     const providerData = ProviderHelper.generateProvidersLabel(providers);
     const state = {
