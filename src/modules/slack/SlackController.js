@@ -12,7 +12,6 @@ import BugsnagHelper from '../../helpers/bugsnagHelper';
 import HomebaseService from '../../services/HomebaseService';
 import SlackHelpers from '../../helpers/slack/slackHelpers';
 
-
 class SlackController {
   static async launch(req, res) {
     const { body: { user_id: slackId } } = req; // get slack id from req, payload.

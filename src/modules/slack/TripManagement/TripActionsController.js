@@ -7,7 +7,6 @@ import TeamDetailsService from '../../../services/TeamDetailsService';
 import bugsnagHelper from '../../../helpers/bugsnagHelper';
 import ProviderNotifications from '../SlackPrompts/notifications/ProviderNotifications';
 import TripHelper from '../../../helpers/TripHelper';
-import TripCompletionJob from '../../../services/jobScheduler/jobs/TripCompletionJob';
 import SlackProviderHelper from '../helpers/slackHelpers/ProvidersHelper';
 import DriverNotifications from
   '../SlackPrompts/notifications/DriverNotifications/driver.notifications.ts';
@@ -82,7 +81,6 @@ class TripActionsController {
       providerId,
       approvalDate
     });
-    TripCompletionJob.createScheduleForATrip(trip);
     await this.notifyAll(newPayload, trip, slackBotOauthToken, timeStamp, channel);
     return 'success';
   }

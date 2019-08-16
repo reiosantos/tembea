@@ -350,11 +350,11 @@ class SlackNotifications {
       message = await SlackNotifications.createUserConfirmOrDeclineMessage(opsStatus, messageBaseOnDecline, rider);
       SlackNotifications.sendNotifications(channelId, attachments, message, slackBotOauthToken);
     }
-    const confirmedOrDeclined = SlackNotifications.getMessageBaseOnDeclineOrConfirm(decline);
+    const confirmedOrDeclined = await SlackNotifications.getMessageBaseOnDeclineOrConfirm(decline);
     message = await SlackNotifications.createUserConfirmOrDeclineMessage(opsStatus, confirmedOrDeclined);
     channelId = await SlackNotifications.getDMChannelId(rider, slackBotOauthToken);
     SlackNotifications.sendNotifications(channelId, attachments, message, slackBotOauthToken);
-    if (confirmedOrDeclined === 'confirmed :smiley:') {
+    if (confirmedOrDeclined === 'confirmed. :smiley:' && tripInformation.cabId !== null) {
       TripCompletion.createScheduleForATrip(tripInformation);
     }
   }

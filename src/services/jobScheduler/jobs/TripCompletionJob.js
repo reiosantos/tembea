@@ -1,5 +1,6 @@
 import schedule from 'node-schedule';
 import moment from 'moment';
+import { Op } from 'sequelize';
 import tripService from '../../TripService';
 import { SlackEvents, slackEventNames } from '../../../modules/slack/events/slackEvents';
 import RemoveDataValues from '../../../helpers/removeDataValues';
@@ -7,7 +8,12 @@ import RemoveDataValues from '../../../helpers/removeDataValues';
 class TripCompletionJob {
   static async sendNotificationForConfirmedTrips() {
     const trips = await tripService.getAll({
-      where: { tripStatus: 'Confirmed' || 'InTransit' }
+      where: {
+        tripStatus: 'Confirmed' || 'InTransit',
+        cabId: {
+          [Op.ne]: null
+        }
+      }
     });
     const tripData = RemoveDataValues.removeDataValues(trips);
     if (tripData) {
