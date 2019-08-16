@@ -120,7 +120,7 @@ class JoinRouteInteractions {
   static async handleRouteBatchConfirmUse(payload, respond) {
     try {
       const { actions: [{ name: buttonName }] } = payload;
-      const { batchRecordId, id: batchUseRecordId } = JSON.parse(payload.actions[0].value);
+      const [batchRecordId, batchUseRecordId] = payload.actions[0].value.split(' ');
       if (buttonName === 'taken') {
         await BatchUseRecordService.updateBatchUseRecord(batchUseRecordId, { userAttendStatus: 'Confirmed', reasonForSkip: '' });
         const ratingMessage = await RateTripController.sendRatingMessage(batchUseRecordId, 'rate_route');

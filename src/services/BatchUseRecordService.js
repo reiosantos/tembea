@@ -39,21 +39,21 @@ class BatchUseRecordService {
 
   static async createBatchUseRecord(batchRecord, users) {
     try {
-      await Promise.all(users.map(async (user) => {
+      const [result] = await Promise.all(users.map(async (user) => {
         const { data: existingUser } = await BatchUseRecordService.getBatchUseRecord(
           undefined,
           { userId: user.id, batchRecordId: batchRecord.id }
         );
         if (existingUser.length > 0) {
-          return;
+          return true;
         }
-        const result = await BatchUseRecord.create({
+        const batchUseRecord = await BatchUseRecord.create({
           userId: user.id,
           batchRecordId: batchRecord.id,
         });
-        return RemoveDataValues.removeDataValues(result);
+        return RemoveDataValues.removeDataValues(batchUseRecord);
       }));
-      return true;
+      return result;
     } catch (e) {
       bugsnagHelper.log(e);
     }

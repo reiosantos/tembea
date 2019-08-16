@@ -8,6 +8,7 @@ import {
 } from '../../../SlackModels/SlackMessageModels';
 import RouteServiceHelper from '../../../../../helpers/RouteServiceHelper';
 import ProviderAttachmentHelper from '../ProviderNotifications/helper';
+import BatchUseRecordService from '../../../../../services/BatchUseRecordService';
 
 export default class RouteNotifications {
   static async sendRouteNotificationToRouteRiders(teamUrl, routeInfo) {
@@ -72,11 +73,11 @@ export default class RouteNotifications {
   }, botToken) {
     try {
       const channelID = await SlackNotifications.getDMChannelId(rider.slackId, botToken);
-
+      const batchUseRecord = await BatchUseRecordService.createBatchUseRecord(record, [rider]);
       const actions = [
-        new SlackButtonAction('taken', 'Yes', `${record.id}`),
-        new SlackButtonAction('still_on_trip', 'Still on trip', `${record.id}`),
-        new SlackButtonAction('not_taken', 'No', `${record.id}`, 'danger')];
+        new SlackButtonAction('taken', 'Yes', `${record.id} ${batchUseRecord.id}`),
+        new SlackButtonAction('still_on_trip', 'Still on trip', `${record.id} ${batchUseRecord.id}`),
+        new SlackButtonAction('not_taken', 'No', `${record.id} ${batchUseRecord.id}`, 'danger')];
       const attachment = new SlackAttachment('', '', '', '', '');
       const routeBatch = await RouteService.getRouteBatchByPk(record.batch.id, true);
       const fields = RouteNotifications.createDetailsFields(routeBatch, false);

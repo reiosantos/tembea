@@ -9,6 +9,7 @@ import { routeRequestData } from '../../OperationsRouteRequest/__mocks__/OpsRout
 import ProviderAttachmentHelper from '../../ProviderNotifications/helper';
 import { routeBatch } from '../../../../../../helpers/__mocks__/routeMock';
 import { mockRecord } from '../../../../../../services/__mocks__';
+import BatchUseRecordService from '../../../../../../services/BatchUseRecordService';
 
 describe('Route Notifications', () => {
   beforeEach(() => {
@@ -115,6 +116,8 @@ describe('Route Notifications', () => {
     it('should send route update notification to all riders', async () => {
       const getDMSpy = jest.spyOn(SlackNotifications, 'getDMChannelId')
         .mockResolvedValue('TEAMID12');
+      const batchUseCreationSpy = jest.spyOn(BatchUseRecordService, 'createBatchUseRecord')
+        .mockResolvedValue({ id: 1 });
       const routeServiceSpy = jest.spyOn(RouteService, 'getRouteBatchByPk')
         .mockResolvedValue(routeBatch);
       const createMessageSpy = jest.spyOn(SlackNotifications, 'createDirectMessage')
@@ -130,6 +133,7 @@ describe('Route Notifications', () => {
       );
 
       expect(getDMSpy).toHaveBeenCalledTimes(1);
+      expect(batchUseCreationSpy).toHaveBeenCalledTimes(1);
       expect(createMessageSpy).toHaveBeenCalledTimes(1);
       expect(routeServiceSpy).toHaveBeenCalledTimes(1);
       expect(notificationSpy).toHaveBeenCalledTimes(1);

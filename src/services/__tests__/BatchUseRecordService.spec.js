@@ -24,9 +24,9 @@ describe('BatchUseRecordService', () => {
 
     it('should create createBatchUseRecord successfully', async () => {
       jest.spyOn(BatchUseRecordService, 'getBatchUseRecord').mockResolvedValue({ data: [] });
-      jest.spyOn(BatchUseRecord, 'create').mockResolvedValue({ data: [] });
+      jest.spyOn(BatchUseRecord, 'create').mockResolvedValue({ dataValues: { id: 1 } });
       const result = await BatchUseRecordService.createBatchUseRecord(1, [{ userId: 1 }]);
-      expect(result).toEqual(true);
+      expect(result.id).toEqual(1);
     });
 
     it('should not create create Batch Use Record it aready exists for that day', async () => {

@@ -33,14 +33,16 @@ class RateTripController {
     const { actions: [{ name, value }], callback_id } = payload;
     if (callback_id === 'rate_trip') {
       await tripService.updateRequest(value, { rating: name });
+      const state = {
+        tripId: value
+      };
+      await Interactions.sendPriceForm(payload, state);
     }
     if (callback_id === 'rate_route') {
       await BatchUseRecordService.updateBatchUseRecord(value, { rating: name });
+      return new SlackInteractiveMessage('Thank you for using Tembea');
     }
-    const state = {
-      tripId: value
-    };
-    await Interactions.sendPriceForm(payload, state);
+    // await Interactions.sendPriceForm(payload, state);
   }
 }
 
