@@ -3,6 +3,8 @@ import bugsnagHelper from '../../helpers/bugsnagHelper';
 import HttpError from '../../helpers/errorHandler';
 import Response from '../../helpers/responseHelper';
 import RoleService from '../../services/RoleService';
+import UserService from '../../services/UserService';
+import RolesHelper from '../../helpers/RolesHelper';
 
 
 class AuthenticationController {
@@ -19,13 +21,17 @@ class AuthenticationController {
       const { currentUser: { UserInfo } } = req;
       const rolesData = await RoleService.getUserRoles(UserInfo.email);
       const roleNames = Utils.mapThroughArrayOfObjectsByKey(rolesData, 'name');
-      const userInfo = { ...UserInfo, roles: roleNames };
-
+      const { id } = await UserService.getUserByEmail(UserInfo.email);
+      const roles = await RoleService.findUserRoles(id);
+      const LocationsAndRoles = RolesHelper.mapLocationsAndRoles(roles);
+      const userInfo = {
+        ...UserInfo, roles: roleNames, ...LocationsAndRoles
+      };
       const token = await Utils.generateToken('180m', { userInfo });
-      Response.sendResponse(res, 200, true, 'Authentication Successful', {
+      return Response.sendResponse(res, 200, true, 'Authentication Successful', {
         isAuthorized: true,
         userInfo,
-        token
+        token,
       });
     } catch (error) {
       bugsnagHelper.log(error);

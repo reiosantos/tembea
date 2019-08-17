@@ -15,12 +15,12 @@ describe('Super Admin test', () => {
   it('should test createSuperAdmin successfully', async () => {
     const UserFindOrCreateMock = jest.spyOn(User, 'findOrCreate');
     UserFindOrCreateMock.mockResolvedValue([{ addRoles: () => {} }]);
-
+    jest.spyOn(RoleService, 'findOrCreateUserRole');
     const RoleFindOrCreateMock = jest.spyOn(RoleService, 'createOrFindRole');
     RoleFindOrCreateMock.mockResolvedValue(['Basic']);
 
     await StartUpHelper.ensureSuperAdminExists();
-    expect(UserFindOrCreateMock).toHaveBeenCalledTimes(2);
+    expect(RoleService.findOrCreateUserRole).toHaveBeenCalledTimes(2);
     expect(RoleFindOrCreateMock).toHaveBeenCalledTimes(1);
   });
 

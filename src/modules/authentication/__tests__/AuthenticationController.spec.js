@@ -3,6 +3,8 @@ import Response from '../../../helpers/responseHelper';
 import HttpError from '../../../helpers/errorHandler';
 import Utils from '../../../utils';
 import RoleService from '../../../services/RoleService';
+import UserService from '../../../services/UserService';
+import RolesHelper from '../../../helpers/RolesHelper';
 
 describe('AuthenticationController Unit Test', () => {
   let sendResponseMock;
@@ -32,7 +34,9 @@ describe('AuthenticationController Unit Test', () => {
       const roleServiceMock = jest.spyOn(RoleService, 'getUserRoles').mockResolvedValue(['Admin']);
       const utilsMock = jest.spyOn(Utils, 'mapThroughArrayOfObjectsByKey')
         .mockReturnValue('user');
-
+      jest.spyOn(UserService, 'getUserByEmail').mockReturnValue({ id: 1 });
+      jest.spyOn(RoleService, 'findUserRoles').mockReturnValue([]);
+      jest.spyOn(RolesHelper, 'mapLocationsAndRoles').mockReturnValue({});
       await AuthenticationController.verifyUser(reqMock, 'res');
       expect(roleServiceMock).toHaveBeenCalledTimes(1);
       expect(roleServiceMock).toHaveBeenCalledWith('boy@email.com');

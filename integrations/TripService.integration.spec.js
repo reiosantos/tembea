@@ -95,6 +95,7 @@ describe('TripService', () => {
           cost: 100,
           createdAt: new Date('2019-07-15 08:00'),
           rating: 2,
+          homebaseId: 1
 
         },
         {
@@ -113,6 +114,7 @@ describe('TripService', () => {
           cost: 150,
           createdAt: new Date('2019-07-14 08:00'),
           rating: 3,
+          homebaseId: 1
 
         },
         {
@@ -131,6 +133,7 @@ describe('TripService', () => {
           cost: 50,
           createdAt: new Date('2019-06-15 08:00'),
           rating: 2,
+          homebaseId:1
         }
       ];
 
@@ -148,7 +151,7 @@ describe('TripService', () => {
       const departmentList = [mockedDepartment1.name];
 
       const response = await TravelTripService.getCompletedTravelTrips(
-        startDate, endDate, departmentList
+        startDate, endDate, departmentList, 1
       );
       expect(response).toStrictEqual([mockedResponse1]);
     });
@@ -160,7 +163,7 @@ describe('TripService', () => {
       const departmentList = [mockedDepartment1.name];
 
       const response = await TravelTripService.getCompletedTravelTrips(
-        startDate, endDate, departmentList
+        startDate, endDate, departmentList, 1
       );
       expect(response).toStrictEqual([mockedResponse1]);
     });
@@ -172,7 +175,7 @@ describe('TripService', () => {
       const departmentList = [mockedDepartment1.name, mockedDepartment2.name];
 
       const response = await TravelTripService.getCompletedTravelTrips(
-        startDate, endDate, departmentList
+        startDate, endDate, departmentList, 1
       );
       const mockedResponse = [
         mockedResponse1,

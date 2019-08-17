@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import middlewares from '../../middlewares';
 import TripsController from './TripsController';
+import HomeBaseFilterValidator from '../../middlewares/HomeBaseFilterValidator';
+
 
 const { TripValidator, TokenValidator, GeneralValidator } = middlewares;
 
@@ -69,6 +71,7 @@ tripsRouter.use('/trips',
 tripsRouter.get(
   '/trips',
   TripValidator.validateGetTripsParam,
+  HomeBaseFilterValidator.validateHomeBaseAccess,
   TripsController.getTrips
 );
 
@@ -154,6 +157,7 @@ tripsRouter.put(
  */
 tripsRouter.post(
   '/trips/travel',
+  HomeBaseFilterValidator.validateHomeBaseAccess,
   TripValidator.validateTravelTrip,
   TripsController.getTravelTrips
 );
@@ -180,6 +184,7 @@ tripsRouter.post(
  */
 tripsRouter.get(
   '/trips/routetrips',
+  HomeBaseFilterValidator.validateHomeBaseAccess,
   GeneralValidator.validateQueryParams,
   TripsController.getRouteTrips
 );

@@ -18,7 +18,8 @@ describe('DepartmentController.fetchDepartmentTrips', () => {
       },
       query: {
         tripType: ''
-      }
+      },
+      headers: { homebaseid: 1 }
     };
   });
 
@@ -35,7 +36,7 @@ describe('DepartmentController.fetchDepartmentTrips', () => {
     expect(Response.sendResponse).toBeCalledTimes(1);
   });
   it('Should catch errors', async () => {
-    const error = new Error('There is an error flaged');
+    const error = new Error('There is an error flagged');
     jest.spyOn(DepartmentService, 'getDepartmentAnalytics').mockRejectedValue(error);
     jest.spyOn(BugsnagHelper, 'log');
     jest.spyOn(HttpError, 'sendErrorResponse');

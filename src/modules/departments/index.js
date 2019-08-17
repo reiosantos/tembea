@@ -1,6 +1,7 @@
 import express from 'express';
 import DepartmentsController from './DepartmentsController';
 import middlewares from '../../middlewares';
+import HomeBaseFilterValidator from '../../middlewares/HomeBaseFilterValidator';
 
 const departmentRouter = express.Router();
 const {
@@ -10,7 +11,7 @@ const {
 departmentRouter.use(
   '/departments',
   TokenValidator.attachJwtSecretKey,
-  TokenValidator.authenticateToken
+  TokenValidator.authenticateToken,
 );
 
 /**
@@ -185,6 +186,7 @@ departmentRouter.post(
   '/departments/trips',
   DepartmentValidator.validateDepartmentTrips,
   DepartmentValidator.validateTripType,
+  HomeBaseFilterValidator.validateHomeBaseAccess,
   DepartmentsController.fetchDepartmentTrips
 );
 

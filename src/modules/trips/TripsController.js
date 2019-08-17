@@ -13,17 +13,16 @@ import HomebaseService from '../../services/HomebaseService';
 class TripsController {
   static async getTrips(req, res) {
     try {
-      let { page, size } = req.query;
+      let { query: { page, size } } = req;
+      const { headers: { homebaseid } } = req;
       page = page || 1;
       size = size || defaultSize;
       const query = TripsController.getRequestQuery(req);
       const where = TripService.sequelizeWhereClauseOption(query);
       const pageable = { page, size };
-      const { currentUser: { userInfo } } = req;
-      const { homebaseId } = await UserService.getUserByEmail(userInfo.email);
       const {
         totalPages, trips, pageNo, totalItems, itemsPerPage
-      } = await tripService.getTrips(pageable, where, homebaseId);
+      } = await tripService.getTrips(pageable, where, homebaseid);
       const message = `${pageNo} of ${totalPages} page(s).`;
       const pageData = {
         pageMeta: {
@@ -130,9 +129,13 @@ class TripsController {
    */
 
   static async getTravelTrips(req, res) {
-    const { startDate, endDate, departmentList } = req.body;
+    const {
+      body: {
+        startDate, endDate, departmentList,
+      }, headers: { homebaseid }
+    } = req;
     const travelTrips = await TravelTripService.getCompletedTravelTrips(
-      startDate, endDate, departmentList
+      startDate, endDate, departmentList, homebaseid
     );
 
     const result = travelTrips.map((trip) => {
@@ -150,9 +153,9 @@ class TripsController {
   }
 
   static async getRouteTrips(req, res) {
-    const { page = 1, size = 10 } = req.query;
+    const { query: { page = 1, size = 10 }, headers: { homebaseid } } = req;
     try {
-      let routeTrips = await RouteUseRecordService.getRouteTripRecords({ page, size });
+      let routeTrips = await RouteUseRecordService.getRouteTripRecords({ page, size }, homebaseid);
       if (!routeTrips.data) {
         return Response.sendResponse(res, 200, true, 'No route trips available yet', []);
       }

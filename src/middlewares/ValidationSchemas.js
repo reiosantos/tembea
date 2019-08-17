@@ -257,5 +257,5 @@ export const travelTripSchema = Joi.object().keys({
 export const tripTypeSchema = Joi.object().keys({
   tripType: Joi.string().valid('Embassy Visit', 'Airport Transfer', 'Regular Trip')
     .regex(Stringregex)
-    .error(() => 'tripType must be either Embassy Visit, Airport Transfer or Regular Trip')
+    .error(() => 'tripType must be either Embassy Visit, Airport Transfer or Regular Trip'),
 });

@@ -185,12 +185,12 @@ class DepartmentService {
     return departmentIds;
   }
 
-  static async getDepartmentAnalytics(startDate, endDate, departments, tripType) {
+  static async getDepartmentAnalytics(startDate, endDate, departments, tripType, homebaseId) {
     const departmentId = await DepartmentService.mapDepartmentId(departments);
     let where = {};
     if (departmentId.length) { where = { id: { [Op.in]: departmentId } }; }
     const tripFilter = {
-      tripStatus: 'Completed', createdAt: { [Op.between]: [startDate, endDate] }
+      tripStatus: 'Completed', createdAt: { [Op.between]: [startDate, endDate] }, homebaseId
     };
     if (tripType) { tripFilter.tripType = tripType; }
     const result = await TripRequest.findAll({

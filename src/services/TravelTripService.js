@@ -13,11 +13,12 @@ export default class TravelTripService {
    * @param  {array} departmentList - array of departments
    * @returns {object} travelTrips - array of travel trips statistics
    */
-  static async getCompletedTravelTrips(startDate, endDate, departmentList) {
+  static async getCompletedTravelTrips(startDate, endDate, departmentList, homeBaseToFilter) {
     let where = {};
     if (departmentList && departmentList.length) where = { name: { [Op.in]: [...departmentList] } };
     const travelTrips = await TripRequest.findAll({
       where: {
+        homebaseId: homeBaseToFilter,
         tripStatus: 'Completed',
         [Op.or]: [{ tripType: 'Embassy Visit' }, { tripType: 'Airport Transfer' }],
         createdAt: { [Op.between]: [startDate, endDate], },

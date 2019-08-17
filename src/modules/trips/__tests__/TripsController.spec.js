@@ -43,7 +43,8 @@ describe('TripController', () => {
           userInfo: {
             email: 'emma.ogwal@andela.com',
           }
-        }
+        },
+        headers: { homebaseid: 1 }
       };
       const data = { ...mockedData, trips };
       jest.spyOn(UserService, 'getUserByEmail').mockImplementation(() => ({ homebaseId: 1 }));
@@ -67,7 +68,8 @@ describe('TripController', () => {
           userInfo: {
             email: 'emma.ogwal@andela.com',
           }
-        }
+        },
+        headers: { homebaseid: 1 }
       };
       jest
         .spyOn(tripService, 'getTrips')
@@ -273,7 +275,8 @@ describe('TripController', () => {
             startDate: '2018-11-15 00:0',
             endDate: '2019-11-15 03:00',
             departmentList: ['People', 'D0 Programs']
-          }
+          },
+          headers: { homebaseid: 1 }
         };
 
         jest.spyOn(TravelTripService, 'getCompletedTravelTrips').mockResolvedValue(
@@ -295,7 +298,8 @@ describe('TripController', () => {
 
       describe('TripController_getRouteTrips', () => {
         const requestQuery = {
-          query: { page: 1 }
+          query: { page: 1 },
+          headers: { homebaseid: 1 }
         };
         it('should get all route trips', async () => {
           await TripsController.getRouteTrips(requestQuery, res);

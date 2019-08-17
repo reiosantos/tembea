@@ -13,7 +13,7 @@ const routeRecordInclude = {
     model: RouteBatch,
     as: 'batch',
     paranoid: false,
-    attributes: ['takeOff', 'batch'],
+    where: {},
     include: [
       {
         model: Route,
@@ -111,13 +111,13 @@ class RouteUseRecordService {
     return result;
   }
 
-  static async getRouteTripRecords(pageable) {
+  static async getRouteTripRecords(pageable, homebaseId) {
     const { page, size } = pageable;
     const paginationConstraint = {
       offset: (page - 1) * size,
       limit: size
     };
-
+    routeRecordInclude.include[0].where.homebaseId = homebaseId;
     const allRouteRecords = await RouteUseRecord.findAll({
       ...routeRecordInclude
     });

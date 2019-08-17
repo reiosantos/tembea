@@ -76,11 +76,10 @@ class DepartmentController {
    */
   static async readRecords(req, res) {
     try {
-      const { currentUser: { userInfo } } = req;
-      const { homebaseId } = await UserService.getUserByEmail(userInfo.email);
+      const { headers: { homebaseid } } = req;
       const page = req.query.page || 1;
       const size = req.query.size || defaultSize;
-      const data = await DepartmentService.getAllDepartments(size, page, homebaseId);
+      const data = await DepartmentService.getAllDepartments(size, page, homebaseid);
       const { count, rows } = data;
       if (rows <= 0) {
         throw new HttpError('There are no records on this page.', 404);
@@ -132,9 +131,12 @@ class DepartmentController {
    */
   static async fetchDepartmentTrips(req, res) {
     try {
-      const { query: { tripType }, body: { startDate, endDate, departments } } = req;
+      const {
+        query: { tripType }, body: { startDate, endDate, departments },
+        headers: { homebaseid }
+      } = req;
       const analyticsData = await DepartmentService.getDepartmentAnalytics(
-        startDate, endDate, departments, tripType
+        startDate, endDate, departments, tripType, homebaseid
       );
       const deptData = [];
       const { finalCost, finalAverageRating, count } = await

@@ -31,7 +31,8 @@ class StartUpHelper {
       
       const [[user], [user2]] = await Promise.all([user1Promise, user2Promise]);
       const [role] = await RoleService.createOrFindRole('Super Admin');
-      await Promise.all([user.addRoles(role), user2.addRoles(role)]);
+      await Promise.all([RoleService.findOrCreateUserRole(user.id, role.id, user.homebaseId),
+        RoleService.findOrCreateUserRole(user2.id, role.id, user2.homebaseId)]);
       return;
     } catch (error) {
       bugsnagHelper.log(error);

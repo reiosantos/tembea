@@ -3,7 +3,7 @@ import models from '../../database/models';
 import HttpError from '../../helpers/errorHandler';
 import UserService from '../UserService';
 
-const { Role } = models;
+const { Role, UserRole } = models;
 
 describe('Role Service', () => {
   afterEach(() => {
@@ -182,6 +182,22 @@ describe('Role Service', () => {
       expect(role).toEqual({
         id: 1, name: 'Super Admin', createdAt: '2019-01-14 03:00:00+03'
       });
+    });
+  });
+
+  describe('findUserRoles', () => {
+    it('should create new role and return full role object', async () => {
+      jest.spyOn(UserRole, 'findAll').mockResolvedValue([]);
+      const roles = await RoleService.findUserRoles();
+      expect(roles).toEqual([]);
+    });
+  });
+
+  describe('createUserRoles', () => {
+    it('should create new role and return full role object', async () => {
+      jest.spyOn(UserRole, 'findOrCreate').mockResolvedValue([]);
+      const roles = await RoleService.findOrCreateUserRole(1, 1, 1);
+      expect(roles).toEqual([]);
     });
   });
 });
