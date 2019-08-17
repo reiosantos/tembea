@@ -9,8 +9,6 @@ import WebClientSingleton from '../../utils/WebClientSingleton';
 import Response from '../../helpers/responseHelper';
 import HttpError from '../../helpers/errorHandler';
 import BugsnagHelper from '../../helpers/bugsnagHelper';
-import Cache from '../../cache';
-import UpdateSlackMessageHelper from '../../helpers/slack/updatePastMessageHelper';
 
 
 class SlackController {
@@ -84,13 +82,7 @@ class SlackController {
   }
 
   static async handleSlackCommands(req, res, next) {
-    const { body: { text, response_url: responseUrl } } = req;
-    const result = await Cache.fetch('url');
-    if (result) {
-      await UpdateSlackMessageHelper.newUpdateMessage(result.response_url, { text: 'update slack' });
-      await Cache.delete('url');
-    }
-    await Cache.save('url', 'response_url', responseUrl);
+    const { body: { text } } = req;
     if (!text) return next();
     if (isSlackSubCommand((text.toLowerCase()), 'route')) {
       res.status(200)
