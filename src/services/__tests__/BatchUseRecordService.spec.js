@@ -7,6 +7,7 @@ import {
   data as rbData, route as rbRoute,
   recordData
 } from '../../helpers/__mocks__/BatchUseRecordMock';
+import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
 
 
 const { BatchUseRecord, RouteBatch } = models;
@@ -41,18 +42,29 @@ describe('BatchUseRecordService', () => {
 
   describe('getBatchUseRecord', () => {
     beforeEach(() => {
-      jest.resetAllMocks();
-      jest.restoreAllMocks();
+      const sequelizePaginationHelper = new SequelizePaginationHelper({}, {});
+      jest.spyOn(sequelizePaginationHelper, 'getPageItems').mockResolvedValue({});
+      jest.spyOn(BatchUseRecordService, 'serializePaginatedData').mockReturnValue({
+        data: [],
+        pageMeta: {
+          itemsPerPage: 1, totalPages: 1, pageNo: 1, totalItems: 1
+        }
+      });
     });
 
     it('should get getBatchUseRecord', async () => {
       const { pageMeta: { itemsPerPage } } = await BatchUseRecordService.getBatchUseRecord({ page: 1, size: all }, {});
-      expect(itemsPerPage).toEqual(4294967295);
+      expect(itemsPerPage).toEqual(1);
     });
 
-    it('should get getAll', async () => {
-      const { pageMeta: { itemsPerPage } } = await BatchUseRecordService.getBatchUseRecord();
-      expect(itemsPerPage).toEqual(4294967295);
+    it('should get all batchRecords', async () => {
+      const { pageMeta: { itemsPerPage } } = await BatchUseRecordService.getBatchUseRecord({}, {});
+      expect(itemsPerPage).toEqual(1);
+    });
+
+    afterEach(() => {
+      jest.resetAllMocks();
+      jest.restoreAllMocks();
     });
   });
   describe('getUserRouteRecord', () => {

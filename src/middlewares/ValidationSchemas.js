@@ -18,7 +18,7 @@ export const querySchema = Joi.object().keys({
   status: Joi.string().valid('Active', 'Inactive'),
   name: Joi.string().replace(/[^a-z0-9\s]/gi, ''),
   country: Joi.string().replace(/[^a-z0-9\s]/gi, ''),
-  onRoute: Joi.boolean(),
+  onRoute: Joi.boolean()
 });
 
 const whenConfirm = type => Joi.number().when(

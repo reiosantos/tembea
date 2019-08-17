@@ -11,20 +11,21 @@ import Response from '../../helpers/responseHelper';
 class FellowController {
   static async getFellowRouteActivity(req, res) {
     try {
-      let { page, size } = req.query;
-      page = page || 1;
-      size = size || defaultSize;
+      const {
+        query: {
+          page = 1, size = defaultSize, id: userId
+        },
+        headers: { homebaseid: homebaseId }
+      } = req;
       const pageable = { page, size };
-      const { query: { id } } = req;
       const fellowRouteActivity = await BatchUseRecordService.getBatchUseRecord(
-        pageable, { userId: id }
+        pageable, { homebaseId, userId }
       );
-      const message = 'Successful!';
       return res
         .status(200)
         .json({
           success: true,
-          message,
+          message: 'Successful',
           ...fellowRouteActivity
         });
     } catch (error) {
@@ -40,20 +41,12 @@ class FellowController {
    * @returns {object} The http response object
    */
   static async getAllFellows(req, res) {
-    const size = req.query.size || 100;
-    const page = req.query.page || 1;
-    const { query: { onRoute } } = req;
-
+    const {
+      query: { onRoute, page = 1, size = defaultSize },
+      headers: { homebaseid: homebaseId }
+    } = req;
     try {
-      const data = await UserService.getPagedFellowsOnOrOffRoute(onRoute, size, page);
-      if (data.data.length < 1) {
-        const { data: fellows, pageMeta } = data;
-        return Response.sendResponse(res, 200, true, 'Request was successful', {
-          fellows,
-          pageMeta,
-        });
-      }
-
+      const data = await UserService.getPagedFellowsOnOrOffRoute(onRoute, { size, page }, { homebaseId });
       const fellowsData = await Promise.all(data.data.map(
         fellow => FellowController.mergeFellowData(fellow.id, fellow.email)
       ));

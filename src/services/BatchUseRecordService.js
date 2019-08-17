@@ -5,7 +5,7 @@ import RemoveDataValues from '../helpers/removeDataValues';
 import bugsnagHelper from '../helpers/bugsnagHelper';
 
 const {
-  BatchUseRecord, RouteUseRecord, RouteBatch, Route, sequelize, Address
+  BatchUseRecord, RouteUseRecord, RouteBatch, Route, sequelize, Address, User
 } = models;
 
 class BatchUseRecordService {
@@ -59,17 +59,25 @@ class BatchUseRecordService {
     }
   }
 
+
   static async getBatchUseRecord(pageable = BatchUseRecordService.defaultPageable, where = null) {
     const { page, size } = pageable;
     let order;
     let filter;
-    if (where) { filter = { where: { ...where } }; }
+    const criteria = Object.assign({}, where);
+    delete criteria.homebaseId;
+    if (where) { filter = { where: { ...criteria } }; }
     const paginatedRoutes = new SequelizePaginationHelper(BatchUseRecord, filter, size);
     paginatedRoutes.filter = {
       ...filter,
       subQuery: false,
       order,
-      include: ['user',
+      include: [
+        {
+          model: User,
+          as: 'user',
+          where: { homebaseId: where.homebaseId }
+        },
         {
           model: RouteUseRecord,
           as: 'batchRecord',
@@ -78,7 +86,7 @@ class BatchUseRecordService {
             as: 'batch',
             include: ['cabDetails', {
               model: Route, as: 'route', include: ['destination']
-            }]
+            }],
           }]
         }]
     };

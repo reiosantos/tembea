@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import middlewares from '../../middlewares';
 import FellowController from './FellowsController';
+import HomeBaseFilterValidator from '../../middlewares/HomeBaseFilterValidator';
 
 
-const { TokenValidator, GeneralValidator } = middlewares;
+const { TokenValidator, GeneralValidator, HomebaseFilterValidator } = middlewares;
 
 const fellowsRouter = Router();
 
@@ -46,6 +47,7 @@ fellowsRouter.use('/fellows',
 fellowsRouter.get(
   '/fellowActivity',
   GeneralValidator.validateQueryParams,
+  HomeBaseFilterValidator.validateHomeBaseAccess,
   FellowController.getFellowRouteActivity
 );
 
@@ -74,6 +76,7 @@ fellowsRouter.get(
 fellowsRouter.get(
   '/fellows',
   GeneralValidator.validateQueryParams,
+  HomebaseFilterValidator.validateHomeBaseAccess,
   FellowController.getAllFellows
 );
 

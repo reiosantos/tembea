@@ -15,12 +15,13 @@ import {
   bugsnagHelper
 } from '../../slack/RouteManagement/rootFile';
 
-describe('fellow-controller', () => {
+describe('FellowsController', () => {
   let req = {
     query: {
       size: 2,
       page: 1
-    }
+    },
+    headers: { homebaseid: 1 }
   };
   let res;
 
@@ -34,6 +35,7 @@ describe('fellow-controller', () => {
   describe('getAllFellows', () => {
     it('should throw an error', async () => {
       req = {
+        ...req,
         query: {
           size: 'meshack'
         }
@@ -45,6 +47,7 @@ describe('fellow-controller', () => {
 
       expect(spy).toBeCalledWith(new Error('no size'));
     });
+
     it('returns empty data response if no fellows', async () => {
       jest.spyOn(UserService, 'getPagedFellowsOnOrOffRoute').mockResolvedValue(fellows);
 
@@ -59,6 +62,7 @@ describe('fellow-controller', () => {
         }
       });
     });
+
     it('returns data if fellows on route', async () => {
       jest.spyOn(FellowController, 'mergeFellowData').mockResolvedValue(finalUserDataMock);
       jest.spyOn(UserService, 'getPagedFellowsOnOrOffRoute').mockResolvedValue(fellowMockData);
@@ -87,6 +91,11 @@ describe('fellow-controller', () => {
       await FellowController.getAllFellows(req, res);
       expect(res.json).toHaveBeenCalledTimes(1);
     });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+      jest.resetAllMocks();
+    });
   });
 
   describe('mergeFellowData', () => {
@@ -99,10 +108,11 @@ describe('fellow-controller', () => {
     });
   });
 
-  describe('FellowsController_getFellowROuteActivity', () => {
+  describe('FellowsController_getFellowRouteActivity', () => {
     let mockedData;
     beforeEach(() => {
       req = {
+        ...req,
         query: {
           page: 1,
           size: 2,
@@ -130,9 +140,7 @@ describe('fellow-controller', () => {
       expect(BatchUseRecordService.getBatchUseRecord).toHaveBeenCalledWith({
         page: 1,
         size: 2
-      }, {
-        userId: 15
-      });
+      }, { userId: 15, homebaseId: 1 });
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.status().json).toHaveBeenCalledTimes(1);
@@ -150,5 +158,15 @@ describe('fellow-controller', () => {
         success: false
       });
     });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+      jest.resetAllMocks();
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.resetAllMocks();
   });
 });

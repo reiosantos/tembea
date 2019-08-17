@@ -134,7 +134,8 @@ class UserService {
     });
   }
 
-  static async getPagedFellowsOnOrOffRoute(onRoute = true, size, page) {
+  static async getPagedFellowsOnOrOffRoute(onRoute = true, { size, page }, filterBy) {
+    const { homebaseId } = filterBy;
     const { Op } = Sequalize;
     const routeBatchCriteria = onRoute ? { [Op.ne]: null } : { [Op.eq]: null };
     const results = await User.findAndCountAll({
@@ -145,11 +146,12 @@ class UserService {
           [Op.iLike]: '%andela.com',
           [Op.notILike]: '%apprenticeship@andela.com'
         },
-        routeBatchId: routeBatchCriteria
+        routeBatchId: routeBatchCriteria,
+        homebaseId
       },
     });
     return {
-      data: results.rows.map(x => RemoveDataValues.removeDataValues(x)),
+      data: results.rows.map(user => RemoveDataValues.removeDataValues(user)),
       pageMeta: {
         totalPages: Math.ceil(results.count / size),
         currentPage: page,

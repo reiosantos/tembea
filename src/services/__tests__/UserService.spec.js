@@ -94,7 +94,8 @@ describe('/Users service', () => {
   });
   describe('getPagedFellowsOnOrOffRoute', () => {
     it('should get fellows not on route', async () => {
-      const data = await UserService.getPagedFellowsOnOrOffRoute(false, 1, 1);
+      const data = await UserService.getPagedFellowsOnOrOffRoute(false,
+        { page: 1, size: 1 }, { homebaseId: 1 });
       expect(data.data).toBeDefined();
       expect(data.data).toBeInstanceOf(Array);
       expect(data.pageMeta).toBeDefined();
@@ -102,7 +103,7 @@ describe('/Users service', () => {
     });
 
     it('should get fellows on route', async () => {
-      const data = await UserService.getPagedFellowsOnOrOffRoute(true, 1, 1);
+      const data = await UserService.getPagedFellowsOnOrOffRoute(true, { size: 1, page: 1 }, { homebaseId: 1 });
       expect(data.data).toBeDefined();
       expect(data.data).toBeInstanceOf(Array);
       expect(data.pageMeta).toBeDefined();

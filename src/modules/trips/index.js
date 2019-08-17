@@ -4,7 +4,7 @@ import TripsController from './TripsController';
 import HomeBaseFilterValidator from '../../middlewares/HomeBaseFilterValidator';
 
 
-const { TripValidator, TokenValidator, GeneralValidator } = middlewares;
+const { TripValidator, TokenValidator, GeneralValidator, } = middlewares;
 
 const tripsRouter = Router();
 

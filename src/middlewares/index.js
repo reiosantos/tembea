@@ -12,6 +12,7 @@ import CountryValidator from './CountryValidator';
 import HomebaseValidator from './HomebaseValidator';
 import ProviderValidator from './ProviderValidator';
 import DriversValidator from './DriversValidator';
+import HomebaseFilterValidator from './HomeBaseFilterValidator';
 
 const middleware = {
   UserValidator,
@@ -27,7 +28,8 @@ const middleware = {
   DriversValidator,
   CountryValidator,
   HomebaseValidator,
-  ProviderValidator
+  ProviderValidator,
+  HomebaseFilterValidator
 };
 
 export default middleware;

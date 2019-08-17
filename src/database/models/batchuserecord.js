@@ -35,7 +35,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       defaultValue: 0
     },
-
   }, {});
   BatchUseRecord.associate = (models) => {
     // associations can be defined here

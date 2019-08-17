@@ -396,4 +396,9 @@ routesRouter.get(
   RoutesUsageController.getRouteUsage
 );
 
+routesRouter.get(
+  '/routes/ratings',
+  RoutesUsageController.getRouteRatings
+);
+
 export default routesRouter;
