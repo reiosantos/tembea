@@ -1,13 +1,12 @@
-/* eslint-disable no-unused-vars */
 import RouteRequestService from '../../../../services/RouteRequestService';
 import { cabService } from '../../../../services/CabService';
 import OperationsNotifications from '../../SlackPrompts/notifications/OperationsRouteRequest/index';
-import TeamDetailsService from '../../../../services/TeamDetailsService';
 import SlackNotifications from '../../SlackPrompts/Notifications';
 import { SlackAttachment } from '../../SlackModels/SlackMessageModels';
 import ProviderAttachmentHelper from '../../SlackPrompts/notifications/ProviderNotifications/helper';
 import ProviderNotifications from '../../SlackPrompts/notifications/ProviderNotifications';
 import RouteNotifications from '../../SlackPrompts/notifications/RouteNotifications';
+import UserService from '../../../../services/UserService';
 
 class OperationsHelper {
   static async completeRouteApproval(updatedRequest, result, {
@@ -17,6 +16,10 @@ class OperationsHelper {
     submission,
     botToken
   }) {
+    // update user route batch
+    const { engagement: { fellow: { id: userId } } } = updatedRequest;
+    const updateUserInfo = UserService.updateUser(userId, { routeBatchId: result.batch.id });
+
     // send cab and driver request to provider
     const providerNotification = ProviderNotifications.sendRouteApprovalNotification(
       result.batch, submission.providerId, botToken
@@ -37,7 +40,7 @@ class OperationsHelper {
       updatedRequest, botToken, submission
     );
     return Promise.all(
-      [providerNotification, opsNotification, managerNotification, userNotification]
+      [providerNotification, opsNotification, managerNotification, userNotification, updateUserInfo]
     );
   }
 

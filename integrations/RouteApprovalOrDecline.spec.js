@@ -47,7 +47,7 @@ describe('Route Request Approval/Decline', () => {
     routeRequestPendingId = mockRouteRequestPending.id;
   });
 
-  afterAll(() => {
+  afterAll(async () => {
     models.sequelize.close();
   });
 
@@ -67,11 +67,11 @@ describe('Route Request Approval/Decline', () => {
               provider: '"provider" is not allowed'
             }
           },
-          done
         );
+      done();
     });
 
-    it('should respond with pending route request response', async () => {
+    it('should respond with pending route request response', async (done) => {
       const response = await request(app)
         .put(`/api/v1/routes/requests/status/${routeRequestPendingId}`)
         .set(reqHeaders)
@@ -80,6 +80,7 @@ describe('Route Request Approval/Decline', () => {
       expect(response.body.message).toEqual(
         'This request needs to be confirmed by the manager first'
       );
+      done();
     });
 
     it('should respond with an invalid request', (done) => {
@@ -94,8 +95,8 @@ describe('Route Request Approval/Decline', () => {
             message: 'Validation error occurred, see error object for details',
             error: { comment: '"comment" is not allowed to be empty' }
           },
-          done
         );
+      done();
     });
   });
 
@@ -114,10 +115,10 @@ describe('Route Request Approval/Decline', () => {
               takeOff: 'please provide a valid takeOff',
             }
           },
-          done
         );
+      done();
     });
-    it('should invalid token', async () => {
+    it('should invalid token', async (done) => {
       const response = await request(app)
         .put(`/api/v1/routes/requests/status/${routeRequestPendingId}`)
         .set('Content-Type', 'application/json')
@@ -127,6 +128,7 @@ describe('Route Request Approval/Decline', () => {
       expect(response.body.message).toEqual(
         'Failed to authenticate token! Valid token required'
       );
+      done();
     });
   });
 });

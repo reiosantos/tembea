@@ -142,7 +142,8 @@ class ProvidersController {
       } = payload;
       const driverId = payload.actions[0].selected_options[0].value;
       const routeBatchId = payload.actions[0].name;
-      const route = await RouteService.updateRouteBatch(routeBatchId, { driverId });
+      await RouteService.updateRouteBatch(routeBatchId, { driverId });
+      const route = await RouteService.getRouteBatchByPk(routeBatchId, true);
       const { riders } = route;
       const driver = await driverService.getDriverById(driverId);
       const botToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
@@ -185,7 +186,8 @@ class ProvidersController {
       const cabId = payload.actions[0].selected_options[0].value;
       const cab = await cabService.getById(cabId);
       const routeBatchId = payload.actions[0].name;
-      const route = await RouteService.updateRouteBatch(routeBatchId, { cabId: cab.id });
+      await RouteService.updateRouteBatch(routeBatchId, { cabId: cab.id });
+      const route = await RouteService.getRouteBatchByPk(routeBatchId, true);
       const { riders: users } = route;
       const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
       await ProviderNotifications.updateProviderReAssignCabMessage(channelId, slackBotOauthToken, timestamp, route, cab);

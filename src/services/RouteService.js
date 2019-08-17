@@ -142,7 +142,21 @@ class RouteService extends BaseService {
   }
 
   static async getBatches(filter) {
-    const batches = await RouteBatch.findAll({ where: { ...filter } });
+    const batches = await RouteBatch.findAll(
+      {
+        where: {
+          status: {
+            [Op.eq]: `${filter.status}`
+          },
+          cabId: {
+            [Op.ne]: null
+          },
+          driverId: {
+            [Op.ne]: null
+          }
+        }
+      }
+    );
     return RemoveDataValues.removeDataValues(batches);
   }
 

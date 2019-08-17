@@ -3,8 +3,7 @@ import bugsnagHelper from '../../../../../helpers/bugsnagHelper';
 import ManagerAttachmentHelper from '../ManagerRouteRequest/helper';
 import OpsAttachmentHelper from './helper';
 import InteractivePrompts from '../../InteractivePrompts';
-import RouteRequestService from '../../../../../services/RouteRequestService';
-import SlackHelpers from '../../../helpers/slackHelpers/index';
+import { Cache } from '../../../RouteManagement/rootFile';
 
 export default class OperationsNotifications {
   /**
@@ -12,48 +11,32 @@ export default class OperationsNotifications {
    * when the operations team declines the route request
    * @return {Promise<*>}
    * @param routeRequestId
-   * @param teamId
-   * @param teamUrl
+   * @param botToken
    */
-  static async sendOpsDeclineMessageToFellow(routeRequestId, teamId, teamUrl) {
+  static async sendOpsDeclineMessageToFellow(routeRequest, botToken) {
     try {
-      const routeRequest = await RouteRequestService.findByPk(routeRequestId, true);
-      const slackBotOauthToken = await SlackHelpers.getSlackBotOAuthToken(teamId, teamUrl);
       const { engagement: { fellow } } = routeRequest;
-      const fellowChannelID = await SlackNotifications.getDMChannelId(fellow.slackId, slackBotOauthToken);
+      const fellowChannelID = await SlackNotifications.getDMChannelId(fellow.slackId, botToken);
       const fellowMessage = await OpsAttachmentHelper.getOperationDeclineAttachment(routeRequest,
         fellowChannelID, 'fellow');
-      SlackNotifications.sendNotification(fellowMessage, slackBotOauthToken);
+      SlackNotifications.sendNotification(fellowMessage, botToken);
       return;
     } catch (error) {
       bugsnagHelper.log(error);
     }
   }
 
-  static async sendOpsDeclineMessageToManager(routeRequestId, teamId, teamUrl) {
+  static async sendOpsDeclineMessageToManager(routeRequest, botToken) {
     try {
-      const routeRequest = await RouteRequestService.findByPk(routeRequestId, true);
-      const slackBotOauthToken = await SlackHelpers.getSlackBotOAuthToken(teamId, teamUrl);
       const { manager: { slackId } } = routeRequest;
-      const managerChannelID = await SlackNotifications.getDMChannelId(slackId, slackBotOauthToken);
+      const managerChannelID = await SlackNotifications.getDMChannelId(slackId, botToken);
       const managerMessage = await OpsAttachmentHelper.getOperationDeclineAttachment(
         routeRequest, managerChannelID
       );
-      await SlackNotifications.sendNotification(managerMessage, slackBotOauthToken);
+      await SlackNotifications.sendNotification(managerMessage, botToken);
       return;
     } catch (error) {
       bugsnagHelper.log(error);
-    }
-  }
-
-  static async completeOperationsRouteApproval(routeRequest, submission, opsData) {
-    const botToken = opsData
-      ? opsData.botToken : await SlackHelpers.getBotToken(submission.teamUrl);
-    if (opsData) {
-      const { opsUserId, timeStamp, channelId } = opsData;
-      await OperationsNotifications.completeOperationsApprovedAction(
-        routeRequest, channelId, timeStamp, opsUserId, botToken, submission
-      );
     }
   }
 
@@ -61,6 +44,7 @@ export default class OperationsNotifications {
    * Updates the notification message sent to the operations
    * team to avoid approving or declining a request
    * twice
+   * Also deletes the cached timestamp of the message after ops has approved
    * @param {RouteRequest} routeRequest - Sequelize route request model
    * @param {number} channel - Slack channel id
    * @param {string} timestamp - Timestamp of the message to update
@@ -73,9 +57,10 @@ export default class OperationsNotifications {
   static async completeOperationsApprovedAction(
     routeRequest, channel, timestamp, opsSlackId, botToken, submission
   ) {
+    await Cache.delete(`RouteRequestTimeStamp_${routeRequest.id}`);
     const { engagement: { fellow } } = routeRequest;
     const title = 'Route Request Approved';
-    const message = ':white_check_mark: You have approved this route request';
+    const message = ':white_check_mark: This route request has been approved';
     const attachments = await OpsAttachmentHelper.getOperationCompleteAttachment(
       message, title, routeRequest, submission
     );
@@ -89,39 +74,37 @@ export default class OperationsNotifications {
   }
 
   static async completeOperationsDeclineAction(
-    routeRequest, channel, teamId, routeRequestId, timestamp, botToken, payload, update
+    routeRequest, botToken, channel, timestamp, opsSlackId, update
   ) {
     try {
-      const { user: { id } } = payload;
+      await Cache.delete(`RouteRequestTimeStamp_${routeRequest.id}`);
       const title = 'Route Request Declined';
-      const message = `:x: <@${id}> has declined this route request`;
+      const message = `:x: <@${opsSlackId}> has declined this route request`;
       const attachments = await ManagerAttachmentHelper.getManagerCompleteAttachment(
         message, title, routeRequest, '#ff0000'
       );
-      await InteractivePrompts.messageUpdate(
-        channel,
-        '',
-        timestamp,
-        attachments,
-        botToken
-      );
-
       if (!update) {
         await OperationsNotifications
-          .sendOpsDeclineMessageToFellow(routeRequestId, teamId);
+          .sendOpsDeclineMessageToFellow(routeRequest, botToken);
       }
+      
 
-      await OperationsNotifications.sendOpsDeclineMessageToFellow(routeRequestId, teamId);
-      await OperationsNotifications.sendOpsDeclineMessageToManager(routeRequestId, teamId);
+      const opsDeclineNotification = InteractivePrompts.messageUpdate(
+        channel, '', timestamp, attachments, botToken
+      );
+      const managerDeclineNotification = OperationsNotifications.sendOpsDeclineMessageToManager(
+        routeRequest, botToken
+      );
+      return Promise.all(
+        [opsDeclineNotification, managerDeclineNotification]
+      );
     } catch (error) {
       bugsnagHelper.log(error);
     }
   }
 
   static async updateOpsStatusNotificationMessage(payload, routeRequest, botToken) {
-    const {
-      channel, message_ts: timeStamp, team, actions
-    } = payload;
+    const { channel, message_ts: timeStamp } = payload;
 
     if (routeRequest.status === 'Approved') {
       const opsNotify = await OperationsNotifications
@@ -134,9 +117,8 @@ export default class OperationsNotifications {
 
     if (routeRequest.status === 'Declined') {
       return OperationsNotifications
-        .completeOperationsDeclineAction(routeRequest,
-          channel.id, team.id, actions[0].value,
-          timeStamp, botToken, payload, true);
+        .completeOperationsDeclineAction(routeRequest, botToken,
+          channel.id, timeStamp, payload, true);
     }
   }
 }

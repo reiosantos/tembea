@@ -737,7 +737,7 @@ describe('SlackNotifications', () => {
         .mockResolvedValue({ botToken: 'AAAAAA', opsChannelId: 'BBBBBB' });
       jest.spyOn(SlackNotifications, 'sendOperationsNotificationFields');
       jest.spyOn(SlackNotifications, 'sendNotifications')
-        .mockResolvedValue();
+        .mockResolvedValue({ ts: '122123423.053234' });
       await SlackNotifications.sendOperationsNewRouteRequest(teamId, '1');
       expect(SlackNotifications.sendOperationsNotificationFields)
         .toHaveBeenCalledWith(mockRouteRequestData);

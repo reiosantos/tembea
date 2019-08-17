@@ -6,6 +6,7 @@ import RouteNotifications from '../SlackPrompts/notifications/RouteNotifications
 import JoinRouteNotifications from '../RouteManagement/JoinRoute/JoinRouteNotifications';
 import TripNotifications from '../SlackPrompts/notifications/TripNotifications';
 import ProviderNotifications from '../SlackPrompts/notifications/ProviderNotifications';
+import OperationsHelper from '../helpers/slackHelpers/OperationsHelper';
 
 const slackEvents = SlackEvents;
 
@@ -40,7 +41,7 @@ slackEvents.handle(slackEventNames.MANAGER_APPROVED_ROUTE_REQUEST,
   ManagerNotifications.sendManagerApproval);
 
 slackEvents.handle(slackEventNames.OPERATIONS_DECLINE_ROUTE_REQUEST,
-  OperationsNotifications.sendOpsDeclineMessageToFellow);
+  OperationsNotifications.completeOperationsDeclineAction);
 
 slackEvents.handle(slackEventNames.NOTIFY_ROUTE_RIDERS,
   RouteNotifications.sendRouteNotificationToRouteRiders);
@@ -73,6 +74,6 @@ SlackEvents.handle(slackEventNames.SEND_PROVIDER_CREATED_ROUTE_REQUEST,
   ProviderNotifications.sendRouteApprovalNotification);
 
 SlackEvents.handle(slackEventNames.COMPLETE_ROUTE_APPROVAL,
-  OperationsNotifications.completeOperationsRouteApproval);
+  OperationsHelper.completeRouteApproval);
 
 export default slackEvents;

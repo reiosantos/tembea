@@ -1,12 +1,12 @@
 import scheduler from 'node-schedule';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import RouteService from '../../RouteService';
 import { routeSchedules, routeEvents } from '../../../modules/events/route-events.constants';
 import appEvents from '../../../modules/events/app-event.service';
 
 class ConfirmRouteUseJob {
   static async autoStartRouteJob() {
-    const timeFromServerStart = moment(new Date(), 'MM/DD/YYYY HH:mm', 'Africa/Nairobi')
+    const timeFromServerStart = moment.tz(new Date(), 'MM/DD/YYYY HH:mm', 'Africa/Nairobi')
       .add({ hours: 0, minutes: 0, seconds: 10 }).format();
     scheduler.scheduleJob('start', timeFromServerStart, ConfirmRouteUseJob.start);
   }
@@ -19,21 +19,7 @@ class ConfirmRouteUseJob {
     } else {
       rule.second = 1;
     }
-    ConfirmRouteUseJob.schedulePreTripNotification();
-    scheduler.scheduleJob('daily job', rule, ConfirmRouteUseJob.startTripReminderJobs);
-  }
-
-  static async startTripReminderJobs() {
-    Object.keys(scheduler.scheduledJobs)
-      .map(ConfirmRouteUseJob.registerTripReminderJob);
-    ConfirmRouteUseJob.schedulePreTripNotification();
-  }
-
-  static async registerTripReminderJob(res) {
-    if (res.includes(routeSchedules.takeOffReminder)) {
-      const job = scheduler.scheduledJobs[res];
-      scheduler.cancelJob(job);
-    }
+    scheduler.scheduleJob('daily job', rule, ConfirmRouteUseJob.schedulePreTripNotification);
   }
 
   static async schedulePreTripNotification() {
@@ -74,7 +60,7 @@ class ConfirmRouteUseJob {
     );
   }
 
-  static getTodayTime(time, { hours = 0, minutes = 0, seconds = 0 }) {
+  static getTodayTime(time, { hours = 0, minutes = 0, seconds = 0 }, tz = 'Africa/Nairobi') {
     const date = moment(new Date(), 'MM/DD/YYYY')
       .format('MM/DD/YYYY');
     const timeAdded = {
@@ -82,7 +68,7 @@ class ConfirmRouteUseJob {
       minutes,
       seconds
     };
-    return moment(`${date} ${time}`, 'MM/DD/YYYY HH:mm')
+    return moment.tz(`${date} ${time}`, 'MM/DD/YYYY HH:mm', tz)
       .add(timeAdded)
       .format();
   }

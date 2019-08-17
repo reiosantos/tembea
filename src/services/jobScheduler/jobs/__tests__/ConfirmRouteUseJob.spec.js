@@ -60,7 +60,7 @@ describe('ConfirmRouteUseJob', () => {
     beforeEach(() => {
       preNotificationSpy = jest.spyOn(ConfirmRouteUseJob, 'schedulePreTripNotification')
         .mockResolvedValue();
-      jest.spyOn(ConfirmRouteUseJob, 'startTripReminderJobs').mockReturnValue();
+      jest.spyOn(ConfirmRouteUseJob, 'schedulePreTripNotification').mockReturnValue();
     });
 
     afterEach(() => {

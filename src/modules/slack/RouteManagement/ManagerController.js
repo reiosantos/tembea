@@ -11,6 +11,7 @@ import ManagerFormValidator from '../../../helpers/slack/UserInputValidator/mana
 import { getAction } from './rootFile';
 import cache from '../../../cache';
 import RouteHelper from '../../../helpers/RouteHelper';
+import TeamDetailsService from '../../../services/TeamDetailsService';
 
 const handlers = {
   initialNotification: async (payload) => {
@@ -77,24 +78,21 @@ const handlers = {
     if (errors.length > 0) {
       return { errors };
     }
-    const { decline } = JSON.parse(payload.state);
-    const { timeStamp, channelId, routeRequestId } = decline;
-    const {
-      slackBotOauthToken, routeRequest
-    } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
+    const { decline: { timeStamp, channelId, routeRequestId } } = JSON.parse(payload.state);
+    const botToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
 
-    const updatedRequest = await RouteHelper.updateRouteRequest(routeRequest.id,
+    const updatedRequest = await RouteHelper.updateRouteRequest(routeRequestId,
       { status: 'Declined', managerComment: declineReason });
 
     SlackEvents.raise(
       slackEventNames.MANAGER_DECLINED_ROUTE_REQUEST,
       {
-        routeRequestId: routeRequest.id,
-        teamId
+        routeRequestId: updatedRequest.id,
+        botToken
       }
     );
     await ManagerNotifications.completeManagerAction(
-      updatedRequest, channelId, timeStamp, slackBotOauthToken
+      updatedRequest, channelId, timeStamp, botToken
     );
   },
   approvedRequestPreview: async (payload) => {
@@ -116,27 +114,27 @@ const handlers = {
       slackBotOauthToken
     );
   },
-  approvedRequestSubmit: async (payload, respond) => {
+  approvedRequestSubmit: async (payload) => {
     const { actions, team: { id: teamId }, user: { id: slackId } } = payload;
     const [{ value: state }] = actions;
-    const { approve } = JSON.parse(state);
-    const { timeStamp, channelId, routeRequestId } = approve;
+    const { approve: { timeStamp, channelId, routeRequestId } } = JSON.parse(state);
     const result = cache.fetch(`userDetails${slackId}`);
     const dateObject = { startDate: result[0], endDate: result[1] };
     const {
-      slackBotOauthToken, routeRequest
+      slackBotOauthToken: botToken, routeRequest
     } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
     const { engagement } = routeRequest;
     await PartnerService.updateEngagement(engagement.id, dateObject);
 
-    const updatedRequest = await RouteHelper.updateRouteRequest(routeRequest.id,
+    const updatedRequest = await RouteHelper.updateRouteRequest(routeRequestId,
       { status: 'Confirmed' });
 
     SlackEvents.raise(
-      slackEventNames.MANAGER_APPROVED_ROUTE_REQUEST, payload, respond, { routeRequestId, teamId }
+      slackEventNames.MANAGER_APPROVED_ROUTE_REQUEST,
+      { routeRequestId, teamId, botToken }
     );
     await ManagerNotifications.completeManagerAction(
-      updatedRequest, channelId, timeStamp, slackBotOauthToken
+      updatedRequest, channelId, timeStamp, botToken
     );
   },
 };

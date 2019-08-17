@@ -49,17 +49,19 @@ const handlers = {
   declinedRequest: async (data, respond) => {
     try {
       const payload = CleanData.trim(data);
-      const { submission: { declineReason }, team: { id: teamId } } = payload;
-      const { decline } = JSON.parse(payload.state);
-      const { timeStamp, channelId, routeRequestId } = decline;
       const {
-        slackBotOauthToken: oauthToken, routeRequest
-      } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
-      const updatedRequest = await RouteHelper.updateRouteRequest(routeRequest.id,
-        { status: 'Declined', opsComment: declineReason });
+        submission: { declineReason },
+        team: { id: teamId },
+        user: { id: opsSlackId },
+        state
+      } = payload;
+      const { decline: { timeStamp, channelId, routeRequestId } } = JSON.parse(state);
+      const opsUserInfo = await UserService.getUserBySlackId(opsSlackId);
+      const botToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+      const updatedRequest = await RouteHelper.updateRouteRequest(routeRequestId,
+        { status: 'Declined', opsComment: declineReason, opsReviewerId: opsUserInfo.id });
       await OperationsNotifications.completeOperationsDeclineAction(
-        updatedRequest, channelId, teamId, routeRequestId,
-        timeStamp, oauthToken, payload, respond, false
+        updatedRequest, botToken, channelId, timeStamp, opsSlackId, false
       );
     } catch (error) {
       bugsnagHelper.log(error);
@@ -72,7 +74,6 @@ const handlers = {
     const payload = CleanData.trim(data);
     const { actions, channel: { id: channelId }, original_message: { ts: timeStamp } } = payload;
     const [{ value: routeRequestId }] = actions;
-
     const { botToken, routeRequest, routeRequest: { status } } = await RouteRequestService
       .getRouteRequestAndToken(routeRequestId, payload.team.id);
 
@@ -111,10 +112,7 @@ const handlers = {
         opsReviewerId: opsUserId, opsComment: submission.opsComment, status: 'Approved',
       });
 
-      const result = await RouteHelper.createNewRouteBatchFromSlack(
-        submission, routeRequestId
-      );
-      await UserService.updateUser(updatedRequest.engagement.fellow.id, { routeBatchId: result.batch.id });
+      const result = await RouteHelper.createNewRouteBatchFromSlack(submission, routeRequestId);
       await OperationsHelper.completeRouteApproval(updatedRequest, result, {
         channelId, opsSlackId, timeStamp, submission, botToken
       });

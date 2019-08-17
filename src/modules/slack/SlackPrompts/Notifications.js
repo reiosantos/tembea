@@ -19,6 +19,7 @@ import tripService from '../../../services/TripService';
 import TripCompletion from '../../../services/jobScheduler/jobs/TripCompletionJob';
 import CleanData from '../../../helpers/cleanData';
 import { getSlackDateString } from '../helpers/dateHelpers';
+import { Cache } from '../RouteManagement/rootFile';
 
 const slackErrorMessage = new SlackInteractiveMessage(
   'An error occurred while processing your request. '
@@ -599,12 +600,15 @@ class SlackNotifications {
     const teamDetails = await TeamDetailsService.getTeamDetails(teamId);
     const { botToken, opsChannelId } = teamDetails;
 
-    SlackNotifications.sendNotifications(
+    const notification = await SlackNotifications.sendNotifications(
       opsChannelId,
       messageAttachment,
       `Hey :simple_smile: <@${fellow}> requested a new route`,
       botToken
     );
+    await Cache.save(`RouteRequestTimeStamp_${routeRequestId}`, 'timeStamp', notification.ts);
+
+    return notification;
   }
 
   static async sendManagerCancelNotification(data, tripInfo, respond) {

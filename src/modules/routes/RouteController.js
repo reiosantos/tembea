@@ -9,13 +9,13 @@ import {
   GoogleMapsPlaceDetails,
   slackEventNames,
   SlackEvents,
-  SlackInteractiveMessage
+  SlackInteractiveMessage,
+  Cache
 } from '../slack/RouteManagement/rootFile';
 import AddressService from '../../services/AddressService';
 import RouteRequestService from '../../services/RouteRequestService';
 import UserService from '../../services/UserService';
 import RouteHelper from '../../helpers/RouteHelper';
-import RemoveDataValues from '../../helpers/removeDataValues';
 import RouteNotifications from '../slack/SlackPrompts/notifications/RouteNotifications';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import slackEvents from '../slack/events';
@@ -159,10 +159,11 @@ class RoutesController {
     try {
       const { body, params: { routeId: id } } = req;
       const result = await RouteService.updateRouteBatch(+id, body);
+      const routeBatch = await RouteService.getRouteBatchByPk(result.id, true);
       const slackTeamUrl = body.teamUrl.trim();
-      SlackEvents.raise(slackEventNames.NOTIFY_ROUTE_RIDERS, slackTeamUrl, result);
+      SlackEvents.raise(slackEventNames.NOTIFY_ROUTE_RIDERS, slackTeamUrl, routeBatch);
       const message = 'Route batch successfully updated';
-      return Response.sendResponse(res, 200, true, message, result);
+      return Response.sendResponse(res, 200, true, message, routeBatch);
     } catch (error) {
       BugSnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
@@ -176,88 +177,76 @@ class RoutesController {
    */
   static async updateRouteRequestStatus(req, res) {
     try {
-      const { params: { requestId }, body } = req;
-      let routeRequest = await RouteRequestService.getRouteRequest(requestId);
-      if (!routeRequest) {
-        return Response.sendResponse(res, 404, false, 'Route request not found.');
-      }
+      const {
+        params: { requestId },
+        body,
+        currentUser: { userInfo: { email } }
+      } = req;
+      const routeRequest = await RouteRequestService.getRouteRequestByPk(requestId);
+      RoutesController.checkCurrentApprovalStatus(routeRequest, res);
+      const opsReviewer = await UserService.getUserByEmail(email);
 
-      routeRequest = RemoveDataValues.removeDataValues(routeRequest);
-      req.body.reviewerEmail = req.currentUser.userInfo.email;
-      const checkStatus = RouteHelper.validateRouteStatus(routeRequest);
-      if (checkStatus !== true) {
-        return Response.sendResponse(res, 409, false, checkStatus);
-      }
-      const updated = await RoutesController.getUpdatedRouteRequest(requestId, body);
+      const updatedRequest = await RouteHelper.updateRouteRequest(
+        routeRequest.id,
+        {
+          status: body.newOpsStatus === 'approve' ? 'Approved' : 'Declined',
+          opsComment: body.comment,
+          opsReviewerId: opsReviewer.id
+        }
+      );
 
-      await RoutesController.sendRouteRequestNotifications(updated, body, routeRequest, requestId);
+      const submission = RoutesController.getSubmissionDetails(body, routeRequest);
 
-      return res.status(201).json({
-        success: true,
-        message: 'This route request has been updated'
-      });
+      await RoutesController.completeRouteApproval(updatedRequest,
+        submission, body.teamUrl, opsReviewer.slackId);
+      return Response.sendResponse(res, 201, true, 'This route request has been updated');
     } catch (error) {
       BugSnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
     }
   }
 
-  static async getUpdatedRouteRequest(routeId, body) {
-    try {
-      let reviewer = await UserService.getUserByEmail(body.reviewerEmail);
-      reviewer = RemoveDataValues.removeDataValues(reviewer);
-
-      const updateData = {
-        status: body.newOpsStatus === 'approve' ? 'Approved' : 'Declined',
-        opsComment: body.comment,
-        opsReviewerId: reviewer.id
-      };
-
-      const updatedRouteRequest = await RouteRequestService.update(
-        routeId, updateData
-      );
-      return updatedRouteRequest;
-    } catch (error) {
-      BugSnagHelper.log(error);
-      return HttpError.sendErrorResponse(error);
+  static async checkCurrentApprovalStatus(routeRequest, res) {
+    if (!routeRequest) {
+      return Response.sendResponse(res, 404, false, 'Route request not found.');
+    }
+    const checkStatus = RouteHelper.validateRouteStatus(routeRequest);
+    if (checkStatus !== true) {
+      return Response.sendResponse(res, 409, false, checkStatus);
     }
   }
 
-  static async sendRouteRequestNotifications(updated, body, routeRequest, routeId) {
-    const submission = RoutesController.formatRoute(routeRequest, body);
-    if (updated.status === 'Approved') {
-      await RoutesController.sendNotificationToProvider(updated, submission);
-    } else {
-      await RoutesController.sendDeclineNotificationToFellow(routeId, body.teamUrl);
-    }
-  }
-
-  /**
-   * @description format updated request data to be sent to provider
-   * @param  {object} routeRequest The created route request
-   * @param  {object} body The request body containing update info
-   * @returns {object} The submission containing route info
-   */
-
-  static formatRoute(routeRequest, body) {
-    const submission = {
+  static getSubmissionDetails(body, updatedRequest) {
+    return {
       routeName: body.routeName,
+      destination: updatedRequest.busStop,
       takeOffTime: body.takeOff,
       teamUrl: body.teamUrl,
-      provider: body.provider
+      routeCapacity: null,
+      providerId: 1,
+      imageUrl: updatedRequest.routeImageUrl
     };
-
-    return submission;
   }
 
-  static sendDeclineNotificationToFellow(routeId, teamUrl) {
-    SlackEvents.raise(slackEventNames.OPERATIONS_DECLINE_ROUTE_REQUEST, routeId, '', teamUrl);
-  }
+  static async completeRouteApproval(updatedRequest, submission, teamUrl, opsSlackId) {
+    const { botToken, opsChannelId } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
+    const { timeStamp } = await Cache.fetch(`RouteRequestTimeStamp_${updatedRequest.id}`);
+    const additionalData = {
+      channelId: opsChannelId,
+      opsSlackId,
+      timeStamp,
+      submission,
+      botToken
+    };
+    if (updatedRequest.status === 'Approved') {
+      const batch = await RouteHelper.createNewRouteWithBatch(submission);
 
-  static async sendNotificationToProvider(routeRequest, submission) {
-    SlackEvents.raise(
-      slackEventNames.COMPLETE_ROUTE_APPROVAL, routeRequest, submission
-    );
+      SlackEvents.raise(slackEventNames.COMPLETE_ROUTE_APPROVAL, updatedRequest, batch,
+        additionalData);
+      return;
+    }
+    SlackEvents.raise(slackEventNames.OPERATIONS_DECLINE_ROUTE_REQUEST,
+      updatedRequest, botToken, opsChannelId, timeStamp, opsSlackId, true);
   }
 
   /**

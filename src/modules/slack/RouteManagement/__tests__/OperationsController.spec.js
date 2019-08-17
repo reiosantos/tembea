@@ -132,7 +132,7 @@ describe('Operations Route Controller', () => {
         };
         jest.spyOn(OperationsNotifications, 'completeOperationsApprovedAction')
           .mockImplementation();
-        jest.spyOn(UserService, 'getUserBySlackId').mockReturnValue({ id: 1 });
+        jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({ id: 1 });
         jest.spyOn(routeService, 'createRouteBatch').mockResolvedValue();
         jest.spyOn(RouteService, 'addUserToRoute');
         payload = { ...payload, state };
@@ -332,10 +332,17 @@ describe('Operations Route Controller', () => {
             timeStamp, channelId, routeRequestId
           }
         });
-        payload = { ...payload, callback_id: 'operations_route_declinedRequest' };
+        payload = {
+          ...payload,
+          callback_id: 'operations_route_declinedRequest',
+          state,
+          user: { id: 1 }
+        };
+        jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken')
+          .mockResolvedValue('xxoop-sdsad');
         jest.spyOn(OperationsNotifications, 'completeOperationsDeclineAction')
-          .mockImplementation();
-        payload = { ...payload, state };
+          .mockResolvedValue();
+        jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({ id: 10 });
       });
 
 
@@ -347,11 +354,11 @@ describe('Operations Route Controller', () => {
         updateRouteRequest.mockResolvedValue({
           ...mockRouteRequestData,
           status: 'Declined',
-          opsComment: 'declinind'
+          opsComment: 'declined'
         });
-        completeOperationsDeclineAction.mockReturnValue('Token');
+        completeOperationsDeclineAction.mockResolvedValue();
         await OperationsHandler.handleOperationsActions(payload, respond);
-        expect(RouteRequestService.getRouteRequestAndToken).toHaveBeenCalled();
+        expect(UserService.getUserBySlackId).toHaveBeenCalled();
         expect(RouteHelper.updateRouteRequest).toHaveBeenCalled();
         expect(OperationsNotifications.completeOperationsDeclineAction).toHaveBeenCalled();
       });

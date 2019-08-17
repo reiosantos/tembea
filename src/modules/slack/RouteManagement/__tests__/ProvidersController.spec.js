@@ -29,7 +29,8 @@ describe('Provider Controller', () => {
 
   describe('reassigned cab', () => {
     beforeEach(() => {
-      jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue(route);
+      jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue();
+      jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue(route);
       jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('moon-token');
       jest.spyOn(ProviderNotifications, 'updateProviderReAssignCabMessage').mockResolvedValue({});
       jest.spyOn(ProvidersController, 'sendUserUpdatedRouteMessage').mockResolvedValue({});
@@ -66,7 +67,8 @@ describe('Provider Controller', () => {
 
 describe('reassignDriver', () => {
   beforeEach(() => {
-    jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue(route);
+    jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue();
+    jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue(route);
     jest.spyOn(driverService, 'getDriverById').mockResolvedValue();
     jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('xoop-token');
     jest.spyOn(ProviderNotifications, 'updateProviderReasignDriverMessage').mockResolvedValue({});

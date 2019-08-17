@@ -19,7 +19,7 @@ const testErrorHandle = (fnHandle, ...args) => async () => {
 describe('Manager Route Request Notification Tests', () => {
   let respond;
   let routeRequestData;
-  const data = { routeRequestId: mockRouteRequestData.id, teamId: 'AAAAAA' };
+  const data = { routeRequestId: mockRouteRequestData.id, botToken: 'xoop-wwrew' };
 
   beforeEach(() => {
     const result = ['12/01/2019', '12/12/2020', 'Airtel'];
@@ -29,6 +29,8 @@ describe('Manager Route Request Notification Tests', () => {
     jest.spyOn(SlackNotifications, 'sendNotification')
       .mockResolvedValue();
     jest.spyOn(RouteRequestService, 'getRouteRequest')
+      .mockResolvedValue(routeRequestData);
+    jest.spyOn(RouteRequestService, 'getRouteRequestByPk')
       .mockResolvedValue(routeRequestData);
     jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken')
       .mockResolvedValue('token');
@@ -70,8 +72,6 @@ describe('Manager Route Request Notification Tests', () => {
         ...mockRouteRequestData,
         status: 'Declined'
       };
-      RouteRequestService.getRouteRequest
-        .mockResolvedValue(routeRequestData);
       await ManagerNotifications.sendManagerDeclineMessageToFellow(data);
       expect(respond).not.toHaveBeenCalled();
     });

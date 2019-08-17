@@ -7,6 +7,7 @@ import { tripInformation } from '../../../../trips/__tests__/__mocks__';
 import SlackNotifications from '../../../SlackPrompts/Notifications';
 import ProviderNotifications from '../../../SlackPrompts/notifications/ProviderNotifications';
 import RouteNotifications from '../../../SlackPrompts/notifications/RouteNotifications';
+import UserService from '../../../../../services/UserService';
 
 describe('operations approve request', () => {
   let payload;
@@ -70,23 +71,50 @@ describe('completeRouteApproval', () => {
   it('Should send notifications to the provider, ops, user and manager', async () => {
     const data = {
       channelId: 'QAZWSX',
-      opsUserId: '1',
+      opsSlackId: 'WASASAS',
       timeStamp: '12345678987',
       submission: {
-        providerId: '1'
+        providerId: 1
       },
       botToken: 'xaxsaxscascascs'
     };
-    jest.spyOn(ProviderNotifications, 'sendRouteApprovalNotification').mockReturnValue({});
-    jest.spyOn(OperationsNotifications, 'completeOperationsApprovedAction').mockReturnValue({});
-    jest.spyOn(RouteNotifications, 'sendRouteApproveMessageToManager').mockReturnValue({});
-    jest.spyOn(RouteNotifications, 'sendRouteApproveMessageToFellow').mockReturnValue({});
+    jest.spyOn(ProviderNotifications, 'sendRouteApprovalNotification').mockResolvedValue();
+    jest.spyOn(OperationsNotifications, 'completeOperationsApprovedAction').mockResolvedValue();
+    jest.spyOn(RouteNotifications, 'sendRouteApproveMessageToManager').mockResolvedValue();
+    jest.spyOn(RouteNotifications, 'sendRouteApproveMessageToFellow').mockResolvedValue();
+    jest.spyOn(UserService, 'updateUser').mockResolvedValue();
 
     await OperationsHelper.completeRouteApproval(mockRouteRequestData, routeData, data);
-    expect(ProviderNotifications.sendRouteApprovalNotification).toHaveBeenCalled();
-    expect(OperationsNotifications.completeOperationsApprovedAction).toHaveBeenCalled();
-    expect(RouteNotifications.sendRouteApproveMessageToFellow).toHaveBeenCalled();
-    expect(RouteNotifications.sendRouteApproveMessageToManager).toHaveBeenCalled();
+    expect(ProviderNotifications.sendRouteApprovalNotification)
+      .toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Number),
+        expect.any(String)
+      );
+    
+    expect(OperationsNotifications.completeOperationsApprovedAction).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(String),
+      expect.any(String),
+      expect.any(String),
+      expect.any(String),
+      expect.any(Object),
+    );
+    
+    expect(RouteNotifications.sendRouteApproveMessageToFellow).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(String),
+      expect.any(Object),
+    );
+    expect(RouteNotifications.sendRouteApproveMessageToManager).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(String),
+      expect.any(Object),
+    );
+
+    expect(UserService.updateUser).toHaveBeenCalledWith(
+      expect.any(Number), expect.any(Object),
+    );
   });
 });
 

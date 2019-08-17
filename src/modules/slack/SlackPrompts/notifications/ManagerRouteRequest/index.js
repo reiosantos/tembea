@@ -5,7 +5,6 @@ import { slackEventNames, SlackEvents } from '../../../events/slackEvents';
 import InteractivePrompts from '../../InteractivePrompts';
 import ManagerAttachmentHelper from './helper';
 import TeamDetailsService from '../../../../../services/TeamDetailsService';
-import CleanData from '../../../../../helpers/cleanData';
 
 export default class ManagerNotifications {
   /**
@@ -42,23 +41,21 @@ export default class ManagerNotifications {
 
   /**
    * This function sends a notification to the fellow when a manager decline the route request
-   * @param {{ routeRequestId:number, teamId:number}} data
+   * @param {{ routeRequestId:number, botToken:string}} data
    * @return {Promise<*>}
    */
   static async sendManagerDeclineMessageToFellow(data) {
     try {
-      const { routeRequestId, teamId } = CleanData.trim(data);
-      const {
-        slackBotOauthToken, routeRequest
-      } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
-      const { fellow } = routeRequest.engagement;
+      const { routeRequestId, botToken } = data;
+      const routeRequest = await RouteRequestService.getRouteRequestByPk(routeRequestId);
+      const { engagement: { fellow } } = routeRequest;
       const channelID = await SlackNotifications.getDMChannelId(
-        fellow.slackId, slackBotOauthToken
+        fellow.slackId, botToken
       );
       const message = await ManagerAttachmentHelper.getManagerApproveOrDeclineAttachment(
         routeRequest, channelID
       );
-      return SlackNotifications.sendNotification(message, slackBotOauthToken);
+      return SlackNotifications.sendNotification(message, botToken);
     } catch (error) {
       bugsnagHelper.log(error);
     }
@@ -72,25 +69,23 @@ export default class ManagerNotifications {
    * @param data
    * @return {Promise<*>}
    */
-  static async sendManagerApproval(payload, respond, data) {
+  static async sendManagerApproval(data) {
     try {
-      const { routeRequestId, teamId } = CleanData.trim(data);
-      const {
-        slackBotOauthToken, routeRequest
-      } = await RouteRequestService.getRouteRequestAndToken(routeRequestId, teamId);
-      const { fellow } = routeRequest.engagement;
+      const { routeRequestId, teamId, botToken } = data;
+      const routeRequest = await RouteRequestService.getRouteRequestByPk(routeRequestId);
+      const { engagement: { fellow } } = routeRequest;
       const channelID = await SlackNotifications.getDMChannelId(
-        fellow.slackId, slackBotOauthToken
+        fellow.slackId, botToken
       );
       SlackEvents.raise(
         slackEventNames.RECEIVE_NEW_ROUTE_REQUEST,
-        payload.team.id,
+        teamId,
         routeRequestId
       );
-      const message = ManagerAttachmentHelper.getManagerApproveOrDeclineAttachment(
+      const message = await ManagerAttachmentHelper.getManagerApproveOrDeclineAttachment(
         routeRequest, channelID
       );
-      return SlackNotifications.sendNotification(message, slackBotOauthToken);
+      return SlackNotifications.sendNotification(message, botToken);
     } catch (error) {
       bugsnagHelper.log(error);
     }

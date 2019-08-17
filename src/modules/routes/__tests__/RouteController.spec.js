@@ -8,7 +8,7 @@ import AddressService from '../../../services/AddressService';
 import { RoutesHelper } from '../../../helpers/googleMaps/googleMapsHelpers';
 import {
   GoogleMapsPlaceDetails,
-  SlackInteractiveMessage
+  SlackInteractiveMessage,
 } from '../../slack/RouteManagement/rootFile';
 import HttpError from '../../../helpers/errorHandler';
 import RouteService from '../../../services/RouteService';
@@ -484,11 +484,11 @@ describe('RouteController unit test', () => {
     body: { status: 'Inactive', teamUrl: 'team@slack.com' },
     params: { routeId: 1 }
   };
-
   describe('Update RouteBatch Details', () => {
     it('should call the response method with success message for route status update', async () => {
       jest.spyOn(Response, 'sendResponse').mockImplementation();
-      jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue('good');
+      jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue(mockRouteBatchData);
+      jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue('good');
       const eventsMock = jest.spyOn(SlackEvents, 'raise').mockImplementation();
       const message = 'Route batch successfully updated';
 
@@ -501,7 +501,8 @@ describe('RouteController unit test', () => {
 
     it('should call response method with success message for general route update', async () => {
       jest.spyOn(Response, 'sendResponse').mockImplementation();
-      jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue('good');
+      jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue(mockRouteBatchData);
+      jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue('good');
       const eventsMock = jest.spyOn(SlackEvents, 'raise').mockImplementation();
       const message = 'Route batch successfully updated';
 
