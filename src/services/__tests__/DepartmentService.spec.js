@@ -1,8 +1,11 @@
+import faker from 'faker';
 import DepartmentService from '../DepartmentService';
 import model from '../../database/models';
 import UserService from '../UserService';
 import { departmentMocks } from '../__mocks__';
 import cache from '../../cache';
+import { createCountry, createUser } from '../../../integrations/support/helpers';
+import HomebaseService from '../HomebaseService';
 
 
 const { Department, TripRequest } = model;
@@ -32,14 +35,28 @@ describe('/DepartmentService', () => {
     });
 
     it('should create a department', async () => {
-      const dept = await Department.create({
-        name: 'DSTD',
-        headId: 1,
-        teamId: '45THKULE',
-        status: 'Inactive'
+      const mockcountry = await createCountry({ name: 'Argentina' });
+      const { homebase: { id: homebaseId } } = await HomebaseService.createHomebase(
+        'Buenos Aires', mockcountry.id
+      );
+      const { id: headId } = await createUser({
+        name: faker.name.findName(),
+        slackId: faker.random.word().toUpperCase(),
+        phoneNo: faker.phone.phoneNumber('080########'),
+        email: faker.internet.email(),
+        homebaseId
       });
 
-      const recreated = await DepartmentService.createDepartment({ id: 1 }, 'DSTD');
+      const dept = await Department.create({
+        name: 'DSTD',
+        headId,
+        teamId: '45THKULE',
+        status: 'Inactive',
+        homebaseId,
+        location: 'Buenos Aires'
+      });
+      const recreated = await DepartmentService.createDepartment({ id: 1 },
+        'DSTD', '', '', homebaseId);
       expect(recreated.length).toEqual(2);
 
       await dept.destroy();

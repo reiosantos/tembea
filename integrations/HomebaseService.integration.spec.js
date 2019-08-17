@@ -1,11 +1,12 @@
 import HomebaseService from '../src/services/HomebaseService';
 import models from '../src/database/models';
 import { createCountry } from './support/helpers';
+import faker from 'faker';
 
 describe('create Homebase', () => {
   let country;
   beforeAll(async () => {
-    country = await createCountry({ name: 'Tanzania' });
+    country = await createCountry({ name: faker.address.country().concat('rand') });
   });
 
   afterAll(() => {
@@ -14,7 +15,7 @@ describe('create Homebase', () => {
 
   it('should create a homebase', async () => {
     const testHomebase = {
-      homebaseName: 'Mombasa',
+      homebaseName: faker.address.county().concat('rand'),
       countryId: country.id,
       channel: 'UPOIUJ'
     };
@@ -26,6 +27,6 @@ describe('create Homebase', () => {
 
     expect(homebase.deletedAt).toEqual(null);
     expect(homebase.countryId).toEqual(countryId);
-    expect(homebase.name).toEqual('Mombasa');
+    expect(homebase.name).toEqual(testHomebase.homebaseName);
   });
 });

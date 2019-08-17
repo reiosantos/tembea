@@ -1,4 +1,5 @@
 import request from 'supertest';
+import faker from 'faker';
 import app from '../../../app';
 import Utils from '../../../utils';
 import {
@@ -7,20 +8,31 @@ import {
   missingDeptNamePayload, validDeptPayload, existingDeptPayload, invalidLocationPayload
 } from '../__mocks__/addDepartments';
 import models from '../../../database/models';
+import { createCountry } from '../../../../integrations/support/helpers';
+import HomebaseService from '../../../services/HomebaseService';
 
 let validToken;
 
-beforeAll(() => {
+let homebaseId;
+
+beforeAll(async () => {
+  const { id: countryId } = await createCountry({ name: faker.address.country() });
+  const { homebase: { id } } = await HomebaseService.createHomebase(
+    faker.address.city(), countryId
+  );
+  homebaseId = id;
+
+
   validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
 });
 afterAll(() => {
   models.sequelize.close();
 });
 describe('/Departments create', () => {
-  it('should return a no user found error with wrong email', (done) => {
-    request(app)
+  it('should return a no user found error with wrong email', async () => {
+    await request(app)
       .post('/api/v1/departments')
-      .send(noUserPayload)
+      .send({ ...noUserPayload, homebaseId })
       .set({
         Accept: 'application/json',
         authorization: validToken
@@ -28,14 +40,14 @@ describe('/Departments create', () => {
       .expect(404, {
         success: false,
         message: 'User not found'
-      }, done);
+      });
   });
 
 
-  it('should respond with a no email provided error', (done) => {
-    request(app)
+  it('should respond with a no email provided error', async () => {
+    await request(app)
       .post('/api/v1/departments')
-      .send(noEmailPayload)
+      .send({ ...noEmailPayload, homebaseId })
       .set({
         Accept: 'application/json',
         authorization: validToken
@@ -44,28 +56,28 @@ describe('/Departments create', () => {
         success: false,
         message: 'Validation error occurred, see error object for details',
         error: { email: 'Please provide email' }
-      }, done);
+      });
   });
 
-  it('should respond with invalid email', (done) => {
-    request(app)
+  it('should respond with invalid email', async () => {
+    await request(app)
       .post('/api/v1/departments')
-      .send(invalidEmailPayload)
+      .send({ ...invalidEmailPayload, homebaseId })
       .set({
         Accept: 'application/json',
         authorization: validToken
       })
-      .expect(400)
-      .end((err, res) => {
-        expect(res.body);
-        done();
+      .expect(400, {
+        success: false,
+        message: 'Validation error occurred, see error object for details',
+        error: { email: 'please provide a valid email address' }
       });
   });
 
-  it('should respond with invalid department name', (done) => {
-    request(app)
+  it('should respond with invalid department name', async () => {
+    await request(app)
       .post('/api/v1/departments')
-      .send(invalidDeptNamePayload)
+      .send({ ...invalidDeptNamePayload, homebaseId })
       .set({
         Accept: 'application/json',
         authorization: validToken
@@ -74,13 +86,13 @@ describe('/Departments create', () => {
         success: false,
         message: 'Validation error occurred, see error object for details',
         error: { name: '"name" is not allowed to be empty' }
-      }, done);
+      });
   });
 
-  it('should respond with a no name provided error', (done) => {
-    request(app)
+  it('should respond with a no name provided error', async () => {
+    await request(app)
       .post('/api/v1/departments')
-      .send(missingDeptNamePayload)
+      .send({ ...missingDeptNamePayload, homebaseId })
       .set({
         Accept: 'application/json',
         authorization: validToken
@@ -89,24 +101,24 @@ describe('/Departments create', () => {
         success: false,
         message: 'Validation error occurred, see error object for details',
         error: { name: 'Please provide name' }
-      }, done);
+      });
   });
 
-  it('should respond success', (done) => {
-    request(app)
+  it('should respond success', async () => {
+    await request(app)
       .post('/api/v1/departments')
-      .send(validDeptPayload)
+      .send({ ...validDeptPayload, homebaseId })
       .set({
         Accept: 'application/json',
         authorization: validToken
       })
-      .expect(201, done);
+      .expect(201);
   });
 
-  it('should respond with a department already exists.', (done) => {
-    request(app)
+  it('should respond with a department already exists.', async () => {
+    await request(app)
       .post('/api/v1/departments')
-      .send(existingDeptPayload)
+      .send({ ...existingDeptPayload, homebaseId })
       .set({
         Accept: 'application/json',
         authorization: validToken
@@ -114,13 +126,27 @@ describe('/Departments create', () => {
       .expect(409, {
         success: false,
         message: 'Department already exists.',
-      }, done);
+      });
   });
 
-  it('should respond with invalid department location name', (done) => {
-    request(app)
+  it('should respond with missing homebaseId error', async () => {
+    await request(app)
       .post('/api/v1/departments')
-      .send(invalidLocationPayload)
+      .send({ ...invalidLocationPayload })
+      .set({
+        Accept: 'application/json',
+        authorization: validToken
+      })
+      .expect(400, {
+        success: false,
+        message: 'No HomeBase exists with provided homebaseId'
+      });
+  });
+
+  it('should respond with invalid HomeBase Id', async () => {
+    await request(app)
+      .post('/api/v1/departments')
+      .send({ ...validDeptPayload })
       .set({
         Accept: 'application/json',
         authorization: validToken
@@ -128,7 +154,7 @@ describe('/Departments create', () => {
       .expect(400, {
         success: false,
         message: 'Validation error occurred, see error object for details',
-        error: { location: '"location" is not allowed to be empty' }
-      }, done);
+        error: { homebaseId: 'Please provide homebaseId' }
+      });
   });
 });

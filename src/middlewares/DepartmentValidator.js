@@ -6,6 +6,7 @@ import {
   tripTypeSchema
 } from './ValidationSchemas';
 import GeneralValidator from './GeneralValidator';
+import HttpError from '../helpers/errorHandler';
 
 class DepartmentValidator {
   /**
@@ -41,6 +42,25 @@ class DepartmentValidator {
 
   static async validateTripType(req, res, next) {
     return GeneralValidator.joiValidation(req, res, next, req.query, tripTypeSchema, false, true);
+  }
+
+  /**
+   * @description This middleware checks that department ID is valid
+   * @param  {object} req The HTTP request sent
+   * @param  {object} res The HTTP response object
+   * @param  {function} next The next middleware
+   * @return {any} The next middleware or the http response
+   */
+  static validateDepartmentIdQueryParam(req, res, next) {
+    const { params: { id } } = req;
+    if (!GeneralValidator.validateNumber(id)) {
+      const invalidInput = {
+        message: 'Please provide a positive integer value for department Id',
+        statusCode: 400
+      };
+      return HttpError.sendErrorResponse(invalidInput, res);
+    }
+    return next();
   }
 }
 

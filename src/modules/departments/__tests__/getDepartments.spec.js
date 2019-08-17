@@ -5,16 +5,23 @@ import models from '../../../database/models';
 import UserService from '../../../services/UserService';
 import DepartmentService from '../../../services/DepartmentService';
 
-let validToken;
-
-beforeAll(() => {
-  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
-});
-afterAll(() => {
-  models.sequelize.close();
-});
 
 describe('Get department records', () => {
+  let validToken;
+
+  beforeAll(() => {
+    validToken = Utils.generateToken('30m', {
+      userInfo: {
+        roles: ['Super Admin'],
+        locations: [{ id: 1 }, { id: 2 }]
+      },
+
+    });
+  });
+  afterAll(() => {
+    models.sequelize.close();
+  });
+
   it('should fail when page does not exist', (done) => {
     jest.spyOn(UserService, 'getUserByEmail').mockImplementation(() => ({ homebaseId: 1 }));
     jest.spyOn(DepartmentService, 'getAllDepartments').mockImplementation(() => ({ count: 0, rows: 0 }));
@@ -22,7 +29,8 @@ describe('Get department records', () => {
       .get('/api/v1/departments?page=1000000000000')
       .set({
         Accept: 'application/json',
-        authorization: validToken
+        authorization: validToken,
+        homebaseid: 1
       })
       .expect(404, {
         success: false,
@@ -38,7 +46,8 @@ describe('Get department records', () => {
       .get('/api/v1/departments?page=3&size=2')
       .set({
         Accept: 'application/json',
-        authorization: validToken
+        authorization: validToken,
+        homebaseid: 1
       })
       .expect(
         200,
@@ -51,7 +60,8 @@ describe('Get department records', () => {
       .get('/api/v1/departments')
       .set({
         Accept: 'application/json',
-        authorization: validToken
+        authorization: validToken,
+        homebaseid: 1
       })
       .expect(
         200,
@@ -64,7 +74,9 @@ describe('Get department records', () => {
       .get('/api/v1/departments?page=gh&size=ds')
       .set({
         Accept: 'application/json',
-        authorization: validToken
+        authorization: validToken,
+        homebaseid: 1
+
       })
       .expect(
         400,

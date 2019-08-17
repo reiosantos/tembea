@@ -23,14 +23,15 @@ export const departmentDataAttributes = {
 };
 
 class DepartmentService {
-  static async createDepartment(user, name, teamId, location) {
+  static async createDepartment(user, name, teamId, location, homebaseId) {
     const department = await Department.scope('all').findOrCreate({
-      where: { name: { [Op.iLike]: `${name}%` } },
+      where: { name: { [Op.iLike]: `${name}%` }, homebaseId },
       defaults: {
         name,
         headId: user.id,
         teamId,
-        location
+        location,
+        homebaseId
       }
     });
 
@@ -54,28 +55,35 @@ class DepartmentService {
     }
   }
 
-  static async updateDepartment(name, newName, newHeadEmail, location) {
-    let headId;
+  static async updateDepartment(id, name, homebaseId, headId, location) {
     try {
-      if (newHeadEmail) {
-        headId = await DepartmentService.getHeadId((newHeadEmail).trim());
-      }
-
       const department = await Department.update(
-        { name: newName, headId, location },
-        { returning: true, where: { name: { [Op.iLike]: `${name}%` } } }
-      );
+        {
+          name, homebaseId, headId, location
+        },
+        { returning: true, where: { id } }
 
+      );
       HttpError.throwErrorIfNull(department[1].length,
         'Department not found. To add a new department use POST /api/v1/departments');
 
-      const updatedDepartment = department[1][0].dataValues;
-      const head = await DepartmentService.getHeadByDeptId(updatedDepartment.id);
-      const newDepartmentRecords = {
-        name: updatedDepartment.name,
-        head: { name: head.name, email: head.email },
-        location: updatedDepartment.location
-      };
+      const [, [{ id: departmentId, headId: dbHeadId }]] = department;
+      const newDepartmentRecords = await Department.findOne({
+        where: { id: departmentId },
+        include: [{
+          model: User,
+          as: 'head',
+          required: true,
+          attributes: ['name', 'email'],
+          where: { id: dbHeadId }
+        }],
+        attributes: [
+          'id',
+          'name',
+          'location'
+        ]
+
+      });
 
       return newDepartmentRecords;
     } catch (error) {
@@ -194,7 +202,7 @@ class DepartmentService {
     };
     if (tripType) { tripFilter.tripType = tripType; }
     const result = await TripRequest.findAll({
-      where: { ...tripFilter },
+      where: { ...tripFilter, homebaseId },
       include: [{
         model: Department, as: 'department', attributes: [], where
       }],

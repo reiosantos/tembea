@@ -6,6 +6,7 @@ import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import Response from '../../helpers/responseHelper';
 import TripHelper from '../../helpers/TripHelper';
+import HomebaseService from '../../services/HomebaseService';
 
 class DepartmentController {
   /**
@@ -14,17 +15,50 @@ class DepartmentController {
    * @param {object} res
    * @returns {object} The http response object
    */
+  static async isValidDepartmentHomeBase(homeBaseId) {
+    const homeBase = await HomebaseService.getById(homeBaseId);
+    if (homeBase) {
+      const { name: location } = homeBase;
+      return location;
+    }
+    return false;
+  }
 
   static async updateDepartment(req, res) {
     const {
-      name, newName, newHeadEmail, location
-    } = req.body;
+      body: { name, homebaseId, headId },
+      params: { id }
+    } = req;
+
+    let location;
+    let userExists;
+
+    if (headId) {
+      userExists = await UserService.getUserById(headId);
+    }
+
+    if (homebaseId) {
+      location = await DepartmentController.isValidDepartmentHomeBase(homebaseId);
+    }
+    if (headId && !userExists) {
+      return res.status(404)
+        .json({
+          success: false,
+          message: `Department Head with headId ${headId} does not exists`,
+        });
+    }
+
+    if (homebaseId && !location) {
+      return res.status(400)
+        .json({
+          success: false,
+          message: 'No HomeBase exists with provided homeBaseId',
+        });
+    }
+
     try {
       const department = await DepartmentService.updateDepartment(
-        name,
-        newName,
-        newHeadEmail,
-        location
+        id, name, homebaseId, headId, location
       );
       return res
         .status(200)
@@ -42,12 +76,27 @@ class DepartmentController {
   static async addDepartment(req, res) {
     const {
       body: {
-        name, email, slackUrl, location
+        name, email, slackUrl, homebaseId
       }
     } = req;
     try {
-      const [user, { teamId }] = await Promise.all([UserService.getUser(email), TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl)]);
-      const [dept, created] = await DepartmentService.createDepartment(user, name, teamId, location);
+      const [user, { teamId }, homeBase] = await Promise.all(
+        [
+          UserService.getUser(email),
+          TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl),
+          HomebaseService.getById(homebaseId)
+        ]
+      );
+      if (!homeBase) {
+        return res.status(400)
+          .json({
+            success: false,
+            message: 'No HomeBase exists with provided homebaseId',
+          });
+      }
+      const { name: location } = homeBase;
+      const [dept, created] = await DepartmentService.createDepartment(user,
+        name, teamId, location, homebaseId);
 
       if (created) {
         return res.status(201)
@@ -76,10 +125,13 @@ class DepartmentController {
    */
   static async readRecords(req, res) {
     try {
-      const { headers: { homebaseid } } = req;
+      const {
+        headers: { homebaseid }
+      } = req;
       const page = req.query.page || 1;
       const size = req.query.size || defaultSize;
-      const data = await DepartmentService.getAllDepartments(size, page, homebaseid);
+      const data = await DepartmentService.getAllDepartments(size,
+        page, homebaseid);
       const { count, rows } = data;
       if (rows <= 0) {
         throw new HttpError('There are no records on this page.', 404);

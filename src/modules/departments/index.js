@@ -22,6 +22,7 @@ departmentRouter.use(
  *    tags:
  *      - Departments
  *    parameters:
+ *      - id: path
  *      - name: body
  *        in: body
  *        required: true
@@ -29,22 +30,25 @@ departmentRouter.use(
  *        schema:
  *          type: object
  *          required:
- *            - name
+ *            - id
  *          properties:
+ *            id:
+ *              type: number
+ *              description: The department Id
+ *            homebaseId:
+ *              type: number
+ *              description: The homebase Id of the department to update
  *            name:
  *              type: string
- *            newName:
- *              type: string
- *            newHeadEmail:
- *              type: string
- *            location:
- *              type: string
+ *            headId:
+ *              type: number
  *    responses:
  *      200:
  *        description: success response object
  */
 departmentRouter.put(
-  '/departments',
+  '/departments/:id',
+  DepartmentValidator.validateDepartmentIdQueryParam,
   DepartmentValidator.validateUpdateBody,
   DepartmentsController.updateDepartment
 );
@@ -78,6 +82,9 @@ departmentRouter.put(
  *              type: string
  *            location:
  *              type: string
+ *            homebaseId:
+ *              type: number
+ *              description: The homebase Id of the department
  *    responses:
  *      201:
  *        description: department created successfully
@@ -114,6 +121,7 @@ departmentRouter.post(
  */
 departmentRouter.get(
   '/departments',
+  HomeBaseFilterValidator.validateHomeBaseAccess,
   GeneralValidator.validateQueryParams,
   DepartmentsController.readRecords
 );

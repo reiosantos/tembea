@@ -3,46 +3,69 @@ import faker from 'faker';
 import app from '../../../app';
 import Utils from '../../../utils';
 import models from '../../../database/models';
-import { createUser, createDepartment } from '../../../../integrations/support/helpers';
+import {
+  createCountry, createDepartment, createUser
+} from '../../../../integrations/support/helpers';
+import HomebaseService from '../../../services/HomebaseService';
 
-let validToken;
-let mockDeptHead;
-let mockDepartment;
-
-beforeAll(async () => {
-  mockDeptHead = await createUser({
-    name: faker.name.findName(),
-    slackId: faker.random.word().toUpperCase(),
-    phoneNo: faker.phone.phoneNumber('080########'),
-    email: faker.internet.email(),
-  });
-  const mockUser = await createUser({
-    name: faker.name.findName(),
-    slackId: faker.random.word().toUpperCase(),
-    phoneNo: faker.phone.phoneNumber('080########'),
-    email: faker.internet.email(),
-  });
-  const departmentData = {
-    name: faker.random.word(),
-    headId: mockUser.id,
-    teamId: faker.random.word().toUpperCase(),
-  };
-  mockDepartment = await createDepartment(departmentData);
-
-  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
-});
-
-afterAll(() => {
-  models.sequelize.close();
-});
 
 describe('/Departments update', () => {
-  it('should return a department not found error with wrong department name', (done) => {
-    request(app)
-      .put('/api/v1/departments')
+  let validToken;
+  let headId;
+  let mockDepartment;
+  let mockHomeBase;
+  let homeBaseId;
+  let departmentId;
+
+  beforeAll(async () => {
+    const mockCountry = await createCountry({
+      name: faker.address.country()
+    });
+    mockHomeBase = await HomebaseService.createHomebase(
+      faker.address.city(), mockCountry.id
+    );
+    const { homebase: { id } } = mockHomeBase;
+    homeBaseId = id;
+
+    const mockDeptHead = await createUser({
+      name: faker.name.findName(),
+      slackId: faker.random.word().toUpperCase(),
+      phoneNo: faker.phone.phoneNumber('080########'),
+      email: faker.internet.email(),
+      homebaseId: homeBaseId
+
+    });
+    headId = mockDeptHead.id;
+
+    const mockUser = await createUser({
+      name: faker.name.findName(),
+      slackId: faker.random.word().toUpperCase(),
+      phoneNo: faker.phone.phoneNumber('080########'),
+      email: faker.internet.email(),
+      homebaseId: homeBaseId
+    });
+
+    const departmentData = {
+      name: faker.random.word(),
+      headId: mockUser.id,
+      teamId: faker.random.word().toUpperCase(),
+      homebaseId: homeBaseId
+    };
+    mockDepartment = await createDepartment(departmentData);
+    departmentId = mockDepartment.id;
+    validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+  });
+
+  afterAll(() => {
+    models.sequelize.close();
+  });
+
+  it('should return a department not found error with wrong id', async () => {
+    await request(app)
+      .put('/api/v1/departments/1000000')
       .send({
-        name: 'NoDepartment',
-        newName: 'newDepartmentName'
+        name: 'newDepartmentName',
+        homebaseId: mockDepartment.homebaseId
       })
       .set({
         Accept: 'application/json',
@@ -51,15 +74,16 @@ describe('/Departments update', () => {
       .expect(404, {
         success: false,
         message: 'Department not found. To add a new department use POST /api/v1/departments'
-      }, done);
+      });
   });
 
-  it('should return a user not found when the email does not exist in the database', (done) => {
-    request(app)
-      .put('/api/v1/departments')
+  it('should return a user not found when the headId does not exist in the database', async () => {
+    await request(app)
+      .put(`/api/v1/departments/${departmentId}`)
       .send({
-        name: 'TDD',
-        newHeadEmail: 'unknownuser254@gmail.com'
+        name: 'departmentName',
+        headId: 1200023,
+        homebaseId: mockDepartment.homebaseId
       })
       .set({
         Accept: 'application/json',
@@ -67,29 +91,19 @@ describe('/Departments update', () => {
       })
       .expect(404, {
         success: false,
-        message: 'User not found'
-      }, done);
+        message: 'Department Head with headId 1200023 does not exists'
+      });
   });
 
-  it('should return a department not found when the name does not exist', (done) => {
-    request(app)
-      .put('/api/v1/departments')
-      .send({
-        name: 'abcd',
-      })
-      .set({
-        Accept: 'application/json',
-        authorization: validToken
-      })
-      .expect(404, done);
-  });
 
-  it('should return a provide valid email when the email is not valid', (done) => {
-    request(app)
-      .put('/api/v1/departments')
+  it('should return a provide valid Head id when the headId is not valid', async () => {
+    await request(app)
+      .put(`/api/v1/departments/${departmentId}`)
       .send({
-        name: 'TDD',
-        newHeadEmail: 'invalidEmail'
+        name: 'departmentName',
+        headId: 'invalidHeadId',
+        homebaseId: mockDepartment.homebaseId
+
       })
       .set({
         Accept: 'application/json',
@@ -98,16 +112,17 @@ describe('/Departments update', () => {
       .expect(400, {
         success: false,
         message: 'Validation error occurred, see error object for details',
-        error: { newHeadEmail: 'please provide a valid email address' }
-      }, done);
+        error: { headId: 'headId should be a number' }
+      });
   });
 
-  it('should return provide value when property is defined with no value', (done) => {
-    request(app)
-      .put('/api/v1/departments')
+  it('should return homebase error when non existent homebase Id is provided', async () => {
+    await request(app)
+      .put(`/api/v1/departments/${departmentId}`)
       .send({
-        name: 'TDD',
-        newHeadEmail: ''
+        name: 'departmentName',
+        headId,
+        homebaseId: 220000
       })
       .set({
         Accept: 'application/json',
@@ -115,25 +130,23 @@ describe('/Departments update', () => {
       })
       .expect(400, {
         success: false,
-        message: 'Validation error occurred, see error object for details',
-        error: { newHeadEmail: 'please provide a valid email address' }
-      }, done);
+        message: 'No HomeBase exists with provided homeBaseId',
+      });
   });
 
-  it('should successfully create department with valid data', (done) => {
+  it('should successfully create department with valid data', async () => {
     const newDeptName = faker.hacker.noun();
-    request(app)
-      .put('/api/v1/departments')
+    await request(app)
+      .put(`/api/v1/departments/${departmentId}`)
       .send({
-        name: mockDepartment.name,
-        newName: newDeptName,
-        newHeadEmail: mockDeptHead.email,
-        location: 'kenya'
+        name: newDeptName,
+        headId,
+        homebaseId: mockDepartment.homebaseId,
       })
       .set({
         Accept: 'application/json',
         authorization: validToken
       })
-      .expect(200, done);
+      .expect(200);
   });
 });

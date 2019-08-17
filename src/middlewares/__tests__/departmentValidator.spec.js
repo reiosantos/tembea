@@ -101,4 +101,24 @@ describe('Department Validator', () => {
       expect(next).toBeCalled();
     });
   });
+
+  describe('validateDepartmentIdQueryParam', () => {
+    const req = { params: { id: 'uhg' } };
+    beforeEach(() => {
+      jest.restoreAllMocks();
+      jest.resetAllMocks();
+    });
+
+    it('should throw an error if invalid department id is provided', () => {
+      DepartmentValidator.validateDepartmentIdQueryParam(req, res, next);
+      expect(HttpError.sendErrorResponse).toHaveBeenCalled();
+      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call next if valid department id is provided', () => {
+      req.params.id = 1;
+      DepartmentValidator.validateDepartmentIdQueryParam(req, res, next);
+      expect(next).toHaveBeenCalled();
+    });
+  });
 });
