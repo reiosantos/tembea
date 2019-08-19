@@ -1,7 +1,6 @@
 import HomebaseService from '../../services/HomebaseService';
 import HttpError from '../../helpers/errorHandler';
 import bugsnagHelper from '../../helpers/bugsnagHelper';
-import CountryService from '../../services/CountryService';
 import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
 
 class HomebaseController {
@@ -14,12 +13,11 @@ class HomebaseController {
 
   static async addHomeBase(req, res) {
     const {
-      countryName, homebaseName
+      homebaseName, channel, countryId
     } = req.body;
     try {
-      const country = await CountryService.findCountry(countryName);
       const { homebase, isNewHomebase } = await HomebaseService.createHomebase(
-        homebaseName, country.id
+        homebaseName, countryId, channel
       );
       if (isNewHomebase) {
         delete homebase.deletedAt;
@@ -69,6 +67,38 @@ class HomebaseController {
     } catch (error) {
       HttpError.sendErrorResponse(error, res);
       bugsnagHelper.log(error);
+    }
+  }
+
+  /**
+   * @description edit a homebase
+   * @param {object} req
+   * @param {object} res
+   * @returns {object} updated homebase
+   */
+  static async update(req, res) {
+    const {
+      body: {
+        homebaseName: name, channel, countryId
+      },
+      params: {
+        id: homebaseId
+      }
+    } = req;
+
+    try {
+      const result = await HomebaseService.update(name, homebaseId, channel, countryId);
+      const message = 'HomeBase Updated successfully';
+      res.status(200).json({
+        success: true, message, homebase: result
+      });
+    } catch (error) {
+      const message = 'Homebase with specified name already exists';
+      bugsnagHelper.log(error);
+      return res.status(409).json({
+        success: false,
+        message
+      });
     }
   }
 }

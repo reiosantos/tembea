@@ -12,7 +12,21 @@ class CountryHelper {
     if (country == null) {
       return null;
     }
-    return !!country;
+    return country;
+  }
+
+  /**
+   * @description This middleware checks if a country name is valid
+   * @param  {string} countryName The name of the country
+   * @param  {number} id The id of the country
+   * @return {any} A boolean value or null
+   */
+  static async checkIfCountryExistsById(countryId) {
+    const country = await CountryService.getCountryById(countryId);
+    if (country == null) {
+      return null;
+    }
+    return country;
   }
 
   /**

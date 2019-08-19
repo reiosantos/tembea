@@ -1,4 +1,5 @@
 import requestCall from 'supertest';
+import faker from 'faker';
 import app from '../src/app';
 import Utils from '../src/utils';
 import models from '../src/database/models';
@@ -12,30 +13,31 @@ describe('Homebase Controller', () => {
   beforeAll(async () => {
     validToken = Utils.generateToken('30m', { userInfo: { rules: ['admin'] } });
 
-    mockHomebaseReq = {
-      homebaseName: 'Kampala',
-      countryName: 'Uganda'
-    };
-
-    await Country.create({
-      name: 'Uganda'
+    const mockCountry = await Country.create({
+      name: faker.address.country().concat('x')
     });
+
+    mockHomebaseReq = {
+      homebaseName: 'Bukoto',
+      countryId: mockCountry.id,
+      channel: faker.random.alphaNumeric()
+    };
   }, 10000);
 
   afterAll(async () => {
     await models.sequelize.close();
   });
 
-  it('e2e Test: should create a homebase successfully', (done) => {
-    requestCall(app)
+  it('e2e Test: should create a homebase successfully', async () => {
+    const result = await requestCall(app)
       .post('/api/v1/homebases')
       .set('Authorization', validToken)
-      .expect(201)
       .send(mockHomebaseReq)
-      .end((err, res) => {
-        expect(res.body.homeBase.name).toBe('Kampala');
-        expect(res.body.success).toEqual(true);
-        done();
-      });
+      .expect(201);
+    const { success, message, homeBase: { name, channel } } = JSON.parse(result.text);
+    expect(success).toBe(true);
+    expect(message).toBe('Homebase created successfully');
+    expect(name).toBe(mockHomebaseReq.homebaseName);
+    expect(channel).toBe(mockHomebaseReq.channel);
   }, 10000);
 });

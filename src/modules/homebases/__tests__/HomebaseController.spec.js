@@ -35,16 +35,15 @@ describe('Test HomebaseController', () => {
     let homebaseSpy;
     let countrySpy;
     beforeEach(() => {
-      req = { body: { countryName: 'Kenya', homebaseName: 'Nairobi' } };
+      req = { body: { countryId: 1, homebaseName: 'Nairobi', channel: 'UOP23' } };
       homebaseSpy = jest.spyOn(HomebaseService, 'createHomebase');
       countrySpy = jest.spyOn(CountryService, 'findCountry');
     });
 
     it('should create a homebase successfully', async () => {
-      countrySpy.mockResolvedValue(mockCountry);
       homebaseSpy.mockResolvedValue(mockCreatedHomebase);
       await HomeBaseController.addHomeBase(req, res);
-      expect(homebaseSpy).toHaveBeenCalledWith('Nairobi', 1);
+      expect(homebaseSpy).toHaveBeenCalledWith('Nairobi', 1, 'UOP23');
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -124,6 +123,76 @@ describe('Test HomebaseController', () => {
       await HomeBaseController.getHomebases(newReq, res);
       expect(HttpError.sendErrorResponse).toHaveBeenCalled();
       expect(bugsnagHelper.log).toHaveBeenCalled();
+    });
+  });
+
+  describe('Update homebase', () => {
+    let findCountrySpy;
+    let findHomeBase;
+
+
+    beforeEach(() => {
+      req = {
+        body: {
+          homebaseName: 'Cairo',
+          countryName: 'Rwanda',
+          channel: 'UIO0ED',
+          countryId: 1,
+        },
+        params: {
+          id: 3,
+        }
+      };
+
+      jest.spyOn(res, 'status');
+
+      findCountrySpy = jest.spyOn(CountryService, 'findCountry');
+      findHomeBase = jest.spyOn(HomebaseService, 'getById');
+      jest.spyOn(HttpError, 'sendErrorResponse');
+    });
+
+    it('should return an error if homebase already  exists ', async () => {
+      findCountrySpy.mockImplementation(() => Promise.resolve(
+        {
+          dataValues: {
+            id: 1
+          }
+        }
+      ));
+
+      findHomeBase.mockImplementation(() => Promise.reject());
+      await HomeBaseController.update(req, res);
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Homebase with specified name already exists',
+        success: false
+      });
+    });
+
+    it('should handle successful update of homebase', async () => {
+      findCountrySpy.mockImplementation(() => Promise.resolve(
+        {
+          dataValues: {
+            id: 1
+          }
+        }
+      ));
+
+      findHomeBase.mockImplementation(() => Promise.resolve(
+        { id: 1, countryId: 1, name: 'Cairo' }
+      ));
+      const homeBaseResponse = {
+        id: 1, countryId: 1, name: 'Cairo'
+      };
+      jest.spyOn(HomebaseService, 'update').mockResolvedValue(homeBaseResponse);
+      await HomeBaseController.update(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        homebase: { ...homeBaseResponse },
+        message: 'HomeBase Updated successfully',
+        success: true
+      });
     });
   });
 });

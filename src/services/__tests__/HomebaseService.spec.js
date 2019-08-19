@@ -1,9 +1,11 @@
+import faker from 'faker';
 import HomebaseService from '../HomebaseService';
 import models from '../../database/models';
 import { mockCreatedHomebase, mockNewHomebase } from '../__mocks__';
 import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
 import { mockedValue } from '../../modules/trips/__tests__/__mocks__';
 import UserService from '../UserService';
+import { createCountry } from '../../../integrations/support/helpers';
 
 jest.mock('../../helpers/sequelizePaginationHelper', () => jest.fn());
 const { Homebase } = models;
@@ -47,7 +49,7 @@ describe('test HomebaseService', () => {
 
   it('creates a homebase successfully', async () => {
     createHomebaseSpy.mockResolvedValue([mockNewHomebase]);
-    const result = await HomebaseService.createHomebase('Nairobi', 1);
+    const result = await HomebaseService.createHomebase('Nairobi', 1, 'UO23D');
     expect(createHomebaseSpy).toHaveBeenCalled();
     expect(HomebaseService.formatName).toHaveBeenCalled();
     expect(result).toEqual(mockCreatedHomebase);
@@ -117,7 +119,7 @@ describe('test HomebaseService', () => {
     jest.spyOn(Homebase, 'findAll').mockResolvedValue(mockedValue);
     await HomebaseService.getAllHomebases();
     expect(Homebase.findAll).toBeCalled();
-    expect(Homebase.findAll).toBeCalledWith({ attributes: { include: ['id', 'name'] } });
+    expect(Homebase.findAll).toBeCalledWith({ attributes: { include: ['id', 'name', 'channel'] } });
   });
 
   it('should get homebase by User slack ID', async () => {
@@ -127,9 +129,38 @@ describe('test HomebaseService', () => {
     expect(Homebase.findOne).toBeCalled();
     expect(Homebase.findOne).toBeCalledWith(
       {
-        attributes: ['id', 'name'],
+        attributes: ['id', 'name', 'channel'],
         where: { id: 1 }
       }
     );
+  });
+});
+
+describe('update HomeBase', () => {
+  let mockHomeBase;
+  beforeAll(async () => {
+    const mockCountry = await createCountry(faker.address.country().concat('z'));
+    mockHomeBase = await HomebaseService.createHomebase(
+      faker.address.city().concat('z'),
+      mockCountry.id,
+      faker.address.county()
+    );
+    await HomebaseService.createHomebase(
+      'Duplicatetest',
+      mockCountry.id,
+      faker.address.county()
+    );
+  });
+  afterAll(() => {
+    models.Sequelize.close();
+  });
+
+  it('should update the homebase', async () => {
+    const { homebase: { id } } = mockHomeBase;
+    const homeBaseName = faker.address.county().concat('w');
+    const result = await HomebaseService.update(
+      homeBaseName, id, 'U08ETD'
+    );
+    expect(result.name).toBe(homeBaseName);
   });
 });

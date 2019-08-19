@@ -22,7 +22,7 @@ homebaseRouter.use(
  *      - Homebases
  *    parameters:
  *      - homebaseName: body
- *      - countryName: body
+ *      - countryId: body
  *        in: body
  *        required: true
  *        type: string
@@ -30,7 +30,7 @@ homebaseRouter.use(
  *          type: object
  *          required:
  *            - homebaseName
- *            - countryName
+ *            - countryId
  *          properties:
  *            homebaseName:
  *              type: string
@@ -85,6 +85,54 @@ homebaseRouter.get(
   '/homebases',
   GeneralValidator.validateQueryParams,
   HomebaseController.getHomebases
+);
+
+/**
+ * @swagger
+ * /homebases/{id}:
+ *  put:
+ *    summary: update homebase
+ *    tags:
+ *      - Homebases
+ *    parameters:
+ *      - homebaseName: body
+ *      - countryName: body
+ *      - id: path
+ *      - channel: body
+ *        in: body
+ *        required: true
+ *        type: string
+ *        schema:
+ *          type: object
+ *          required:
+ *            - id
+ *          properties:
+ *            id:
+ *              type: integer
+ *              description: The home base Id
+ *            homebaseName:
+ *              type: string
+ *            countryName:
+ *              type: string
+ *            channel:
+ *              type: string
+ *              description: The homebase channel
+ *
+ *    responses:
+ *      200:
+ *        description: success response object containing all found homebases
+ *      404:
+ *        description: Homebase or country does not exist
+ *      409:
+ *        description: Homebase with specified name already exists
+ */
+homebaseRouter.put(
+  '/homebases/:id',
+  HomebaseValidator.validateHomeBaseIdQueryParam,
+  HomebaseValidator.validateUpdateHomeBase,
+  HomebaseValidator.validateHomeBaseExists,
+  HomebaseValidator.validateCountryExists,
+  HomebaseController.update
 );
 
 

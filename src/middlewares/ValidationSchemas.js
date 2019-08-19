@@ -158,8 +158,15 @@ export const newProviderSchema = Joi.object().keys({
 
 export const newHomeBaseSchema = Joi.object().keys({
   homebaseName: Joi.string().trim().required(),
-  countryName: requiredCountry
-});
+  countryId: Joi.number().required().required(),
+  channel: Joi.string().trim().required()
+}).min(3).max(3);
+
+export const updateHomeBaseSchema = Joi.object().keys({
+  homebaseName: Joi.string().trim().optional(),
+  countryId: Joi.number().required().optional(),
+  channel: Joi.string().trim().optional()
+}).min(1);
 
 export const newDriverSchema = Joi.object().keys({
   driverPhoneNo: Joi.number().required().min(3),

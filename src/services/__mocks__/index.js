@@ -337,6 +337,7 @@ export const mockCreatedHomebase = {
     id: 1,
     name: 'Nairobi',
     countryId: 1,
+    channel: 'UO23D',
     createdAt: '2019-04-01T12:07:13.002Z',
     updatedAt: '2019-04-01T12:07:13.002Z',
     deletedAt: null

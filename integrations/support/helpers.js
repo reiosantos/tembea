@@ -7,8 +7,7 @@ const {
   RouteRequest,
   TripRequest,
   Department,
-  Country,
-  HomeBase
+  Country
 } = models;
 
 export const createModel = async (Model, payload) => {

@@ -7,13 +7,14 @@ import UserService from './UserService';
 const { Homebase, Country } = models;
 
 class HomebaseService {
-  static async createHomebase(homebaseName, countryId) {
+  static async createHomebase(homebaseName, countryId, channel) {
     const newHomebaseName = this.formatName(homebaseName);
     const [homebase] = await Homebase.findOrCreate({
       where: { name: { [Op.iLike]: `${newHomebaseName.trim()}%` } },
       defaults: {
         name: newHomebaseName.trim(),
         countryId,
+        channel,
       }
     });
     const { _options: { isNewRecord } } = homebase;
@@ -72,11 +73,12 @@ class HomebaseService {
   static serializeHomebases(homebase) {
     const { country, ...homebaseInfo } = homebase;
     const {
-      id, name: homebaseName, createdAt, updatedAt
+      id, name: homebaseName, channel, createdAt, updatedAt
     } = homebaseInfo;
     return {
       id,
       homebaseName,
+      channel,
       country: HomebaseService.serializeCountry(country),
       createdAt,
       updatedAt
@@ -91,7 +93,7 @@ class HomebaseService {
 
   static async getAllHomebases() {
     const homeBases = await Homebase.findAll({
-      attributes: { include: ['id', 'name'] }
+      attributes: { include: ['id', 'name', 'channel'] }
     });
     return RemoveDataValues.removeDataValues(homeBases);
   }
@@ -100,7 +102,7 @@ class HomebaseService {
     const { homebaseId } = await UserService.getUserBySlackId(slackId);
     const homeBase = await Homebase.findOne({
       where: { id: homebaseId },
-      attributes: ['id', 'name']
+      attributes: ['id', 'name', 'channel']
     });
     return homeBase;
   }
@@ -110,6 +112,14 @@ class HomebaseService {
       where: { id: homebaseId }
     });
     return homeBase;
+  }
+
+  static async update(name, id, channel, countryId) {
+    const [, [homeBase]] = await Homebase.update(
+      { name, channel, countryId },
+      { returning: true, where: { id } }
+    );
+    return RemoveDataValues.removeDataValues(homeBase);
   }
 }
 export default HomebaseService;
