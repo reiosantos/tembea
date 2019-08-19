@@ -57,6 +57,13 @@ describe('Route Helpers', () => {
   });
 
   describe('checkThatRouteNameExists', () => {
+    it('should return array containing true/false', async () => {
+      jest.spyOn(routeService, 'getRouteByName').mockResolvedValue({ id: 2, });
+      const result = await RouteHelper.checkThatProviderIdExists(1);
+      expect(Array.isArray(result)).toBeTruthy();
+      expect(result[0]).toEqual(true);
+    });
+
     it('should return array containing results for the check', async () => {
       jest.spyOn(routeService, 'getRouteByName').mockResolvedValue({ id: 2, });
       const result = await RouteHelper.checkThatRouteNameExists('Yaba');

@@ -83,17 +83,19 @@ class RouteValidator {
     const { validateNumber } = GeneralValidator;
     const {
       body: {
-        batch, name, inUse, regNumber
+        batch, name, inUse, regNumber, providerId
       }
     } = req;
 
     let errors = [];
     const [cabExists, cabDetails] = await RouteHelper.checkThatVehicleRegNumberExists(regNumber);
     const [routeExists, route] = await RouteHelper.checkThatRouteNameExists(name);
+    const [providerExists] = await RouteHelper.checkThatProviderIdExists(providerId);
 
     errors = [...errors, (inUse && !validateNumber(inUse)) && 'inUse should be a positive integer'];
     errors = [...errors, (regNumber && !cabExists) && `No cab with reg number '${regNumber}' exists in the db`];
     errors = [...errors, (name && !routeExists) && `The route '${name}' does not exist in the db`];
+    errors = [...errors, (providerId && !providerExists) && `The provider with id '${providerId}' does not exist in the db`];
     errors = errors.filter(e => !!e);
 
     if (errors.length) return Response.sendResponse(res, 400, false, errors);

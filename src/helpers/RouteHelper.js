@@ -2,6 +2,7 @@ import AddressService from '../services/AddressService';
 import LocationService from '../services/LocationService';
 import RouteService, { routeService } from '../services/RouteService';
 import { cabService } from '../services/CabService';
+import { providerService } from '../services/ProviderService';
 import { expectedCreateRouteObject } from '../utils/data';
 import RouteRequestService from '../services/RouteRequestService';
 import RouteNotifications from '../modules/slack/SlackPrompts/notifications/RouteNotifications';
@@ -113,6 +114,11 @@ export default class RouteHelper {
   static async checkThatRouteNameExists(name) {
     const route = await routeService.getRouteByName(name);
     return [!!route, route];
+  }
+
+  static async checkThatProviderIdExists(providerId) {
+    const provider = await providerService.getProviderById(providerId);
+    return [!!provider];
   }
 
   static async createNewRouteWithBatch(data) {

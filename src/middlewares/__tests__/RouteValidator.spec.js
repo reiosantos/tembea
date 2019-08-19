@@ -269,7 +269,8 @@ describe('Route Validator', () => {
         name: 'Yaba',
         capacity: 'not correct',
         inUse: '10 times wrong',
-        regNumber: 'XAH A7G FA'
+        regNumber: 'XAH A7G FA',
+        providerId: 1
       }
     };
 
@@ -282,11 +283,13 @@ describe('Route Validator', () => {
           name: 'Yaba',
           capacity: 12,
           inUse: 10,
-          regNumber: 'XAH A7G FA'
+          regNumber: 'XAH A7G FA',
+          providerId: 1,
         }
       };
 
       jest.spyOn(RouteHelper, 'checkThatRouteNameExists').mockReturnValue([true, { id: 1 }]);
+      jest.spyOn(RouteHelper, 'checkThatProviderIdExists').mockReturnValue([true, { id: 1 }]);
       jest.spyOn(RouteHelper, 'checkThatVehicleRegNumberExists').mockReturnValue([true, { id: 1 }]);
       await RouteValidator.validateRouteBatchUpdateFields(reqMock, 'res', nextMock);
       expect(nextMock).toHaveBeenCalledTimes(1);
@@ -295,10 +298,11 @@ describe('Route Validator', () => {
     it('should return error response when invalid data is provided', async () => {
       jest.spyOn(RouteHelper, 'checkThatRouteNameExists').mockReturnValue([false]);
       jest.spyOn(RouteHelper, 'checkThatVehicleRegNumberExists').mockReturnValue([false]);
+      jest.spyOn(RouteHelper, 'checkThatProviderIdExists').mockReturnValue([false]);
       const spy = jest.spyOn(Response, 'sendResponse').mockImplementation();
       await RouteValidator.validateRouteBatchUpdateFields(reqMockInvalid, 'res', nextMock);
       expect(nextMock).not.toHaveBeenCalled();
-      expect(spy.mock.calls[0][3].length).toEqual(3);
+      expect(spy.mock.calls[0][3].length).toEqual(4);
     });
   });
 

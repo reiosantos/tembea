@@ -4,6 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     takeOff: DataTypes.STRING,
     batch: DataTypes.STRING,
     capacity: DataTypes.INTEGER,
+    providerId: DataTypes.INTEGER,
     status: {
       allowNull: false,
       type: DataTypes.ENUM(

@@ -108,6 +108,7 @@ export const updateRouteSchema = Joi.object().keys({
   batch: Joi.string().trim(),
   capacity: Joi.number().min(1),
   takeOff: Joi.string().trim().regex(timeRegex),
+  providerId: Joi.number().min(1),
   regNumber: Joi.string().trim().replace(/[^a-z0-9\s]/gi, ''),
   name: Joi.string().trim().replace(/[^a-z0-9\s]/gi, '')
 });
