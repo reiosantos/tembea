@@ -61,7 +61,7 @@ class SlackController {
     return new SlackInteractiveMessage('Welcome to Tembea!', [attachment]);
   }
 
-  static async getRouteCommandMsg() {
+  static getRouteCommandMsg() {
     const attachment = SlackController.greetings();
     attachment.addFieldsOrActions('actions', [
       new SlackButtonAction('My Current Route',
@@ -77,7 +77,6 @@ class SlackController {
       '#3AA3E3',
     );
     
-    // await Cache.save('url', 'response_url', responseUrl);
     return new SlackInteractiveMessage('Welcome to Tembea!', [attachment]);
   }
 
