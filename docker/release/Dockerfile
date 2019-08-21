@@ -14,7 +14,7 @@ WORKDIR /usr/app
 
 # Run these commands and copy files into the usr/app directory
 RUN npm install -g yarn@1.17.x typescript && rm -rf package-lock.json
-COPY package.json yarn.lock tsconfig.json tsconfig.build.json dist /usr/app/
+COPY package.json yarn.lock tsconfig.json tsconfig.build.json dist/src /usr/app/
 COPY .sequelizerc.build /usr/app/.sequelizerc
 
 # run this command
