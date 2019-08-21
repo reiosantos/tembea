@@ -818,14 +818,14 @@ describe('SlackInteractions', () => {
         expect(handleSelectProviderAction).toHaveBeenCalled();
       });
 
-      it('Should call sendOpsSelectCabDialog when assign cap option is selected', async () => {
+      it('Should call selectDriverAndCab when assign cab option is selected', async () => {
         jest.spyOn(tripService, 'getById').mockResolvedValue({ tripStatus: 'Pending' });
         jest.spyOn(DialogPrompts, 'sendSelectProviderDialog').mockResolvedValue({});
         const tripDataMock = createTripActionWithOptionsMock('assignCab_1');
 
-        const sendOpsSelectCabDialog = jest.spyOn(OpsDialogPrompts, 'sendOpsSelectCabDialog').mockResolvedValue();
+        const selectDriverAndCab = jest.spyOn(OpsDialogPrompts, 'selectDriverAndCab').mockResolvedValue();
         await SlackInteractionsHelpers.handleOpsAction(tripDataMock, respond);
-        expect(sendOpsSelectCabDialog).toHaveBeenCalled();
+        expect(selectDriverAndCab).toHaveBeenCalled();
       });
     });
   });

@@ -92,6 +92,15 @@ export async function getFellowEngagementDetails(userId, teamId) {
   await cache.saveObject(getFellowKey(userId), [startDate, endDate, partnerStatus]);
   return { startDate, endDate, partnerStatus };
 }
+/**
+ * @param  {} data
+ * @param  {} labelProp the property to use as the label
+ * @param  {} valueProp the property to use as the value
+ */
+export const toLabelValuePairs = (data, { labelProp, valueProp }) => data.map(item => ({
+  label: item[labelProp],
+  value: item[valueProp]
+}));
 
 export default {
   getFellowEngagementDetails, FormHandler, dateProcessor, dateFaker

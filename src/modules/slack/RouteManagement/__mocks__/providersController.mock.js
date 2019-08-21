@@ -162,10 +162,8 @@ const completeOpsAssignCabPayload = {
   state,
   ...providersPayload,
   submission: {
-    driver: 'driver',
-    driverNumber: '000000',
-    cab: 'cab',
-    regNumber: 'OP90JK',
+    driver: 1,
+    cab: 1,
     confirmationComment: 'comment',
   },
   origin: { address: 'pickup' },

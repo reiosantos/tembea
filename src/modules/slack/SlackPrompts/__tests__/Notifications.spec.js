@@ -16,6 +16,7 @@ import responseMock from '../__mocks__/NotificationResponseMock';
 import bugsnagHelper from '../../../../helpers/bugsnagHelper';
 import { SlackAttachment, OpsSlackAttachment } from '../__mocks__/NotificationsMocks.mock';
 import Cache from '../../../../cache';
+import HomebaseService from '../../../../services/HomebaseService';
 
 const tripInitial = {
   id: 2,
@@ -602,12 +603,15 @@ describe('SlackNotifications', () => {
     let getDepartment;
     let sendRequesterApprovedNotification;
     let sendNotification;
+    let getHomeBaseBySlackId;
     beforeEach(() => {
       respond = jest.fn(value => value);
       getTripRequest = jest.spyOn(tripService, 'getById');
       getTeamDetails = jest.spyOn(TeamDetailsService, 'getTeamDetails');
       getDepartment = jest.spyOn(DepartmentService, 'getById');
       sendNotification = jest.spyOn(SlackNotifications, 'sendNotification');
+      getHomeBaseBySlackId = jest.spyOn(HomebaseService, 'getHomeBaseBySlackId');
+      getHomeBaseBySlackId.mockResolvedValue(1);
       sendRequesterApprovedNotification = jest.spyOn(SlackNotifications,
         'sendRequesterApprovedNotification');
 

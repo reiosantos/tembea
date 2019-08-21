@@ -84,13 +84,24 @@ class OperationsHelper {
     return tripDetailsAttachment;
   }
 
-  static getUpdateTripStatusPayload(tripId, confirmationComment, opsUserId, timeStamp) {
+  static getUpdateTripStatusPayload(
+    tripId,
+    confirmationComment,
+    opsUserId,
+    timeStamp,
+    cabId,
+    driverId,
+    providerId
+  ) {
     return {
       tripStatus: 'Confirmed',
       tripId,
       operationsComment: confirmationComment,
       confirmedById: opsUserId,
       approvalDate: timeStamp,
+      cabId,
+      driverId,
+      providerId
     };
   }
 }

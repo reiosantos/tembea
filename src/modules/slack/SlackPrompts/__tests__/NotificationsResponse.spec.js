@@ -2,19 +2,24 @@ import NotificationsResponse from '../NotificationsResponse';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import * as SlackModels from '../../SlackModels/SlackMessageModels';
 import responseData from '../__mocks__/NotificationResponseMock';
+import HomebaseService from '../../../../services/HomebaseService';
 
 describe('Notifications Response Test', () => {
-  it('should test response for operations channel for regular trip', () => {
+  beforeEach(() => {
+    jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue(1);
+  });
+
+  it('should test response for operations channel for regular trip', async () => {
     const payload = { user: { id: '332' } };
-    const result = NotificationsResponse.getRequestMessageForOperationsChannel(
+    const result = await NotificationsResponse.getRequestMessageForOperationsChannel(
       responseData, payload, 'hello', 'regular'
     );
     expect(result).toHaveProperty('attachments');
   });
 
-  it('should test response for operations channel for travel trip', () => {
+  it('should test response for operations channel for travel trip', async () => {
     const payload = { user: { id: '332' } };
-    const result = NotificationsResponse.getRequestMessageForOperationsChannel(
+    const result = await NotificationsResponse.getRequestMessageForOperationsChannel(
       responseData, payload, 'hello', 'travel'
     );
     expect(result).toHaveProperty('attachments');
@@ -70,8 +75,8 @@ describe('Notifications Response Test', () => {
       destination: { address: 'testAddress' }
     };
     const messageHeader = `Your request from *${trip.pickup.address}* to *${trip.destination.address
-    }* has been approved by ${isApproved.approvedBy
-    }. The request has now been forwarded to the operations team for confirmation.`;
+      }* has been approved by ${isApproved.approvedBy
+      }. The request has now been forwarded to the operations team for confirmation.`;
 
     SlackHelpers.isRequestApproved = jest.fn(() => isApproved);
     const result = await NotificationsResponse.getMessageHeader(trip);

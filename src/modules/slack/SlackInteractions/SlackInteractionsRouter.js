@@ -2,7 +2,7 @@ import { createMessageAdapter } from '@slack/interactive-messages';
 import SlackInteractions from './index';
 import ManagerController from '../RouteManagement/ManagerController';
 import { OperationsHandler } from '../RouteManagement/OperationsController';
-import OperationsHelper from '../helpers/slackHelpers/OperationsHelper';
+// import OperationsHelper from '../helpers/slackHelpers/OperationsHelper';
 import JoinRouteInteractions from '../RouteManagement/JoinRoute/JoinRouteInteractions';
 import RateTripController from '../TripManagement/RateTripController';
 import TripInteractions from '../SlackPrompts/notifications/TripNotifications/TripInteractions';
@@ -40,8 +40,8 @@ slackInteractionsRouter.action({ callbackId: /^operations_approval/ },
   SlackInteractionsHelpers.sendCommentDialog);
 slackInteractionsRouter.action({ callbackId: 'operations_reason_dialog_trips' },
   SlackInteractions.handleTripActions);
-slackInteractionsRouter.action({ callbackId: 'operations_reason_dialog_route' },
-  OperationsHelper.completeRouteApproval);
+// slackInteractionsRouter.action({ callbackId: 'operations_reason_dialog_route' },
+//   OperationsHelper.completeRouteApproval);
 slackInteractionsRouter.action({ callbackId: 'trips_cab_selection' },
   SlackInteractionsHelpers.handleOpsAction);
 slackInteractionsRouter.action({ callbackId: 'provider_actions' },

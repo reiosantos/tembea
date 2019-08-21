@@ -33,7 +33,10 @@ describe('UserTripBookingController', () => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
   });
-  beforeEach(() => jest.spyOn(Cache, 'save').mockResolvedValue());
+  beforeEach(() => {
+    jest.spyOn(Cache, 'save').mockResolvedValue();
+    jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue(1);
+  });
 
   describe('savePickupDetails', () => {
     beforeAll(() => jest.spyOn(Cache, 'saveObject').mockResolvedValue());

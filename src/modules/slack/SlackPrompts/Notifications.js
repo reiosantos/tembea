@@ -162,7 +162,7 @@ class SlackNotifications {
         );
       }
       tripInformation.pickup = tripInformation.origin;
-      const opsRequestMessage = NotificationsResponse.getRequestMessageForOperationsChannel(
+      const opsRequestMessage = await NotificationsResponse.getRequestMessageForOperationsChannel(
         tripInformation, payload, opsChannelId, type
       );
       await SlackNotifications.sendNotification(opsRequestMessage, slackBotOauthToken);

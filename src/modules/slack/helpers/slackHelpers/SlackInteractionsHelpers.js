@@ -134,12 +134,23 @@ class SlackInteractionsHelpers {
   static async handleOpsAction(data, respond) {
     const payload = CleanData.trim(data);
     const {
-      actions: [{ selected_options: selectedOptions }], channel: { id: channelId }, team: { id: teamId },
+      actions: [{ selected_options: selectedOptions, value: values }],
+      channel: { id: channelId },
+      team: { id: teamId },
       user: { id: userId }, original_message: { ts: timeStamp }
     } = payload;
-    const [value, id] = selectedOptions[0].value.split('_');
+
+    let options;
+
+    if (selectedOptions) {
+      options = selectedOptions[0].value.split('_');
+    } else {
+      options = values.split('_');
+    }
+
+    const [value, tripId] = options;
     const isOpsAssignCab = value === 'assignCab';
-    const trip = await tripService.getById(id);
+    const trip = await tripService.getById(tripId);
     const tripIsCancelled = trip.tripStatus === 'Cancelled';
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
     if (tripIsCancelled) {
@@ -148,7 +159,8 @@ class SlackInteractionsHelpers {
       );
     }
     if (isOpsAssignCab) {
-      return OpsDialogPrompts.sendOpsSelectCabDialog(payload);
+      const dialog = await OpsDialogPrompts.selectDriverAndCab(payload, tripId);
+      return dialog;
     }
     const correctedData = { ...data, actions: [{ ...data.actions[0], value: trip.id }] };
     return SlackInteractions.handleSelectProviderAction(correctedData, respond);

@@ -7,11 +7,13 @@ import {
   SlackSelectAction
 } from '../SlackModels/SlackMessageModels';
 import { getSlackDateString } from '../helpers/dateHelpers';
+import HomebaseService from '../../../services/HomebaseService';
 
 class NotificationsResponse {
-  static getRequestMessageForOperationsChannel(data, payload, channel, tripType) {
+  static async getRequestMessageForOperationsChannel(data, payload, channel, tripType) {
     const channelId = channel;
     const { id } = data;
+    const { user: { id: slackId } } = payload;
     const options = [
       {
         text: 'Confirm and assign cab and driver',
@@ -22,12 +24,29 @@ class NotificationsResponse {
         value: `confirmTrip_${id}`,
       }
     ];
+
+    let selectAction = new SlackSelectAction(
+      'assign-cab-or-provider',
+      'Confirm request options',
+      options
+    );
+
+    const homeBase = await HomebaseService.getHomeBaseBySlackId(slackId);
+
+    if (homeBase.name === 'Kampala') {
+      selectAction = new SlackButtonAction(
+        'assign-cab-or-provider',
+        'Confirm and assign cab and driver',
+        `assignCab_${id}`
+      );
+    }
+
     const actions = [
-      new SlackSelectAction('assign-cab-or-provider', 'Confirm request options', options),
+      selectAction,
       new SlackButtonAction('declineRequest', 'Decline', id, 'danger')
     ];
 
-    
+
     return NotificationsResponse.responseForOperations(
       data, actions, channelId, 'trips_cab_selection', payload, tripType
     );
@@ -168,8 +187,8 @@ class NotificationsResponse {
     const isApproved = await SlackHelpers.isRequestApproved(trip.id);
 
     return `Your request from *${pickup.address}* to *${destination.address
-    }* has been approved by ${isApproved.approvedBy
-    }. The request has now been forwarded to the operations team for confirmation.`;
+      }* has been approved by ${isApproved.approvedBy
+      }. The request has now been forwarded to the operations team for confirmation.`;
   }
 }
 

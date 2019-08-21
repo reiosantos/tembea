@@ -76,6 +76,13 @@ export class SlackDialogSelectElementWithOptions extends SlackDialogSelect {
   }
 }
 
+export class SlackDialogSelectElementWithOptionGroups extends SlackDialogSelect {
+  constructor(label, name, optionGroups) {
+    super(label, name);
+    this.option_groups = optionGroups;
+  }
+}
+
 export class SlackDialogElementWithDataSource extends SlackDialogSelect {
   constructor(label, name, dataSource = SlackKnownDataSources.users) {
     super(label, name);

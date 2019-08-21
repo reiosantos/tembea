@@ -17,6 +17,9 @@ import TeamDetailsService from '../../../services/TeamDetailsService';
 import tripService from '../../../services/TripService';
 import RouteHelper from '../../../helpers/RouteHelper';
 import UserService from '../../../services/UserService';
+import { driverService } from '../../../services/DriverService';
+import { cabService } from '../../../services/CabService';
+import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 
 const handlers = {
   decline: async (payload) => {
@@ -153,29 +156,57 @@ class OperationsHandler {
    */
 
   static async completeOpsAssignCabDriver(data) {
-    const {
-      submission: {
-        driver, driverNumber, cab: model, regNumber, confirmationComment
-      }, team: { id: teamId }, user: { id: userId }, state, channel
-    } = data;
-    const { tripId, timeStamp: ts } = JSON.parse(state);
-    const { id: opsUserId } = await SlackHelpers.findOrCreateUserBySlackId(userId, teamId);
-    const timeStamp = TripHelper.convertApprovalDateFormat(ts);
-    const updateTripStatusPayload = OperationsHelper
-      .getUpdateTripStatusPayload(tripId, confirmationComment, opsUserId, timeStamp);
     try {
+      const {
+        submission: {
+          driver: driverId, cab: cabId, confirmationComment
+        }, team: { id: teamId }, user: { id: userId }, state, channel
+      } = data;
+      const cab = await cabService.getById(cabId);
+      const driver = await driverService.getDriverById(driverId);
+
+      const errors = await OperationsHandler.validateOpsAssignCabnDriverDialog(cab, driver);
+      if (errors) return { errors };
+
+      const { tripId, timeStamp: ts } = JSON.parse(state);
+      const { id: opsUserId } = await SlackHelpers.findOrCreateUserBySlackId(userId, teamId);
+      const timeStamp = TripHelper.convertApprovalDateFormat(ts);
+      const updateTripStatusPayload = OperationsHelper
+        .getUpdateTripStatusPayload(
+          tripId,
+          confirmationComment,
+          opsUserId,
+          timeStamp,
+          cabId,
+          driverId,
+          cab.providerId
+        );
+
       const trip = await tripService
         .updateRequest(tripId, updateTripStatusPayload);
       const { rider: { slackId: riderSlackId }, requester: { slackId: requesterSlackId } } = trip;
       TripCompletionJob.createScheduleForATrip(trip);
       const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-      const tripInformation = { ...trip, cab: { model, regNumber }, driver: { driverName: driver, driverPhoneNo: driverNumber } };
-      const driverDetails = `,${driver},${driverNumber}`;
+      const tripInformation = { ...trip, cab, driver };
+      const driverDetails = `,${driver.driverName},${driver.driverPhoneNo}`;
       const message = 'Thank you for completing this trip request';
-      const tripDetailsAttachment = OperationsHelper.getTripDetailsAttachment(tripInformation, driverDetails);
-      InteractivePrompts.messageUpdate(channel.id, message, ts, [tripDetailsAttachment], slackBotOauthToken);
-      OperationsHelper.sendcompleteOpAssignCabMsg(teamId, { requesterSlackId, riderSlackId }, tripInformation);
+      const tripDetailsAttachment = OperationsHelper.getTripDetailsAttachment(tripInformation,
+        driverDetails);
+      InteractivePrompts.messageUpdate(channel.id, message, ts, [tripDetailsAttachment],
+        slackBotOauthToken);
+      OperationsHelper.sendcompleteOpAssignCabMsg(teamId, { requesterSlackId, riderSlackId },
+        tripInformation);
     } catch (error) { bugsnagHelper.log(error); }
+  }
+
+  static async validateOpsAssignCabnDriverDialog(cab, driver) {
+    const error = 'cab and driver must belong to the same provider';
+    if (driver.providerId !== cab.providerId) {
+      return [
+        new SlackDialogError('cab', error),
+        new SlackDialogError('driver', error)
+      ];
+    }
   }
 }
 
