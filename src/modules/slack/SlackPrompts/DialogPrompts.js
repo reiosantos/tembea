@@ -258,10 +258,11 @@ class DialogPrompts {
     await DialogPrompts.sendDialog(dialog, payload);
   }
 
-  static async sendSearchPage(payload, value, callbackId, respond) {
-    respond(new SlackInteractiveMessage('Noted ...'));
+  static async sendSearchPage(payload, value, callbackId) {
+    const { message_ts: messageTs, response_url: origin } = payload;
+    const state = JSON.stringify({ action: value, origin, messageTs });
     const dialog = new SlackDialog(callbackId,
-      'Search', 'Submit', false, value);
+      'Search', 'Submit', false, state);
 
     const hint = 'e.g Emmerich Road';
     const textarea = new SlackDialogText('Search', 'search',

@@ -23,6 +23,7 @@ import CleanData from '../../../../helpers/cleanData';
 import ConfirmRouteUseJob from '../../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 import env from '../../../../config/environment';
 import UserService from '../../../../services/UserService';
+import UpdateSlackMessageHelper from '../../../../helpers/slack/updatePastMessageHelper';
 
 class JoinRouteInteractions {
   static async handleViewAvailableRoutes(data, respond) {
@@ -37,6 +38,8 @@ class JoinRouteInteractions {
   }
 
   static async sendAvailableRoutesMessage(data, respond) {
+    const { origin = '' } = data.store || {};
+    if (origin) { UpdateSlackMessageHelper.newUpdateMessage(origin, { text: 'Noted...' }); }
     const payload = CleanData.trim(data);
     const page = getPageNumber(payload);
     const sort = SequelizePaginationHelper.deserializeSort(

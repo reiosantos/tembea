@@ -212,8 +212,11 @@ class SlackInteractions {
 
   static async startRouteActions(data, respond) {
     Cache.save('url', 'response_url', data.response_url);
+    
     const payload = CleanData.trim(data);
-    const action = payload.state || payload.actions[0].value;
+    const state = JSON.parse(payload.state || '""');
+    payload.store = state;
+    const action = state.action || payload.actions[0].value;
     const errors = UserInputValidator.validateStartRouteSubmission(payload);
     if (errors) return errors;
     switch (action) {
