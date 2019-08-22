@@ -37,13 +37,19 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     homebaseId: {
-      type: DataTypes.INTEGER
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'Homebases'
+      }
     },
   }, {});
   User.associate = (models) => {
     User.hasMany(models.TripRequest, {
       foreignKey: 'requestedById',
       sourceKey: 'id'
+    });
+    User.belongsTo(models.Homebase, {
+      foreignKey: 'homebaseId'
     });
     User.belongsToMany(models.Partner, { through: 'Engagements', foreignKey: 'userId' });
     User.belongsToMany(models.Role, {

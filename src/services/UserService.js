@@ -6,7 +6,7 @@ import TeamDetailsService from './TeamDetailsService';
 import CleanData from '../helpers/cleanData';
 import RemoveDataValues from '../helpers/removeDataValues';
 
-const { User } = models;
+const { User, Homebase } = models;
 
 class UserService {
   /**
@@ -175,6 +175,7 @@ class UserService {
   static async getUserBySlackId(slackId) {
     const user = await User.findOne({
       where: { slackId },
+      include: [{ model: Homebase }]
     });
     return user;
   }

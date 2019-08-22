@@ -182,15 +182,17 @@ describe('UserTripBookingController', () => {
           }
         }]
       };
+      jest.spyOn(UserService, 'getUserBySlackId').mockReturnValue({ Homebase: { name: 'Kampala' } });
       jest.spyOn(Interactions, 'sendDetailsForm').mockResolvedValue();
       await UserTripBookingController.saveDepartment(newPayload);
-      expect(Cache.save).toHaveBeenCalledTimes(2);
+      expect(Cache.save).toHaveBeenCalledTimes(3);
       expect(Interactions.sendDetailsForm).toHaveBeenCalled();
     });
   });
 
   describe('sendDestination', () => {
     it('should send destination details dialog', async () => {
+      jest.spyOn(Cache, 'fetch').mockResolvedValue({ homeBaseName: 'Kampala' });
       jest.spyOn(Interactions, 'sendDetailsForm').mockResolvedValue();
       await UserTripBookingController.sendDestinations(payload);
     });
@@ -207,7 +209,7 @@ describe('UserTripBookingController', () => {
 
     beforeEach(() => {
       jest.spyOn(Interactions, 'sendPostDestinationMessage').mockResolvedValue();
-      jest.spyOn(Cache, 'fetch').mockResolvedValue({ pickup: 'kigali', othersPickup: null });
+      jest.spyOn(Cache, 'fetch').mockResolvedValue({ pickup: 'kigali', othersPickup: null, homeBaseName: 'Kampala' });
     });
 
     it('should save destination details', async () => {

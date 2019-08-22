@@ -16,6 +16,14 @@ export const TRIP_LIST_TYPE = Object.freeze({
   UPCOMING: 'upcoming'
 });
 
+export const HOMEBASE_NAMES = Object.freeze({
+  KAMPALA: 'Kampala',
+  NAIROBI: 'Nairobi',
+  KIGALI: 'Kigali',
+  CAIRO: 'Cario',
+  LAGOS: 'Lagos'
+});
+
 export const DEFAULT_LOCATIONS = [
   {
     longitude: 36.9260693,
@@ -65,6 +73,61 @@ export const DEFAULT_LOCATIONS = [
     createdAt: '2019-05-08 10:00:00.326000',
     updatedAt: '2019-05-08 10:00:00.006000'
   },
+
+  {
+    longitude: 32.626282,
+    latitude: 0.379828,
+    createdAt: '2019-05-08 10:00:00.326000',
+    updatedAt: '2019-05-08 10:00:00.006000'
+  },
+  {
+    longitude: 32.443930,
+    latitude: 0.045382,
+    createdAt: '2019-05-08 10:00:00.326000',
+    updatedAt: '2019-05-08 10:00:00.006000'
+  },
+  {
+    longitude: 32.592348,
+    latitude: 0.299964,
+    createdAt: '2019-05-08 10:00:00.326000',
+    updatedAt: '2019-05-08 10:00:00.006000'
+  },
+  {
+    longitude: 32.5893855,
+    latitude: 0.3427609,
+    createdAt: '2019-05-08 10:00:00.326000',
+    updatedAt: '2019-05-08 10:00:00.006000'
+  },
+  {
+    longitude: 32.5826399,
+    latitude: -0.3251655,
+    createdAt: '2019-05-08 10:00:00.326000',
+    updatedAt: '2019-05-08 10:00:00.006000'
+  },
+  {
+    longitude: 32.5944254,
+    latitude: 0.3636539,
+    createdAt: '2019-05-08 10:00:00.326000',
+    updatedAt: '2019-05-08 10:00:00.006000'
+  },
+  {
+    longitude: 32.611807,
+    latitude: -0.3166228,
+    createdAt: '2019-05-08 10:00:00.326000',
+    updatedAt: '2019-05-08 10:00:00.006000'
+  },
+  {
+    longitude: 32.5727795,
+    latitude: 0.3189207,
+    createdAt: '2019-05-08 10:00:00.326000',
+    updatedAt: '2019-05-08 10:00:00.006000'
+  },
+  {
+    longitude: 32.5888808,
+    latitude: 0.320358,
+    createdAt: '2019-05-08 10:00:00.326000',
+    updatedAt: '2019-05-08 10:00:00.006000'
+  },
 ];
 
 export const DEFAULT_ADDRESSES = [
@@ -107,7 +170,54 @@ export const DEFAULT_ADDRESSES = [
     address: 'Lymack Suites',
     createdAt: '2019-04-09',
     updatedAt: '2019-05-08 10:00:00.326000'
-  }
+  },
+
+  {
+    address: 'Najjera',
+    createdAt: '2019-04-09',
+    updatedAt: '2019-05-08 10:00:00.326000'
+  },
+  {
+    address: 'Entebbe Airport',
+    createdAt: '2019-04-09',
+    updatedAt: '2019-05-08 10:00:00.326000'
+  },
+  {
+    address: 'US Embassy Kampala',
+    createdAt: '2019-04-09',
+    updatedAt: '2019-05-08 10:00:00.326000'
+  },
+  {
+    address: 'Andela Kampala',
+    createdAt: '2019-04-09',
+    updatedAt: '2019-05-08 10:00:00.326000'
+  },
+  {
+    address: 'Golden Tulip',
+    createdAt: '2019-04-09',
+    updatedAt: '2019-05-08 10:00:00.326000'
+  },
+  {
+    address: 'Kisasi',
+    createdAt: '2019-04-09',
+    updatedAt: '2019-05-08 10:00:00.326000'
+  },
+  {
+    address: 'Fusion Arena',
+    createdAt: '2019-04-09',
+    updatedAt: '2019-05-08 10:00:00.326000'
+  },
+  {
+    address: 'Watoto Church',
+    createdAt: '2019-04-09',
+    updatedAt: '2019-05-08 10:00:00.326000'
+  },
+  {
+    address: 'Garden City',
+    createdAt: '2019-04-09',
+    updatedAt: '2019-05-08 10:00:00.326000'
+  },
+
 ];
 
 export const providerErrorMessage = ':warning:Unsuccessful request. None of the available providers has a cab and a driver. '

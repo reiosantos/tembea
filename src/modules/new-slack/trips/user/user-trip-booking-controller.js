@@ -16,6 +16,7 @@ import ScheduleTripController from '../../../slack/TripManagement/ScheduleTripCo
 import { bugsnagHelper } from '../../../slack/RouteManagement/rootFile';
 import Validators from './validators';
 import InteractivePromptSlackHelper from '../../../slack/helpers/slackHelpers/InteractivePromptSlackHelper';
+import UserService from '../../../../services/UserService';
 
 export default class UserTripBookingController {
   static startTripBooking(payload, respond) {
@@ -63,10 +64,12 @@ export default class UserTripBookingController {
 
   static async saveDepartment(payload) {
     const { value, text } = payload.actions[0];
+    const { Homebase: { name } } = await UserService.getUserBySlackId(payload.user.id);
+    await Cache.save(getTripKey(payload.user.id), 'homeBaseName', name);
     await Cache.save(getTripKey(payload.user.id), 'departmentId', value);
     await Cache.save(getTripKey(payload.user.id), 'department', text.text);
     const state = { origin: payload.response_url };
-    const fields = await NewSlackHelpers.getPickupFields();
+    const fields = await NewSlackHelpers.getPickupFields(name);
     await Interactions.sendDetailsForm(payload, state, {
       title: 'Pickup Details',
       submitLabel: 'Submit',
@@ -89,7 +92,8 @@ export default class UserTripBookingController {
 
   static async sendDestinations(payload) {
     const state = { origin: payload.response_url };
-    const fields = await NewSlackHelpers.getDestinationFields();
+    const { homeBaseName } = await Cache.fetch(getTripKey(payload.user.id));
+    const fields = await NewSlackHelpers.getDestinationFields(homeBaseName);
     await Interactions.sendDetailsForm(payload, state, {
       title: 'Destination Details',
       submitLabel: 'Submit',

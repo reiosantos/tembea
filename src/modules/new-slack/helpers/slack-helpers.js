@@ -9,10 +9,11 @@ import {
   SlackDialogText
 } from '../../slack/SlackModels/SlackDialogModels';
 import { toLabelValuePairs, dateHint } from '../../../helpers/slack/createTripDetailsForm';
-import { pickupLocations } from '../../../utils/data';
+import { kampalaPickUpLocations, pickupLocations } from '../../../utils/data';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
 import Cache from '../../../cache';
 import userTripActions from '../trips/user/actions';
+import { HOMEBASE_NAMES } from '../../../helpers/constants';
 
 
 export const sectionDivider = new Block(BlockTypes.divider);
@@ -71,8 +72,9 @@ export default class NewSlackHelpers {
       }));
   }
 
-  static async getPickupFields() {
-    const locations = toLabelValuePairs(pickupLocations);
+  static async getPickupFields(homeBaseName) {
+    const locations = homeBaseName === HOMEBASE_NAMES.NAIROBI ? toLabelValuePairs(pickupLocations)
+      : toLabelValuePairs(kampalaPickUpLocations);
     const pickupField = new SlackDialogSelectElementWithOptions('Pickup location',
       'pickup', locations);
 
@@ -89,8 +91,9 @@ export default class NewSlackHelpers {
     ];
   }
 
-  static async getDestinationFields() {
-    const locations = toLabelValuePairs(pickupLocations);
+  static async getDestinationFields(homeBaseName) {
+    const locations = homeBaseName === HOMEBASE_NAMES.NAIROBI ? toLabelValuePairs(pickupLocations)
+      : toLabelValuePairs(kampalaPickUpLocations);
     const destinationField = new SlackDialogSelectElementWithOptions('Destination location',
       'destination', locations);
 

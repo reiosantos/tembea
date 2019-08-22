@@ -187,8 +187,8 @@ class NotificationsResponse {
     const isApproved = await SlackHelpers.isRequestApproved(trip.id);
 
     return `Your request from *${pickup.address}* to *${destination.address
-      }* has been approved by ${isApproved.approvedBy
-      }. The request has now been forwarded to the operations team for confirmation.`;
+    }* has been approved by ${isApproved.approvedBy
+    }. The request has now been forwarded to the operations team for confirmation.`;
   }
 }
 

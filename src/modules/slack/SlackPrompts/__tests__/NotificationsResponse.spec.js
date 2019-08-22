@@ -75,8 +75,8 @@ describe('Notifications Response Test', () => {
       destination: { address: 'testAddress' }
     };
     const messageHeader = `Your request from *${trip.pickup.address}* to *${trip.destination.address
-      }* has been approved by ${isApproved.approvedBy
-      }. The request has now been forwarded to the operations team for confirmation.`;
+    }* has been approved by ${isApproved.approvedBy
+    }. The request has now been forwarded to the operations team for confirmation.`;
 
     SlackHelpers.isRequestApproved = jest.fn(() => isApproved);
     const result = await NotificationsResponse.getMessageHeader(trip);
