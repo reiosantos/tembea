@@ -19,7 +19,7 @@ class ProviderController {
     const { headers: { homebaseid } } = req;
     try {
       const { provider, isNewProvider } = await ProviderService.createProvider(
-        { ...providerData, homebaseid }
+        { ...providerData, homebaseId: homebaseid }
       );
       if (isNewProvider) {
         delete provider.deletedAt;

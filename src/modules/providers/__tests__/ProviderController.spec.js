@@ -114,7 +114,7 @@ describe('ProviderController', () => {
       res.locals = { providerData };
       await ProviderController.addProvider(req, res);
       expect(ProviderService.createProvider)
-        .toHaveBeenCalledWith({ ...providerData, homebaseid });
+        .toHaveBeenCalledWith({ ...providerData, homebaseId: homebaseid });
       expect(res.status)
         .toHaveBeenCalledWith(201);
       expect(res.json)
@@ -130,7 +130,7 @@ describe('ProviderController', () => {
       providerSpy.mockResolvedValue(mockExistingProvider);
       await ProviderController.addProvider(req, res);
       expect(ProviderService.createProvider)
-        .toHaveBeenCalledWith({ ...providerData, homebaseid });
+        .toHaveBeenCalledWith({ ...providerData, homebaseId: homebaseid });
       expect(res.status)
         .toHaveBeenCalledWith(409);
       expect(res.json)
