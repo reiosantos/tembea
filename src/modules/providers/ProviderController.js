@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import ProviderService from '../../services/ProviderService';
 import HttpError from '../../helpers/errorHandler';
 import bugsnagHelper from '../../helpers/bugsnagHelper';
@@ -46,7 +47,7 @@ class ProviderController {
       size = size || defaultSize;
       name = name && name.trim();
       const where = name ? {
-        name: { $iLike: `%${name}%` }
+        name: { [Op.iLike]: `%${name}%` }
       } : null;
       const pageable = { page, size };
       const providersData = await ProviderService.getProviders(pageable, where);
