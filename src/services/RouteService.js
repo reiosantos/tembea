@@ -315,7 +315,7 @@ class RouteService extends BaseService {
     return RouteService.defaultInclude;
   }
 
-  static async RouteRatings(from, to) {
+  static async RouteRatings(from, to, homebaseId) {
     const previousMonthStart = moment().subtract(1, 'months').date(1).format('YYYY-MM-DD');
     const previousMonthEnd = moment().subtract(1, 'months').endOf('month')
       .format('YYYY-MM-DD');
@@ -324,12 +324,16 @@ class RouteService extends BaseService {
       RB.id As "RouteBatchID", RB.batch As "RouteBatchName", R.name As "Route", R.id As "RouteID",
       RUR."batchUseDate" FROM "BatchUseRecords" AS BUR
       INNER JOIN "RouteUseRecords" AS RUR ON BUR."batchRecordId" = RUR.id
-      INNER JOIN "RouteBatches" AS RB ON RUR."batchId" = RB.id
+      INNER JOIN "RouteBatches" AS RB ON RUR."batchId" = RB.id AND RB."homebaseId" = ${homebaseId}
       INNER JOIN "Routes" AS R ON RB."routeId" = R.id
       WHERE BUR.rating IS NOT NULL
       `;
-    const filterByDate = ` AND RUR."batchUseDate" >= '${from || previousMonthStart}'
-    AND RUR."batchUseDate" <= '${to || previousMonthEnd}'`;
+      /* Wrapping date columns with "DATE" ensures that our query doesn't fail if time is not provided
+      so date in format "2019-08-28T17:17:58.891Z" or "2019-08-28" works fine.
+      Reference: https://tableplus.com/blog/2018/07/postgresql-how-to-extract-date-from-timestamp.html
+      */
+    const filterByDate = ` AND DATE(RUR."batchUseDate") >= '${from || previousMonthStart}'
+    AND DATE(RUR."batchUseDate") <= '${to || previousMonthEnd}'`;
     query += filterByDate;
     const results = await sequelize.query(query);
     return results;

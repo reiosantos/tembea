@@ -40,7 +40,8 @@ class RoutesUsageController {
   static async getRouteRatings(req, res) {
     try {
       const { from, to } = req.query;
-      const data = await RouteService.RouteRatings(from, to);
+      const { homebaseid } = req.headers;
+      const data = await RouteService.RouteRatings(from, to, homebaseid);
       const groupedData = groupArray(data[0], 'Route', 'RouteBatchName');
       const routeAverageRatings = [];
       Object.values(groupedData).forEach((route) => {

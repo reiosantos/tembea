@@ -268,3 +268,10 @@ export const tripTypeSchema = Joi.object().keys({
     .regex(Stringregex)
     .error(() => 'tripType must be either Embassy Visit, Airport Transfer or Regular Trip'),
 });
+  
+/* The "and" in this validation makes sure that both "from" and "to" fields are
+ supplied or none is supplied. In which case, it it will load data from the previous month. */
+export const routeUsageDateSchema = Joi.object().keys({
+  from: Joi.date().iso().label('from'),
+  to: Joi.date().iso().min(Joi.ref('from')),
+}).and('from', 'to');

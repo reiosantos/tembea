@@ -72,6 +72,7 @@ routesRouter.get(
 
 routesRouter.get(
   '/routes/ratings',
+  RouteRequestValidator.validateRatingsStartEndDateAndLocalCountry,
   RoutesUsageController.getRouteRatings
 );
 

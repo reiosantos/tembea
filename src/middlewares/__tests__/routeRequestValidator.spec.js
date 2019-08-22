@@ -27,6 +27,15 @@ describe('RouteRequestValidator', () => {
       expect(next).toHaveBeenCalledTimes(0);
     });
 
+    it('should return status 400 requesting for URL query', () => {
+      const req = {};
+
+      RouteRequestValidator.validateRatingsStartEndDateAndLocalCountry(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(next).toHaveBeenCalledTimes(0);
+    });
+
     it('should respond with invalid slackURL', () => {
       const req = {
         params: {

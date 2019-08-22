@@ -438,7 +438,10 @@ describe('RoutesController', () => {
         })).mockReturnValue({ json: jest.fn() })
       };
       req = {
-        query: { from: '2019-10-11', to: '2019-11-22' }
+        query: { from: '2019-08-20T07:44:03.574Z', to: '2019-08-20T07:44:03.574Z' },
+        headers: {
+          homebaseid: 3
+        }
       };
     });
     it('should return ratings', async () => {
@@ -465,15 +468,33 @@ describe('RoutesController', () => {
 
     it('should get all ratings from end point', (done) => {
       request(app)
-        .get('/api/v1/routes/ratings/')
+        .get('/api/v1/routes/ratings?from=2019-08-20T07:44:03.574Z&to=2019-08-20T07:44:03.574Z')
         .set('Content-Type', 'application/json')
         .set('Authorization', validToken)
+        .set('homebaseid', 3)
         .expect(200, (err, resp) => {
           const { status, body } = resp;
           expect(status).toEqual(200);
           expect(body).toHaveProperty('success');
           expect(body).toHaveProperty('message');
           expect(body).toHaveProperty('data');
+          done();
+        });
+    });
+
+    it('should should return failure response that demands ratings query URL', (done) => {
+      // I pass in invalid query parameter
+      request(app)
+        .get('/api/v1/routes/ratings?from=201908-20T07:44:03.574Z&to=20190820T07:44:03.574Z')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', validToken)
+        .set('homebaseid', 3)
+        .expect(400, (err, resp) => {
+          const { status, body } = resp;
+          expect(status).toEqual(400);
+          expect(body).toHaveProperty('success');
+          expect(body).toHaveProperty('message');
+          expect(body.success).toEqual(false);
           done();
         });
     });
