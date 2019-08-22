@@ -211,7 +211,7 @@ class RoutesController {
     }
   }
 
-  static async checkCurrentApprovalStatus(routeRequest, res) {
+  static checkCurrentApprovalStatus(routeRequest, res) {
     if (!routeRequest) {
       return Response.sendResponse(res, 404, false, 'Route request not found.');
     }

@@ -75,6 +75,7 @@ const ViableProviderSchema = Joi.object().keys({
   channelId: Joi.string().allow(null).optional(),
   vehicles: Joi.array(),
   drivers: Joi.array(),
+  homebaseId: Joi.number(),
   user: Joi.object().keys({
     name: Joi.string().trim(),
     phoneNo: Joi.string().trim().allow(null).optional(),

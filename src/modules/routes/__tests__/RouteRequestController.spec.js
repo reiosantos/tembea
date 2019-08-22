@@ -64,16 +64,12 @@ describe('RoutesController', () => {
   };
 
   describe('updateRouteRequestStatus', () => {
-<<<<<<< HEAD
     let res;
-=======
-    let req;
-    const res = {
+    res = {
       status: () => ({
         json: () => {}
       })
     };
->>>>>>> TEM-295-story: add homebase reference to specific models
 
     beforeEach(() => {
       jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl')
@@ -102,7 +98,6 @@ describe('RoutesController', () => {
         .mockResolvedValue(confirmedRouteRequest);
       jest.spyOn(RouteHelper, 'updateRouteRequest').mockResolvedValue(approvedRouteRequest);
       await RoutesController.updateRouteRequestStatus(approveReq, res);
-<<<<<<< HEAD
 
       expect(RoutesController.completeRouteApproval).toHaveBeenCalledWith(
         expect.any(Object), expect.any(Object), expect.any(String), expect.any(String)
@@ -120,62 +115,7 @@ describe('RoutesController', () => {
         res, 404, false, 'Route request not found.'
       );
       done();
-=======
-      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(BugsnagHelper.log).toHaveBeenCalled();
     });
-
-    it('should change the status of the route request to declined', async () => {
-      req = {
-        ...req,
-        currentUser: {
-          userInfo: {
-            email: 'emma.ogwal@andela.com',
-          }
-        }
-      };
-      jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
-        dataValues: {
-          status: 'Confirmed'
-        },
-        status: 'Confirmed'
-      }));
-      jest.spyOn(UserService, 'getUserByEmail').mockResolvedValue({ id: 9, name: 'John smith', homebaseId: 1 });
-      jest.spyOn(RoutesController, 'getUpdatedRouteRequest').mockImplementation(() => ({ status: 'Declined' }));
-      await RoutesController.updateRouteRequestStatus(declineReq, res);
-
-      expect(RouteRequestService.getRouteRequest).toHaveBeenCalled();
-      expect(RoutesController.getUpdatedRouteRequest).toHaveBeenCalled();
-      expect(RoutesController.sendDeclineNotificationToFellow).toHaveBeenCalled();
-    });
-
-    it('should change the status of the route request to approved', async () => {
-      req = {
-        ...req,
-        currentUser: {
-          userInfo: {
-            email: 'emma.ogwal@andela.com',
-          }
-        }
-      };
-      const eventsMock = jest.spyOn(SlackEvents, 'raise').mockImplementation();
-      jest.spyOn(RouteRequestService, 'getRouteRequest').mockImplementation(() => ({
-        dataValues: {
-          status: 'Confirmed'
-        },
-        status: 'Confirmed'
-      }));
-      jest.spyOn(UserService, 'getUserByEmail').mockResolvedValue({ id: 9, name: 'John smith', homebaseId: 1 });
-      jest.spyOn(RoutesController, 'getUpdatedRouteRequest').mockImplementation(() => ({ status: 'Approved' }));
-
-      await RoutesController.updateRouteRequestStatus(approveReq, res);
-      expect(RouteRequestService.getRouteRequest).toHaveBeenCalled();
-      expect(RoutesController.getUpdatedRouteRequest).toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(201);
-      expect(eventsMock).toHaveBeenCalled();
->>>>>>> TEM-295-story: add homebase reference to specific models
-    });
-
     it('should handle error when route request is already approved', async (done) => {
       jest.spyOn(RouteRequestService, 'getRouteRequestByPk')
         .mockResolvedValue(approvedRouteRequest);
