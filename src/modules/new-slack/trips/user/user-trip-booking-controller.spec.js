@@ -221,11 +221,19 @@ describe('UserTripBookingController', () => {
     });
 
     it('should fail to save destination when input is empty', async () => {
-      const tPayload = { ...newPayload };
-      tPayload.submission.destination = '';
-      const result = await UserTripBookingController.saveDestination(tPayload);
+      const tripPayload = { ...newPayload };
+      tripPayload.submission.destination = '';
+      const result = await UserTripBookingController.saveDestination(tripPayload);
       expect(result.errors).toBeDefined();
       expect(result.errors[0].error).toBe('"destination" is not allowed to be empty');
+    });
+
+    it('should fail to save when the trip has both origin and destination as one location', async () => {
+      const tripPayload = { ...newPayload };
+      tripPayload.submission.destination = 'kigali';
+      const result = await UserTripBookingController.saveDestination(tripPayload);
+      expect(result.errors).toBeDefined();
+      expect(result.errors[0].error).toBe('Destination cannot be the same as origin');
     });
 
     it('should send post destination message if no submission', async () => {

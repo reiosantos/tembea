@@ -20,11 +20,25 @@ export const userTripPickupSchema = Joi.object().keys({
   })
 });
 
+const customDestinationError = errors => errors.map((error) => {
+  if (error.type === 'any.invalid') {
+    Object.defineProperty(error, 'message', {
+      enumerable: true,
+      writable: true,
+      value: 'Destination cannot be the same as origin'
+    });
+  }
+  return error;
+});
+
+const destinationValidator = pickUp => Joi.string().required().invalid(pickUp)
+  .error(customDestinationError, { self: true });
+
 export const createUserDestinationSchema = pickUp => Joi.object().keys({
-  destination: Joi.string().required().invalid(pickUp),
+  destination: destinationValidator(pickUp),
   othersDestination: Joi.string().when('destination', {
     is: 'Others',
-    then: Joi.string().required().invalid(pickUp),
+    then: destinationValidator(pickUp),
     otherwise: Joi.string().valid(null)
   })
 });
