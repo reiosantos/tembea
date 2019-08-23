@@ -4,6 +4,7 @@ import GoogleMapsDistanceMatrix from '../../services/googleMaps/GoogleMapsDistan
 import GoogleMapsReverseGeocode from '../../services/googleMaps/GoogleMapsReverseGeocode';
 import AddressService from '../../services/AddressService';
 import env from '../../config/environment';
+import { LOCATION_CORDINATES } from '../constants';
 
 export class Marker {
   /**
@@ -104,9 +105,9 @@ export class GoogleMapsLocationSuggestionOptions {
    * @returns {object} Parameters needed to get map suggestions and session token
    * @memberof RoutesHelper
    */
-  constructor(input, location = '-1.219539, 36.886215', radius = 15000, strictBounds = true) {
+  constructor(input, location, radius = 15000, strictBounds = true) {
     this.input = input;
-    this.location = location;
+    this.location = location || LOCATION_CORDINATES.NAIROBI;
     this.radius = radius;
     this.strictbounds = strictBounds;
     this.sessiontoken = GoogleMapsClient.util.placesAutoCompleteSessionToken();

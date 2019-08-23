@@ -31,8 +31,8 @@ export const kampalaPickUpLocations = [
   'Golden Tulip',
   'Andela Staff Apartments',
   'Watoto Church',
-  'Fusion Arena'
-
+  'Fusion Arena',
+  'Others'
 ];
 export const kampalaDestinationLocations = [
   'Najjera',
@@ -43,7 +43,8 @@ export const kampalaDestinationLocations = [
   'Golden Tulip',
   'Andela Staff Apartments',
   'Watoto Church',
-  'Fusion Arena'
+  'Fusion Arena',
+  'Others'
 ];
 export const extraTravelOptions = ['To Be Decided'];
 

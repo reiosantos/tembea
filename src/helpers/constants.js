@@ -16,6 +16,11 @@ export const TRIP_LIST_TYPE = Object.freeze({
   UPCOMING: 'upcoming'
 });
 
+export const LOCATION_CORDINATES = Object.freeze({
+  NAIROBI: '-1.219539, 36.886215',
+  KAMPALA: '0.320358, 32.5888808'
+});
+
 export const HOMEBASE_NAMES = Object.freeze({
   KAMPALA: 'Kampala',
   NAIROBI: 'Nairobi',

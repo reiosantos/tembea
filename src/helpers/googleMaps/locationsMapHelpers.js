@@ -14,6 +14,7 @@ import { SlackInteractiveMessage } from '../../modules/slack/SlackModels/SlackMe
 import GoogleMapsError from './googleMapsError';
 import { getTravelKey } from '../../modules/slack/helpers/slackHelpers/TravelTripHelper';
 import InteractivePromptSlackHelper from '../../modules/slack/helpers/slackHelpers/InteractivePromptSlackHelper';
+import { HOMEBASE_NAMES, LOCATION_CORDINATES } from '../constants';
 
 
 export default class LocationHelpers {
@@ -63,8 +64,8 @@ export default class LocationHelpers {
     });
   }
 
-  static async getPredictionsOnMap(location) {
-    const predictions = await LocationHelpers.getLocationPredictions(location);
+  static async getPredictionsOnMap(location, homebaseName) {
+    const predictions = await LocationHelpers.getLocationPredictions(location, homebaseName);
     if (predictions && predictions.length > 0) {
       const markers = predictions.map((prediction, index) => LocationHelpers.getMarker(
         prediction.description, `${index + 1}`
@@ -76,9 +77,11 @@ export default class LocationHelpers {
     return false;
   }
 
-  static async getLocationPredictions(location) {
+  static async getLocationPredictions(location, homebaseName) {
     try {
-      const locations = new GoogleMapsLocationSuggestionOptions(location);
+      const locationCoordinates = homebaseName === HOMEBASE_NAMES.KAMPALA
+        ? LOCATION_CORDINATES.KAMPALA : LOCATION_CORDINATES.NAIROBI;
+      const locations = new GoogleMapsLocationSuggestionOptions(location, locationCoordinates);
       const { predictions } = await GoogleMapsSuggestions.getPlacesAutoComplete(locations);
       return predictions;
     } catch {

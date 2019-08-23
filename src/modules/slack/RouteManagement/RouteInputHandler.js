@@ -23,12 +23,15 @@ import LocationMapHelper from '../../../helpers/googleMaps/locationsMapHelpers';
 import { getFellowEngagementDetails } from '../helpers/formHelper';
 import InteractivePromptSlackHelper from '../helpers/slackHelpers/InteractivePromptSlackHelper';
 import UpdateSlackMessageHelper from '../../../helpers/slack/updatePastMessageHelper';
+import { LOCATION_CORDINATES } from '../../../helpers/constants';
 
 const RouteInputHandlers = {
   home: async (payload, respond) => {
     try {
       const { submission: { location: locationSearchString } } = payload;
-      const locationPredictions = new GoogleMapsLocationSuggestionOptions(locationSearchString);
+      const locationPredictions = new GoogleMapsLocationSuggestionOptions(
+        locationSearchString, LOCATION_CORDINATES.NAIROBI
+      );
 
       const {
         predictions: predictedPlacesResults

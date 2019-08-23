@@ -6,6 +6,7 @@ import LocationHelpers from '../../../helpers/googleMaps/locationsMapHelpers';
 import { Cache, AddressService } from '../../slack/RouteManagement/rootFile';
 import { getTripKey } from '../../../helpers/slack/ScheduleTripInputHandlers';
 import GoogleMapsReverseGeocode from '../../../services/googleMaps/GoogleMapsReverseGeocode';
+import UserService from '../../../services/UserService';
 
 export const getPredictionsKey = userId => `TRIP_LOCATION_PREDICTIONS_${userId}`;
 
@@ -20,7 +21,7 @@ export default class NewLocationHelpers {
     const mapBlock = new Block(BlockTypes.actions, selectBlockId);
     const selectPlace = new SelectElement(ElementTypes.staticSelect,
       'Select the nearest location', selectActionId);
-    
+
     const places = NewSlackHelpers.toSlackDropdown(details.predictions, {
       text: 'description', value: 'description'
     });
@@ -37,8 +38,9 @@ export default class NewLocationHelpers {
   }
 
   static async getLocationVerificationMsg(location, userId, options) {
+    const { Homebase: { name } } = await UserService.getUserBySlackId(userId);
     const final = {};
-    const details = await LocationHelpers.getPredictionsOnMap(location);
+    const details = await LocationHelpers.getPredictionsOnMap(location, name);
     if (!details) {
       return false;
     }

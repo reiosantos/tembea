@@ -1,9 +1,11 @@
+import UserService from '../../../services/UserService';
 import LocationHelpers from '../../../helpers/googleMaps/locationsMapHelpers';
 import { Cache } from '../../slack/RouteManagement/rootFile';
 import NewLocationHelpers from './location-helpers';
 import { getTripKey } from '../../../helpers/slack/ScheduleTripInputHandlers';
 
 describe('getLocationVerificationMsg', () => {
+  jest.spyOn(UserService, 'getUserBySlackId').mockReturnValue({ Homebase: { name: 'Kampala' } });
   it('should get verfication message', async () => {
     const details = {
       url: 'fakeUrl',
