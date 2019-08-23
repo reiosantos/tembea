@@ -10,7 +10,6 @@ const server = http.createServer(app);
 
 // create super admin method
 startUpHelper.ensureSuperAdminExists();
-startUpHelper.addDefaultAddresses();
 
 server.listen(environment.PORT, async () => {
   app.set('host', `http://localhost:${environment.PORT}`);

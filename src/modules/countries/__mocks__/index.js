@@ -84,14 +84,14 @@ export const mockExistingCountry = {
   ],
   isNewCountry: false
 };
-export const mockCountry = {
-  name: 'Nigeria'
+export const mockCreateCountry = {
+  name: 'Create Country'
 };
-export const mockCountry2 = {
-  name: 'United States of America'
+export const mockDeleteCountry = {
+  name: 'Ghana'
 };
 
 export const mockUpdateCountry = {
-  name: 'Nigeria',
-  newName: 'Niger'
+  name: 'Create Country',
+  newName: 'Ghana'
 };

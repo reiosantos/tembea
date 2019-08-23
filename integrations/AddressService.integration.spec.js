@@ -40,10 +40,13 @@ describe('AddressService', () => {
   });
 
   describe('findCoordinatesByAddress', () => {
-    it('should get address but no location', async () => {
-      const result = await AddressService.findCoordinatesByAddress('dummy');
-      expect(result.address).toEqual('dummy');
-      expect(result.locationId).toBeNull();
+    it('should get address by location', async () => {
+      const {
+        address, location: { longitude, latitude }
+      } = await AddressService.findCoordinatesByAddress('Andela, Nairobi');
+      expect(address).toEqual('Andela, Nairobi');
+      expect(longitude).toEqual(100);
+      expect(latitude).toEqual(180);
     });
   });
 });

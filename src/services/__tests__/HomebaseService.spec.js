@@ -139,7 +139,9 @@ describe('test HomebaseService', () => {
 describe('update HomeBase', () => {
   let mockHomeBase;
   beforeAll(async () => {
-    const mockCountry = await createCountry(faker.address.country().concat('z'));
+    const mockCountry = await createCountry(
+      { name: faker.address.country().concat('z') }
+    );
     mockHomeBase = await HomebaseService.createHomebase(
       faker.address.city().concat('z'),
       mockCountry.id,

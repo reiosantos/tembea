@@ -2,9 +2,10 @@ const createHomebaseQuery = ({ country, homebase }) => `
   DO $$
   DECLARE countryId integer;
   BEGIN
-    INSERT INTO "Countries" ("name") VALUES ('${country}');
+    INSERT INTO "Countries" ("name") VALUES ('${country}') ON CONFLICT DO NOTHING;
     SELECT id INTO countryId FROM "Countries" WHERE "name"='${country}';
-    INSERT INTO "Homebases" ("name", "countryId") VALUES ('${homebase}', countryId);
+    INSERT INTO "Homebases" ("name", "countryId") VALUES ('${homebase}', countryId)
+    ON CONFLICT DO NOTHING;
   END $$`;
 
 const homebases = [

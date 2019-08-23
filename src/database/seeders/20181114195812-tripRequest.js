@@ -5,7 +5,7 @@ module.exports = {
       riderId: 1,
       departureTime: new Date('November 16 2018 12:30'),
       originId: 1,
-      destinationId: 2,
+      destinationId: 1,
       requestedById: 1,
       createdAt: '2018-11-14',
       updatedAt: '2018-11-14'
@@ -15,7 +15,7 @@ module.exports = {
       riderId: 2,
       departureTime: new Date('November 16 2018 12:30'),
       originId: 1,
-      destinationId: 2,
+      destinationId: 1,
       requestedById: 1,
       createdAt: '2018-11-14',
       updatedAt: '2018-11-14'

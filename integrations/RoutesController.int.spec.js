@@ -11,7 +11,7 @@ const { RouteRequest, Engagement } = models;
 describe('Route Request Controller', () => {
   let validToken;
   let mockUser;
-  
+
   beforeEach(async () => {
     const { id } = await models.Country.create({
       name: faker.name.findName(),

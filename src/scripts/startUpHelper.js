@@ -2,11 +2,9 @@ import bugsnagHelper from '../helpers/bugsnagHelper';
 import models from '../database/models';
 import RoleService from '../services/RoleService';
 import cache from '../cache';
-import { DEFAULT_LOCATIONS, DEFAULT_ADDRESSES } from '../helpers/constants';
-import LocationService from '../services/LocationService';
 import RouteEventHandlers from '../modules/events/route-event.handlers';
 
-const { User, Address } = models;
+const { User } = models;
 
 class StartUpHelper {
   static async ensureSuperAdminExists() {
@@ -28,7 +26,7 @@ class StartUpHelper {
         where: { email: email2 },
         defaults: { slackId: slackId2, name: StartUpHelper.getUserNameFromEmail(email2) }
       });
-      
+
       const [[user], [user2]] = await Promise.all([user1Promise, user2Promise]);
       const [role] = await RoleService.createOrFindRole('Super Admin');
       await Promise.all([RoleService.findOrCreateUserRole(user.id, role.id, user.homebaseId),
@@ -41,22 +39,6 @@ class StartUpHelper {
 
   static async flushStaleCache() {
     cache.flush();
-  }
-
-  static async addDefaultAddresses() {
-    const opPromises = DEFAULT_LOCATIONS.map(async (loc, index) => {
-      const location = await LocationService.createLocation(loc.longitude, loc.latitude);
-      const address = DEFAULT_ADDRESSES[index];
-      address.locationId = location.id;
-      const existingAddress = await Address.findOne({ where: { address: address.address } });
-      if (existingAddress && existingAddress.dataValues) {
-        return existingAddress.update({
-          locationId: address.locationId
-        });
-      }
-      return Address.create(address);
-    });
-    await Promise.all(opPromises);
   }
 
   static getUserNameFromEmail(email) {
