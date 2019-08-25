@@ -47,7 +47,6 @@ describe('Route Request Controller', () => {
       busStopDistance
     } = mockRouteRequestData;
 
-    await RouteRequest.destroy({ where: {} });
     await RouteRequest.create({
       routeImageUrl,
       managerId: mockUser.id,
@@ -69,7 +68,6 @@ describe('Route Request Controller', () => {
   });
 
   afterAll(async () => {
-    await RouteRequest.destroy({ where: {} });
     models.sequelize.close();
   });
 

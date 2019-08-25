@@ -28,6 +28,8 @@ beforeAll(async () => {
 afterAll(() => {
   models.sequelize.close();
 });
+
+// TODO move all the integration tests to integration folder
 describe('/Departments create', () => {
   it('should return a no user found error with wrong email', async () => {
     await request(app)

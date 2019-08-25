@@ -149,6 +149,25 @@ class SlackInteractionsHelpers {
     }
 
     const [value, tripId] = options;
+    await SlackInteractionsHelpers.handleOpsSelectAction(value, tripId, teamId, channelId, userId,
+      timeStamp, payload, data, respond);
+  }
+
+  static async startProviderActions(data, respond) {
+    const payload = CleanData.trim(data);
+    const action = payload.state || payload.actions[0].value;
+    switch (action.split('_')[0]) {
+      case 'accept':
+        await DialogPrompts.sendSelectCabDialog(payload);
+        break;
+      default:
+        respond(SlackInteractionsHelpers.goodByeMessage());
+        break;
+    }
+  }
+
+  static async handleOpsSelectAction(value, tripId, teamId, channelId, userId, timeStamp, payload,
+    data, respond) {
     const isOpsAssignCab = value === 'assignCab';
     const trip = await tripService.getById(tripId);
     const tripIsCancelled = trip.tripStatus === 'Cancelled';
@@ -164,19 +183,6 @@ class SlackInteractionsHelpers {
     }
     const correctedData = { ...data, actions: [{ ...data.actions[0], value: trip.id }] };
     return SlackInteractions.handleSelectProviderAction(correctedData, respond);
-  }
-
-  static async startProviderActions(data, respond) {
-    const payload = CleanData.trim(data);
-    const action = payload.state || payload.actions[0].value;
-    switch (action.split('_')[0]) {
-      case 'accept':
-        DialogPrompts.sendSelectCabDialog(payload);
-        break;
-      default:
-        respond(SlackInteractionsHelpers.goodByeMessage());
-        break;
-    }
   }
 }
 

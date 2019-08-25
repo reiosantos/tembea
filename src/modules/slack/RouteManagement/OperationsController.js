@@ -172,30 +172,15 @@ class OperationsHandler {
       const { id: opsUserId } = await SlackHelpers.findOrCreateUserBySlackId(userId, teamId);
       const timeStamp = TripHelper.convertApprovalDateFormat(ts);
       const updateTripStatusPayload = OperationsHelper
-        .getUpdateTripStatusPayload(
-          tripId,
-          confirmationComment,
-          opsUserId,
-          timeStamp,
-          cabId,
-          driverId,
-          cab.providerId
-        );
+        .getUpdateTripStatusPayload(tripId, confirmationComment, opsUserId, timeStamp, cabId,
+          driverId, cab.providerId);
 
       const trip = await tripService
         .updateRequest(tripId, updateTripStatusPayload);
       const { rider: { slackId: riderSlackId }, requester: { slackId: requesterSlackId } } = trip;
       TripCompletionJob.createScheduleForATrip(trip);
-      const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-      const tripInformation = { ...trip, cab, driver };
-      const driverDetails = `,${driver.driverName},${driver.driverPhoneNo}`;
-      const message = 'Thank you for completing this trip request';
-      const tripDetailsAttachment = OperationsHelper.getTripDetailsAttachment(tripInformation,
-        driverDetails);
-      InteractivePrompts.messageUpdate(channel.id, message, ts, [tripDetailsAttachment],
-        slackBotOauthToken);
-      OperationsHelper.sendcompleteOpAssignCabMsg(teamId, { requesterSlackId, riderSlackId },
-        tripInformation);
+      await OperationsHandler.sendAssignCabDriverNotifications(teamId, trip, cab, driver,
+        requesterSlackId, riderSlackId, channel, ts);
     } catch (error) { bugsnagHelper.log(error); }
   }
 
@@ -207,6 +192,23 @@ class OperationsHandler {
         new SlackDialogError('driver', error)
       ];
     }
+  }
+
+  static async sendAssignCabDriverNotifications(teamId, trip, cab, driver, requesterSlackId,
+    riderSlackId, channel, ts) {
+    const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+    const tripInformation = { ...trip, cab, driver };
+    const driverDetails = `,${driver.driverName},${driver.driverPhoneNo}`;
+    const message = 'Thank you for completing this trip request';
+    const tripDetailsAttachment = OperationsHelper.getTripDetailsAttachment(tripInformation,
+      driverDetails);
+    await InteractivePrompts.messageUpdate(channel.id, message, ts, [tripDetailsAttachment],
+      slackBotOauthToken);
+    await OperationsHelper.sendcompleteOpAssignCabMsg(teamId, {
+      requesterSlackId,
+      riderSlackId
+    },
+    tripInformation);
   }
 }
 

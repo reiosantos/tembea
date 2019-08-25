@@ -8,7 +8,7 @@ describe('Department Validator', () => {
     res = {
       status: jest.fn(() => ({
         json: jest.fn()
-      }))
+      })).mockReturnValue({ json: jest.fn() })
     };
     next = jest.fn();
   });
@@ -104,15 +104,14 @@ describe('Department Validator', () => {
 
   describe('validateDepartmentIdQueryParam', () => {
     const req = { params: { id: 'uhg' } };
-    beforeEach(() => {
-      jest.restoreAllMocks();
-      jest.resetAllMocks();
-    });
-
     it('should throw an error if invalid department id is provided', () => {
+      jest.spyOn(HttpError, 'sendErrorResponse');
       DepartmentValidator.validateDepartmentIdQueryParam(req, res, next);
-      expect(HttpError.sendErrorResponse).toHaveBeenCalled();
-      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
+      expect(res.status).toBeCalledWith(400);
+      expect(res.status().json).toHaveBeenCalledWith({
+        message: 'Please provide a positive integer value',
+        success: false
+      });
     });
 
     it('should call next if valid department id is provided', () => {

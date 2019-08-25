@@ -24,12 +24,14 @@ describe('Team details service', () => {
     });
   });
 
-  it('should fetch team details from DB', async () => {
+  it('should fetch team details from DB', async (done) => {
+    jest.spyOn(TeamDetails, 'findByPk').mockReturnValue({ teamId: 'TEAMID1', teamName: 'Team 1' });
     const teamDetails = await TeamDetailsService.getTeamDetails('TEAMID1');
 
     expect(teamDetails.teamId).toEqual('TEAMID1');
     expect(teamDetails.teamName).toEqual('Team 1');
     expect(cache.saveObject.mock.calls.length).toEqual(1);
+    done();
   });
 
   it('should throw a db error', async () => {

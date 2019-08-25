@@ -11,6 +11,13 @@ const {
   Department, User, TripRequest, Country
 } = models;
 const getDeptKey = id => `dept_${id}`;
+const userInclude = {
+  model: User,
+  as: 'head',
+  required: true,
+  attributes: ['name', 'email'],
+  where: { }
+};
 export const departmentDataAttributes = {
   attributes: [
     'departmentId',
@@ -60,31 +67,17 @@ class DepartmentService {
       const department = await Department.update(
         {
           name, homebaseId, headId, location
-        },
-        { returning: true, where: { id } }
-
+        }, { returning: true, where: { id } }
       );
       HttpError.throwErrorIfNull(department[1].length,
         'Department not found. To add a new department use POST /api/v1/departments');
-
       const [, [{ id: departmentId, headId: dbHeadId }]] = department;
+      userInclude.where.id = dbHeadId;
       const newDepartmentRecords = await Department.findOne({
         where: { id: departmentId },
-        include: [{
-          model: User,
-          as: 'head',
-          required: true,
-          attributes: ['name', 'email'],
-          where: { id: dbHeadId }
-        }],
-        attributes: [
-          'id',
-          'name',
-          'location'
-        ]
-
+        include: [userInclude],
+        attributes: ['id', 'name', 'location']
       });
-
       return newDepartmentRecords;
     } catch (error) {
       if (error instanceof HttpError) throw error;

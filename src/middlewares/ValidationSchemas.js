@@ -159,14 +159,14 @@ export const newProviderSchema = Joi.object().keys({
 
 export const newHomeBaseSchema = Joi.object().keys({
   homebaseName: Joi.string().trim().required(),
-  countryId: Joi.number().required().required(),
+  countryId: Joi.number().required(),
   channel: Joi.string().trim().required()
 }).min(3).max(3);
 
 export const updateHomeBaseSchema = Joi.object().keys({
+  countryId: Joi.number().optional(),
   homebaseName: Joi.string().trim().optional(),
-  countryId: Joi.number().required().optional(),
-  channel: Joi.string().trim().optional()
+  channel: Joi.string().trim().optional(),
 }).min(1);
 
 export const newDriverSchema = Joi.object().keys({
@@ -196,6 +196,7 @@ export const updateDepartmentSchema = Joi.object().keys({
     .optional(),
   homebaseId: Joi.number().optional(),
   headId: Joi.number().optional(),
+  id: Joi.number()
 }).min(1);
 
 export const deleteDepartmentSchema = Joi.object().keys({

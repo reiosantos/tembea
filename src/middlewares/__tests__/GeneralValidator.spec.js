@@ -226,7 +226,7 @@ describe('General Validator', () => {
       req = {
         params: { id: 4 },
       };
-      GeneralValidator.validateRouteId(req, res, next);
+      GeneralValidator.validateIdParam(req, res, next);
       expect(next).toBeCalled();
     });
     it('should return 400 if params is not a number', () => {
@@ -235,7 +235,7 @@ describe('General Validator', () => {
           id: 'mbsh'
         }
       };
-      const result = GeneralValidator.validateRouteId(req, res, next);
+      const result = GeneralValidator.validateIdParam(req, res, next);
       const str = 'Please provide a positive integer value';
       expect(result.message).toEqual(str);
       expect(result.success).toEqual(false);

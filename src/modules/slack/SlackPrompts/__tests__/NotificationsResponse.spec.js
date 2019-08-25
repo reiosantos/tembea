@@ -111,4 +111,23 @@ describe('Notifications Response Test', () => {
 
     expect(result).toEqual(objectFromNewInstance);
   });
+
+  it('should show confirm options if homebase is not Kampala', async () => {
+    jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockReturnValue({ name: 'Nairobi' });
+    const response = await NotificationsResponse.getOpsSelectAction(1, 1, []);
+    expect(response.text).toEqual('Confirm request options');
+  });
+  it('should show Confirm and assign cab and driver if homebase is Kampala', async () => {
+    jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockReturnValue({ name: 'Kampala' });
+    const response = await NotificationsResponse.getOpsSelectAction(1, 1, []);
+    expect(response.text).toEqual('Confirm and assign cab and driver');
+  });
+
+  it('should generateOperationsRequestActions', async () => {
+    jest.spyOn(NotificationsResponse, 'getOpsSelectAction').mockReturnValue({});
+    const options = await NotificationsResponse.generateOperationsRequestActions(1, 'UHFDAA');
+    expect(options).toBeDefined();
+    expect(options).toEqual([{},
+      new SlackModels.SlackButtonAction('declineRequest', 'Decline', 1, 'danger')]);
+  });
 });

@@ -10,13 +10,13 @@ describe('CabsValidator', () => {
     correctReq, incompleteReq, invalidCapacityReq,
     emptySpacesReq, errorMessages, emptyValueInBody,
     invalidCapacityError, emptyInputError, invalidReqParams,
-    invalidParamsError, noValueErrors, validUpdateBody, invalidInput
+    invalidParamsError, noValueErrors, validUpdateBody,
   } = MockData;
   beforeEach(() => {
     res = {
       status: jest.fn(() => ({
         json: jest.fn()
-      }))
+      })).mockReturnValue({ json: jest.fn() })
     };
     next = jest.fn();
     HttpError.sendErrorResponse = jest.fn();
@@ -83,11 +83,12 @@ describe('CabsValidator', () => {
           id: 'string'
         }
       };
-      jest.spyOn(HttpError, 'sendErrorResponse').mockResolvedValue(invalidInput, res);
-      const result = await CabsValidator.validateDeleteCabIdParam(req, res, next);
-      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(invalidInput);
-      expect(next).not.toHaveBeenCalled();
+      await CabsValidator.validateDeleteCabIdParam(req, res, next);
+      expect(res.status).toBeCalledWith(400);
+      expect(res.status().json).toHaveBeenCalledWith({
+        message: 'Please provide a positive integer value',
+        success: false
+      });
     });
 
     it('should return next', () => {

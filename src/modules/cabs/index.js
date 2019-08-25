@@ -128,6 +128,7 @@ cabsRouter.get(
  */
 cabsRouter.put(
   '/cabs/:id',
+  GeneralValidator.validateIdParam,
   CabsValidator.validateCabUpdateBody,
   CabsController.updateCabDetails
 );

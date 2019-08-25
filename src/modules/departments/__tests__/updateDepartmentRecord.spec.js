@@ -116,7 +116,7 @@ describe('/Departments update', () => {
       });
   });
 
-  it('should return homebase error when non existent homebase Id is provided', async () => {
+  it('should return homebase error when non existent homebase Id is provided', async (done) => {
     await request(app)
       .put(`/api/v1/departments/${departmentId}`)
       .send({
@@ -130,11 +130,11 @@ describe('/Departments update', () => {
       })
       .expect(400, {
         success: false,
-        message: 'No HomeBase exists with provided homeBaseId',
-      });
+        message: 'No HomeBase exists with provided homebaseId',
+      }, done());
   });
 
-  it('should successfully create department with valid data', async () => {
+  it('should successfully update department with valid data', async (done) => {
     const newDeptName = faker.hacker.noun();
     await request(app)
       .put(`/api/v1/departments/${departmentId}`)
@@ -147,6 +147,6 @@ describe('/Departments update', () => {
         Accept: 'application/json',
         authorization: validToken
       })
-      .expect(200);
+      .expect(200, done());
   });
 });

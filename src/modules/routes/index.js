@@ -339,7 +339,7 @@ routesRouter.delete(
  */
 routesRouter.get(
   '/routes/:id',
-  GeneralValidator.validateRouteId,
+  GeneralValidator.validateIdParam,
   RoutesController.getOne
 );
 

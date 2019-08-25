@@ -134,7 +134,7 @@ const homebases = [
       },
       {
         longitude: 32.611807,
-        latitude: -0.3166228,
+        latitude: 0.3166228,
         address: 'Fusion Arena',
         createdAt: '2019-04-09',
         updatedAt: '2019-05-08 10:00:00.326000'

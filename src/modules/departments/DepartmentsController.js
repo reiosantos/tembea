@@ -31,31 +31,8 @@ class DepartmentController {
     } = req;
 
     let location;
-    let userExists;
-
-    if (headId) {
-      userExists = await UserService.getUserById(headId);
-    }
-
-    if (homebaseId) {
-      location = await DepartmentController.isValidDepartmentHomeBase(homebaseId);
-    }
-    if (headId && !userExists) {
-      return res.status(404)
-        .json({
-          success: false,
-          message: `Department Head with headId ${headId} does not exists`,
-        });
-    }
-
-    if (homebaseId && !location) {
-      return res.status(400)
-        .json({
-          success: false,
-          message: 'No HomeBase exists with provided homeBaseId',
-        });
-    }
-
+    await DepartmentController.validateHeadExistence(req, res);
+    await DepartmentController.validateLocationExistence(req, res);
     try {
       const department = await DepartmentService.updateDepartment(
         id, name, homebaseId, headId, location
@@ -80,37 +57,17 @@ class DepartmentController {
       }
     } = req;
     try {
+      await DepartmentController.validateLocationExistence(req, res);
       const [user, { teamId }, homeBase] = await Promise.all(
-        [
-          UserService.getUser(email),
-          TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl),
-          HomebaseService.getById(homebaseId)
-        ]
+        [UserService.getUser(email), TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl),
+          HomebaseService.getById(homebaseId)]
       );
-      if (!homeBase) {
-        return res.status(400)
-          .json({
-            success: false,
-            message: 'No HomeBase exists with provided homebaseId',
-          });
-      }
+
       const { name: location } = homeBase;
       const [dept, created] = await DepartmentService.createDepartment(user,
         name, teamId, location, homebaseId);
 
-      if (created) {
-        return res.status(201)
-          .json({
-            success: true,
-            message: 'Department created successfully',
-            department: dept.dataValues
-          });
-      }
-      return res.status(409)
-        .json({
-          success: false,
-          message: 'Department already exists.',
-        });
+      return DepartmentController.returnCreateDepartmentResponse(res, created, dept);
     } catch (error) {
       bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
@@ -125,9 +82,7 @@ class DepartmentController {
    */
   static async readRecords(req, res) {
     try {
-      const {
-        headers: { homebaseid }
-      } = req;
+      const { headers: { homebaseid } } = req;
       const page = req.query.page || 1;
       const size = req.query.size || defaultSize;
       const data = await DepartmentService.getAllDepartments(size,
@@ -140,11 +95,7 @@ class DepartmentController {
       return res.status(200).json({
         success: true,
         message: `${page} of ${totalPages} page(s).`,
-        pageMeta: {
-          totalPages,
-          totalResults: count,
-          page,
-        },
+        pageMeta: { totalPages, totalResults: count, page },
         departments: rows,
       });
     } catch (error) {
@@ -206,6 +157,50 @@ class DepartmentController {
       bugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
     }
+  }
+
+  static async validateHeadExistence(req, res) {
+    const { body: { headId } } = req;
+    if (headId) {
+      const userExists = await UserService.getUserById(headId);
+      if (!userExists) {
+        return res.status(404)
+          .json({
+            success: false,
+            message: `Department Head with headId ${headId} does not exists`,
+          });
+      }
+    }
+  }
+
+  static async validateLocationExistence(req, res) {
+    const { body: { homebaseId } } = req;
+    if (homebaseId) {
+      const location = await DepartmentController.isValidDepartmentHomeBase(homebaseId);
+      if (!location) {
+        return res.status(400)
+          .json({
+            success: false,
+            message: 'No HomeBase exists with provided homebaseId',
+          });
+      }
+    }
+  }
+
+  static returnCreateDepartmentResponse(res, created, dept) {
+    if (created) {
+      return res.status(201)
+        .json({
+          success: true,
+          message: 'Department created successfully',
+          department: dept.dataValues
+        });
+    }
+    return res.status(409)
+      .json({
+        success: false,
+        message: 'Department already exists.',
+      });
   }
 }
 

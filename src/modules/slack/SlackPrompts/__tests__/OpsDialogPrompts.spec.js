@@ -1,6 +1,7 @@
 import OpsDialogPrompts from '../OpsDialogPrompts';
 import DialogPrompts from '../DialogPrompts';
 import HomebaseService from '../../../../services/HomebaseService';
+import { SlackDialog } from '../../SlackModels/SlackDialogModels';
 
 describe('OpsDialogPrompts', () => {
   beforeEach(() => {
@@ -19,5 +20,10 @@ describe('OpsDialogPrompts', () => {
   it('should send a dialog prompt', async () => {
     await OpsDialogPrompts.selectDriverAndCab(payloadMock, 1);
     expect(DialogPrompts.sendDialog).toBeCalledTimes(1);
+  });
+
+  it('should create SelectDriverCabDailog', async () => {
+    const response = await OpsDialogPrompts.createSelectDriverCabDailog({}, [], []);
+    expect(response).toBeInstanceOf(SlackDialog);
   });
 });

@@ -27,6 +27,20 @@ class OpsDialogPrompts {
       { name: 'name', prop: 'vehicles' },
       { label: 'regNumber', value: 'id' });
 
+    const dialog = await OpsDialogPrompts.createSelectDriverCabDailog(state, driversOptionsGroups,
+      cabsOptionsGroups);
+
+    return DialogPrompts.sendDialog(dialog, payload);
+  }
+
+  static createOptionsGroups(data, { name, prop }, { label, value }) {
+    return data.map(entry => ({
+      label: entry[name],
+      options: toLabelValuePairs(entry[prop], { labelProp: label, valueProp: value })
+    }));
+  }
+
+  static async createSelectDriverCabDailog(state, driversOptionsGroups, cabsOptionsGroups) {
     const dialog = new SlackDialog(
       'ops_approval_trip',
       'Assign cab and driver',
@@ -47,15 +61,7 @@ class OpsDialogPrompts {
         cabsOptionsGroups
       )
     ]);
-
-    return DialogPrompts.sendDialog(dialog, payload);
-  }
-
-  static createOptionsGroups(data, { name, prop }, { label, value }) {
-    return data.map(entry => ({
-      label: entry[name],
-      options: toLabelValuePairs(entry[prop], { labelProp: label, valueProp: value })
-    }));
+    return dialog;
   }
 }
 

@@ -170,16 +170,15 @@ describe('CabsController', () => {
   });
 
   describe('updateCabDetails', () => {
-    it('should fail to update if parameter is not a valid integer', (done) => {
-      request(app)
+    it('should fail to update if parameter is not a valid integer', async () => {
+      await request(app)
         .put(`${apiURL}/udd`)
         .send(payloadData.updateData)
         .set(headers)
         .expect(400, {
-          success: false,
-          message: 'Validation error occurred, see error object for details',
-          error: { id: 'id should be a number' }
-        }, done);
+          message: 'Please provide a positive integer value',
+          success: false
+        });
     });
 
     it('should fail to update if no data is provided', (done) => {

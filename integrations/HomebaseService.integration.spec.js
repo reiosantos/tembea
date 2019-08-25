@@ -1,12 +1,11 @@
+import faker from 'faker';
 import HomebaseService from '../src/services/HomebaseService';
 import models from '../src/database/models';
-import { createCountry } from './support/helpers';
-import faker from 'faker';
 
 describe('create Homebase', () => {
   let country;
   beforeAll(async () => {
-    country = await createCountry({ name: faker.address.country().concat('rand') });
+    country = await models.Country.findOne();
   });
 
   afterAll(() => {

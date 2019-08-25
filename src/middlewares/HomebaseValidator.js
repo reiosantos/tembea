@@ -3,10 +3,9 @@ import CountryHelper from '../helpers/CountryHelper';
 import GeneralValidator from './GeneralValidator';
 import {
   newHomeBaseSchema,
-  updateHomeBaseSchema
+  updateHomeBaseSchema,
 } from './ValidationSchemas';
 import HomeBaseHelper from '../helpers/HomeBaseHelper';
-import HttpError from '../helpers/errorHandler';
 
 class HomebaseValidator {
   /**
@@ -48,15 +47,7 @@ class HomebaseValidator {
    * @return {any} The next middleware or the http response
    */
   static validateHomeBaseIdQueryParam(req, res, next) {
-    const { params: { id } } = req;
-    if (!GeneralValidator.validateNumber(id)) {
-      const invalidInput = {
-        message: 'Please provide a positive integer value for homebase Id',
-        statusCode: 400
-      };
-      return HttpError.sendErrorResponse(invalidInput, res);
-    }
-    return next();
+    return GeneralValidator.validateIdParam(req, res, next);
   }
 
 

@@ -48,12 +48,12 @@ describe('/User create', () => {
           message: errorMessage,
           error: { email: 'Please provide email' }
         },
-        done
+        done()
       );
   });
 
-  it('should respond with invalid email and slack url', (done) => {
-    request(app)
+  it('should respond with invalid email and slack url', async () => {
+    await request(app)
       .post('/api/v1/users')
       .send({
         email: 'sjnvdsd.com'
@@ -72,7 +72,6 @@ describe('/User create', () => {
             email: 'please provide a valid email address'
           }
         },
-        done
       );
   });
 

@@ -7,6 +7,17 @@ import bugsnagHelper from '../helpers/bugsnagHelper';
 const {
   BatchUseRecord, RouteUseRecord, RouteBatch, Route, sequelize, Address, User
 } = models;
+const batchDefaultInclude = {
+  model: RouteUseRecord,
+  as: 'batchRecord',
+  include: [{
+    model: RouteBatch,
+    as: 'batch',
+    include: ['cabDetails', {
+      model: Route, as: 'route', include: ['destination']
+    }],
+  }]
+};
 
 class BatchUseRecordService {
   static async getRoutesUsage(from, to) {
@@ -77,18 +88,7 @@ class BatchUseRecordService {
           model: User,
           as: 'user',
           where: { homebaseId: where.homebaseId }
-        },
-        {
-          model: RouteUseRecord,
-          as: 'batchRecord',
-          include: [{
-            model: RouteBatch,
-            as: 'batch',
-            include: ['cabDetails', {
-              model: Route, as: 'route', include: ['destination']
-            }],
-          }]
-        }]
+        }, batchDefaultInclude]
     };
     const paginatedData = await paginatedRoutes.getPageItems(page);
     const data = BatchUseRecordService.serializePaginatedData(paginatedData);

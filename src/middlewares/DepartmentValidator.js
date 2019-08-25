@@ -3,10 +3,9 @@ import {
   newDepartmentSchema,
   deleteDepartmentSchema,
   departmentTripsSchema,
-  tripTypeSchema
+  tripTypeSchema,
 } from './ValidationSchemas';
 import GeneralValidator from './GeneralValidator';
-import HttpError from '../helpers/errorHandler';
 
 class DepartmentValidator {
   /**
@@ -17,7 +16,7 @@ class DepartmentValidator {
    * @return {any} The next middleware or the http responds
    */
   static validateUpdateBody(req, res, next) {
-    return GeneralValidator.joiValidation(req, res, next, req.body, updateDepartmentSchema);
+    return GeneralValidator.joiValidation(req, res, next, req.body, updateDepartmentSchema, true);
   }
 
   static validateAddBody(req, res, next) {
@@ -52,15 +51,7 @@ class DepartmentValidator {
    * @return {any} The next middleware or the http response
    */
   static validateDepartmentIdQueryParam(req, res, next) {
-    const { params: { id } } = req;
-    if (!GeneralValidator.validateNumber(id)) {
-      const invalidInput = {
-        message: 'Please provide a positive integer value for department Id',
-        statusCode: 400
-      };
-      return HttpError.sendErrorResponse(invalidInput, res);
-    }
-    return next();
+    return GeneralValidator.validateIdParam(req, res, next);
   }
 }
 

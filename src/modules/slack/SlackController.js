@@ -10,6 +10,7 @@ import Response from '../../helpers/responseHelper';
 import HttpError from '../../helpers/errorHandler';
 import BugsnagHelper from '../../helpers/bugsnagHelper';
 import HomebaseService from '../../services/HomebaseService';
+import SlackHelpers from '../../helpers/slack/slackHelpers';
 
 
 class SlackController {
@@ -123,7 +124,8 @@ class SlackController {
   }
 
   static async handleSlackCommands(req, res, next) {
-    const { body: { text, user_id: slackId } } = req;
+    const { body: { text, user_id: slackId, team_id: teamId } } = req;
+    await SlackHelpers.findOrCreateUserBySlackId(slackId, teamId);
     if (!text) return next();
     if (isSlackSubCommand((text.toLowerCase()), 'route')) {
       const response = await SlackController.getRouteCommandMsg(slackId);

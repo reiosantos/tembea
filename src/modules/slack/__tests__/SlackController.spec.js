@@ -7,6 +7,7 @@ import Response from '../../../helpers/responseHelper';
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
 import HttpError from '../../../helpers/errorHandler';
 import HomebaseService from '../../../services/HomebaseService';
+import SlackHelpers from '../../../helpers/slack/slackHelpers';
 
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
@@ -44,37 +45,44 @@ describe('Slack controller test', () => {
     jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue(
       { id: 1, name: 'Nairobi' }
     );
+    jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId').mockReturnValue({});
   });
 
 
-  it('should return launch message', async () => {
-    const res = await request(app)
-      .post('/api/v1/slack/command');
-    expect(res.status).toEqual(200);
-    expect(res.body).toHaveProperty('text');
-    expect(res.body).toHaveProperty('attachments');
-    expect(res.body).toHaveProperty('response_type');
-    expect(res.body).toEqual(SlackControllerMock);
+  it('should return launch message', (done) => {
+    request(app)
+      .post('/api/v1/slack/command')
+      .end((err, res) => {
+        expect(res.status).toEqual(200);
+        expect(res.body).toHaveProperty('text');
+        expect(res.body).toHaveProperty('attachments');
+        expect(res.body).toHaveProperty('response_type');
+        expect(res.body).toEqual(SlackControllerMock);
+      }, done());
   });
 
   it('should return the lunch message for the command /Tembea travel', async () => {
-    const res = await request(app)
+    await request(app)
       .post('/api/v1/slack/command')
-      .send({ text: ' travel ' });
-    expect(res.status).toEqual(200);
-    expect(res.body).toHaveProperty('text');
-    expect(res.body).toHaveProperty('attachments');
-    expect(res.body).toHaveProperty('response_type');
+      .send({ text: ' travel ' })
+      .then((res) => {
+        expect(res.status).toEqual(200);
+        expect(res.body).toHaveProperty('text');
+        expect(res.body).toHaveProperty('attachments');
+        expect(res.body).toHaveProperty('response_type');
+      });
   });
 
   it('should return the lunch meassage for the command /Tembea route', async () => {
-    const res = await request(app)
+    await request(app)
       .post('/api/v1/slack/command')
-      .send({ text: 'route' });
-    expect(res.status).toEqual(200);
-    expect(res.body).toHaveProperty('text');
-    expect(res.body).toHaveProperty('attachments');
-    expect(res.body).toHaveProperty('response_type');
+      .send({ text: 'route' })
+      .then((res) => {
+        expect(res.status).toEqual(200);
+        expect(res.body).toHaveProperty('text');
+        expect(res.body).toHaveProperty('attachments');
+        expect(res.body).toHaveProperty('response_type');
+      });
   });
 
   describe('getChannels', () => {

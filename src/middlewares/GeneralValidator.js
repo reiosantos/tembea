@@ -38,7 +38,7 @@ class GeneralValidator {
     return regex.test(num);
   }
 
-  static validateRouteId(req, res, next) {
+  static validateIdParam(req, res, next) {
     const { params: { id } } = req;
     if (!GeneralValidator.validateNumber(id)) {
       return res.status(400).json({

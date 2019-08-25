@@ -144,7 +144,7 @@ describe('Operations Route Controller', () => {
         jest.spyOn(RouteHelper, 'updateRouteRequest').mockReturnValue(routeDetails);
         jest.spyOn(RouteHelper, 'createNewRouteBatchFromSlack').mockResolvedValue(batch);
         jest.spyOn(TeamDetailsService, 'getTeamDetails').mockResolvedValue('xoop-asdad');
-        
+
 
         await OperationsHandler.handleOperationsActions(payload, respond);
         expect(ManagerFormValidator.approveRequestFormValidation).toHaveBeenCalled();
@@ -453,5 +453,14 @@ describe('OperationsHandler > completeOpsAssignCabDriver', () => {
     await OperationsHandler.completeOpsAssignCabDriver(completeOpsAssignCabPayload);
     expect(bugsnagHelper.log).toBeCalledTimes(0);
     expect(OperationsHelper.sendcompleteOpAssignCabMsg).toBeCalledTimes(1);
+  });
+
+  it('should send Assign Driver and Driver notifications', async () => {
+    jest.spyOn(OperationsHelper, 'getTripDetailsAttachment').mockReturnValue([]);
+    await OperationsHandler.sendAssignCabDriverNotifications('TEMA 1', {}, {},
+      {}, 'UDAA78', 'UDAA', 'Channel', '1334141');
+    expect(OperationsHelper.getTripDetailsAttachment).toBeCalled();
+    expect(InteractivePrompts.messageUpdate).toBeCalled();
+    expect(OperationsHelper.sendcompleteOpAssignCabMsg).toBeCalled();
   });
 });

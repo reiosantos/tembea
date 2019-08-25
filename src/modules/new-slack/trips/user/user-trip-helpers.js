@@ -121,7 +121,7 @@ export default class UserTripHelpers {
     const continueBlock = new Block(BlockTypes.actions, userTripBlocks.getDestFields);
 
     continueBlock.addElements([
-      new ButtonElement(new SlackText('Enter Destinaton'),
+      new ButtonElement(new SlackText('Enter Destination'),
         'select_destination',
         userTripActions.sendDest,
         SlackActionButtonStyles.primary)

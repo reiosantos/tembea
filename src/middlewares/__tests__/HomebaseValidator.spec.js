@@ -140,16 +140,13 @@ describe('HomebaseValidator', () => {
     });
     it('should validate homebase id in query param', () => {
       HomebaseValidator.validateHomeBaseIdQueryParam(request, res, next);
-      expect(HttpError.sendErrorResponse)
-        .toHaveBeenCalled();
-      expect(res.status)
-        .toHaveBeenCalledWith(400);
-      expect(res.json)
-        .toHaveBeenCalledWith({
-          message: 'Please provide a positive integer value for homebase Id',
-          success: false
-        });
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Please provide a positive integer value',
+        success: false
+      });
     });
+
     it('should call next if homebase id in query param is valid', () => {
       request.params.id = 1;
       HomebaseValidator.validateHomeBaseIdQueryParam(request, res, next);

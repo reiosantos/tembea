@@ -1,5 +1,4 @@
 import GeneralValidator from './GeneralValidator';
-import HttpError from '../helpers/errorHandler';
 import { newCabSchema, updateCabSchema } from './ValidationSchemas';
 
 class CabsValidator {
@@ -13,15 +12,7 @@ class CabsValidator {
   }
 
   static validateDeleteCabIdParam(req, res, next) {
-    const { params: { id } } = req;
-    if (!GeneralValidator.validateNumber(id)) {
-      const invalidInput = {
-        message: 'Please provide a positive integer value',
-        statusCode: 400
-      };
-      return HttpError.sendErrorResponse(invalidInput, res);
-    }
-    return next();
+    return GeneralValidator.validateIdParam(req, res, next);
   }
 }
 

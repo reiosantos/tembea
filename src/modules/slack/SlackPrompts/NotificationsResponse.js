@@ -8,44 +8,15 @@ import {
 } from '../SlackModels/SlackMessageModels';
 import { getSlackDateString } from '../helpers/dateHelpers';
 import HomebaseService from '../../../services/HomebaseService';
+import { HOMEBASE_NAMES } from '../../../helpers/constants';
 
 class NotificationsResponse {
   static async getRequestMessageForOperationsChannel(data, payload, channel, tripType) {
     const channelId = channel;
     const { id } = data;
     const { user: { id: slackId } } = payload;
-    const options = [
-      {
-        text: 'Confirm and assign cab and driver',
-        value: `assignCab_${id}`,
-      },
-      {
-        text: 'Confirm and assign provider',
-        value: `confirmTrip_${id}`,
-      }
-    ];
-
-    let selectAction = new SlackSelectAction(
-      'assign-cab-or-provider',
-      'Confirm request options',
-      options
-    );
-
-    const homeBase = await HomebaseService.getHomeBaseBySlackId(slackId);
-
-    if (homeBase.name === 'Kampala') {
-      selectAction = new SlackButtonAction(
-        'assign-cab-or-provider',
-        'Confirm and assign cab and driver',
-        `assignCab_${id}`
-      );
-    }
-
-    const actions = [
-      selectAction,
-      new SlackButtonAction('declineRequest', 'Decline', id, 'danger')
-    ];
-
+    
+    const actions = await NotificationsResponse.generateOperationsRequestActions(id, slackId);
 
     return NotificationsResponse.responseForOperations(
       data, actions, channelId, 'trips_cab_selection', payload, tripType
@@ -189,6 +160,44 @@ class NotificationsResponse {
     return `Your request from *${pickup.address}* to *${destination.address
     }* has been approved by ${isApproved.approvedBy
     }. The request has now been forwarded to the operations team for confirmation.`;
+  }
+
+  static async generateOperationsRequestActions(id, slackId) {
+    const options = [
+      {
+        text: 'Confirm and assign cab and driver',
+        value: `assignCab_${id}`,
+      },
+      {
+        text: 'Confirm and assign provider',
+        value: `confirmTrip_${id}`,
+      }
+    ];
+    const selectAction = await NotificationsResponse.getOpsSelectAction(slackId, id, options);
+    const actions = [
+      selectAction,
+      new SlackButtonAction('declineRequest', 'Decline', id, 'danger')
+    ];
+    return actions;
+  }
+
+  static async getOpsSelectAction(slackId, id, options) {
+    let selectAction = new SlackSelectAction(
+      'assign-cab-or-provider',
+      'Confirm request options',
+      options
+    );
+
+    const { name } = await HomebaseService.getHomeBaseBySlackId(slackId);
+
+    if (name === HOMEBASE_NAMES.KAMPALA) {
+      selectAction = new SlackButtonAction(
+        'assign-cab-or-provider',
+        'Confirm and assign cab and driver',
+        `assignCab_${id}`
+      );
+    }
+    return selectAction;
   }
 }
 
