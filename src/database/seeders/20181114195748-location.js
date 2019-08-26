@@ -1,5 +1,5 @@
 module.exports = {
-  up: queryInterface => queryInterface.bulkInsert('Locations', [
+  up: (queryInterface) => queryInterface.bulkInsert('Locations', [
     {
       longitude: 36.886215,
       latitude: -1.219539,
@@ -13,5 +13,5 @@ module.exports = {
       updatedAt: '2019-01-22 22:59:25.006000'
     }
   ]),
-  down: queryInterface => queryInterface.bulkDelete('Locations')
+  down: (queryInterface) => queryInterface.bulkDelete('Locations')
 };

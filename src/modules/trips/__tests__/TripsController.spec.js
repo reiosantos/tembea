@@ -16,10 +16,12 @@ import SlackProviderHelper from '../../slack/helpers/slackHelpers/ProvidersHelpe
 import ProviderNotifications from '../../slack/SlackPrompts/notifications/ProviderNotifications';
 import HttpError from '../../../helpers/errorHandler';
 import HomebaseService from '../../../services/HomebaseService';
+import database from '../../../database';
 
 describe('TripController', () => {
   const { mockedValue: { routes: trips }, ...rest } = mocked;
   let req;
+
   beforeEach(() => {
     req = { query: { page: 1 } };
     const mockedData = {
@@ -28,9 +30,13 @@ describe('TripController', () => {
     jest.spyOn(tripService, 'getTrips').mockResolvedValue(mockedData);
     jest.spyOn(tripService, 'getById').mockResolvedValue(mocked.mockTrip.trip[0]);
   });
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
+
+  afterAll((done) => database.close().then(done));
+
   describe('TripController_getTrips', () => {
     it('Should get all trips value', async () => {
       const {
@@ -91,6 +97,7 @@ describe('TripController', () => {
     let reqDecline;
     let res;
     let payload;
+
     beforeEach(() => {
       reqConfirm = {
         body: {
@@ -193,6 +200,7 @@ describe('TripController', () => {
         expect(res.status().json).toHaveBeenCalledTimes(1);
         expect(res.status().json).toHaveBeenLastCalledWith(TripDeclineSuccessMock);
       });
+
       it('updateTrip() should run with decline fail', async () => {
         jest
           .spyOn(TripsController, 'getCommonPayloadParam')
@@ -211,6 +219,7 @@ describe('TripController', () => {
         expect(res.status().json).toHaveBeenCalledTimes(1);
         expect(res.status().json).toHaveBeenLastCalledWith(TripConfirmFailMock);
       });
+
       it('updateTrip() should run with confirm fail', async () => {
         jest
           .spyOn(TripsController, 'getCommonPayloadParam')
@@ -229,6 +238,7 @@ describe('TripController', () => {
         expect(res.status().json).toHaveBeenCalledTimes(1);
         expect(res.status().json).toHaveBeenLastCalledWith(TripConfirmFailMock);
       });
+
       it('getSlackIdFromReq() should return user Id', (done) => {
         jest
           .spyOn(UserService, 'getUserByEmail')
@@ -237,6 +247,7 @@ describe('TripController', () => {
         expect(UserService.getUserByEmail).toHaveBeenCalledTimes(1);
         done();
       });
+
       it('getCommonPayloadParam() should should get payload', async () => {
         jest
           .spyOn(TripsController, 'getSlackIdFromReq')
@@ -251,6 +262,7 @@ describe('TripController', () => {
         expect(TeamDetailsService.getTeamDetailsByTeamUrl).toHaveBeenCalledTimes(1);
         expect(TripsController.getSlackIdFromReq).toHaveBeenCalledTimes(1);
       });
+
       it('updateTrip() with missing data', async () => {
         jest
           .spyOn(TripsController, 'getCommonPayloadParam')
@@ -301,6 +313,7 @@ describe('TripController', () => {
           query: { page: 1 },
           headers: { homebaseid: 1 }
         };
+
         it('should get all route trips', async () => {
           await TripsController.getRouteTrips(requestQuery, res);
           expect(res.status).toHaveBeenCalled();
@@ -308,7 +321,8 @@ describe('TripController', () => {
         });
 
         it('should return empty array if no records are available', async () => {
-          jest.spyOn(RouteUseRecordService, 'getRouteTripRecords').mockResolvedValue({ data: null });
+          jest.spyOn(RouteUseRecordService, 'getRouteTripRecords')
+            .mockResolvedValue({ data: null });
           await TripsController.getRouteTrips(requestQuery, res);
 
           expect(res.status).toHaveBeenCalled();

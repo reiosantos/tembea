@@ -8,7 +8,7 @@ import { getTripKey } from '../../../helpers/slack/ScheduleTripInputHandlers';
 import GoogleMapsReverseGeocode from '../../../services/googleMaps/GoogleMapsReverseGeocode';
 import UserService from '../../../services/UserService';
 
-export const getPredictionsKey = userId => `TRIP_LOCATION_PREDICTIONS_${userId}`;
+export const getPredictionsKey = (userId) => `TRIP_LOCATION_PREDICTIONS_${userId}`;
 
 export default class NewLocationHelpers {
   static createLocationConfirmMsg(details, {

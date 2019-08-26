@@ -102,5 +102,5 @@ module.exports = {
   },
 
 
-  down: queryInterface => queryInterface.bulkDelete('RouteRequests', null, {})
+  down: (queryInterface) => queryInterface.bulkDelete('RouteRequests', null, {})
 };

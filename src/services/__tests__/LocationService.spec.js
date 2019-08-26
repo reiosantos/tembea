@@ -1,8 +1,8 @@
 import LocationService from '../LocationService';
-import models from '../../database/models';
+import database from '../../database';
 import BugsnagHelper from '../../helpers/bugsnagHelper';
 
-const { Location } = models;
+const { models: { Location } } = database;
 describe('Locationservice', () => {
   let findLocationSpy;
   let findOrCreateLocationSpy;

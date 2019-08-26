@@ -11,6 +11,6 @@ module.exports = {
     type: Sequelize.STRING,
     allowNull: true,
   })),
-  down: queryInterface => queryInterface.removeColumn('TripRequests', 'providerId')
+  down: (queryInterface) => queryInterface.removeColumn('TripRequests', 'providerId')
     .then(() => queryInterface.removeColumn('TripRequests', 'approvalDate'))
 };

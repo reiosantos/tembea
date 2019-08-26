@@ -1,9 +1,9 @@
-import models from '../../database/models';
+import database from '../../database';
 import JoinRouteRequestService from '../JoinRouteRequestService';
 import Cache from '../../cache';
 import { Bugsnag } from '../../helpers/bugsnagHelper';
 
-const { JoinRequest } = models;
+const { models: { JoinRequest } } = database;
 describe('JoinRouteRequestService', () => {
   let create;
   let findByPk;
@@ -22,7 +22,7 @@ describe('JoinRouteRequestService', () => {
     create = jest.spyOn(JoinRequest, 'create');
     findByPk = jest.spyOn(JoinRequest, 'findByPk').mockReturnValue(joinRequestData);
     cacheFetch = jest.spyOn(Cache, 'fetch');
-    cacheSaveObject = jest.spyOn(Cache, 'saveObject').mockImplementation(data => data);
+    cacheSaveObject = jest.spyOn(Cache, 'saveObject').mockImplementation((data) => data);
     cacheSave = jest.spyOn(Cache, 'save');
   });
   afterEach(() => {

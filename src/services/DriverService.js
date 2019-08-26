@@ -1,12 +1,11 @@
 import { Op } from 'sequelize';
 import BaseService from './BaseService';
-import models from '../database/models';
+import database from '../database';
 import ProviderHelper from '../helpers/providerHelper';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import RemoveDataValues from '../helpers/removeDataValues';
 
-
-const { Driver, sequelize } = models;
+const { models: { Driver, User } } = database;
 
 /**
  * A class representing the Driver service
@@ -137,14 +136,14 @@ class DriverService extends BaseService {
          WHERE "driverPhoneNo" ='${driverPhoneNo}' OR "email" ='${email}'
           OR "driverNumber" ='${driverNumber}';`;
 
-    const [[{ count }]] = await sequelize.query(query);
+    const [[{ count }]] = await database.query(query);
     return count;
   }
 
   static async findOneDriver(options) {
     const driver = await Driver.findOne({
       ...options,
-      include: [{ model: models.User, attributes: ['slackId'], as: 'user' }]
+      include: [{ model: User, attributes: ['slackId'], as: 'user' }]
     });
     return driver;
   }

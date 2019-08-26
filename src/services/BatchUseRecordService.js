@@ -1,12 +1,14 @@
 import { MAX_INT as all } from '../helpers/constants';
-import models from '../database/models';
+import database from '../database';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import RemoveDataValues from '../helpers/removeDataValues';
 import bugsnagHelper from '../helpers/bugsnagHelper';
 
 const {
-  BatchUseRecord, RouteUseRecord, RouteBatch, Route, sequelize, Address, User
-} = models;
+  models: {
+    BatchUseRecord, RouteUseRecord, RouteBatch, Route, Address, User
+  }
+} = database;
 const batchDefaultInclude = {
   model: RouteUseRecord,
   as: 'batchRecord',
@@ -37,7 +39,7 @@ class BatchUseRecordService {
     if (from && to) {
       query += filterByDate;
     }
-    const results = await sequelize.query(query);
+    const results = await database.query(query);
     return results;
   }
 
@@ -75,7 +77,7 @@ class BatchUseRecordService {
     const { page, size } = pageable;
     let order;
     let filter;
-    const criteria = Object.assign({}, where);
+    const criteria = { ...where };
     delete criteria.homebaseId;
     if (where) { filter = { where: { ...criteria } }; }
     const paginatedRoutes = new SequelizePaginationHelper(BatchUseRecord, filter, size);
@@ -192,7 +194,7 @@ class BatchUseRecordService {
   }
 
   static serializePaginatedData(paginatedData) {
-    const newData = Object.assign({}, paginatedData);
+    const newData = { ...paginatedData };
     const { data, pageMeta } = newData;
     const result = data.map(BatchUseRecordService.serializeBatchRecord);
     newData.data = result;

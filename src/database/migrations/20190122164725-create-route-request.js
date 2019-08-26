@@ -76,5 +76,5 @@ module.exports = {
       type: Sequelize.DATE
     }
   }),
-  down: queryInterface => queryInterface.dropTable('RouteRequests')
+  down: (queryInterface) => queryInterface.dropTable('RouteRequests')
 };

@@ -39,7 +39,7 @@ describe('getDestinationCoordinates', () => {
       destination: 'somewhere',
       othersDestination: null
     };
-    jest.spyOn(NewLocationHelpers, 'getCoordinates').mockImplementation(loc => (
+    jest.spyOn(NewLocationHelpers, 'getCoordinates').mockImplementation((loc) => (
       loc !== 'Others'
         ? {
           location: {

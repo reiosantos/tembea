@@ -13,5 +13,5 @@ module.exports = {
       },
     });
   }),
-  down: queryInterface => queryInterface.removeColumn('RouteBatches', 'homebaseId')
+  down: (queryInterface) => queryInterface.removeColumn('RouteBatches', 'homebaseId')
 };

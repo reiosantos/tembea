@@ -25,7 +25,7 @@ class RoutesUsageController {
       const dormantRouteBatches = [];
       filteredUsageData.forEach((route) => {
         const routeBatch = Object.values(route);
-        routeBatch.map(record => RouteHelper.findPercentageUsage(record, allUsageRecords, dormantRouteBatches));
+        routeBatch.map((record) => RouteHelper.findPercentageUsage(record, allUsageRecords, dormantRouteBatches));
       });
       const mostUsedBatch = RouteHelper.findMaxOrMin(allUsageRecords, 'max');
       const leastUsedBatch = RouteHelper.findMaxOrMin(allUsageRecords, 'min');

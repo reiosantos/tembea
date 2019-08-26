@@ -1,11 +1,11 @@
 import request from 'request-promise-native';
 import CountryService from '../CountryService';
-import models from '../../database/models';
+import database from '../../database';
 import { mockReturnedCountryData, mockCountryError } from '../__mocks__';
 import * as mocked from '../../modules/countries/__mocks__';
 import { deletedCountryMock } from '../../helpers/__mocks__/countryHelperMock';
 
-const { Country } = models;
+const { models: { Country } } = database;
 
 describe('test function GetAllCountries()', () => {
   const findAllCountriesSpy = jest.spyOn(Country, 'findAndCountAll');

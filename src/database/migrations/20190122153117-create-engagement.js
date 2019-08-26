@@ -43,5 +43,5 @@ module.exports = {
       type: 'unique',
       name: 'Engagements_partnerId_fellowId'
     })),
-  down: queryInterface => queryInterface.dropTable('Engagements')
+  down: (queryInterface) => queryInterface.dropTable('Engagements')
 };

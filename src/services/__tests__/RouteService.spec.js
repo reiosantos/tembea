@@ -1,5 +1,6 @@
+import sequelize from 'sequelize';
 import RouteService, { routeService } from '../RouteService';
-import models from '../../database/models/index';
+import database from '../../database';
 import Cache from '../../cache';
 import HttpError from '../../helpers/errorHandler';
 import UserService from '../UserService';
@@ -7,8 +8,10 @@ import { mockRouteBatchData as routeBatch } from '../__mocks__';
 import RouteServiceHelper from '../../helpers/RouteServiceHelper';
 
 const {
-  Route, RouteBatch, Cab, Address, sequelize, Sequelize, User,
-} = models;
+  models: {
+    Route, RouteBatch, Cab, Address, User,
+  }
+} = database;
 
 describe('RouteService', () => {
   const {
@@ -44,7 +47,7 @@ describe('RouteService', () => {
     imageUrl: 'https://image-url',
     status: 'Active'
   };
-  
+
   beforeEach(() => {
     jest.spyOn(Cache, 'save').mockResolvedValue();
   });
@@ -53,7 +56,7 @@ describe('RouteService', () => {
     jest.restoreAllMocks();
   });
 
-  afterAll(() => sequelize.close());
+  afterAll((done) => database.close().then(done));
 
   describe('RouteService_createRouteBatch', () => {
     beforeEach(() => {
@@ -124,7 +127,7 @@ describe('RouteService', () => {
       jest.spyOn(UserService, 'getUserById');
       jest.spyOn(RouteBatch, 'findByPk');
       jest.spyOn(RouteServiceHelper, 'canJoinRoute');
-      jest.spyOn(sequelize, 'transaction').mockImplementation((fn) => {
+      jest.spyOn(database, 'transaction').mockImplementation((fn) => {
         fn();
       });
     });
@@ -166,7 +169,7 @@ describe('RouteService', () => {
       await RouteService.addUserToRoute(routeBatchId, userId);
 
       expect(UserService.getUserById).toBeCalled();
-      expect(sequelize.transaction).toHaveBeenCalled();
+      expect(database.transaction).toHaveBeenCalled();
       expect(user.update).toHaveBeenCalledWith({ routeBatchId });
       expect(mockRoute.update).toHaveBeenCalledWith({
         inUse: mockRoute.riders.length + 1
@@ -241,7 +244,7 @@ describe('RouteService', () => {
         .spyOn(RouteBatch, 'findAll')
         .mockResolvedValue([routeBatch, { riders: [null] }]);
       jest.spyOn(RouteBatch, 'count').mockResolvedValue(10);
-      jest.spyOn(Sequelize, 'fn').mockImplementation(() => 0);
+      jest.spyOn(sequelize, 'fn').mockImplementation(() => 0);
     });
     it('should ', async () => {
       const result = await RouteService.getRoutes();
@@ -370,7 +373,7 @@ describe('RouteService', () => {
   describe('Route Ratings', () => {
     it('should execute query ', async () => {
       const mockData = [[]];
-      const querySpy = jest.spyOn(sequelize, 'query');
+      const querySpy = jest.spyOn(database, 'query');
       querySpy.mockReturnValue(mockData);
       const results = await RouteService.RouteRatings();
       expect(querySpy).toBeCalled();

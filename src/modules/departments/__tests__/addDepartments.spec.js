@@ -7,7 +7,7 @@ import {
   invalidDeptNamePayload,
   missingDeptNamePayload, validDeptPayload, existingDeptPayload, invalidLocationPayload
 } from '../__mocks__/addDepartments';
-import models from '../../../database/models';
+import database from '../../../database';
 import { createCountry } from '../../../../integrations/support/helpers';
 import HomebaseService from '../../../services/HomebaseService';
 
@@ -26,7 +26,7 @@ beforeAll(async () => {
   validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
 });
 afterAll(async () => {
-  await models.sequelize.close();
+  await database.close();
 });
 
 // TODO move all the integration tests to integration folder

@@ -1,16 +1,18 @@
-import models from '../../src/database/models';
+import database from '../../src/database';
 
 const {
-  User,
-  Provider,
-  Driver,
-  RouteRequest,
-  TripRequest,
-  Department,
-  Country,
-  RouteUseRecord,
-  BatchUseRecord,
-} = models;
+  models: {
+    User,
+    Provider,
+    Driver,
+    RouteRequest,
+    TripRequest,
+    Department,
+    Country,
+    RouteUseRecord,
+    BatchUseRecord,
+  }
+} = database;
 
 export const createModel = async (Model, payload) => {
   const result = await Model.create(payload);

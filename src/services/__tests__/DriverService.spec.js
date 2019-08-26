@@ -1,5 +1,5 @@
 import DriverService, { driverService } from '../DriverService';
-import models from '../../database/models';
+import database from '../../database';
 import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
 import ProviderHelper from '../../helpers/providerHelper';
 import RemoveDataValues from '../../helpers/removeDataValues';
@@ -7,8 +7,8 @@ import RemoveDataValues from '../../helpers/removeDataValues';
 
 jest.mock('../../helpers/sequelizePaginationHelper', () => jest.fn());
 const {
-  Driver, sequelize
-} = models;
+  models: { Driver }
+} = database;
 
 describe('Driver Service', () => {
   let testDriver;
@@ -23,7 +23,7 @@ describe('Driver Service', () => {
   });
   afterAll(async () => {
     await testDriver.destroy({ force: true });
-    await sequelize.close();
+    await database.close();
   });
   it('should create driver successfully', async () => {
     const driver = await driverService.create({

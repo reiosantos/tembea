@@ -65,8 +65,8 @@ export default class NewSlackHelpers {
   }
 
   static toSlackDropdown(data, keyPairs = defaultKeyValuePairs) {
-    return data.filter(e => this.hasNeededProps(e, keyPairs))
-      .map(entry => ({
+    return data.filter((e) => this.hasNeededProps(e, keyPairs))
+      .map((entry) => ({
         text: new SlackText(entry[keyPairs.text].toString()),
         value: entry[keyPairs.value].toString()
       }));

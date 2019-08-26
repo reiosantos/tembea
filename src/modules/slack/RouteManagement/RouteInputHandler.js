@@ -38,7 +38,7 @@ const RouteInputHandlers = {
       } = await GoogleMapsSuggestions.getPlacesAutoComplete(locationPredictions);
 
       const predictedResultsToSlackSelectAction = predictedPlacesResults.map(
-        prediction => ({ text: prediction.description, value: prediction.place_id })
+        (prediction) => ({ text: prediction.description, value: prediction.place_id })
       );
 
       const locationMarkers = LocationMapHelper.locationMarker(predictedPlacesResults);

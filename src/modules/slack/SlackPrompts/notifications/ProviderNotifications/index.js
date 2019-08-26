@@ -161,7 +161,7 @@ export default class ProviderNotifications {
     const directMessageId = await SlackNotifications.getDMChannelId(user.slackId,
       teamBotOauthToken);
 
-    const sendNotifucations = routes.map(route => ProviderNotifications.providerMessagePerRoute(
+    const sendNotifucations = routes.map((route) => ProviderNotifications.providerMessagePerRoute(
       route, driverData, directMessageId, driverName, teamBotOauthToken
     ));
 

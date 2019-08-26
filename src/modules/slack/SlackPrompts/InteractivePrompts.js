@@ -43,7 +43,7 @@ class InteractivePrompts {
     const userHomeBase = await HomebaseService.getHomeBaseBySlackId(slackId);
 
     const filteredHomeBases = userHomeBase ? homeBases.filter(
-      currentHomeBase => currentHomeBase.name !== userHomeBase.name
+      (currentHomeBase) => currentHomeBase.name !== userHomeBase.name
     ) : homeBases;
 
     attachment.addFieldsOrActions(
@@ -85,7 +85,7 @@ class InteractivePrompts {
     const attachments = [];
 
     trips.forEach(
-      trip => InteractivePromptSlackHelper.formatUpcomingTrip(trip, payload, attachments)
+      (trip) => InteractivePromptSlackHelper.formatUpcomingTrip(trip, payload, attachments)
     );
 
     let pageButtonsAttachment;

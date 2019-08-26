@@ -1,5 +1,4 @@
 
-
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.addColumn('RouteBatches', 'driverId', {
     type: Sequelize.INTEGER,
@@ -9,5 +8,5 @@ module.exports = {
       as: 'driver'
     }
   }),
-  down: queryInterface => queryInterface.removeColumn('RouteBatches', 'driverId')
+  down: (queryInterface) => queryInterface.removeColumn('RouteBatches', 'driverId')
 };

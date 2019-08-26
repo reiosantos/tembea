@@ -1,10 +1,10 @@
 import RouteStatistics from '../RouteStatistics';
 import riderStats from '../__mocks__/routeRiderStatistics';
 import aisService from '../AISService';
-import models from '../../database/models';
+import database from '../../database';
 import RemoveDataValues from '../../helpers/removeDataValues';
 
-const { BatchUseRecord } = models;
+const { models: { BatchUseRecord } } = database;
 
 
 describe('RouteStatistics - getFrequentRiders', () => {

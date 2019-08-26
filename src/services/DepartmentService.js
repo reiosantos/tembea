@@ -1,16 +1,16 @@
 import { Op } from 'sequelize';
 
-import models from '../database/models';
+import database from '../database';
 import UserService from './UserService';
 import HttpError from '../helpers/errorHandler';
 import cache from '../cache';
 import RemoveDataValues from '../helpers/removeDataValues';
 
-
+const { models } = database;
 const {
   Department, User, TripRequest, Country
 } = models;
-const getDeptKey = id => `dept_${id}`;
+const getDeptKey = (id) => `dept_${id}`;
 const userInclude = {
   model: User,
   as: 'head',
@@ -21,10 +21,10 @@ const userInclude = {
 export const departmentDataAttributes = {
   attributes: [
     'departmentId',
-    [models.sequelize.literal('department.name'), 'departmentName'],
-    [models.sequelize.fn('avg', models.sequelize.col('rating')), 'averageRating'],
-    [models.sequelize.fn('count', models.sequelize.col('departmentId')), 'totalTrips'],
-    [models.sequelize.fn('sum', models.sequelize.col('cost')), 'totalCost'],
+    [database.literal('department.name'), 'departmentName'],
+    [database.fn('avg', database.col('rating')), 'averageRating'],
+    [database.fn('count', database.col('departmentId')), 'totalTrips'],
+    [database.fn('sum', database.col('cost')), 'totalCost'],
   ],
   group: ['department.id', 'TripRequest.departmentId'],
 };
@@ -158,7 +158,7 @@ class DepartmentService {
       include: ['head'],
       where: { homebaseId }
     });
-    return departments.map(item => ({
+    return departments.map((item) => ({
       label: item.dataValues.name,
       value: item.dataValues.id,
       head: item.dataValues.head ? item.dataValues.head.dataValues : item.dataValues.head

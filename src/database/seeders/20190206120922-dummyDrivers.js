@@ -1,5 +1,5 @@
 module.exports = {
-  up: queryInterface => queryInterface.bulkInsert('Drivers', [{
+  up: (queryInterface) => queryInterface.bulkInsert('Drivers', [{
     driverName: 'James Savali',
     driverPhoneNo: 708989098,
     driverNumber: 254234,
@@ -28,5 +28,5 @@ module.exports = {
   }
   ],
   {}),
-  down: queryInterface => queryInterface.bulkDelete('Drivers', null, {})
+  down: (queryInterface) => queryInterface.bulkDelete('Drivers', null, {})
 };

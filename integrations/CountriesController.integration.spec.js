@@ -1,12 +1,12 @@
 import requestCall from 'supertest';
 import app from '../src/app';
-import models from '../src/database/models';
+import database from '../src/database';
 import Utils from '../src/utils';
 import {
   mockCreateCountry, mockDeleteCountry, mockUpdateCountry
 } from '../src/modules/countries/__mocks__';
 
-const { Country } = models;
+const { models: { Country } } = database;
 
 describe('Countries controller', () => {
   let validToken;
@@ -19,7 +19,7 @@ describe('Countries controller', () => {
     jest.restoreAllMocks();
   });
   afterAll(() => {
-    models.sequelize.close();
+    database.close();
   });
 
   it('e2e Test: should return a list of all countries', async () => {

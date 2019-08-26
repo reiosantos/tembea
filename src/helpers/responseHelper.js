@@ -8,7 +8,7 @@ class Response {
   }
 }
 
-export const getPaginationMessage = pageMeta => (
+export const getPaginationMessage = (pageMeta) => (
   `${pageMeta.pageNo} of ${pageMeta.totalPages} page(s).`
 );
 

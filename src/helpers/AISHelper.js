@@ -52,7 +52,7 @@ addDataValues({
   client_id: ''
 });
 
-export const AisData = email => ({
+export const AisData = (email) => ({
   success: 'true',
   aisUserData: {
     id: '-Leq62lHFgakZGSjztk1',

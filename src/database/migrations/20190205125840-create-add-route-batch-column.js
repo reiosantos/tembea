@@ -12,5 +12,5 @@ module.exports = {
     }
   ),
 
-  down: queryInterface => queryInterface.removeColumn('Users', 'routeBatchId')
+  down: (queryInterface) => queryInterface.removeColumn('Users', 'routeBatchId')
 };

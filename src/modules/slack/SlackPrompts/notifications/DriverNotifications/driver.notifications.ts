@@ -4,17 +4,17 @@ import TeamDetailsService from '../../../../../services/TeamDetailsService';
 import { bugsnagHelper, SlackInteractiveMessage } from '../../../RouteManagement/rootFile';
 import DriverService from '../../../../../services/DriverService';
 import { SlackText } from '../../../../new-slack/models/slack-block-models';
-import { ITripInformation } from '../../../../../database/models/interfaces/trip.interface';
+import { ITripRequest } from '../../../../../database/models/interfaces/trip-request.interface';
 import { IDriver } from '.../../../database/models/interfaces/driver.interface';
 
-class DriverNotifications {
+export default class DriverNotifications {
   /**
    * Sends Driver notification for trip Assigned
    * @param {string} teamId to get team bot token
    * @param {object} trip requested approved
    * @param {string} driverSlackId of the driver assigned
    */
-  static async sendDriverTripApproveNotification(teamId: string, trip: ITripInformation,
+  static async sendDriverTripApproveNotification(teamId: string, trip: ITripRequest,
                                                  driverSlackId: string) {
     const tripData = { ...trip, driverSlackId };
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
@@ -34,13 +34,13 @@ class DriverNotifications {
    * @param {object} trip
    */
   static async checkAndNotifyDriver(driver: IDriver, teamId: string,
-                                    trip: ITripInformation, respond: Function) {
+                                    trip: ITripRequest, respond: Function) {
     try {
       const { userId, id } = driver;
       if (userId) {
         const { user: { slackId: driverSlackId } } = await DriverService.findOneDriver(
         { where: { id } },
-      );
+      ) as IDriver;
         const message = new
         SlackInteractiveMessage(':white_check_mark: I have notified the driver'
         + ` <@${driverSlackId}> :smiley:`);
@@ -56,5 +56,3 @@ class DriverNotifications {
 
   }
 }
-
-export default DriverNotifications;

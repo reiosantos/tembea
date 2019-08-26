@@ -166,7 +166,7 @@ export const createPayloadWithEmbassyTime = (value = 'value', name = 'name') => 
 });
 
 
-export const respondMock = () => (jest.fn(value => value));
+export const respondMock = () => (jest.fn((value) => value));
 
 export const OpsTripActionDataMock = {
   actions: [{ name: 'confirmTrip', type: 'button', value: '25' }],

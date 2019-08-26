@@ -1,5 +1,5 @@
 module.exports = {
-  up: queryInterface => queryInterface.bulkInsert('JoinRequests', [
+  up: (queryInterface) => queryInterface.bulkInsert('JoinRequests', [
     {
       engagementId: 1,
       managerId: 2,
@@ -11,5 +11,5 @@ module.exports = {
     }
   ]),
 
-  down: queryInterface => queryInterface.bulkDelete('JoinRequests', null, {})
+  down: (queryInterface) => queryInterface.bulkDelete('JoinRequests', null, {})
 };

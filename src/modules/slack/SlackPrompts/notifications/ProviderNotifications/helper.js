@@ -29,7 +29,7 @@ class ProviderAttachmentHelper {
     const attachments = [
       attachment, routeAttachment, routeInformation
     ];
-    attachments.filter(item => !!item).forEach(at => at.addOptionalProps('providers_route_approval', '/fallback', color));
+    attachments.filter((item) => !!item).forEach((at) => at.addOptionalProps('providers_route_approval', '/fallback', color));
     return SlackNotifications.createDirectMessage(
       channelID,
       'Hi :smiley:, you have received a route request, please assign a cab and a driver',
@@ -125,8 +125,8 @@ class ProviderAttachmentHelper {
       attachment, routeAttachment, engagementAttachment, routeInformation
     ];
     attachments
-      .filter(item => !!item)
-      .forEach(at => at.addOptionalProps('', '/fallback', color));
+      .filter((item) => !!item)
+      .forEach((at) => at.addOptionalProps('', '/fallback', color));
     const greeting = managerStatus ? `Hi, <@${manager.slackId}>` : 'Hi there';
     return SlackNotifications.createDirectMessage(
       channelID,
@@ -151,8 +151,8 @@ class ProviderAttachmentHelper {
       attachment, routeAttachment, engagementAttachment, routeInformation
     ];
     attachments
-      .filter(item => !!item)
-      .forEach(at => at.addOptionalProps('', '/fallback', color));
+      .filter((item) => !!item)
+      .forEach((at) => at.addOptionalProps('', '/fallback', color));
     const greeting = `Hi, <@${fellow.slackId}>`;
     return SlackNotifications.createDirectMessage(
       channelID,
@@ -167,7 +167,7 @@ class ProviderAttachmentHelper {
     const routeAttachment = AttachmentHelper.routeRequestAttachment(routeRequest);
     const routeInformation = ProviderAttachmentHelper.providerRouteInformation(submission);
     const attachments = [header, routeAttachment, routeInformation, footer];
-    attachments.forEach(at => at.addOptionalProps(
+    attachments.forEach((at) => at.addOptionalProps(
       '', '/fallback', '#3AAF85'
     ));
     return attachments;

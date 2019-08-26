@@ -1,11 +1,13 @@
 import faker from 'faker';
 import { driverService } from '../src/services/DriverService';
-import models from '../src/database/models';
+import database from '../src/database';
 import {
   createUser,
   createProvider,
   createDriver,
 } from './support/helpers';
+
+const { models } = database;
 
 describe('DriverService', () => {
   let mockUser;
@@ -44,7 +46,7 @@ describe('DriverService', () => {
   });
 
   afterAll(() => {
-    models.sequelize.close();
+    database.close();
   });
 
   describe('DriverService > getDriverById', () => {

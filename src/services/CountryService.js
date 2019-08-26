@@ -1,10 +1,10 @@
 import { Op } from 'sequelize';
 import request from 'request-promise-native';
-import models from '../database/models';
+import database from '../database';
 import RemoveDataValues from '../helpers/removeDataValues';
 import HttpError from '../helpers/errorHandler';
 
-const { Country } = models;
+const { models: { Country } } = database;
 
 class CountryService {
   /**

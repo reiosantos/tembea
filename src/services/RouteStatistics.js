@@ -1,11 +1,13 @@
-import { Op } from 'sequelize';
-import models from '../database/models';
+import sequelize from 'sequelize';
+import database from '../database';
 import RemoveDataValues from '../helpers/removeDataValues';
 import aisService from './AISService';
 
 const {
-  BatchUseRecord, RouteUseRecord, sequelize, User, Route, RouteBatch
-} = models;
+  models: {
+    BatchUseRecord, RouteUseRecord, User, Route, RouteBatch
+  }
+} = database;
 
 class RouteStatistics {
   /**
@@ -24,7 +26,7 @@ class RouteStatistics {
         ],
         where: {
           userAttendStatus: 'Confirmed',
-          createdAt: { [Op.between]: [startDate, endDate] }
+          createdAt: { [sequelize.Op.between]: [startDate, endDate] }
         },
         limit: 5,
         include: [...RouteStatistics.includeUsersOnRouteQuery(homebaseId)],

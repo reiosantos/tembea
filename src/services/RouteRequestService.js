@@ -1,8 +1,9 @@
-import models from '../database/models';
+import database from '../database';
 import TeamDetailsService from './TeamDetailsService';
 import { getRequest } from './SerivceUtils';
 import RemoveDataValues from '../helpers/removeDataValues';
 
+const { models } = database;
 const {
   RouteRequest, Engagement, Cab, Address, Country
 } = models;

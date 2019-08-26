@@ -7,7 +7,7 @@ module.exports = {
     )
   ]),
   
-  down: queryInterface => Promise.all([
+  down: (queryInterface) => Promise.all([
     queryInterface.removeColumn('Cabs', 'deletedAt')
   ])
 };

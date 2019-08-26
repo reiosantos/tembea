@@ -1,9 +1,9 @@
 import RoleService from '../RoleService';
-import models from '../../database/models';
+import database from '../../database';
 import HttpError from '../../helpers/errorHandler';
 import UserService from '../UserService';
 
-const { Role, UserRole } = models;
+const { models: { Role, UserRole } } = database;
 
 describe('Role Service', () => {
   afterEach(() => {

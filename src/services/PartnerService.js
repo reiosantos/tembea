@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
-import models from '../database/models';
+import database from '../database';
 
-const { Partner, Engagement } = models;
+const { models: { Partner, Engagement } } = database;
 
 class PartnerService {
   /**

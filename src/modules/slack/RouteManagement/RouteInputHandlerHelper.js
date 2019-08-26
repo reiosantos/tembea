@@ -128,7 +128,7 @@ export default class RouteInputHandlerHelper {
   static async getLocationDetailsFromCache(payload, key, coordinateValue = null) {
     const locationResult = (await Cache.fetch(payload.user.id))[`${key}`];
     if (coordinateValue) {
-      const locationMatch = locationResult.filter(item => item.value === coordinateValue)
+      const locationMatch = locationResult.filter((item) => item.value === coordinateValue)
         .map((item) => {
           const { value: coordinate, text: address } = item;
           return { address, ...RouteInputHandlerHelper.getLongLat(coordinate) };
