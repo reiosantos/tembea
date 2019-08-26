@@ -64,7 +64,7 @@ describe('Interactive Prompts test', () => {
   });
 
   it('should sendBookNewTrip Response', (done) => {
-    const respond = jest.fn(value => value);
+    const respond = jest.fn((value) => value);
     const payload = jest.fn(() => 'respond');
     const result = InteractivePrompts.sendBookNewTripResponse(payload, respond);
     expect(result).toBe(undefined);
@@ -88,7 +88,7 @@ describe('Interactive Prompts test', () => {
   });
 
   it('should create view open trips response', (done) => {
-    const respond = jest.fn(value => value);
+    const respond = jest.fn((value) => value);
     const result = InteractivePromptSlackHelper.sendCompletionResponse(respond, 1, 'UH1RT223');
     expect(result).toBe(undefined);
     expect(respond).toHaveBeenCalledWith(sendCompletionResponseMock);
@@ -264,7 +264,7 @@ describe('Interactive Prompts test', () => {
 
 describe('test send add passenger response', () => {
   it('should provide an interface to add passengers', (done) => {
-    const respond = jest.fn(value => value);
+    const respond = jest.fn((value) => value);
     InteractivePrompts.sendAddPassengersResponse(respond);
     expect(respond).toHaveBeenCalled();
     done();
@@ -273,7 +273,7 @@ describe('test send add passenger response', () => {
 
 describe('test send add passenger response with forSelf as [false]', () => {
   it('should provide an interface to add passengers', (done) => {
-    const respond = jest.fn(value => value);
+    const respond = jest.fn((value) => value);
     InteractivePrompts.sendAddPassengersResponse(respond, false);
     expect(respond).toHaveBeenCalled();
     done();
@@ -382,7 +382,7 @@ describe('LocationPrompts', () => {
   });
 
   it('should sendLocationConfirmationResponse', () => {
-    const respond = jest.fn(value => value);
+    const respond = jest.fn((value) => value);
     LocationPrompts.sendLocationConfirmationResponse(
       respond,
       'https://staticMap',
@@ -393,13 +393,13 @@ describe('LocationPrompts', () => {
   });
 
   it('Should call respond', () => {
-    const respond = jest.fn(value => value);
+    const respond = jest.fn((value) => value);
     LocationPrompts.errorPromptMessage(respond);
     expect(respond).toBeCalled();
   });
 
   describe('sendMapsConfirmationResponse', () => {
-    const respond = jest.fn(value => value);
+    const respond = jest.fn((value) => value);
     const locationData = {
       staticMapUrl: 'https://staticMap', address: 'test location', locationGeometry: '1,1', actionType: 'travel_trip'
     };
@@ -420,13 +420,13 @@ describe('LocationPrompts', () => {
   });
 
   it('Should call respond', () => {
-    const respond = jest.fn(value => value);
+    const respond = jest.fn((value) => value);
     LocationPrompts.errorPromptMessage(respond);
     expect(respond).toBeCalled();
   });
 
   it('should sendLocationCoordinatesNotFound', () => {
-    const respond = jest.fn(value => value);
+    const respond = jest.fn((value) => value);
     LocationPrompts.sendLocationCoordinatesNotFound(respond);
     expect(respond).toBeCalled();
   });
@@ -454,7 +454,7 @@ describe('LocationPrompts', () => {
 
     it('should create view open schedule trips response', async () => {
       const tripDetails = createTripData();
-      const respond = jest.fn(value => value);
+      const respond = jest.fn((value) => value);
       jest.spyOn(PreviewScheduleTrip, 'previewScheduleTripAttachments').mockResolvedValue();
       await InteractivePrompts.sendScheduleTripResponse(tripDetails, respond);
       const confirm = new SlackButtonAction('confirmTripRequest', 'Confirm Trip', 'confirm');
@@ -472,7 +472,7 @@ describe('LocationPrompts', () => {
   });
   describe('InteractivePrompts_sendCancelRequestResponse', () => {
     it('should create view open schedule trips response', async () => {
-      const respond = jest.fn(value => value);
+      const respond = jest.fn((value) => value);
       const result = await InteractivePromptSlackHelper.sendCancelRequestResponse(respond);
       expect(result).toBe(undefined);
       expect(respond).toHaveBeenCalled();
@@ -498,7 +498,7 @@ describe('LocationPrompts', () => {
   describe('InteractivePrompts_sendSelectDestination', () => {
     it('should create select destination button', async () => {
       optionalPropsSpy = jest.spyOn(SlackAttachment.prototype, 'addOptionalProps');
-      const respond = jest.fn(value => value);
+      const respond = jest.fn((value) => value);
       const result = await InteractivePrompts.sendSelectDestination(respond);
       expect(result).toBe(undefined);
       expect(respond).toHaveBeenCalled();

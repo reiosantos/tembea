@@ -9,5 +9,5 @@ module.exports = {
     }
   }),
 
-  down: queryInterface => queryInterface.removeColumn('RouteRequests', 'opsReviewerId')
+  down: (queryInterface) => queryInterface.removeColumn('RouteRequests', 'opsReviewerId')
 };

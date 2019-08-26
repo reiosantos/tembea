@@ -8,7 +8,7 @@ class CleanData {
       }
       if (cleaned[key] && typeof cleaned[key] === 'object'
         && cleaned[key].constructor === Array) {
-        cleaned[key] = cleaned[key].map(item => CleanData.trim(item));
+        cleaned[key] = cleaned[key].map((item) => CleanData.trim(item));
       }
       if (cleaned[key] && typeof cleaned[key] === 'object'
         && cleaned[key].constructor === Object) {

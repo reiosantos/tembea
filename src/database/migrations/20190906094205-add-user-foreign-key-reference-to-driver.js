@@ -1,7 +1,6 @@
 
-
 module.exports = {
-  up: queryInterface => queryInterface.addConstraint('Drivers', ['userId'], {
+  up: (queryInterface) => queryInterface.addConstraint('Drivers', ['userId'], {
     type: 'FOREIGN KEY',
     name: 'userid_fk',
     references: {
@@ -11,6 +10,6 @@ module.exports = {
     onDelete: 'restrict',
     onUpdate: 'restrict',
   }),
-  down: queryInterface => queryInterface.removeConstraint('Drivers', 'userid_fk')
+  down: (queryInterface) => queryInterface.removeConstraint('Drivers', 'userid_fk')
 
 };

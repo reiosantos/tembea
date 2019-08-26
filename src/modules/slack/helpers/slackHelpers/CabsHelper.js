@@ -1,5 +1,4 @@
 
-
 export default class CabsHelper {
   /**
    * generates the cab label to be used for a cab

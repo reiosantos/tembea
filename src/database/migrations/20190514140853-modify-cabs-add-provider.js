@@ -7,5 +7,5 @@ module.exports = {
       as: 'provider'
     }
   }),
-  down: queryInterface => queryInterface.removeColumn('Cabs', 'providerId')
+  down: (queryInterface) => queryInterface.removeColumn('Cabs', 'providerId')
 };

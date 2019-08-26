@@ -1,5 +1,5 @@
 import tripService, { TripService } from '../TripService';
-import models from '../../database/models';
+import database from '../../database';
 import {
   mockedValue, tripInfo, mockTrip, updatedValue, mockAirportTransferTrip, providerMock
 } from '../../modules/trips/__tests__/__mocks__';
@@ -7,7 +7,7 @@ import cache from '../../cache';
 import RemoveDataValues from '../../helpers/removeDataValues';
 import TravelTripService from '../TravelTripService';
 
-const { TripRequest } = models;
+const { models: { TripRequest } } = database;
 
 describe('TripService', () => {
   afterEach(() => {

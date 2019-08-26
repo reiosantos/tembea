@@ -1,11 +1,11 @@
-import models from '../../database/models';
+import database from '../../database';
 import Cache from '../../cache';
 import RouteRequestService from '../RouteRequestService';
 import { mockRouteData, mockRouteRequestData } from '../__mocks__';
 import RemoveDataValues from '../../helpers/removeDataValues';
 import TeamDetailsService from '../TeamDetailsService';
 
-const { RouteRequest } = models;
+const { models: { RouteRequest } } = database;
 
 describe('Route Request Service', () => {
   let create;

@@ -1,6 +1,6 @@
-import { Op } from 'sequelize';
+import sequelize from 'sequelize';
 import moment from 'moment';
-import models from '../database/models';
+import database from '../database';
 import Cache from '../cache';
 import { MAX_INT as all } from '../helpers/constants';
 import HttpError from '../helpers/errorHandler';
@@ -13,8 +13,12 @@ import appEvents from '../modules/events/app-event.service';
 import { routeEvents } from '../modules/events/route-events.constants';
 
 const {
-  Route, RouteBatch, Cab, Address, User, sequelize, Sequelize, Driver, Homebase, Country
-} = models;
+  models: {
+    Route, RouteBatch, Cab, Address, User, Driver, Homebase, Country
+  }
+} = database;
+
+const { Op } = sequelize;
 
 export const homebaseInfo = {
   model: Homebase,
@@ -83,7 +87,8 @@ class RouteService extends BaseService {
    * @memberof RouteService
    */
   static get defaultRouteGroupBy() {
-    return ['RouteBatch.id', 'cabDetails.id', 'route.id', 'route->destination.id', 'driver.id', 'homebase.id', 'homebase->country.name', 'homebase->country.id'];
+    return ['RouteBatch.id', 'cabDetails.id', 'route.id', 'route->destination.id', 'driver.id',
+      'homebase.id', 'homebase->country.name', 'homebase->country.id'];
   }
 
   /**
@@ -145,11 +150,11 @@ class RouteService extends BaseService {
       HttpError.throwErrorIfNull(null, 'Route capacity has been exhausted', 403);
     }
     const updateUserTable = UserService.getUserById(userId)
-      .then(user => user.update({ routeBatchId: route.id }));
+      .then((user) => user.update({ routeBatchId: route.id }));
     const updateRoute = await route.update({ inUse: route.riders.length + 1 });
     await Cache.saveObject(`Route_${updateRoute.id}`, { updateRoute });
 
-    await sequelize.transaction(() => Promise.all([updateUserTable, updateRoute]));
+    await database.transaction(() => Promise.all([updateUserTable, updateRoute]));
   }
 
   static async getBatches(filter) {
@@ -242,7 +247,7 @@ class RouteService extends BaseService {
       subQuery: false,
       order,
       attributes: [
-        [Sequelize.fn('COUNT', Sequelize.col('riders.routeBatchId')), 'inUse'],
+        [sequelize.fn('COUNT', sequelize.col('riders.routeBatchId')), 'inUse'],
         ...RouteService.defaultRouteDetails
       ],
       include: [
@@ -332,7 +337,7 @@ class RouteService extends BaseService {
     const filterByDate = ` AND DATE(RUR."batchUseDate") >= '${from || previousMonthStart}'
     AND DATE(RUR."batchUseDate") <= '${to || previousMonthEnd}'`;
     query += filterByDate;
-    const results = await sequelize.query(query);
+    const results = await database.query(query);
     return results;
   }
 }

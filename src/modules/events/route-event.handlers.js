@@ -31,7 +31,7 @@ export default class RouteEventHandlers {
         );
 
         const { riders, takeOff } = batchWithRiders;
-        await Promise.all(riders.map(rider => RouteHelper.sendTakeOffReminder(rider,
+        await Promise.all(riders.map((rider) => RouteHelper.sendTakeOffReminder(rider,
           batchWithRiders, botToken)));
         ConfirmRouteUseJob.scheduleTripCompletionNotification({
           recordId: record.id, takeOff, botToken
@@ -46,7 +46,7 @@ export default class RouteEventHandlers {
     const record = await RouteUseRecordService.getByPk(recordId, true);
     if (record && record.batch && record.batch.riders && record.batch.riders.length > 0) {
       const { riders } = record.batch;
-      await Promise.all(riders.map(rider => RouteHelper.sendCompletionNotification(rider,
+      await Promise.all(riders.map((rider) => RouteHelper.sendCompletionNotification(rider,
         record, botToken)));
     }
   }

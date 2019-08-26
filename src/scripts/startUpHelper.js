@@ -1,10 +1,10 @@
 import bugsnagHelper from '../helpers/bugsnagHelper';
-import models from '../database/models';
+import database from '../database';
 import RoleService from '../services/RoleService';
 import cache from '../cache';
 import RouteEventHandlers from '../modules/events/route-event.handlers';
 
-const { User } = models;
+const { models: { User } } = database;
 
 class StartUpHelper {
   static async ensureSuperAdminExists() {

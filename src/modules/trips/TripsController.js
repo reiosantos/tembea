@@ -49,7 +49,7 @@ class TripsController {
 
   static appendPropsToPayload(payload, req) {
     const { body: { comment, isAssignProvider }, query: { action } } = req;
-    const derivedPayload = Object.assign({}, payload);
+    const derivedPayload = { ...payload };
     if (action === 'confirm') {
       derivedPayload.submission = TripsController.getConfirmationSubmission(req.body);
       const state = JSON.parse(derivedPayload.state);

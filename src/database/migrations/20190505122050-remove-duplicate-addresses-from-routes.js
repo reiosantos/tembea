@@ -1,5 +1,5 @@
 module.exports = {
-  up: queryInterface => queryInterface.sequelize.query(`
+  up: (queryInterface) => queryInterface.sequelize.query(`
     DO $$
       DECLARE
         addr record;

@@ -37,7 +37,7 @@ export class SlackText {
   }
 }
 
-export const ensureSlackText = text => (typeof text === 'string'
+export const ensureSlackText = (text) => (typeof text === 'string'
   ? new SlackText(text) : text);
 
 // block and children

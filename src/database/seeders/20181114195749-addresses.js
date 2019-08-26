@@ -1,5 +1,5 @@
 module.exports = {
-  up: queryInterface => queryInterface.bulkInsert('Addresses', [
+  up: (queryInterface) => queryInterface.bulkInsert('Addresses', [
     {
       locationId: 1,
       address: 'the dojo Nairobi',

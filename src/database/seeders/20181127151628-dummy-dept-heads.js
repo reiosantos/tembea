@@ -1,5 +1,5 @@
 module.exports = {
-  up: queryInterface => queryInterface.bulkInsert('Users', [
+  up: (queryInterface) => queryInterface.bulkInsert('Users', [
     {
       name: 'Abishai Omari',
       slackId: 'UE1FCCKB7',
@@ -37,5 +37,5 @@ module.exports = {
     }
   ]),
 
-  down: queryInterface => queryInterface.bulkDelete('Users')
+  down: (queryInterface) => queryInterface.bulkDelete('Users')
 };

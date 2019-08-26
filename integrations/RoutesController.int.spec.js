@@ -1,22 +1,26 @@
 import requestCall from 'supertest';
 import faker from 'faker';
 import app from '../src/app';
-import models from '../src/database/models';
+import database from '../src/database';
 import { mockRouteRequestData } from '../src/services/__mocks__';
 import Utils from '../src/utils';
 import { createUser } from './support/helpers';
 
-const { RouteRequest, Engagement } = models;
+const {
+  models: {
+    RouteRequest, Engagement, Country, Homebase,
+  }
+} = database;
 
 describe('Route Request Controller', () => {
   let validToken;
   let mockUser;
 
   beforeAll(async () => {
-    const { id } = await models.Country.create({
+    const { id } = await Country.create({
       name: faker.name.findName(),
     });
-    const homebase = await models.Homebase.create({
+    const homebase = await Homebase.create({
       country: faker.name.findName(),
       countryId: id
     });
@@ -68,7 +72,7 @@ describe('Route Request Controller', () => {
   });
 
   afterAll(async () => {
-    await models.sequelize.close();
+    await database.close();
   });
 
   it('e2e Test: should return a list of all route requests', (done) => {

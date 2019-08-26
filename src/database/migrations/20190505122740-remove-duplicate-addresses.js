@@ -1,5 +1,5 @@
 module.exports = {
-  up: queryInterface => queryInterface.sequelize.query(`
+  up: (queryInterface) => queryInterface.sequelize.query(`
     WITH uniques AS (
       SELECT DISTINCT ON (address) * FROM "Addresses" ORDER BY address, "updatedAt" DESC
     )

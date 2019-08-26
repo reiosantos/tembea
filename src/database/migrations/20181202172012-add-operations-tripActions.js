@@ -4,7 +4,7 @@ module.exports = {
       type: Sequelize.TEXT,
     }
   ),
-  down: queryInterface => queryInterface.removeColumn(
+  down: (queryInterface) => queryInterface.removeColumn(
     'TripRequests',
     'operationsComment',
   )

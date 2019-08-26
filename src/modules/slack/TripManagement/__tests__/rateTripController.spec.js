@@ -62,7 +62,7 @@ describe('RateTripController', () => {
 
   describe('rateTrip', () => {
     const respond = jest.fn();
-    const getWebClientMock = mock => ({
+    const getWebClientMock = (mock) => ({
       dialog: { open: mock }
     });
     beforeAll(() => {

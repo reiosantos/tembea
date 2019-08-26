@@ -1,5 +1,5 @@
 import DriverService, { driverService } from '../DriverService';
-import models from '../../database/models';
+import database from '../../database';
 import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
 import ProviderHelper from '../../helpers/providerHelper';
 import RemoveDataValues from '../../helpers/removeDataValues';
@@ -7,8 +7,8 @@ import RemoveDataValues from '../../helpers/removeDataValues';
 
 jest.mock('../../helpers/sequelizePaginationHelper', () => jest.fn());
 const {
-  Driver, sequelize
-} = models;
+  models: { Driver }
+} = database;
 
 describe('Driver Service', () => {
   let testDriver;
@@ -23,7 +23,7 @@ describe('Driver Service', () => {
   });
   afterAll(async () => {
     await testDriver.destroy({ force: true });
-    await sequelize.close();
+    await database.close();
   });
   it('should create driver successfully', async () => {
     const driver = await driverService.create({
@@ -122,12 +122,12 @@ describe('Driver Service', () => {
       expect(driver).toEqual(driverDetails);
     });
     it('should check if a driver already exists when updating', async () => {
-      jest.spyOn(sequelize, 'query').mockResolvedValue([[{ count: true }]]);
+      jest.spyOn(database, 'query').mockResolvedValue([[{ count: true }]]);
       const driverExists = await DriverService.exists('deo@andela.com', '891293', '123123', 1);
       expect(driverExists).toBe(true);
     });
     it('should check if a driver already exists when adding a driver', async () => {
-      jest.spyOn(sequelize, 'query').mockResolvedValue([[{ count: true }]]);
+      jest.spyOn(database, 'query').mockResolvedValue([[{ count: true }]]);
       const driverExists = await DriverService.exists('deo@andela.com', '891293', '123123');
       expect(driverExists).toBe(true);
     });

@@ -86,7 +86,7 @@ describe('MonthlyReportSender', () => {
   describe('sendMail', () => {
     beforeEach(() => {
       jest.spyOn(MonthlyReportSender, 'getAddresses').mockResolvedValue(
-        departmentsMock.map(department => ({
+        departmentsMock.map((department) => ({
           name: department.head.name,
           email: department.head.email,
         }))
@@ -103,8 +103,8 @@ describe('MonthlyReportSender', () => {
 
       jest.spyOn(ReportGeneratorService, 'getOverallTripsSummary')
         .mockImplementation(() => ({ month: '', departments: '', percentageChange: 20 }));
-      jest.spyOn(MonthlyReportSender, 'getEmailReportAttachment').mockImplementation(() => (new Promise(resolve => resolve(''))));
-      jest.spyOn(MonthlyReportSender, 'processAttachments').mockImplementation(() => (new Promise(resolve => resolve([{}]))));
+      jest.spyOn(MonthlyReportSender, 'getEmailReportAttachment').mockImplementation(() => (new Promise((resolve) => resolve(''))));
+      jest.spyOn(MonthlyReportSender, 'processAttachments').mockImplementation(() => (new Promise((resolve) => resolve([{}]))));
       jest.spyOn(Utils, 'writableToReadableStream').mockImplementation(() => [{}]);
       
       

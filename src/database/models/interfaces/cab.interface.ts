@@ -1,7 +1,7 @@
 export interface ICab {
   id: number;
   model: string;
-  capacity: string;
+  capacity: number;
   regNumber: string;
   providerId: number;
 }

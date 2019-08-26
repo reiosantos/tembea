@@ -1,6 +1,6 @@
 module.exports = {
   up: (queryInterface, Sequelize) => (
-    queryInterface.sequelize.transaction(t => (
+    queryInterface.sequelize.transaction((t) => (
       Promise.all([
         queryInterface.addColumn('Providers', 'isDirectMessage', {
           type: Sequelize.BOOLEAN,
@@ -15,7 +15,7 @@ module.exports = {
     ))
   ),
 
-  down: queryInterface => queryInterface.sequelize.transaction(t => (
+  down: (queryInterface) => queryInterface.sequelize.transaction((t) => (
     Promise.all([
       queryInterface.removeColumn('Providers', 'isDirectMessage', { transaction: t }),
       queryInterface.removeColumn('Providers', 'channelId', { transaction: t })

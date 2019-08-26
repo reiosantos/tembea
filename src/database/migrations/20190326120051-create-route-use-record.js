@@ -1,5 +1,4 @@
 
-
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.createTable('RouteUseRecords', {
     id: {
@@ -50,5 +49,5 @@ module.exports = {
       type: Sequelize.DATE
     }
   }),
-  down: queryInterface => queryInterface.dropTable('RouteUseRecords')
+  down: (queryInterface) => queryInterface.dropTable('RouteUseRecords')
 };

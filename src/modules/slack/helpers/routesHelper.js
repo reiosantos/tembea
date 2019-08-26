@@ -62,7 +62,7 @@ class RoutesHelpers {
       ProviderAttachmentHelper.providerRouteFields(route),
       ProviderAttachmentHelper.cabFields(route.cabDetails),
       ProviderAttachmentHelper.driverFields(route.driver)
-    ].map(field => attachments.addFieldsOrActions('fields', field));
+    ].map((field) => attachments.addFieldsOrActions('fields', field));
 
 
     return new SlackInteractiveMessage(

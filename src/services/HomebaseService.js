@@ -1,10 +1,10 @@
 import { Op } from 'sequelize';
-import models from '../database/models';
+import database from '../database';
 import RemoveDataValues from '../helpers/removeDataValues';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import UserService from './UserService';
 
-const { Homebase, Country } = models;
+const { models: { Homebase, Country } } = database;
 
 class HomebaseService {
   static async createHomebase(homebaseName, countryId, channel) {
@@ -47,7 +47,7 @@ class HomebaseService {
       size
     );
     const { data, pageMeta } = await paginatedHomebases.getPageItems(page);
-    const homebases = data.map(homebase => HomebaseService.serializeHomebases(homebase));
+    const homebases = data.map((homebase) => HomebaseService.serializeHomebases(homebase));
     return { homebases, ...pageMeta };
   }
 

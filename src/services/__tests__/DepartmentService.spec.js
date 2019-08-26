@@ -1,6 +1,6 @@
 import faker from 'faker';
 import DepartmentService from '../DepartmentService';
-import model from '../../database/models';
+import database from '../../database';
 import UserService from '../UserService';
 import { departmentMocks } from '../__mocks__';
 import cache from '../../cache';
@@ -8,7 +8,7 @@ import { createCountry, createUser } from '../../../integrations/support/helpers
 import HomebaseService from '../HomebaseService';
 
 
-const { Department, TripRequest, sequelize } = model;
+const { models: { Department, TripRequest, sequelize } } = database;
 
 describe('/DepartmentService', () => {
   afterAll(() => {

@@ -2,7 +2,7 @@ import request from 'supertest';
 import faker from 'faker';
 import app from '../../../app';
 import Utils from '../../../utils';
-import models from '../../../database/models';
+import database from '../../../database';
 import {
   createCountry, createDepartment, createUser
 } from '../../../../integrations/support/helpers';
@@ -57,7 +57,7 @@ describe('/Departments update', () => {
   });
 
   afterAll(() => {
-    models.sequelize.close();
+    database.close();
   });
 
   it('should return a department not found error with wrong id', async () => {

@@ -1,11 +1,11 @@
 import faker from 'faker';
 import UserService from '../UserService';
-import models from '../../database/models';
+import database from '../../database';
 
-const { User } = models;
+const { models: { User } } = database;
 
 afterAll(() => {
-  models.sequelize.close();
+  database.close();
 });
 
 
@@ -103,7 +103,8 @@ describe('/Users service', () => {
     });
 
     it('should get fellows on route', async () => {
-      const data = await UserService.getPagedFellowsOnOrOffRoute(true, { size: 1, page: 1 }, { homebaseId: 1 });
+      const data = await UserService
+        .getPagedFellowsOnOrOffRoute(true, { size: 1, page: 1 }, { homebaseId: 1 });
       expect(data.data).toBeDefined();
       expect(data.data).toBeInstanceOf(Array);
       expect(data.pageMeta).toBeDefined();

@@ -17,7 +17,7 @@ export default class PreviewScheduleTrip {
 
   static formatName(name) {
     if (typeof name === 'string') {
-      return name.split('.').map(txt => `${txt[0].toUpperCase()}${txt.substr(1)}`).join(' ');
+      return name.split('.').map((txt) => `${txt[0].toUpperCase()}${txt.substr(1)}`).join(' ');
     }
   }
 

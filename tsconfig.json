@@ -19,12 +19,13 @@
         "removeComments": true,
         "allowSyntheticDefaultImports": true,
         "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
+        "experimentalDecorators": true
     },
     "include": [
         "src/**/*"
     ],
     "exclude": [
-        "src/database"
+        "src/database/migrations",
+        "src/database/seeders"
     ]
 }

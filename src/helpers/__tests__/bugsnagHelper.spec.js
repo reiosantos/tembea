@@ -60,7 +60,7 @@ describe('bugsnag tests', () => {
       expect(mockedBugsnag.notify).toBeCalledWith(error);
     });
     it('should log via console in dev environment', () => {
-      envSpy.mockImplementation(isTest => (!isTest));
+      envSpy.mockImplementation((isTest) => (!isTest));
       bugsnagHelper = new Bugsnag(bugsnagApiKey);
       bugsnagHelper.log(error);
       // eslint-disable-next-line no-console

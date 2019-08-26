@@ -1,5 +1,5 @@
 module.exports = {
-  up: queryInterface => queryInterface.sequelize.query(`
+  up: (queryInterface) => queryInterface.sequelize.query(`
     DO $$
     DECLARE
       num_rows integer := (select count(*) from "Addresses" where address = 'Andela Nairobi');

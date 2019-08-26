@@ -26,7 +26,7 @@ import {
   batchRecords, successMessage, returnedObject, percentages
 } from '../__mocks__/routeMock';
 import { MockRatings, RatingAverages } from '../__mocks__/mockData';
-import models from '../../../database/models';
+import database from '../../../database';
 
 const assertRouteInfo = (body) => {
   expect(body)
@@ -53,7 +53,7 @@ describe('RoutesController', () => {
     jest.restoreAllMocks();
   });
   afterAll(() => {
-    models.sequelize.close();
+    database.close();
   });
 
   describe('deleteRouteBatch()', () => {
@@ -450,7 +450,8 @@ describe('RoutesController', () => {
       ratingsSpy.mockReturnValue(MockRatings);
       await RoutesUsageController.getRouteRatings(req, res);
       expect(Response.sendResponse).toBeCalled();
-      expect(Response.sendResponse).toBeCalledWith(res, 200, true, 'Ratings Fetched Successfully', RatingAverages);
+      expect(Response.sendResponse).toBeCalledWith(res, 200, true, 'Ratings Fetched Successfully',
+        RatingAverages);
     });
 
     it('should catch error on get ratings fail', async () => {

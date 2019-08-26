@@ -36,7 +36,7 @@ export const getSlackDateString = (dateTime) => {
   return `<!date^${original}^{date_long} ${year} at {time}|${fallback}>`;
 };
 
-export const timeTo12hrs = hrs24 => moment(hrs24, 'HH:mm', true)
+export const timeTo12hrs = (hrs24) => moment(hrs24, 'HH:mm', true)
   .format('hh:mm a')
   .toUpperCase();
 
@@ -47,7 +47,7 @@ const timeZones = Object.freeze({
   kigali: 'Africa/Kigali',
   nairobi: 'Africa/Nairobi'
 });
-export const getTimezone = homebase => timeZones[homebase.toLowerCase()];
+export const getTimezone = (homebase) => timeZones[homebase.toLowerCase()];
 
 export const checkBeforeSlackDateString = (datetime) => {
   if (/^\d+-\d+-\d+T\d+:\d+:\d+.\d+Z$/.test(datetime)) {

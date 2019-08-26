@@ -101,7 +101,7 @@ class RouteValidator {
     errors = [...errors, (regNumber && !cabExists) && `No cab with reg number '${regNumber}' exists in the db`];
     errors = [...errors, (name && !routeExists) && `The route '${name}' does not exist in the db`];
     errors = [...errors, (providerId && !providerExists) && `The provider with id '${providerId}' does not exist in the db`];
-    errors = errors.filter(e => !!e);
+    errors = errors.filter((e) => !!e);
 
     if (errors.length) return Response.sendResponse(res, 400, false, errors);
     req.body.cabId = regNumber && cabDetails.id;

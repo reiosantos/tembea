@@ -1,8 +1,8 @@
 import PartnerService from '../PartnerService';
-import models from '../../database/models';
+import database from '../../database';
 import { engagement, updateEngagement } from '../__mocks__';
 
-const { Partner, Engagement } = models;
+const { models: { Partner, Engagement } } = database;
 
 describe('Partner Service', () => {
   let partnerFindOrCreate;

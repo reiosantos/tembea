@@ -1,8 +1,8 @@
-import models from '../database/models';
+import database from '../database';
 import HttpError from '../helpers/errorHandler';
 import UserService from './UserService';
 
-const { Role, UserRole, Homebase } = models;
+const { models: { Role, UserRole, Homebase } } = database;
 
 class RoleService {
   static async createNewRole(name) {

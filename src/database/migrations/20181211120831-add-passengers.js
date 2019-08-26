@@ -9,7 +9,7 @@ module.exports = {
       defaultValue: 1
     }
   ),
-  down: queryInterface => queryInterface.removeColumn(
+  down: (queryInterface) => queryInterface.removeColumn(
     'TripRequests',
     'noOfPassengers',
   )

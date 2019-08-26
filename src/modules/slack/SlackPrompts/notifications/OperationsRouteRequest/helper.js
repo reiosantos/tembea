@@ -18,8 +18,8 @@ export default class OpsAttachmentHelper {
     const engagementAttachment = await AttachmentHelper.engagementAttachment(routeRequest);
     const attachments = [attachment, comment, routeAttachment, engagementAttachment];
     attachments
-      .filter(item => !!item)
-      .forEach(at => at.addOptionalProps('operations_route_actions', '/fallback', color));
+      .filter((item) => !!item)
+      .forEach((at) => at.addOptionalProps('operations_route_actions', '/fallback', color));
     const baseMsg = `Hi, <@${slackUserId}>, the operations team has ${action}`;
     const greetingFellow = `${baseMsg} your request ${emoji}`;
     const greetingManager = `${baseMsg} the request you approved for <@${fellow.slackId}> ${emoji}`;
@@ -38,7 +38,7 @@ export default class OpsAttachmentHelper {
     const routeInformation = OpsAttachmentHelper.opsRouteInformation(submission);
     const engagementAttachment = await AttachmentHelper.engagementAttachment(routeRequest);
     const attachments = [header, routeAttachment, engagementAttachment, routeInformation, footer];
-    attachments.forEach(at => at.addOptionalProps(
+    attachments.forEach((at) => at.addOptionalProps(
       '', '/fallback', '#3AAF85'
     ));
     return attachments;

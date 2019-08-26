@@ -1,7 +1,7 @@
 import TripDetailsService from '../TripDetailsService';
-import models from '../../database/models';
+import database from '../../database';
 
-const { TripDetail } = models;
+const { models: { TripDetail } } = database;
 
 describe('Test TripDetailsService', () => {
   const tripDetail = {

@@ -2,14 +2,14 @@ import {
   SlackText, TextTypes, Block, BlockMessage, BlockTypes,
 } from '../../../../new-slack/models/slack-block-models';
 import { getSlackDateString } from '../../../helpers/dateHelpers';
-import { ITripInformation } from '../../../../../database/models/interfaces/trip.interface';
+import { ITripRequest } from '../../../../../database/models/interfaces/trip-request.interface';
 
 export default class DriverNotificationHelper {
   /**
    Returns a trip Attachment to be sent to driver
    * @param {object} trip object
    */
-  static tripApprovalAttachment(trip: ITripInformation) {
+  static tripApprovalAttachment(trip: ITripRequest) {
     const {
       origin, destination, rider: { slackId, phoneNo },
       departureTime, distance, department: { name }, driverSlackId, noOfPassengers,

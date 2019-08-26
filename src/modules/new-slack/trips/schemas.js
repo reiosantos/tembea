@@ -20,7 +20,7 @@ export const userTripPickupSchema = Joi.object().keys({
   })
 });
 
-const customDestinationError = errors => errors.map((error) => {
+const customDestinationError = (errors) => errors.map((error) => {
   if (error.type === 'any.invalid') {
     Object.defineProperty(error, 'message', {
       enumerable: true,
@@ -31,10 +31,10 @@ const customDestinationError = errors => errors.map((error) => {
   return error;
 });
 
-const destinationValidator = pickUp => Joi.string().required().invalid(pickUp)
+const destinationValidator = (pickUp) => Joi.string().required().invalid(pickUp)
   .error(customDestinationError, { self: true });
 
-export const createUserDestinationSchema = pickUp => Joi.object().keys({
+export const createUserDestinationSchema = (pickUp) => Joi.object().keys({
   destination: destinationValidator(pickUp),
   othersDestination: Joi.string().when('destination', {
     is: 'Others',

@@ -1,10 +1,10 @@
 import AddressService from '../AddressService';
-import models from '../../database/models';
+import database from '../../database';
 import LocationService from '../LocationService';
 import HttpError from '../../helpers/errorHandler';
 import { bugsnagHelper } from '../../modules/slack/RouteManagement/rootFile';
 
-const { Address } = models;
+const { models: { Address } } = database;
 
 describe('AddressService', () => {
   beforeEach(() => {
@@ -37,7 +37,9 @@ describe('AddressService', () => {
       const result = await AddressService.createNewAddress(1.0, -1.0, 'Address');
       expect(LocationService.createLocation).toHaveBeenCalledWith(1.0, -1.0);
       expect(Address.findOrCreate).toHaveBeenCalledTimes(1);
-      expect(result).toEqual({ ...mockAddressModel.dataValues, ...newRecord, ...mockLocationModel });
+      expect(result).toEqual(
+        { ...mockAddressModel.dataValues, ...newRecord, ...mockLocationModel }
+      );
     });
     it('should raise error when having invalid parameters', async () => {
       const mockAddressModel = { dataValues: {} };
