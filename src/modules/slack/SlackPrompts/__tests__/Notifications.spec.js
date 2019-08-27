@@ -514,13 +514,13 @@ describe('SlackNotifications', () => {
       );
       expect(res).toEqual(undefined);
     });
-    
+
     it('should send user confirmation notification when requester is not equal to rider', async () => {
       tripInfo.rider.slackId = 4;
       const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, tripInfo, declineStatusTrue, opsStatus);
       expect(res).toEqual(undefined);
     });
-  
+
     it('should send user confirmation notification when requester is equal to rider', async () => {
       tripInfo.rider.slackId = 3;
       const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(
@@ -970,7 +970,8 @@ describe('SlackNotifications', () => {
       requestedById: 'Hello123',
       riderId: 10,
       departmentId: 2,
-      id: 3
+      id: 3,
+      channel: { id: 'DL90XKSM6', name: 'directmessage' },
     };
 
     const tripData = {
@@ -1034,18 +1035,24 @@ describe('SlackNotifications', () => {
     });
 
     it('should send a notification to the operations team when a user request a trip', async () => {
+      const mockResponse = { opsRequestMessage: 'Trip message', botToken: 'RDFT45' };
+      jest.spyOn(SlackNotifications, 'opsNotificationMessage').mockResolvedValue(
+        mockResponse
+      );
+      // jest.mock(SlackNotifications, 'sendNotification');
       await SlackNotifications.sendOpsTripRequestNotification(payload, trip, respond);
-      expect(SlackNotifications.opsNotificationMessage).toHaveBeenCalledWith(payload.team.id, trip);
-      expect(SlackHelpers.findUserByIdOrSlackId).toHaveBeenCalledTimes(2);
-      expect(TeamDetailsService.getTeamDetails).toHaveBeenCalledWith(payload.team.id);
-      expect(DepartmentService.getById).toHaveBeenCalledWith(trip.departmentId);
-      expect(tripService.getById).toHaveBeenCalledWith(trip.id);
-      expect(SlackNotifications.getOpsMessageAttachment).toHaveBeenCalledWith(tripData, dataReturned.opsChannelId, deptHead.slackId);
-      expect(SlackNotifications.sendNotification).toHaveBeenCalled();
+      expect(SlackNotifications.sendNotification).toHaveBeenCalledWith(
+        'Trip message', 'RDFT45'
+      );
     });
 
     it('should returns an error when the notification fails to send', async () => {
-      jest.spyOn(SlackNotifications, 'sendNotification').mockRejectedValueOnce('An error just occured');
+      jest.spyOn(SlackNotifications, 'opsNotificationMessage').mockImplementation(
+        () => jest.fn()
+      );
+      jest.spyOn(SlackNotifications, 'sendNotification').mockRejectedValueOnce(
+        'An error just occured'
+      );
       await SlackNotifications.sendOpsTripRequestNotification(payload, trip, respond);
       expect(bugsnagHelper.log).toHaveBeenCalledWith('An error just occured');
       expect(respond).toHaveBeenCalled();

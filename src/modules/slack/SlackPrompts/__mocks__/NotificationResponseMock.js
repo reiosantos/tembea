@@ -17,7 +17,10 @@ const responseData = {
   managerComment: 'manager',
   cab: { providerId: 1, model: 'jeep' },
   driver: { driverName: 'James', driverPhoneNo: '708989098' },
-  provider: { name: 'Leticia' }
+  provider: { name: 'Leticia' },
+  homebase: {
+    channel: '123ER'
+  }
 };
 
 export default responseData;

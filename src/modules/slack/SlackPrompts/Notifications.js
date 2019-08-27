@@ -163,7 +163,7 @@ class SlackNotifications {
       }
       tripInformation.pickup = tripInformation.origin;
       const opsRequestMessage = await NotificationsResponse.getRequestMessageForOperationsChannel(
-        tripInformation, payload, opsChannelId, type
+        tripInformation, payload, trip.homebase.channel || opsChannelId, type
       );
       await SlackNotifications.sendNotification(opsRequestMessage, slackBotOauthToken);
     } catch (error) {
@@ -194,7 +194,7 @@ class SlackNotifications {
     const tripData = await tripService.getById(tripInformation.id);
     const { slackId } = await DepartmentService.getHeadByDeptId(tripData.departmentId);
     const opsRequestMessage = await SlackNotifications.getOpsMessageAttachment(
-      tripData, opsChannelId, slackId
+      tripData, tripData.homebase.channel || opsChannelId, slackId
     );
     return { opsRequestMessage, botToken };
   }

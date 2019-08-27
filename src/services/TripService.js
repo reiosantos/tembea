@@ -30,7 +30,7 @@ export class TripService {
       {
         model: models.Homebase,
         as: 'homebase',
-        attributes: ['id', 'name'],
+        attributes: ['id', 'name', 'channel'],
         include: [{ model: Country, as: 'country', attributes: ['name', 'id', 'status'] }]
       }
     ];
