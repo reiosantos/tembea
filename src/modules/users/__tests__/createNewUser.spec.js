@@ -26,8 +26,8 @@ beforeAll(() => {
     }))
   }));
 });
-afterAll(() => {
-  models.sequelize.close();
+afterAll(async () => {
+  await models.sequelize.close();
 });
 
 describe('/User create', () => {
@@ -52,15 +52,15 @@ describe('/User create', () => {
       );
   });
 
-  it('should respond with invalid email and slack url', async () => {
-    await request(app)
+  it('should respond with invalid email and slack url', (done) => {
+    request(app)
       .post('/api/v1/users')
-      .send({
-        email: 'sjnvdsd.com'
-      })
       .set({
         Accept: 'application/json',
         authorization: validToken
+      })
+      .send({
+        email: 'sjnvdsd.com'
       })
       .expect(
         400,
@@ -71,19 +71,19 @@ describe('/User create', () => {
             slackUrl: 'Please provide slackUrl',
             email: 'please provide a valid email address'
           }
-        },
+        }, done()
       );
   });
 
   it('should respond with an incomplete info message', (done) => {
     request(app)
       .post('/api/v1/users')
-      .send({
-        email: 'unKnownEmail@test.com'
-      })
       .set({
         Accept: 'application/json',
         authorization: validToken
+      })
+      .send({
+        email: 'unKnownEmail@test.com'
       })
       .expect(
         400,
@@ -92,20 +92,20 @@ describe('/User create', () => {
           message: errorMessage,
           error: { slackUrl: 'Please provide slackUrl' }
         },
-        done
+        done()
       );
   });
 
   it('should respond with invalid slackUrl', (done) => {
     request(app)
       .post('/api/v1/users')
-      .send({
-        email: 'unKnownEmail@test.com',
-        slackUrl: 'ACME.sack.co'
-      })
       .set({
         Accept: 'application/json',
         authorization: validToken
+      })
+      .send({
+        email: 'unKnownEmail@test.com',
+        slackUrl: 'ACME.sack.co'
       })
       .expect(
         400,
@@ -114,20 +114,20 @@ describe('/User create', () => {
           message: errorMessage,
           error: { slackUrl: 'please provide a valid slackUrl' }
         },
-        done
+        done()
       );
   });
 
   it("should respond with can't find slack team", (done) => {
     request(app)
       .post('/api/v1/users')
-      .send({
-        email: 'me.them@andela.com',
-        slackUrl: 'ACM.slack.com'
-      })
       .set({
         Accept: 'application/json',
         authorization: validToken
+      })
+      .send({
+        email: 'me.them@andela.com',
+        slackUrl: 'ACM.slack.com'
       })
       .expect(
         404,
@@ -135,22 +135,22 @@ describe('/User create', () => {
           success: false,
           message: 'Slack team not found'
         },
-        done
+        done()
       );
   });
 
   it('should respond success for existing user', (done) => {
     request(app)
       .post('/api/v1/users')
-      .send({
-        email: 'test.buddy1@andela.com',
-        slackUrl: 'ACME.slack.com'
-      })
       .set({
         Accept: 'application/json',
         authorization: validToken
       })
-      .expect(200, done);
+      .send({
+        email: 'test.buddy1@andela.com',
+        slackUrl: 'ACME.slack.com'
+      })
+      .expect(200, done());
   });
 });
 
@@ -179,7 +179,7 @@ describe('/User create user who does not exist', () => {
         email: 'newuser@gmail.com',
         slackUrl: 'ACME.slack.com'
       })
-      .expect(200, done);
+      .expect(200, done());
   });
 
   it('should return an error', async () => {

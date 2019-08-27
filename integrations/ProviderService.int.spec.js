@@ -31,8 +31,8 @@ beforeAll(async () => {
   });
 });
 
-afterAll(() => {
-  models.sequelize.close();
+afterAll(async () => {
+  await models.sequelize.close();
 });
 
 describe('create Provider', () => {

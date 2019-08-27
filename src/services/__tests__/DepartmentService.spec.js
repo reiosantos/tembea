@@ -8,9 +8,12 @@ import { createCountry, createUser } from '../../../integrations/support/helpers
 import HomebaseService from '../HomebaseService';
 
 
-const { Department, TripRequest } = model;
+const { Department, TripRequest, sequelize } = model;
 
 describe('/DepartmentService', () => {
+  afterAll(() => {
+    sequelize.close();
+  });
   describe('Departments update', () => {
     afterEach(() => {
       jest.restoreAllMocks();
@@ -53,10 +56,9 @@ describe('/DepartmentService', () => {
         teamId: '45THKULE',
         status: 'Inactive',
         homebaseId,
-        location: 'Buenos Aires'
       });
       const recreated = await DepartmentService.createDepartment({ id: 1 },
-        'DSTD', '', '', homebaseId);
+        'DSTD', 'TMDES', homebaseId);
       expect(recreated.length).toEqual(2);
 
       await dept.destroy();
@@ -108,8 +110,9 @@ describe('/DepartmentService', () => {
       }
     });
     it('should test that database queries are cached', async () => {
-      const department = await DepartmentService.getById(2);
-      expect(department).toEqual({ dept: departmentMocks });
+      jest.spyOn(cache, 'saveObject');
+      await DepartmentService.getById(2);
+      expect(cache.saveObject).toBeCalled();
     });
     it('should return a single department', async () => {
       jest.spyOn(Department, 'findByPk').mockResolvedValue(departmentMocks[0]);

@@ -30,12 +30,11 @@ class DepartmentController {
       params: { id }
     } = req;
 
-    let location;
     await DepartmentController.validateHeadExistence(req, res);
     await DepartmentController.validateLocationExistence(req, res);
     try {
       const department = await DepartmentService.updateDepartment(
-        id, name, homebaseId, headId, location
+        id, name, homebaseId, headId
       );
       return res
         .status(200)
@@ -58,14 +57,11 @@ class DepartmentController {
     } = req;
     try {
       await DepartmentController.validateLocationExistence(req, res);
-      const [user, { teamId }, homeBase] = await Promise.all(
-        [UserService.getUser(email), TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl),
-          HomebaseService.getById(homebaseId)]
+      const [user, { teamId }] = await Promise.all(
+        [UserService.getUser(email), TeamDetailsService.getTeamDetailsByTeamUrl(slackUrl)]
       );
-
-      const { name: location } = homeBase;
       const [dept, created] = await DepartmentService.createDepartment(user,
-        name, teamId, location, homebaseId);
+        name, teamId, homebaseId);
 
       return DepartmentController.returnCreateDepartmentResponse(res, created, dept);
     } catch (error) {

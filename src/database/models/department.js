@@ -25,9 +25,6 @@ module.exports = (sequelize, DataTypes) => {
         'Inactive'
       )
     },
-    location: {
-      type: DataTypes.STRING,
-    }
   }, {
     defaultScope: {
       where: {

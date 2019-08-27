@@ -30,14 +30,13 @@ export const departmentDataAttributes = {
 };
 
 class DepartmentService {
-  static async createDepartment(user, name, teamId, location, homebaseId) {
+  static async createDepartment(user, name, teamId, homebaseId) {
     const department = await Department.scope('all').findOrCreate({
       where: { name: { [Op.iLike]: `${name}%` }, homebaseId },
       defaults: {
         name,
         headId: user.id,
         teamId,
-        location,
         homebaseId
       }
     });
@@ -62,11 +61,11 @@ class DepartmentService {
     }
   }
 
-  static async updateDepartment(id, name, homebaseId, headId, location) {
+  static async updateDepartment(id, name, homebaseId, headId) {
     try {
       const department = await Department.update(
         {
-          name, homebaseId, headId, location
+          name, homebaseId, headId
         }, { returning: true, where: { id } }
       );
       HttpError.throwErrorIfNull(department[1].length,
@@ -137,10 +136,6 @@ class DepartmentService {
   static async getById(departmentId, includeOptions = ['head']) {
     if (Number.isNaN(parseInt(departmentId, 10))) {
       throw Error('The parameter provided is not valid. It must be a valid number');
-    }
-    const cachedDept = await cache.fetch(getDeptKey(departmentId));
-    if (cachedDept) {
-      return cachedDept;
     }
     const department = await Department.findByPk(departmentId, { include: [...includeOptions] });
     const dept = RemoveDataValues.removeDataValues(department);

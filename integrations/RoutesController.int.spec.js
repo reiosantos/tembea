@@ -12,7 +12,7 @@ describe('Route Request Controller', () => {
   let validToken;
   let mockUser;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const { id } = await models.Country.create({
       name: faker.name.findName(),
     });
@@ -68,7 +68,7 @@ describe('Route Request Controller', () => {
   });
 
   afterAll(async () => {
-    models.sequelize.close();
+    await models.sequelize.close();
   });
 
   it('e2e Test: should return a list of all route requests', (done) => {
