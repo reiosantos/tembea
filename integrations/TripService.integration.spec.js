@@ -9,9 +9,12 @@ describe('TripService', () => {
   const testTrips = [];
   const tripsCount = 3;
 
+
   beforeAll(async () => {
+    const { id: destinationId } = await models.Address.findOne();
     for (let count = 1; count < tripsCount; count += 1) {
       testTrips.push(TripService.createRequest({
+        destinationId,
         riderId: testUserId,
         name: 'Trip to London',
         reason: 'Testing the flow',
@@ -22,7 +25,6 @@ describe('TripService', () => {
         ).toLocaleString(),
         requestedById: testUserId,
         originId: 1,
-        destinationId: 2,
         noOfPassengers: count,
         tripType: 'Regular Trip'
       }));
@@ -76,10 +78,12 @@ describe('TripService', () => {
 
       mockedDepartment1 = await models.Department.findByPk(1, { plain: true });
       mockedDepartment2 = await models.Department.findByPk(2, { plain: true });
+      const { id: destinationId } = await models.Address.findOne();
 
 
       const trips = [
         {
+          destinationId,
           id: 70,
           riderId: mockUser.id,
           name: 'Trip to London',
@@ -89,7 +93,6 @@ describe('TripService', () => {
           departureTime: new Date('2019-07-18 08:00'),
           requestedById: mockUser.id,
           originId: 1,
-          destinationId: 2,
           noOfPassengers: 1,
           tripType: 'Embassy Visit',
           cost: 100,
@@ -99,6 +102,7 @@ describe('TripService', () => {
 
         },
         {
+          destinationId,
           id: 72,
           riderId: mockUser.id,
           name: 'Trip to London',
@@ -108,7 +112,6 @@ describe('TripService', () => {
           departureTime: new Date('2019-07-18 08:40'),
           requestedById: mockUser.id,
           originId: 1,
-          destinationId: 2,
           noOfPassengers: 1,
           tripType: 'Embassy Visit',
           cost: 150,
@@ -118,6 +121,7 @@ describe('TripService', () => {
 
         },
         {
+          destinationId,
           id: 73,
           riderId: mockUser.id,
           name: 'Trip to London',
@@ -127,7 +131,6 @@ describe('TripService', () => {
           departureTime: new Date('2019-06-17 08:00'),
           requestedById: mockUser.id,
           originId: 1,
-          destinationId: 2,
           noOfPassengers: 1,
           tripType: 'Airport Transfer',
           cost: 50,

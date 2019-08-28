@@ -12,7 +12,7 @@ import DriverNotifications from
   '../../SlackPrompts/notifications/DriverNotifications/driver.notifications.ts';
 import DriverService from '../../../../services/DriverService';
 
-const { TripRequest } = models;
+const { TripRequest, Address } = models;
 
 jest.mock('../../SlackPrompts/Notifications.js');
 jest.mock('../../events/', () => ({
@@ -125,12 +125,13 @@ describe('TripActionController operations decline tests', () => {
   });
 
   it('should run changeTripStatus() to declinedByOps', async () => {
+    const { id: destinationId } = await Address.findOne();
     const trip = await TripRequest.create({
+      destinationId,
       name: 'A trip',
       riderId: 1,
       tripStatus: 'Approved',
       originId: 1,
-      destinationId: 2,
       departureTime: '2018-12-12- 22:00',
       requestedById: 1,
       departmentId: 1,
