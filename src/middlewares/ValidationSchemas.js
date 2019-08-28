@@ -175,14 +175,16 @@ export const newDriverSchema = Joi.object().keys({
   driverName: Joi.string().trim().required(),
   driverNumber: Joi.string().trim().required().min(3),
   providerId: Joi.number().required(),
-  email: Joi.string().trim().email()
+  email: Joi.string().trim().email(),
+  userId: Joi.number()
 });
 
 export const updateDriverSchema = Joi.object().keys({
   driverPhoneNo: Joi.number().min(3),
   driverName: Joi.string().trim(),
   driverNumber: Joi.string().trim().min(3),
-  email: Joi.string().trim().email()
+  email: Joi.string().trim().email(),
+  userId: Joi.number().optional()
 }).min(1);
 
 export const newDepartmentSchema = Joi.object().keys({

@@ -1,4 +1,4 @@
-import { driverService } from '../DriverService';
+import DriverService, { driverService } from '../DriverService';
 import models from '../../database/models';
 import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
 import ProviderHelper from '../../helpers/providerHelper';
@@ -14,7 +14,7 @@ describe('Driver Service', () => {
   let testDriver;
   beforeAll(async () => {
     SequelizePaginationHelper.mockClear();
-    testDriver = Driver.create({
+    testDriver = await Driver.create({
       driverName: 'Muhwezi Deo2',
       driverPhoneNo: '0700000011',
       driverNumber: 'UB54224249',
@@ -23,7 +23,7 @@ describe('Driver Service', () => {
   });
   afterAll(async () => {
     await testDriver.destroy({ force: true });
-    sequelize.close();
+    await sequelize.close();
   });
   it('should create driver successfully', async () => {
     const driver = await driverService.create({
@@ -147,6 +147,22 @@ describe('Driver Service', () => {
       const result = await driverService.deleteDriver(driverInfo);
       expect(Driver.update).toHaveBeenCalled();
       expect(result).toEqual({});
+    });
+  });
+
+  describe('findOneDriver', () => {
+    it('Should findOne driver', async () => {
+      const driverInfo = {
+        driverName: 'Muhwezi Deo',
+        driverPhoneNo: '070533111',
+        driverNumber: 'UB5422424',
+        email: 'james@andela.com'
+      };
+      jest.spyOn(Driver, 'findOne').mockResolvedValue(driverInfo);
+      const options = { where: { id: 1 } };
+      const result = await DriverService.findOneDriver(options);
+      expect(Driver.findOne).toHaveBeenCalled();
+      expect(result).toEqual(driverInfo);
     });
   });
 });

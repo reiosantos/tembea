@@ -146,6 +146,14 @@ class DriverService extends BaseService {
       }
     });
   }
+
+  static async findOneDriver(options) {
+    const driver = await Driver.findOne({
+      ...options,
+      include: [{ model: models.User, attributes: ['slackId'], as: 'user' }]
+    });
+    return driver;
+  }
 }
 
 export const driverService = new DriverService();

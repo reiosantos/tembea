@@ -3,6 +3,7 @@ import HttpError from '../../helpers/errorHandler';
 import { providerService } from '../../services/ProviderService';
 import { driverService } from '../../services/DriverService';
 import Response from '../../helpers/responseHelper';
+import UserService from '../../services/UserService';
 
 describe('DriversValidator Middleware', () => {
   let [response, next] = [];
@@ -151,6 +152,33 @@ describe('DriversValidator Middleware', () => {
         jest.spyOn(driverService, 'exists').mockResolvedValue(false);
         await DriversValidator.validatePhoneNoAndNumberAlreadyExists(req, res, next);
         expect(next).toHaveBeenCalled();
+      });
+      describe('validateUserExistenceById', () => {
+        it('should call next if userId is not request body', async () => {
+          req = {
+            body: {}
+          };
+          await DriversValidator.validateUserExistenceById(req, res, next);
+          expect(next).toBeCalled();
+        });
+        it('should call next if userId and user exists', async () => {
+          req = {
+            body: { userId: 1 }
+          };
+          jest.spyOn(UserService, 'getUserById').mockResolvedValue({});
+          await DriversValidator.validateUserExistenceById(req, res, next);
+          expect(next).toBeCalled();
+        });
+
+        it('should throw error if user doesnot exist', async () => {
+          req = {
+            body: { userId: 1 }
+          };
+          jest.spyOn(UserService, 'getUserById').mockResolvedValue(null);
+          await DriversValidator.validateUserExistenceById(req, res, next);
+          expect(next).not.toBeCalled();
+          expect(Response.sendResponse).toBeCalled();
+        });
       });
     });
   });

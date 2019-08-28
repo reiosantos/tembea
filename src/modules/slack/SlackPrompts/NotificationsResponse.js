@@ -165,7 +165,7 @@ class NotificationsResponse {
   static async generateOperationsRequestActions(id, slackId) {
     const options = [
       {
-        text: 'Confirm and assign cab and driver',
+        text: 'Confirm and assign Cab and Driver',
         value: `assignCab_${id}`,
       },
       {

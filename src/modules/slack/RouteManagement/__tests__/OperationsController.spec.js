@@ -18,6 +18,8 @@ import TeamDetailsService from '../../../../services/TeamDetailsService';
 import tripService from '../../../../services/TripService';
 import RouteHelper from '../../../../helpers/RouteHelper';
 import { batch, routeDetails } from '../../../../helpers/__mocks__/routeMock';
+import DriverNotifications from
+  '../../SlackPrompts/notifications/DriverNotifications/driver.notifications.ts';
 
 describe('Operations Route Controller', () => {
   let respond;
@@ -439,6 +441,7 @@ describe('OperationsHandler > completeOpsAssignCabDriver', () => {
     jest.spyOn(bugsnagHelper, 'log').mockResolvedValue();
     jest.spyOn(InteractivePrompts, 'messageUpdate').mockResolvedValue();
     jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('');
+    jest.spyOn(DriverNotifications, 'checkAndNotifyDriver').mockResolvedValue();
   });
   afterEach(() => {
     jest.resetAllMocks();
@@ -453,6 +456,7 @@ describe('OperationsHandler > completeOpsAssignCabDriver', () => {
     await OperationsHandler.completeOpsAssignCabDriver(completeOpsAssignCabPayload);
     expect(bugsnagHelper.log).toBeCalledTimes(0);
     expect(OperationsHelper.sendcompleteOpAssignCabMsg).toBeCalledTimes(1);
+    expect(DriverNotifications.checkAndNotifyDriver).toBeCalled();
   });
 
   it('should send Assign Driver and Driver notifications', async () => {

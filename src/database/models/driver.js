@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
     driverNumber: {
       type: DataTypes.STRING,
     },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     providerId: DataTypes.INTEGER,
     email: DataTypes.STRING
   }, {
@@ -20,6 +24,10 @@ module.exports = (sequelize, DataTypes) => {
     Driver.belongsTo(models.Provider, {
       foreignKey: 'providerId',
       key: 'provider'
+    });
+    Driver.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'user'
     });
   };
   return Driver;

@@ -9,6 +9,9 @@ import ProviderNotifications from '../SlackPrompts/notifications/ProviderNotific
 import TripHelper from '../../../helpers/TripHelper';
 import TripCompletionJob from '../../../services/jobScheduler/jobs/TripCompletionJob';
 import SlackProviderHelper from '../helpers/slackHelpers/ProvidersHelper';
+import DriverNotifications from
+  '../SlackPrompts/notifications/DriverNotifications/driver.notifications.ts';
+import { driverService } from '../../../services/DriverService';
 
 class TripActionsController {
   static getErrorMessage() {
@@ -99,7 +102,7 @@ class TripActionsController {
       team: { id: teamId },
       user: { id: userId },
     } = payload;
-    
+
     await Promise.all([
       ProviderNotifications.sendTripNotification(providerUserSlackId, providerName, slackBotOauthToken, trip),
       InteractivePrompts.sendOpsDeclineOrApprovalCompletion(false, trip, timeStamp, channel,
@@ -109,7 +112,7 @@ class TripActionsController {
     ]);
   }
 
-  static async completeTripRequest(payload) {
+  static async completeTripRequest(payload, respond) {
     const {
       submission: {
         cab: cabId,
@@ -129,6 +132,8 @@ class TripActionsController {
     await ProviderNotifications.UpdateProviderNotification(channel, slackBotOauthToken, trip, timeStamp);
     await SendNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, trip,
       false);
+    await DriverNotifications.checkAndNotifyDriver(await driverService.findById(driverId),
+      teamId, trip, respond);
     return 'success';
   }
 

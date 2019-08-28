@@ -11,11 +11,13 @@ export const tripsMock = () => [{
   destination: 'Epic Tower',
   pickup: 'the dojo',
   decliner: undefined,
+  noOfPassengers: 1,
   rider:
    {
      name: 'Oluwatominiyin Adebanjo',
      email: 'oluwatominiyin.adebanjo@andela.com',
-     slackId: 'UE144LRAQ'
+     slackId: 'UE144LRAQ',
+     phoneNo: '0704321131'
    },
   requester:
    {
@@ -24,7 +26,14 @@ export const tripsMock = () => [{
      slackId: 'UCQ4TN2PP'
    },
   approvedBy: {},
-  confirmedBy: {}
+  confirmedBy: {},
+  tripStatus: 'Confirmed',
+  reason: 'Going Home',
+  tripType: 'Regular Trip',
+  managerComment: 'A Good reason',
+  createdAt: '2016-02-02T17:00:00.000Z',
+  distance: '5km',
+  isApproved: true
 }];
 
 export const tripsMock2 = [{
@@ -37,8 +46,8 @@ export const tripsMock2 = [{
   requestedOn: new Date(),
   departureTime: '2016-02-02T17:00:00.000Z',
   department: 'TDD',
-  destination: 'Epic Tower',
-  pickup: 'the dojo',
+  destination: { address: 'Epic Tower' },
+  pickup: { address: 'the dojo' },
   decliner: undefined,
   rider:
      {

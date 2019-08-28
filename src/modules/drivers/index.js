@@ -48,6 +48,8 @@ driverRouter.use(
  *              type: string
  *            providerId:
  *              type: string
+ *            userId:
+ *              type: number
  *    responses:
  *      201:
  *        description: driver created successfully
@@ -55,6 +57,7 @@ driverRouter.use(
 driverRouter.post(
   '/providers/drivers',
   ProviderValidator.validateDriverRequestBody,
+  DriversValidator.validateUserExistenceById,
   ProviderValidator.validateProviderExistence,
   DriverController.addProviderDriver
 );
@@ -127,6 +130,7 @@ driverRouter.put(
   DriversValidator.validateProviderDriverIdParams,
   DriversValidator.validateIsProviderDriver,
   DriversValidator.validateDriverUpdateBody,
+  DriversValidator.validateUserExistenceById,
   DriversValidator.validatePhoneNoAndNumberAlreadyExists,
   DriverController.update
 );

@@ -8,6 +8,9 @@ import TeamDetailsService from '../../../../services/TeamDetailsService';
 import { cabService } from '../../../../services/CabService';
 import tripService from '../../../../services/TripService';
 import ProviderNotifications from '../../SlackPrompts/notifications/ProviderNotifications';
+import DriverNotifications from
+  '../../SlackPrompts/notifications/DriverNotifications/driver.notifications.ts';
+import DriverService from '../../../../services/DriverService';
 
 const { TripRequest } = models;
 
@@ -185,7 +188,7 @@ describe('TripActionController operations approve tests', () => {
         driverPhoneNo: '0700000000',
         regNumber: 'KAA666Q',
         cab: '1, SBARU, KAA666Q',
-        driver: '1, Derro, 234234324, 67876867',
+        driver: 1,
         capacity: '1',
         model: 'ferrari',
         providerId: 1
@@ -274,12 +277,15 @@ describe('TripActionController operations approve tests', () => {
     jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('xxop');
     jest.spyOn(cabService, 'findOrCreate').mockResolvedValue(cab);
     jest.spyOn(tripService, 'updateRequest').mockResolvedValue({});
+    jest.spyOn(DriverService, 'findOneDriver').mockResolvedValue({ user: { slackId: 'UGD' } });
+    jest.spyOn(DriverNotifications, 'checkAndNotifyDriver').mockImplementation(() => jest.fn());
 
     const updateNotificationSpy = jest.spyOn(ProviderNotifications, 'UpdateProviderNotification').mockResolvedValue({});
     const sendUserNotificationSpy = jest.spyOn(SendNotifications, 'sendUserConfirmOrDeclineNotification');
     await TripActionsController.completeTripRequest(payload);
     expect(updateNotificationSpy).toHaveBeenCalled();
     expect(sendUserNotificationSpy).toHaveBeenCalled();
+    expect(DriverNotifications.checkAndNotifyDriver).toBeCalled();
   });
 
   describe('#getTripNotificationDetails', () => {

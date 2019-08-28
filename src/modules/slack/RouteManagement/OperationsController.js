@@ -20,6 +20,8 @@ import UserService from '../../../services/UserService';
 import { driverService } from '../../../services/DriverService';
 import { cabService } from '../../../services/CabService';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
+import DriverNotifications from
+  '../SlackPrompts/notifications/DriverNotifications/driver.notifications.ts';
 
 const handlers = {
   decline: async (payload) => {
@@ -155,7 +157,7 @@ class OperationsHandler {
    * @param {object} data request object from slack
    */
 
-  static async completeOpsAssignCabDriver(data) {
+  static async completeOpsAssignCabDriver(data, respond) {
     try {
       const {
         submission: {
@@ -181,6 +183,7 @@ class OperationsHandler {
       TripCompletionJob.createScheduleForATrip(trip);
       await OperationsHandler.sendAssignCabDriverNotifications(teamId, trip, cab, driver,
         requesterSlackId, riderSlackId, channel, ts);
+      await DriverNotifications.checkAndNotifyDriver(driver, teamId, trip, respond);
     } catch (error) { bugsnagHelper.log(error); }
   }
 

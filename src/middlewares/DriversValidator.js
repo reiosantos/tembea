@@ -4,6 +4,7 @@ import { providerService } from '../services/ProviderService';
 import { updateDriverSchema } from './ValidationSchemas';
 import Response from '../helpers/responseHelper';
 import HttpError from '../helpers/errorHandler';
+import UserService from '../services/UserService';
 
 class DriversValidator {
   /**
@@ -113,6 +114,14 @@ class DriversValidator {
         'Sorry, the driver with this driver number, email or phone number  already exists');
     }
     return next();
+  }
+
+  static async validateUserExistenceById(req, res, next) {
+    const { userId } = req.body;
+    if (!userId) return next();
+    const user = await UserService.getUserById(userId);
+    if (user) return next();
+    return Response.sendResponse(res, 404, false, 'User not Found');
   }
 }
 
