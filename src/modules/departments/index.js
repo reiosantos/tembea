@@ -24,6 +24,7 @@ departmentRouter.use(
  *    parameters:
  *      - id: path
  *      - name: body
+ *      - headEmail: body
  *        in: body
  *        required: true
  *        type: string
@@ -35,9 +36,9 @@ departmentRouter.use(
  *            id:
  *              type: number
  *              description: The department Id
- *            homebaseId:
- *              type: number
- *              description: The homebase Id of the department to update
+ *            headEmail:
+ *              type: email
+ *              description: The email for the head of department
  *            name:
  *              type: string
  *            headId:

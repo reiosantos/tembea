@@ -61,11 +61,11 @@ class DepartmentService {
     }
   }
 
-  static async updateDepartment(id, name, homebaseId, headId) {
+  static async updateDepartment(id, name, headId) {
     try {
       const department = await Department.update(
         {
-          name, homebaseId, headId
+          name, headId
         }, { returning: true, where: { id } }
       );
       HttpError.throwErrorIfNull(department[1].length,
@@ -75,7 +75,7 @@ class DepartmentService {
       const newDepartmentRecords = await Department.findOne({
         where: { id: departmentId },
         include: [userInclude],
-        attributes: ['id', 'name', 'location']
+        attributes: ['id', 'name']
       });
       return newDepartmentRecords;
     } catch (error) {

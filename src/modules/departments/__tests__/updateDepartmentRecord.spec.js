@@ -11,7 +11,7 @@ import HomebaseService from '../../../services/HomebaseService';
 
 describe('/Departments update', () => {
   let validToken;
-  let headId;
+  let headEmail;
   let mockDepartment;
   let mockHomeBase;
   let homeBaseId;
@@ -35,7 +35,7 @@ describe('/Departments update', () => {
       homebaseId: homeBaseId
 
     });
-    headId = mockDeptHead.id;
+    headEmail = mockDeptHead.email;
 
     const mockUser = await createUser({
       name: faker.name.findName(),
@@ -65,7 +65,7 @@ describe('/Departments update', () => {
       .put('/api/v1/departments/1000000')
       .send({
         name: 'newDepartmentName',
-        homebaseId: mockDepartment.homebaseId
+        headEmail
       })
       .set({
         Accept: 'application/json',
@@ -82,8 +82,7 @@ describe('/Departments update', () => {
       .put(`/api/v1/departments/${departmentId}`)
       .send({
         name: 'departmentName',
-        headId: 1200023,
-        homebaseId: mockDepartment.homebaseId
+        headEmail: 'email@email.com',
       })
       .set({
         Accept: 'application/json',
@@ -91,19 +90,17 @@ describe('/Departments update', () => {
       })
       .expect(404, {
         success: false,
-        message: 'Department Head with headId 1200023 does not exists'
+        message: 'Department Head with specified Email does not exist'
       });
   });
 
 
-  it('should return a provide valid Head id when the headId is not valid', async () => {
+  it('should return a provide valid Head id when the headEmail is not valid', async () => {
     await request(app)
       .put(`/api/v1/departments/${departmentId}`)
       .send({
         name: 'departmentName',
-        headId: 'invalidHeadId',
-        homebaseId: mockDepartment.homebaseId
-
+        headEmail: 'email.com'
       })
       .set({
         Accept: 'application/json',
@@ -112,27 +109,10 @@ describe('/Departments update', () => {
       .expect(400, {
         success: false,
         message: 'Validation error occurred, see error object for details',
-        error: { headId: 'headId should be a number' }
+        error: { headEmail: 'please provide a valid email address' }
       });
   });
 
-  it('should return homebase error when non existent homebase Id is provided', async (done) => {
-    await request(app)
-      .put(`/api/v1/departments/${departmentId}`)
-      .send({
-        name: 'departmentName',
-        headId,
-        homebaseId: 220000
-      })
-      .set({
-        Accept: 'application/json',
-        authorization: validToken
-      })
-      .expect(400, {
-        success: false,
-        message: 'No HomeBase exists with provided homebaseId',
-      }, done());
-  });
 
   it('should successfully update department with valid data', async (done) => {
     const newDeptName = faker.hacker.noun();
@@ -140,8 +120,7 @@ describe('/Departments update', () => {
       .put(`/api/v1/departments/${departmentId}`)
       .send({
         name: newDeptName,
-        headId,
-        homebaseId: mockDepartment.homebaseId,
+        headEmail,
       })
       .set({
         Accept: 'application/json',

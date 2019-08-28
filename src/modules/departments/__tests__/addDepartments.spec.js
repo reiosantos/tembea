@@ -25,8 +25,8 @@ beforeAll(async () => {
 
   validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
 });
-afterAll(() => {
-  models.sequelize.close();
+afterAll(async () => {
+  await models.sequelize.close();
 });
 
 // TODO move all the integration tests to integration folder

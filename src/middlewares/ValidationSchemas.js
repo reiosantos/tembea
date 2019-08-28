@@ -193,12 +193,9 @@ export const newDepartmentSchema = Joi.object().keys({
 });
 
 export const updateDepartmentSchema = Joi.object().keys({
-  name: Joi.string().trim().required().replace(/[^a-z\s-]/gi, '')
-    .optional(),
-  homebaseId: Joi.number().optional(),
-  headId: Joi.number().optional(),
-  id: Joi.number()
-}).min(1);
+  name: Joi.string().trim().replace(/[^a-z\s-]/gi, '').optional(),
+  headEmail: Joi.string().trim().email().optional(),
+}).min(1).max(2);
 
 export const deleteDepartmentSchema = Joi.object().keys({
   id: Joi.number().min(1),

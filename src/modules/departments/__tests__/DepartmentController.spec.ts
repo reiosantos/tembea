@@ -13,7 +13,7 @@ describe('DepartmentControllers', () => {
 
   beforeEach(() => {
     departmentControllerSpy = jest.spyOn(DepartmentsController, 'isValidDepartmentHomeBase');
-    userSpy = jest.spyOn(UserService, 'getUserById');
+    userSpy = jest.spyOn(UserService, 'getUserByEmail');
     teamServiceSpy = jest.spyOn(TeamDetailsService, 'getTeamDetailsByTeamUrl');
     res = {
       status: jest.fn(() => ({
@@ -23,7 +23,7 @@ describe('DepartmentControllers', () => {
     req = {
       body: {
         name: 'Updated Department',
-        headId: 1,
+        headEmail: 1,
         homebaseId: 1,
       },
       params: { id: 1 },
@@ -40,10 +40,10 @@ describe('DepartmentControllers', () => {
     it('should validate head Existence', async () => {
       const response = {
         success: false,
-        message: 'Department Head with headId 1 does not exists',
+        message: 'Department Head with specified Email does not exist',
       };
       userSpy.mockReturnValue(null);
-      await DepartmentsController.validateHeadExistence(req, res);
+      await DepartmentsController.validateHeadExistence(req.body.headEmail, res);
       expect(res.status).toBeCalledWith(404);
       expect(res.status().json).toHaveBeenCalledWith(response);
     });
@@ -52,11 +52,18 @@ describe('DepartmentControllers', () => {
       const response = {
         success: true,
         message: 'Department record updated',
-        department: {},
+        department: {
+          id: 14,
+          name: 'Technicalwdde',
+          head: {
+            name: 'Arthur Kalule',
+            email: 'arthur.kalule@andela.com',
+          },
+        },
       };
-      jest.spyOn(DepartmentsController, 'validateLocationExistence').mockReturnValue(null);
-      jest.spyOn(DepartmentsController, 'validateHeadExistence').mockReturnValue(null);
-      jest.spyOn(DepartmentService, 'updateDepartment').mockReturnValue({});
+
+      jest.spyOn(DepartmentsController, 'validateHeadExistence').mockReturnValue({ id: 1 });
+      jest.spyOn(DepartmentService, 'updateDepartment').mockReturnValue(response.department);
       await DepartmentsController.updateDepartment(req, res);
       expect(res.status).toBeCalled();
       expect(res.status().json).toBeCalledWith(response);

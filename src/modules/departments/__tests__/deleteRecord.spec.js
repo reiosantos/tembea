@@ -5,19 +5,15 @@ import DepartmentController from '../DepartmentsController';
 import HttpError from '../../../helpers/errorHandler';
 import Utils from '../../../utils';
 
-let validToken;
-
-const { Department } = models;
-
-beforeAll(() => {
-  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
-});
-afterAll(() => {
-  models.sequelize.close();
-});
 
 describe('Delete department record', () => {
+  let validToken;
+
+  const { Department } = models;
+
   beforeAll(async () => {
+    validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+
     await Department.bulkCreate([{
       name: 'Test Department 1',
       headId: 1,
@@ -28,6 +24,16 @@ describe('Delete department record', () => {
       headId: 2,
       teamId: 'TEAMID3'
     }]);
+  });
+
+  afterAll(async () => {
+    const department = await Department.findOne({
+      where: {
+        name: 'Test Department 1'
+      }
+    });
+    await department.destroy();
+    await models.sequelize.close();
   });
 
   it('should return a 404 if department is not found', (done) => {
@@ -137,15 +143,5 @@ describe('Delete department record', () => {
     DepartmentController.deleteRecord('no', 'no');
     expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
     done();
-  });
-
-  afterAll(async () => {
-    const department = await Department.findOne({
-      where: {
-        name: 'Test Department 1'
-      }
-    });
-
-    await department.destroy();
   });
 });

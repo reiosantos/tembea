@@ -26,15 +26,15 @@ class DepartmentController {
 
   static async updateDepartment(req, res) {
     const {
-      body: { name, homebaseId, headId },
+      body: { name, headEmail },
       params: { id }
     } = req;
 
-    await DepartmentController.validateHeadExistence(req, res);
-    await DepartmentController.validateLocationExistence(req, res);
+    const { id: headId } = await DepartmentController.validateHeadExistence(headEmail, res);
+
     try {
       const department = await DepartmentService.updateDepartment(
-        id, name, homebaseId, headId
+        id, name, headId
       );
       return res
         .status(200)
@@ -155,18 +155,16 @@ class DepartmentController {
     }
   }
 
-  static async validateHeadExistence(req, res) {
-    const { body: { headId } } = req;
-    if (headId) {
-      const userExists = await UserService.getUserById(headId);
-      if (!userExists) {
-        return res.status(404)
-          .json({
-            success: false,
-            message: `Department Head with headId ${headId} does not exists`,
-          });
-      }
+  static async validateHeadExistence(headEmail, res) {
+    const userExists = await UserService.getUserByEmail(headEmail);
+    if (!userExists) {
+      return res.status(404)
+        .json({
+          success: false,
+          message: 'Department Head with specified Email does not exist',
+        });
     }
+    return userExists;
   }
 
   static async validateLocationExistence(req, res) {
