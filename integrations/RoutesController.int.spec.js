@@ -58,7 +58,7 @@ describe('Route Request Controller', () => {
       distance,
       busStopDistance,
       status: 'Confirmed',
-      homebaseId: homebase.id
+      homebaseId: homebase.id,
     });
   });
 

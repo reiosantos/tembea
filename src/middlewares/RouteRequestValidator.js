@@ -1,6 +1,6 @@
 import Response from '../helpers/responseHelper';
 import GeneralValidator from './GeneralValidator';
-import { approveRouteRequestSchema, declineRouteRequestSchema, routeUsageDateSchema } from './ValidationSchemas';
+import { approveRouteRequestSchema, declineRouteRequestSchema, dateRangeSchema } from './ValidationSchemas';
 import JoiHelper from '../helpers/JoiHelper';
 
 class RouteRequestValidator {
@@ -34,7 +34,7 @@ class RouteRequestValidator {
 
   static async validateRatingsStartEndDateAndLocalCountry(req, res, next) {
     // Validates ratings start and end date
-    const validationResponse = JoiHelper.validateSubmission(req.query, routeUsageDateSchema);
+    const validationResponse = JoiHelper.validateSubmission(req.query, dateRangeSchema);
     if (validationResponse.errorMessage) {
       return Response.sendResponse(res, 400, false, validationResponse);
     }

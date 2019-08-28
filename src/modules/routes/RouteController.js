@@ -3,6 +3,7 @@ import BugSnagHelper from '../../helpers/bugsnagHelper';
 import { DEFAULT_SIZE as defaultSize } from '../../helpers/constants';
 import Response from '../../helpers/responseHelper';
 import RouteService from '../../services/RouteService';
+import RouteStatistics from '../../services/RouteStatistics';
 import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
 import { RoutesHelper } from '../../helpers/googleMaps/googleMapsHelpers';
 import {
@@ -52,9 +53,7 @@ class RoutesController {
   }
 
   static async createRoute(req, res) {
-    let message;
-    let batch;
-    let routeName;
+    let message; let batch; let routeName;
     const { query: { action, batchId }, body } = req;
     try {
       if (action === 'duplicate' && batchId) {
@@ -84,23 +83,16 @@ class RoutesController {
     if (address) {
       return address;
     }
-    const place = await RoutesHelper.getPlaceInfo(
-      'coordinates', destinationCoordinates
-    );
+    const place = await RoutesHelper.getPlaceInfo('coordinates', destinationCoordinates);
 
-    if (!place) {
-      // inform user if coordinates did not point to a location
-      HttpError.throwErrorIfNull(null, 'Invalid Coordinates', 400);
-    }
+    if (!place) { HttpError.throwErrorIfNull(null, 'Invalid Coordinates', 400); }
 
-    const { geometry: { location: { lat: latitude, lng: longitude } } } = place;
+    const {
+      geometry: { location: { lat: latitude, lng: longitude } }
+    } = place;
 
-    const placeDetails = await GoogleMapsPlaceDetails.getPlaceDetails(
-      place.place_id
-    );
-    address = `${placeDetails.result.name}, ${
-      placeDetails.result.formatted_address
-    }`;
+    const placeDetails = await GoogleMapsPlaceDetails.getPlaceDetails(place.place_id);
+    address = `${placeDetails.result.name}, ${placeDetails.result.formatted_address}`;
     return AddressService.createNewAddress(longitude, latitude, address);
   }
 
@@ -162,7 +154,10 @@ class RoutesController {
    */
   static async updateRouteBatch(req, res) {
     try {
-      const { body, params: { routeId: id } } = req;
+      const {
+        body,
+        params: { routeId: id }
+      } = req;
       const result = await RouteService.updateRouteBatch(+id, body);
       const routeBatch = await RouteService.getRouteBatchByPk(result.id, true);
       const slackTeamUrl = body.teamUrl.trim();
@@ -183,27 +178,22 @@ class RoutesController {
   static async updateRouteRequestStatus(req, res) {
     try {
       const {
-        params: { requestId },
-        body,
-        currentUser: { userInfo: { email } }
+        params: { requestId }, body, currentUser: { userInfo: { email } }
       } = req;
       const routeRequest = await RouteRequestService.getRouteRequestByPk(requestId);
       RoutesController.checkCurrentApprovalStatus(routeRequest, res);
       const opsReviewer = await UserService.getUserByEmail(email);
 
-      const updatedRequest = await RouteHelper.updateRouteRequest(
-        routeRequest.id,
-        {
-          status: body.newOpsStatus === 'approve' ? 'Approved' : 'Declined',
-          opsComment: body.comment,
-          opsReviewerId: opsReviewer.id
-        }
-      );
+      const updatedRequest = await RouteHelper.updateRouteRequest(routeRequest.id, {
+        status: body.newOpsStatus === 'approve' ? 'Approved' : 'Declined',
+        opsComment: body.comment,
+        opsReviewerId: opsReviewer.id
+      });
 
       const submission = RoutesController.getSubmissionDetails(body, routeRequest);
 
-      await RoutesController.completeRouteApproval(updatedRequest,
-        submission, body.teamUrl, opsReviewer.slackId);
+      await RoutesController.completeRouteApproval(updatedRequest, submission, body.teamUrl,
+        opsReviewer.slackId);
       return Response.sendResponse(res, 201, true, 'This route request has been updated');
     } catch (error) {
       BugSnagHelper.log(error);
@@ -212,13 +202,9 @@ class RoutesController {
   }
 
   static checkCurrentApprovalStatus(routeRequest, res) {
-    if (!routeRequest) {
-      return Response.sendResponse(res, 404, false, 'Route request not found.');
-    }
+    if (!routeRequest) { return Response.sendResponse(res, 404, false, 'Route request not found.'); }
     const checkStatus = RouteHelper.validateRouteStatus(routeRequest);
-    if (checkStatus !== true) {
-      return Response.sendResponse(res, 409, false, checkStatus);
-    }
+    if (checkStatus !== true) { return Response.sendResponse(res, 409, false, checkStatus); }
   }
 
   static getSubmissionDetails(body, updatedRequest) {
@@ -245,13 +231,15 @@ class RoutesController {
     };
     if (updatedRequest.status === 'Approved') {
       const batch = await RouteHelper.createNewRouteWithBatch(submission);
-
-      SlackEvents.raise(slackEventNames.COMPLETE_ROUTE_APPROVAL, updatedRequest, batch,
-        additionalData);
+      SlackEvents.raise(
+        slackEventNames.COMPLETE_ROUTE_APPROVAL, updatedRequest, batch, additionalData
+      );
       return;
     }
-    SlackEvents.raise(slackEventNames.OPERATIONS_DECLINE_ROUTE_REQUEST,
-      updatedRequest, botToken, opsChannelId, timeStamp, opsSlackId, true);
+    SlackEvents.raise(
+      slackEventNames.OPERATIONS_DECLINE_ROUTE_REQUEST, updatedRequest, botToken,
+      opsChannelId, timeStamp, opsSlackId, true
+    );
   }
 
   /**
@@ -263,7 +251,10 @@ class RoutesController {
   static async deleteRouteBatch(req, res) {
     let message;
     try {
-      const { params: { routeBatchId }, body: { teamUrl } } = req;
+      const {
+        params: { routeBatchId },
+        body: { teamUrl }
+      } = req;
       const slackTeamUrl = teamUrl.trim();
       const routeBatch = await RouteService.getRouteBatchByPk(routeBatchId, true);
       if (!routeBatch) {
@@ -286,16 +277,13 @@ class RoutesController {
   static async deleteFellowFromRoute(req, res) {
     try {
       const { params: { userId }, body: { teamUrl } } = req;
-      let message = 'user doesn\'t belong to this route';
+      let message = "user doesn't belong to this route";
       const { dataValues: { routeBatchId, slackId } } = await UserService.getUserById(userId);
       if (routeBatchId && slackId) {
         await UserService.updateUser(userId, { routeBatchId: null });
-        const { botToken: teamBotOauthToken } = await TeamDetailsService
-          .getTeamDetailsByTeamUrl(teamUrl);
+        const { botToken: teamBotOauthToken } = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);
         const { routeId } = await RouteService.getRouteBatchByPk(routeBatchId, false);
-        const {
-          name
-        } = await RouteService.getRouteById(routeId, false);
+        const { name } = await RouteService.getRouteById(routeId, false);
         const text = '*:information_source: Reach out to Ops department for any questions*';
         const slackMessage = new SlackInteractiveMessage(
           `*Hey <@${slackId}>, You've been removed from \`${name}\` route.* \n ${text}.`
@@ -304,6 +292,20 @@ class RoutesController {
         message = 'engineer successfully removed from the route';
       }
       return Response.sendResponse(res, 200, true, message);
+    } catch (error) {
+      BugSnagHelper.log(error);
+      return HttpError.sendErrorResponse(error, res);
+    }
+  }
+
+  static async getRouteStatistics(req, res) {
+    const {
+      query: { from, to },
+      headers: { homebaseid }
+    } = req;
+    try {
+      const result = await RouteStatistics.getTopAndLeastFrequentRiders(from, to, homebaseid);
+      return Response.sendResponse(res, 200, true, 'data retrieved successfully', result);
     } catch (error) {
       BugSnagHelper.log(error);
       return HttpError.sendErrorResponse(error, res);

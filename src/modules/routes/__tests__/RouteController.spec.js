@@ -468,7 +468,7 @@ describe('RoutesController', () => {
 
     it('should get all ratings from end point', (done) => {
       request(app)
-        .get('/api/v1/routes/ratings?from=2019-08-20T07:44:03.574Z&to=2019-08-20T07:44:03.574Z')
+        .get('/api/v1/routes/ratings?from=2019-08-20&to=2019-08-20')
         .set('Content-Type', 'application/json')
         .set('Authorization', validToken)
         .set('homebaseid', 3)

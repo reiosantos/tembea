@@ -401,5 +401,32 @@ routesRouter.get(
   '/routes/ratings',
   RoutesUsageController.getRouteRatings
 );
+/**
+ * @swagger
+ * /routes/status/usage:
+ *  get:
+ *    summary: Get the most and least used route batches
+ *    tags:
+ *      - BatchUseRecords
+ *    parameters:
+ *      - name: from
+ *        in: path
+ *        required: false
+ *        description: the start date of the range you want to get records for. e.g 2019-05-08
+ *        type: date
+ *      - name: to
+ *        in: path
+ *        required: false
+ *        description: the end date of the range you want to get records for e.g 2019-05-08
+ *        type: date
+ *    responses:
+ *      200:
+ *        description: Percentage Usage Generated
+ */
+routesRouter.get(
+  '/routes/statistics/riders',
+  GeneralValidator.validateHomebaseId, RouteValidator.validateDateInputForRouteRiderStatistics,
+  RoutesController.getRouteStatistics
+);
 
 export default routesRouter;

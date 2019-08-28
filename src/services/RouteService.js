@@ -33,25 +33,28 @@ class RouteService extends BaseService {
 
   static get defaultPageable() {
     return {
-      page: 1, size: all, sort: SequelizePaginationHelper.deserializeSort('id,asc')
+      page: 1,
+      size: all,
+      sort: SequelizePaginationHelper.deserializeSort('id,asc')
     };
   }
 
   static get defaultInclude() {
     return [
       {
-        model: Cab, as: 'cabDetails'
+        model: Cab,
+        as: 'cabDetails'
       },
       {
-        model: Driver, as: 'driver'
+        model: Driver,
+        as: 'driver'
       },
       {
         model: Route, as: 'route', include: ['destination']
       },
       {
         model: Homebase, as: 'homebase', attributes: ['id', 'name'], include: [{ model: Country, as: 'country', attributes: ['name', 'id', 'status'] }]
-      }
-    ];
+      }];
   }
 
   /**
@@ -97,14 +100,11 @@ class RouteService extends BaseService {
       takeOff,
       providerId
     };
-
     const batch = await RouteService.createBatch(routeBatchObject);
-
     appEvents.broadcast({
       name: routeEvents.newRouteBatchCreated,
       data: batch
     });
-
     return batch;
   }
 
@@ -149,15 +149,9 @@ class RouteService extends BaseService {
     const batches = await RouteBatch.findAll(
       {
         where: {
-          status: {
-            [Op.eq]: `${filter.status}`
-          },
-          cabId: {
-            [Op.ne]: null
-          },
-          driverId: {
-            [Op.ne]: null
-          }
+          status: { [Op.eq]: `${filter.status}` },
+          cabId: { [Op.ne]: null },
+          driverId: { [Op.ne]: null }
         }
       }
     );
@@ -242,7 +236,10 @@ class RouteService extends BaseService {
         [Sequelize.fn('COUNT', Sequelize.col('riders.routeBatchId')), 'inUse'],
         ...RouteService.defaultRouteDetails
       ],
-      include: [...RouteService.updateDefaultInclude(where), { model: User, as: 'riders', attributes: [] }],
+      include: [
+        ...RouteService.updateDefaultInclude(where),
+        { model: User, as: 'riders', attributes: [] }
+      ],
       group: [...RouteService.defaultRouteGroupBy]
     };
     const { data, pageMeta } = await paginatedRoutes.getPageItems(page);
@@ -253,7 +250,6 @@ class RouteService extends BaseService {
   static async updateBatchLabel({ route, created }) {
     let batch = 'A';
     if (!created) {
-      // Get the latest route batch
       const fullRoute = await RouteService.getRouteById(route.id, true);
       ({ batch } = fullRoute.routeBatch[fullRoute.routeBatch.length - 1]);
       const batchDigit = batch.charCodeAt(0) + 1;
@@ -272,9 +268,7 @@ class RouteService extends BaseService {
       if (predicate === 'destination') {
         order = [RouteService.sort.route, RouteService.sort.destination, 'address', direction];
       }
-      if (predicate === 'name') {
-        order.unshift(RouteService.sort.route);
-      }
+      if (predicate === 'name') { order.unshift(RouteService.sort.route); }
       return order;
     });
   }
@@ -285,11 +279,7 @@ class RouteService extends BaseService {
    * @param routeBatchId
    */
   static async deleteRouteBatch(routeBatchId) {
-    return RouteBatch.destroy({
-      where: {
-        id: routeBatchId
-      }
-    });
+    return RouteBatch.destroy({ where: { id: routeBatchId } });
   }
 
   /**
@@ -301,15 +291,12 @@ class RouteService extends BaseService {
   static updateDefaultInclude(where) {
     if (where && where.name) {
       return [
-        RouteService.defaultInclude[0],
-        RouteService.defaultInclude[1],
+        RouteService.defaultInclude[0], RouteService.defaultInclude[1],
         {
           model: Route,
           as: 'route',
           include: ['destination'],
-          where: {
-            name: { [Op.iLike]: `%${where.name}%` }
-          }
+          where: { name: { [Op.iLike]: `%${where.name}%` } }
         }];
     }
     return RouteService.defaultInclude;
@@ -317,8 +304,7 @@ class RouteService extends BaseService {
 
   static async RouteRatings(from, to, homebaseId) {
     const previousMonthStart = moment().subtract(1, 'months').date(1).format('YYYY-MM-DD');
-    const previousMonthEnd = moment().subtract(1, 'months').endOf('month')
-      .format('YYYY-MM-DD');
+    const previousMonthEnd = moment().subtract(1, 'months').endOf('month').format('YYYY-MM-DD');
     let query = `
       SELECT BUR.id AS "BatchUseRecordID", BUR.rating, RUR.id AS "RouteRecordID",
       RB.id As "RouteBatchID", RB.batch As "RouteBatchName", R.name As "Route", R.id As "RouteID",
@@ -339,6 +325,5 @@ class RouteService extends BaseService {
     return results;
   }
 }
-
 export const routeService = new RouteService();
 export default RouteService;

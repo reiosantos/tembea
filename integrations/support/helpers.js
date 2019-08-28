@@ -7,7 +7,9 @@ const {
   RouteRequest,
   TripRequest,
   Department,
-  Country
+  Country,
+  RouteUseRecord,
+  BatchUseRecord,
 } = models;
 
 export const createModel = async (Model, payload) => {
@@ -32,3 +34,13 @@ export const createTripRequests = async (payload) => {
 
 export const createDepartment = async data => createModel(Department, data);
 export const createCountry = async data => createModel(Country, data);
+
+export const createRouteUseRecords = async (payload) => {
+  const data = await RouteUseRecord.bulkCreate(payload);
+  return data;
+};
+
+export const createBatchUseRecords = async (payload) => {
+  const data = await BatchUseRecord.bulkCreate(payload);
+  return data;
+};

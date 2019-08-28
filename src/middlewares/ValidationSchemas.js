@@ -1,4 +1,7 @@
 import * as Joi from '@hapi/joi';
+import JoiExtension from '@hapi/joi-date';
+
+const extendedJoi = Joi.extend(JoiExtension);
 
 const teamUrlRegex = /^(https?:\/\/)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*(slack\.com)$/;
 const nameRegex = /^[A-Za-z ,.'-]+$/;
@@ -270,8 +273,10 @@ export const tripTypeSchema = Joi.object().keys({
 });
   
 /* The "and" in this validation makes sure that both "from" and "to" fields are
- supplied or none is supplied. In which case, it it will load data from the previous month. */
-export const routeUsageDateSchema = Joi.object().keys({
-  from: Joi.date().iso().label('from'),
-  to: Joi.date().iso().min(Joi.ref('from')),
-}).and('from', 'to');
+ supplied or none is supplied. In which case, it it will load data from the previous month.
+ Also, extendedJoi was used to incoporate .format('YYYY-MM-DD') */
+export const dateRangeSchema = Joi.object().keys({
+  from: extendedJoi.date().format('YYYY-MM-DD').iso().label('from')
+    .required(),
+  to: extendedJoi.date().format('YYYY-MM-DD').iso().min(Joi.ref('from')),
+}).and('from', 'to').required();

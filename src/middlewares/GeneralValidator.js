@@ -49,6 +49,18 @@ class GeneralValidator {
     return next();
   }
 
+  static validateHomebaseId(req, res, next) {
+    const { headers: { homebaseid } } = req;
+
+    if (!homebaseid || !GeneralValidator.validateNumber(homebaseid)) {
+      return res.status(400).json({
+        success: false,
+        message: 'homebaseid is required in the header and must be a postive interger value'
+      });
+    }
+    return next();
+  }
+
   /**
    * @static validateProp
    * @description This method checks if the property passed is empty

@@ -2,7 +2,12 @@ import Response from '../helpers/responseHelper';
 import GeneralValidator from './GeneralValidator';
 import RouteHelper from '../helpers/RouteHelper';
 import JoiHelper from '../helpers/JoiHelper';
-import { newRouteSchema, updateRouteSchema, deleteRouteSchema } from './ValidationSchemas';
+import {
+  newRouteSchema,
+  updateRouteSchema,
+  deleteRouteSchema,
+  dateRangeSchema
+} from './ValidationSchemas';
 
 class RouteValidator {
   static validateNewRoute(req, res, next) {
@@ -103,6 +108,11 @@ class RouteValidator {
     req.body.routeId = name && route.id;
     req.body.batch = batch;
     next();
+  }
+
+  static validateDateInputForRouteRiderStatistics(req, res, next) {
+    return GeneralValidator
+      .joiValidation(req, res, next, req.query, dateRangeSchema);
   }
 }
 
