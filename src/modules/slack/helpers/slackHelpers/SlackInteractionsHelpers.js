@@ -141,7 +141,10 @@ class SlackInteractionsHelpers {
     } = payload;
 
     let options;
-
+    const action = payload.actions[0].name;
+    if (action === 'declineRequest') {
+      return DialogPrompts.sendOperationsDeclineDialog(payload);
+    }
     if (selectedOptions) {
       options = selectedOptions[0].value.split('_');
     } else {
