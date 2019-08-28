@@ -35,9 +35,7 @@ export default class ViewTripHelper {
       departureTime, tripType, createdAt, tripNote, distance
     } = tripRequest;
 
-    const [createdString, departureString] = [
-      getSlackDateString(createdAt), getSlackDateString(departureTime)
-    ];
+    const createdString = getSlackDateString(createdAt);
 
     const { address: pickUpLocation } = origin;
     const { address: destinationAddress } = destination;
@@ -51,7 +49,7 @@ export default class ViewTripHelper {
     const noOfPassengersField = new SlackAttachmentField('*No Of Passengers*', noOfPassengers, true);
     const reasonField = new SlackAttachmentField('*Reason*', reason, true);
     const requestDateField = new SlackAttachmentField('*Request Date*', createdString, true);
-    const departureField = new SlackAttachmentField('*Trip Date*', departureString, true);
+    const departureField = new SlackAttachmentField('*Trip Date*', departureTime, true);
     const tripTypeField = new SlackAttachmentField('*Trip Type*', tripType, true);
     const tripNoteField = new SlackAttachmentField('*Trip Notes*', tripNote, true);
     return [fromField, toField, requestedByField, passengerField, noOfPassengersField,

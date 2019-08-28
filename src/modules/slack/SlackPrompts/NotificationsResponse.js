@@ -96,7 +96,7 @@ class NotificationsResponse {
       new SlackAttachmentField('Department', department, true),
       new SlackAttachmentField('Pickup Location', pickup.address, true),
       new SlackAttachmentField('Destination', destination.address, true),
-      new SlackAttachmentField('Departure', getSlackDateString(departureTime), true),
+      new SlackAttachmentField('Departure', departureTime, true),
       new SlackAttachmentField('Status', tripStatus, true),
       new SlackAttachmentField('Manager Comment', managerComment)
     ];
@@ -143,7 +143,7 @@ class NotificationsResponse {
       new SlackAttachmentField('Pickup', pickup.address, true),
       new SlackAttachmentField('Destination', destination.address, true),
       new SlackAttachmentField('Request Date', getSlackDateString(requestDate), true),
-      new SlackAttachmentField('Departure Date', getSlackDateString(departureDate), true),
+      new SlackAttachmentField('Departure Date', departureDate, true),
       new SlackAttachmentField('Trip Status', tripStatus, true),
       new SlackAttachmentField('Reason', managerComment, true)
     ];

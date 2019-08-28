@@ -21,7 +21,7 @@ class InteractivePromptsHelpers {
       new SlackAttachmentField('Request Date',
         Utils.formatDate(tripInfo.createdAt), true),
       new SlackAttachmentField('Trip Date',
-        Utils.formatDate(tripInfo.departureTime), true)
+        (tripInfo.departureTime), true)
     ];
   }
 

@@ -24,7 +24,7 @@ export const getSlackDateTime = (dateTime) => {
  */
 
 export const getSlackDateString = (dateTime) => {
-  const newDateTime = new Date(dateTime);
+  const newDateTime = moment(dateTime, 'DD-MM-YYYY');
   const [fallback, original] = [
     moment(newDateTime).format('ddd, MMM Do YYYY hh:mm a'),
     moment(newDateTime).unix()
