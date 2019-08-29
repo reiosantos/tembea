@@ -379,8 +379,10 @@ describe('UserTripBookingController', () => {
         ...payload,
         submission: undefined
       };
+      jest.spyOn(UserTripBookingController, 'paymentRequest').mockResolvedValue();
       await UserTripBookingController.paymentRequest(newPayload, res);
-      expect(res).toHaveBeenCalled();
+      expect(UserTripBookingController.paymentRequest).toHaveBeenCalled();
+      expect(res).toHaveBeenCalledTimes(0);
     });
   });
 });

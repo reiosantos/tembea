@@ -34,7 +34,8 @@ class RateTripController {
     if (callback_id === 'rate_trip') {
       await tripService.updateRequest(value, { rating: name });
       const state = {
-        tripId: value
+        tripId: value,
+        response_url: payload.response_url
       };
       await Interactions.sendPriceForm(payload, state);
     }

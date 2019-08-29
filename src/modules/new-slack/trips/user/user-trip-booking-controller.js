@@ -135,13 +135,13 @@ export default class UserTripBookingController {
     }
   }
 
-  static async paymentRequest(payload, respond) {
+  static async paymentRequest(payload) {
     if (payload.submission) {
       const result = await UserTripHelpers.savePayment(payload);
       if (result && result.errors) return result;
     }
     const message = new BlockMessage([new Block().addText('Thank you for using Tembea')]);
-    respond(message);
+    await UpdateSlackMessageHelper.updateMessage(payload.state, message);
   }
 
   static async back(payload, respond) {
