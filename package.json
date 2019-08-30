@@ -1,6 +1,6 @@
 {
   "name": "tembea",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "An application for managing trips at Andela",
   "main": "./src/index.js",
   "scripts": {
@@ -137,7 +137,6 @@
     "sequelize": "^4.39.0",
     "sequelize-mock": "^0.10.2",
     "sequelize-replace-enum-postgres": "^1.5.0",
-    "short-id": "^0.1.0",
     "slack-mock": "^1.1.1",
     "swagger-jsdoc": "^3.2.7",
     "swagger-ui-express": "^4.0.2",

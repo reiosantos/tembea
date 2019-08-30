@@ -10,7 +10,7 @@ module.exports = {
   testMatch: [
     '<rootDir>/src/**/__tests__/**/?(*.)(spec|test).(ts|js)',
     '<rootDir>/src/**/?(*.)(spec|test).(ts|js)',
-    '<rootDir>/integrations/**/?(*.)(spec|test).(ts|js)'
+    // '!<rootDir>/integrations/**/?(*.)(spec|test).(ts|js)'
   ],
   coveragePathIgnorePatterns: [
     '<rootDir>/src/database/*.(ts|js)',
