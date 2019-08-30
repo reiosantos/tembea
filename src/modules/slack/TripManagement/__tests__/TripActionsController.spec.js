@@ -9,7 +9,7 @@ import { cabService } from '../../../../services/CabService';
 import tripService from '../../../../services/TripService';
 import ProviderNotifications from '../../SlackPrompts/notifications/ProviderNotifications';
 import DriverNotifications from
-  '../../SlackPrompts/notifications/DriverNotifications/driver.notifications.ts';
+  '../../SlackPrompts/notifications/DriverNotifications/driver.notifications';
 import DriverService from '../../../../services/DriverService';
 
 const { TripRequest, Address } = models;

@@ -21,7 +21,7 @@ import { driverService } from '../../../services/DriverService';
 import { cabService } from '../../../services/CabService';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import DriverNotifications from
-  '../SlackPrompts/notifications/DriverNotifications/driver.notifications.ts';
+  '../SlackPrompts/notifications/DriverNotifications/driver.notifications';
 
 const handlers = {
   decline: async (payload) => {

@@ -9,7 +9,7 @@ import ProviderNotifications from '../SlackPrompts/notifications/ProviderNotific
 import TripHelper from '../../../helpers/TripHelper';
 import SlackProviderHelper from '../helpers/slackHelpers/ProvidersHelper';
 import DriverNotifications from
-  '../SlackPrompts/notifications/DriverNotifications/driver.notifications.ts';
+  '../SlackPrompts/notifications/DriverNotifications/driver.notifications';
 import { driverService } from '../../../services/DriverService';
 
 class TripActionsController {

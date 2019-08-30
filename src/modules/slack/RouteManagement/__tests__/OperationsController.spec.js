@@ -19,7 +19,7 @@ import tripService from '../../../../services/TripService';
 import RouteHelper from '../../../../helpers/RouteHelper';
 import { batch, routeDetails } from '../../../../helpers/__mocks__/routeMock';
 import DriverNotifications from
-  '../../SlackPrompts/notifications/DriverNotifications/driver.notifications.ts';
+  '../../SlackPrompts/notifications/DriverNotifications/driver.notifications';
 
 describe('Operations Route Controller', () => {
   let respond;
