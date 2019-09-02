@@ -30,15 +30,25 @@ class ProviderValidator {
   }
 
   static async createUpdateBody(body) {
-    const { email, name } = body;
+    const { email, name, teamurl } = body;
     const updateData = {};
-    if (email) {
-      const user = await UserService.getUserByEmail(email.trim());
-      if (!user) return { message: 'User with email doesnt exist' };
-      updateData.providerUserId = user.dataValues.id;
-    }
     if (name) updateData.name = name.trim();
-    return updateData;
+
+    if (email) {
+      const userByEmail = await UserService.getUserByEmail(email);
+
+      if (!userByEmail) {
+        try {
+          const user = await UserService.createUserByEmail(teamurl, email.trim());
+          updateData.providerUserId = user.id;
+          return updateData;
+        } catch {
+          return { message: 'User with email doesnt exist' };
+        }
+      }
+      updateData.providerUserId = userByEmail.dataValues.id;
+      return updateData;
+    }
   }
 
   /**
@@ -50,11 +60,17 @@ class ProviderValidator {
    */
 
   static async validateUserExistence(req, res, next) {
-    const { body: { email } } = req;
-    const val = email && !await UserService.getUserByEmail(email.trim());
-    if (val) {
-      const message = `The user with email: '${email}' does not exist`;
-      return Response.sendResponse(res, 404, false, message);
+    const { body: { email }, headers: { teamurl } } = req;
+    const existingUser = email ? await UserService.getUserByEmail(email.trim()) : null;
+    const userNotFound = existingUser == null;
+
+    if (userNotFound) {
+      try {
+        await UserService.createUserByEmail(teamurl, email);
+      } catch (error) {
+        const message = 'The user with specified email does not exist';
+        return Response.sendResponse(res, 404, false, message);
+      }
     }
     return next();
   }
@@ -104,7 +120,7 @@ class ProviderValidator {
 
     if (isExistingProvider) {
       return Response.sendResponse(
-        res, 409, false, `Provider with email '${email}' already exists`
+        res, 409, false, 'Provider with specified email already exists'
       );
     }
     providerData.providerUserId = userId;

@@ -133,4 +133,31 @@ describe('/Users service', () => {
     expect(homeBaseId).toBe(1);
     expect(UserService.updateUser).toBeCalledWith(undefined, { homebaseId: 1 });
   });
+
+  describe('createUserByEmail', () => {
+    let mockGetUserInfo;
+    let mockCreateUser;
+
+    beforeEach(() => {
+      mockGetUserInfo = jest.spyOn(UserService, 'getUserInfo');
+      mockCreateUser = jest.spyOn(UserService, 'createNewUser');
+    });
+
+    it('should create a user if they do not exists', async () => {
+      mockGetUserInfo.mockResolvedValue(null);
+      const response = await UserService.createUserByEmail(
+        'team.slack.com', 'email@email.com'
+      );
+      expect(response).toBeFalsy();
+    });
+
+    it('should create a user if they do not exists', async () => {
+      mockGetUserInfo.mockResolvedValue(true);
+      mockCreateUser.mockResolvedValue({ id: 1, name: 'user name' });
+      const response = await UserService.createUserByEmail(
+        'team.slack.com', 'email@email.com'
+      );
+      expect(response).toBeTruthy();
+    });
+  });
 });

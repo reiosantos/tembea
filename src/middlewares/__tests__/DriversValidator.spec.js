@@ -1,7 +1,7 @@
 import DriversValidator from '../DriversValidator';
 import HttpError from '../../helpers/errorHandler';
 import { providerService } from '../../services/ProviderService';
-import { driverService } from '../../services/DriverService';
+import DriverService, { driverService } from '../../services/DriverService';
 import Response from '../../helpers/responseHelper';
 import UserService from '../../services/UserService';
 
@@ -92,6 +92,8 @@ describe('DriversValidator Middleware', () => {
       let req;
       let dummyDriver;
       let dummyRightDriverData;
+      let createUserByEmailSpy;
+
       beforeEach(() => {
         dummyDriver = {
           email: 'jamesa232i@gmail.com',
@@ -116,6 +118,7 @@ describe('DriversValidator Middleware', () => {
         req = {
           params: { providerId: 1, driverId: 1 }
         };
+        createUserByEmailSpy = jest.spyOn(UserService, 'createUserByEmail');
       });
 
       afterEach((done) => {
@@ -137,11 +140,11 @@ describe('DriversValidator Middleware', () => {
           body: dummyDriver,
           params: { driverId: 1 }
         };
-        jest.spyOn(driverService, 'exists').mockResolvedValue(true);
+        jest.spyOn(DriverService, 'exists').mockResolvedValue(true);
         await DriversValidator.validatePhoneNoAndNumberAlreadyExists(req, res, next);
         expect(Response.sendResponse).toHaveBeenCalledWith(res, 400, false,
-          'Sorry, the driver with this driver number, email or phone number  already exists');
-        expect(driverService.exists).toHaveBeenCalled();
+          'Driver with this driver number, email or phone number exists');
+        expect(DriverService.exists).toHaveBeenCalled();
       });
       it('should call next if no issue is found', async () => {
         req = {
@@ -149,21 +152,23 @@ describe('DriversValidator Middleware', () => {
           params: { driverId: 1 }
         };
         jest.spyOn(driverService, 'create').mockResolvedValue(driver);
-        jest.spyOn(driverService, 'exists').mockResolvedValue(false);
+        jest.spyOn(DriverService, 'exists').mockResolvedValue(false);
         await DriversValidator.validatePhoneNoAndNumberAlreadyExists(req, res, next);
         expect(next).toHaveBeenCalled();
       });
       describe('validateUserExistenceById', () => {
         it('should call next if userId is not request body', async () => {
           req = {
-            body: {}
+            body: {},
+            headers: { teamurl: 'teamurl' }
           };
           await DriversValidator.validateUserExistenceById(req, res, next);
           expect(next).toBeCalled();
         });
         it('should call next if userId and user exists', async () => {
           req = {
-            body: { userId: 1 }
+            body: { userId: 1 },
+            headers: { teamurl: 'slackteamurl' }
           };
           jest.spyOn(UserService, 'getUserById').mockResolvedValue({});
           await DriversValidator.validateUserExistenceById(req, res, next);
@@ -172,12 +177,26 @@ describe('DriversValidator Middleware', () => {
 
         it('should throw error if user doesnot exist', async () => {
           req = {
-            body: { userId: 1 }
+            body: { userId: 1 },
+            headers: { teamurl: 'slackteamurl' }
           };
+          createUserByEmailSpy.mockResolvedValue(null);
           jest.spyOn(UserService, 'getUserById').mockResolvedValue(null);
           await DriversValidator.validateUserExistenceById(req, res, next);
           expect(next).not.toBeCalled();
           expect(Response.sendResponse).toBeCalled();
+        });
+
+        it('should set userId to null if user email does not exist', async () => {
+          req = {
+            body: { email: 'notfound@email.com' },
+            headers: { teamurl: 'slackteamurl' }
+          };
+          createUserByEmailSpy.mockResolvedValue(null);
+          jest.spyOn(UserService, 'getUserByEmail').mockResolvedValue(null);
+          await DriversValidator.validateUserExistenceById(req, res, next);
+          expect(req.body.userId).toBe(null);
+          expect(next).toBeCalled();
         });
       });
     });

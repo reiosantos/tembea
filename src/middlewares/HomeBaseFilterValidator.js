@@ -5,7 +5,7 @@ class HomeBaseFilterValidator {
     const { headers: { homebaseid }, currentUser: { userInfo: { locations } } } = req;
     if (!homebaseid) {
       return Response.sendResponse(res, 400, false,
-        'Missing HombaseId in request headers');
+        'Missing HomebaseId in request headers');
     }
     const [canViewLocationData] = locations.filter(
       location => location.id === parseInt(homebaseid, 10)

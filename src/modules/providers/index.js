@@ -107,6 +107,8 @@ providerRouter.get(
 providerRouter.patch(
   '/providers/:id',
   ProviderValidator.verifyProviderUpdate,
+  ProviderValidator.validateUserExistence,
+  ProviderValidator.validateProvider,
   ProviderController.updateProvider
 );
 

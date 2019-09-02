@@ -112,6 +112,9 @@ describe('ProviderService', () => {
       it('should fail to update user email doesnt exist', async () => {
         jest.spyOn(UserService, 'getUserByEmail')
           .mockReturnValue(null);
+        jest.spyOn(UserService, 'createUserByEmail')
+          .mockReturnValue(null);
+
         const results = await ProviderService.updateProvider(mockProviderUpdateData, 1);
         expect(UserService.getUserByEmail)
           .toBeCalled();

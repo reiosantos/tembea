@@ -122,16 +122,14 @@ describe('Driver Service', () => {
       expect(driver).toEqual(driverDetails);
     });
     it('should check if a driver already exists when updating', async () => {
-      jest.spyOn(Driver, 'count').mockResolvedValue(1);
-      const driverCount = await driverService.exists('deo@andela.com', '891293', '123123', 1);
-      expect(driverCount).toEqual(1);
-      expect(Driver.count).toHaveBeenCalled();
+      jest.spyOn(sequelize, 'query').mockResolvedValue([[{ count: true }]]);
+      const driverExists = await DriverService.exists('deo@andela.com', '891293', '123123', 1);
+      expect(driverExists).toBe(true);
     });
     it('should check if a driver already exists when adding a driver', async () => {
-      jest.spyOn(Driver, 'count').mockResolvedValue(1);
-      const driverCount = await driverService.exists('deo@andela.com', '891293', '123123');
-      expect(driverCount).toEqual(1);
-      expect(Driver.count).toHaveBeenCalled();
+      jest.spyOn(sequelize, 'query').mockResolvedValue([[{ count: true }]]);
+      const driverExists = await DriverService.exists('deo@andela.com', '891293', '123123');
+      expect(driverExists).toBe(true);
     });
   });
 

@@ -3,7 +3,7 @@ import ProviderValidator from '../ProviderValidator';
 import HttpError from '../../helpers/errorHandler';
 import UserService from '../../services/UserService';
 import Response from '../../helpers/responseHelper';
-import ProviderService from '../../services/ProviderService';
+import ProviderService, { providerService } from '../../services/ProviderService';
 
 const errorMessage = 'Validation error occurred, see error object for details';
 
@@ -77,6 +77,8 @@ describe('ProviderValidator', () => {
       const userId = { dataValues: { id: 1 } };
       jest.spyOn(UserService, 'getUserByEmail')
         .mockReturnValue(userId);
+      jest.spyOn(UserService, 'createUserByEmail')
+        .mockReturnValue({ id: 1 });
       const body = {
         email: 'myemail@gmail.com',
         name: 'Uber Nairobi',
@@ -90,7 +92,9 @@ describe('ProviderValidator', () => {
     });
     it('should return message if user doesnt exist', async () => {
       jest.spyOn(UserService, 'getUserByEmail')
-        .mockReturnValue(null);
+        .mockReturnValue(false);
+      jest.spyOn(UserService, 'createUserByEmail')
+        .mockReturnValue(Promise.reject());
       const body = {
         email: 'myemail@gmail.com',
         name: 'Uber Nairobi',
@@ -98,6 +102,19 @@ describe('ProviderValidator', () => {
       const updateData = await ProviderValidator.createUpdateBody(body);
       expect(UserService.getUserByEmail).toBeCalled();
       expect(updateData).toEqual({ message: 'User with email doesnt exist' });
+    });
+    it('should create a user profile if user exists on the workspace', async () => {
+      jest.spyOn(UserService, 'getUserByEmail')
+        .mockReturnValue(false);
+      jest.spyOn(UserService, 'createUserByEmail')
+        .mockReturnValue({ id: 1 });
+      const body = {
+        email: 'myemail@gmail.com',
+        name: 'Uber Nairobi',
+      };
+      const updateData = await ProviderValidator.createUpdateBody(body);
+      expect(UserService.getUserByEmail).toBeCalled();
+      expect(updateData).toHaveProperty('providerUserId', 1);
     });
   });
 
@@ -130,20 +147,26 @@ describe('ProviderValidator', () => {
 
   describe('ProviderValidator_validateUserExistence', () => {
     let getUserSpy;
+    let createUserByEmailSpy;
 
     beforeEach(() => {
       req = {
         body: {
           email: 'allan@andela.com',
           name: 'Uber'
+        },
+        headers: {
+          teamurl: 'team.slack.com'
         }
       };
       getUserSpy = jest.spyOn(UserService, 'getUserByEmail');
+      createUserByEmailSpy = jest.spyOn(UserService, 'createUserByEmail');
     });
 
     it('returns an error message if user does not exist', async () => {
       getUserSpy.mockResolvedValue(null);
-      const err = 'The user with email: \'allan@andela.com\' does not exist';
+      createUserByEmailSpy.mockResolvedValue(Promise.reject());
+      const err = 'The user with specified email does not exist';
       await ProviderValidator.validateUserExistence(req, res, next);
       expect(UserService.getUserByEmail).toHaveBeenCalledWith(req.body.email);
       expect(Response.sendResponse).toHaveBeenCalledWith(res, 404, false, err);
@@ -155,6 +178,8 @@ describe('ProviderValidator', () => {
         email: 'allan@allan.com'
       };
       getUserSpy.mockResolvedValue(mockUser);
+      createUserByEmailSpy.mockResolvedValue(Promise.resolve());
+
       await ProviderValidator.validateUserExistence(req, res, next);
       expect(UserService.getUserByEmail).toHaveBeenCalledWith(req.body.email);
       expect(next).toHaveBeenCalled();
@@ -242,5 +267,37 @@ describe('ProviderValidator', () => {
       await ProviderValidator.validateProviderExistence(createReq, res, next);
       expect(next).toHaveBeenCalled();
     });
+  });
+  it('should return an error if duplicate provider email is provided', async () => {
+    const updateReq = {
+      body: {
+        driverName: 'Test User',
+        driverNumber: '42220222',
+        email: 'Test@test.com',
+        driverPhoneNo: '07042211313',
+      }
+    };
+    jest.spyOn(UserService, 'getUserByEmail').mockResolvedValue({ id: 1 });
+    jest.spyOn(providerService, 'findProviderByUserId').mockResolvedValue(true);
+    await ProviderValidator.validateProvider(updateReq, res, next);
+    expect(Response.sendResponse).toHaveBeenCalledWith(
+      res, 409, false, 'Provider with specified email already exists'
+    );
+  });
+
+  it('should add provider user id if user exists', async () => {
+    const updateReq = {
+      body: {
+        driverName: 'Test User',
+        driverNumber: '42220222',
+        email: 'Test@test.com',
+        driverPhoneNo: '07042211313',
+      }
+    };
+    jest.spyOn(UserService, 'getUserByEmail').mockResolvedValue({ id: 1 });
+    jest.spyOn(providerService, 'findProviderByUserId').mockResolvedValue(null);
+    await ProviderValidator.validateProvider(updateReq, res, next);
+    expect(res.locals.providerData).toHaveProperty('providerUserId', 1);
+    expect(next).toHaveBeenCalled();
   });
 });

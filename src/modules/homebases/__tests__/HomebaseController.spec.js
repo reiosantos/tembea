@@ -152,15 +152,7 @@ describe('Test HomebaseController', () => {
     });
 
     it('should return an error if homebase already  exists ', async () => {
-      findCountrySpy.mockImplementation(() => Promise.resolve(
-        {
-          dataValues: {
-            id: 1
-          }
-        }
-      ));
-
-      findHomeBase.mockImplementation(() => Promise.reject());
+      jest.spyOn(HomebaseService, 'update').mockResolvedValue(Promise.reject());
       await HomeBaseController.update(req, res);
       expect(res.status).toHaveBeenCalledWith(409);
       expect(res.json).toHaveBeenCalledWith({

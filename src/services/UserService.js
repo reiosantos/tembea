@@ -222,6 +222,22 @@ class UserService {
     await UserService.updateUser(userId, { homebaseId });
     return homebaseId;
   }
+
+  /**
+   * @static async create user by email
+   * @description this methods creates a user by email if they exist on the workspace
+   * @param {string} email of the user
+   * @param {string} teamUrl of the slack workspace
+   * @returns {boolean} true if user is created else false
+   */
+  static async createUserByEmail(teamUrl, email) {
+    const slackUserInfo = await UserService.getUserInfo(teamUrl, email);
+    if (!slackUserInfo) {
+      return false;
+    }
+    const user = await UserService.createNewUser(slackUserInfo);
+    return user;
+  }
 }
 
 export default UserService;

@@ -20,7 +20,7 @@ describe('HomeBaseFilterValidator', () => {
   it('should throw error if homebaseId is missing in headers', async () => {
     await HomeBaseFilterValidator.validateHomeBaseAccess(req, res, next);
     expect(ResponseSpy).toHaveBeenCalledWith(res, 400, false,
-      'Missing HombaseId in request headers');
+      'Missing HomebaseId in request headers');
   });
 
   it('should throw permission error if user doesnot permission to view location info',

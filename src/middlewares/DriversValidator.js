@@ -1,5 +1,5 @@
 import GeneralValidator from './GeneralValidator';
-import { driverService } from '../services/DriverService';
+import DriverService, { driverService } from '../services/DriverService';
 import { providerService } from '../services/ProviderService';
 import { updateDriverSchema } from './ValidationSchemas';
 import Response from '../helpers/responseHelper';
@@ -108,17 +108,28 @@ class DriversValidator {
   static async validatePhoneNoAndNumberAlreadyExists(req, res, next) {
     const { driverPhoneNo, driverNumber, email } = req.body;
     const { params: { driverId } } = req;
-    const existing = await driverService.exists(email, driverPhoneNo, driverNumber, driverId);
+    const existing = await DriverService.exists(email, driverPhoneNo, driverNumber, driverId);
     if (existing) {
       return Response.sendResponse(res, 400, false,
-        'Sorry, the driver with this driver number, email or phone number  already exists');
+        'Driver with this driver number, email or phone number exists');
     }
     return next();
   }
 
   static async validateUserExistenceById(req, res, next) {
-    const { userId } = req.body;
-    if (!userId) return next();
+    const { body: { userId, email }, headers: { teamurl } } = req;
+    const userByEmail = await UserService.getUserByEmail(email);
+
+    if (!userId) {
+      try {
+        const user = userByEmail || await UserService.createUserByEmail(teamurl, email);
+        req.body.userId = user.id;
+        return next();
+      } catch (error) {
+        req.body.userId = null;
+        return next();
+      }
+    }
     const user = await UserService.getUserById(userId);
     if (user) return next();
     return Response.sendResponse(res, 404, false, 'User not Found');

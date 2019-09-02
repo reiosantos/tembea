@@ -22,6 +22,7 @@ const { sequelize } = models;
 describe('ProviderController', () => {
   let req;
   let providerServiceSpy;
+  let createUserByEmailSpy;
   const res = {
     status() {
       return this;
@@ -38,6 +39,7 @@ describe('ProviderController', () => {
   beforeEach(() => {
     jest.spyOn(res, 'status');
     jest.spyOn(res, 'json');
+    createUserByEmailSpy = jest.spyOn(UserService, 'createUserByEmail');
   });
 
   afterEach(() => {
@@ -153,13 +155,15 @@ describe('ProviderController', () => {
 
   describe('ProviderController_updateProvider', () => {
     it('should update provider successfully', async () => {
+      createUserByEmailSpy.mockResolvedValue({ id: 1 });
       providerServiceSpy = jest.spyOn(ProviderService, 'updateProvider').mockReturnValue([1, [{}]]);
       req = {
         params: 1,
         body: {
           name: 'Sharks Uber',
           email: 'Sharks@uber.com'
-        }
+        },
+        headers: { teamurl: 'teamurl' }
       };
       await ProviderController.updateProvider(req, res);
       expect(Response.sendResponse).toBeCalled();
@@ -167,19 +171,22 @@ describe('ProviderController', () => {
     });
 
     it('should return message if provider doesnt exist', async () => {
+      createUserByEmailSpy.mockResolvedValue({ id: 1 });
       providerServiceSpy = jest.spyOn(ProviderService, 'updateProvider').mockReturnValue([0, []]);
       req = {
         params: 100,
         body: {
           name: 'Sharks Uber',
           email: 'Sharks@uber.com'
-        }
+        },
+        headers: { teamurl: 'teamurl' }
       };
       await ProviderController.updateProvider(req, res);
       expect(Response.sendResponse).toBeCalledWith(res, 404, false, 'Provider doesnt exist');
     });
 
     it('should return message if user doesnt exist', async () => {
+      createUserByEmailSpy.mockResolvedValue(false);
       providerServiceSpy = jest.spyOn(ProviderService, 'updateProvider').mockReturnValue({
         message: 'user with email doesnt exist'
       });
@@ -188,7 +195,8 @@ describe('ProviderController', () => {
         body: {
           name: 'Sharks Uber',
           email: 'Sharks@uber.com'
-        }
+        },
+        headers: { teamurl: 'teamurl' }
       };
       await ProviderController.updateProvider(req, res);
       expect(Response.sendResponse).toBeCalledWith(res, 404, false, 'user with email doesnt exist');
@@ -196,13 +204,15 @@ describe('ProviderController', () => {
 
     it('should return message if update fails', async () => {
       const error = new Error('Something went wrong');
+      createUserByEmailSpy.mockResolvedValue(false);
       providerServiceSpy = jest.spyOn(ProviderService, 'updateProvider').mockRejectedValue(error);
       req = {
         params: 100,
         body: {
           name: 'Sharks Uber',
           email: 'Sharks@uber.com'
-        }
+        },
+        headers: { teamurl: 'teamurl' }
       };
       await ProviderController.updateProvider(req, res);
       expect(BugsnagHelper.log).toBeCalled();
@@ -216,7 +226,8 @@ describe('ProviderController', () => {
         body: {
           name: 'Sharks Uber',
           email: 'Sharks@uber.com'
-        }
+        },
+        headers: { teamurl: 'teamurl' }
       };
       await ProviderController.updateProvider(req, res);
       expect(BugsnagHelper.log).toBeCalled();
@@ -265,7 +276,7 @@ describe('ProviderController', () => {
       expect(Response.sendResponse).toHaveBeenCalledWith(res, 404, false, message);
     });
   });
-  
+
   describe('GetViableProviders', () => {
     it('Should get a list of viable providers', async () => {
       jest.spyOn(ProviderService, 'getViableProviders').mockResolvedValue(viableProviders);

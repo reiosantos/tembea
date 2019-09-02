@@ -61,8 +61,8 @@ class ProviderService extends BaseService {
    * @param updateObject
    * @param id
    */
-  static async updateProvider(updateObject, id) {
-    const data = await ProviderValidator.createUpdateBody(updateObject);
+  static async updateProvider(updateObject, id, teamurl) {
+    const data = await ProviderValidator.createUpdateBody(updateObject, teamurl);
     if (data.message) return { message: data.message };
     const updatedProviderDetails = await Provider.update({ ...data },
       {

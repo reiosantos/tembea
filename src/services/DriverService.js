@@ -6,7 +6,7 @@ import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import RemoveDataValues from '../helpers/removeDataValues';
 
 
-const { Driver } = models;
+const { Driver, sequelize } = models;
 
 /**
  * A class representing the Driver service
@@ -100,11 +100,11 @@ class DriverService extends BaseService {
     */
   async update(driverId, driverDetails) {
     const {
-      driverName, driverPhoneNo, email, driverNumber
+      driverName, driverPhoneNo, email, driverNumber, userId
     } = driverDetails;
     const [, [updatedDriver]] = await this.model.update(
       {
-        driverNumber, email, driverPhoneNo, driverName
+        driverNumber, email, driverPhoneNo, driverName, userId
       },
       {
         returning: true,
@@ -127,24 +127,18 @@ class DriverService extends BaseService {
     *  'james@andela.com',70868723, 23423423423, 1
     * );
     */
-  async exists(email, phoneNo, number, id) {
-    if (!id) {
-      return this.model.count({
-        where: {
-          [Op.or]: [{ driverPhoneNo: phoneNo }, { email }, { driverNumber: number }]
-        }
-      });
-    }
-    return this.model.count({
-      where: {
-        [Op.and]: [{
-          [Op.or]: [{ driverPhoneNo: phoneNo }, { email }, { driverNumber: number }],
-          id: {
-            [Op.ne]: id
-          },
-        }]
-      }
-    });
+  static async exists(email, driverPhoneNo, driverNumber, id) {
+    const subQuery = id
+      ? `(SELECT * FROM "Drivers" WHERE "id"!='${id}') otherDrivers` : '"Drivers"';
+
+    const query = `
+        SELECT COUNT(*) !=0 as count  FROM
+        ${subQuery}
+         WHERE "driverPhoneNo" ='${driverPhoneNo}' OR "email" ='${email}'
+          OR "driverNumber" ='${driverNumber}';`;
+
+    const [[{ count }]] = await sequelize.query(query);
+    return count;
   }
 
   static async findOneDriver(options) {

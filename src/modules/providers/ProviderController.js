@@ -75,8 +75,8 @@ class ProviderController {
    */
   static async updateProvider(req, res) {
     try {
-      const { body, params: { id } } = req;
-      const data = await ProviderService.updateProvider(body, id);
+      const { body, params: { id }, headers: { teamurl } } = req;
+      const data = await ProviderService.updateProvider({ ...body, teamurl }, id);
       if (data.message || data[1].length === 0) {
         return Response.sendResponse(res, 404, false, data.message || 'Provider doesnt exist');
       }
