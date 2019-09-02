@@ -20,6 +20,7 @@ import RouteHelper from '../../../../helpers/RouteHelper';
 import { batch, routeDetails } from '../../../../helpers/__mocks__/routeMock';
 import DriverNotifications from
   '../../SlackPrompts/notifications/DriverNotifications/driver.notifications';
+import InteractivePromptsHelpers from '../../helpers/slackHelpers/InteractivePromptsHelpers';
 
 describe('Operations Route Controller', () => {
   let respond;
@@ -431,40 +432,42 @@ describe('Operations Route Controller', () => {
 
 describe('OperationsHandler > completeOpsAssignCabDriver', () => {
   beforeEach(() => {
-    jest.spyOn(OperationsHelper, 'sendcompleteOpAssignCabMsg').mockResolvedValue();
+    jest.spyOn(OperationsHelper, 'sendcompleteOpAssignCabMsg').mockResolvedValue({});
     jest.spyOn(tripService, 'updateRequest').mockResolvedValue({
       rider: { slackId: 'slack' },
       requester: { slackId: 'slackx' }
     });
     jest.spyOn(TripCompletionJob, 'createScheduleForATrip').mockResolvedValue();
     jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId').mockResolvedValue({ id: 'id' });
-    jest.spyOn(bugsnagHelper, 'log').mockResolvedValue();
-    jest.spyOn(InteractivePrompts, 'messageUpdate').mockResolvedValue();
+    jest.spyOn(bugsnagHelper, 'log').mockResolvedValue({});
     jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('');
-    jest.spyOn(DriverNotifications, 'checkAndNotifyDriver').mockResolvedValue();
+    jest.spyOn(DriverNotifications, 'checkAndNotifyDriver').mockResolvedValue({});
   });
-  afterEach(() => {
-    jest.resetAllMocks();
-  });
+
   it('should log error if it occurs', async () => {
     await OperationsHandler.completeOpsAssignCabDriver(completeOpsAssignCabPayload);
     expect(bugsnagHelper.log).toBeCalledTimes(1);
     expect(OperationsHelper.sendcompleteOpAssignCabMsg).toBeCalledTimes(0);
   });
-  it('should successfully complete trip request when ops assign cab and driver', async () => {
-    jest.spyOn(OperationsHelper, 'getTripDetailsAttachment').mockReturnValue('');
-    await OperationsHandler.completeOpsAssignCabDriver(completeOpsAssignCabPayload);
-    expect(bugsnagHelper.log).toBeCalledTimes(0);
-    expect(OperationsHelper.sendcompleteOpAssignCabMsg).toBeCalledTimes(1);
-    expect(DriverNotifications.checkAndNotifyDriver).toBeCalled();
-  });
 
   it('should send Assign Driver and Driver notifications', async () => {
-    jest.spyOn(OperationsHelper, 'getTripDetailsAttachment').mockReturnValue([]);
+    jest.spyOn(InteractivePrompts, 'messageUpdate').mockResolvedValue({});
+    jest.spyOn(OperationsHelper, 'getTripDetailsAttachment').mockResolvedValue({});
+    jest.spyOn(OperationsHelper, 'sendcompleteOpAssignCabMsg').mockResolvedValue({});
+    jest.spyOn(InteractivePromptsHelpers, 'getOpsCompletionAttachmentDetails').mockResolvedValue({});
     await OperationsHandler.sendAssignCabDriverNotifications('TEMA 1', {}, {},
       {}, 'UDAA78', 'UDAA', 'Channel', '1334141');
-    expect(OperationsHelper.getTripDetailsAttachment).toBeCalled();
+    expect(TeamDetailsService.getTeamDetailsBotOauthToken).toBeCalled();
     expect(InteractivePrompts.messageUpdate).toBeCalled();
-    expect(OperationsHelper.sendcompleteOpAssignCabMsg).toBeCalled();
+    expect(InteractivePromptsHelpers.getOpsCompletionAttachmentDetails).toBeCalled();
+  });
+
+  it('should successfully complete trip request when ops assign cab and driver', async () => {
+    jest.spyOn(OperationsHandler, 'sendAssignCabDriverNotifications').mockResolvedValue({});
+    jest.spyOn(OperationsHelper, 'getTripDetailsAttachment').mockReturnValue('');
+    jest.spyOn(OperationsHandler, 'sendAssignCabDriverNotifications');
+    await OperationsHandler.completeOpsAssignCabDriver(completeOpsAssignCabPayload);
+    expect(OperationsHandler.sendAssignCabDriverNotifications).toBeCalled();
+    expect(DriverNotifications.checkAndNotifyDriver).toBeCalled();
   });
 });

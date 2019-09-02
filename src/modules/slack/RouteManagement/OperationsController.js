@@ -22,6 +22,7 @@ import { cabService } from '../../../services/CabService';
 import { SlackDialogError } from '../SlackModels/SlackDialogModels';
 import DriverNotifications from
   '../SlackPrompts/notifications/DriverNotifications/driver.notifications';
+import InteractivePromptsHelpers from '../helpers/slackHelpers/InteractivePromptsHelpers';
 
 const handlers = {
   decline: async (payload) => {
@@ -153,8 +154,9 @@ class OperationsHandler {
    * Update transaction state in cache and db
    * create a trip scheduler
    * Send notifications to requester, rider, ops channel and manager
-   *
+   *`
    * @param {object} data request object from slack
+   * @param respond
    */
 
   static async completeOpsAssignCabDriver(data, respond) {
@@ -212,6 +214,7 @@ class OperationsHandler {
       riderSlackId
     },
     tripInformation);
+    await InteractivePromptsHelpers.getOpsCompletionAttachmentDetails(false, tripInformation);
   }
 }
 

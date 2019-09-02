@@ -5,6 +5,9 @@ import { SlackAttachment, SlackButtonAction } from '../SlackModels/SlackMessageM
 import BatchUseRecordService from '../../../services/BatchUseRecordService';
 import CleanData from '../../../helpers/cleanData';
 import Interactions from '../../new-slack/trips/user/interactions';
+import UserService from '../../../services/UserService';
+import { HOMEBASE_NAMES } from '../../../helpers/constants';
+import UpdateSlackMessageHelper from '../../../helpers/slack/updatePastMessageHelper';
 
 class RateTripController {
   static async sendRatingMessage(tripId, prop) {
@@ -37,13 +40,22 @@ class RateTripController {
         tripId: value,
         response_url: payload.response_url
       };
-      await Interactions.sendPriceForm(payload, state);
+      await RateTripController.getAfterRatingAction(payload, state);
     }
     if (callback_id === 'rate_route') {
       await BatchUseRecordService.updateBatchUseRecord(value, { rating: name });
       return new SlackInteractiveMessage('Thank you for using Tembea');
     }
-    // await Interactions.sendPriceForm(payload, state);
+  }
+
+  static async getAfterRatingAction(payload, state) {
+    const { Homebase: { name: homebase } } = await UserService.getUserBySlackId(payload.user.id);
+    if (homebase === HOMEBASE_NAMES.KAMPALA) {
+      const message = new SlackInteractiveMessage('Thank you for using Tembea');
+      await UpdateSlackMessageHelper.newUpdateMessage(payload.response_url, message);
+      return;
+    }
+    await Interactions.sendPriceForm(payload, state);
   }
 }
 

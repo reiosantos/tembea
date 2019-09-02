@@ -1,9 +1,17 @@
 import RateTripController from '../RateTripController';
-import { SlackAttachment, SlackButtonAction } from '../../SlackModels/SlackMessageModels';
+import {
+  SlackAttachment,
+  SlackButtonAction,
+  SlackInteractiveMessage
+}
+  from '../../SlackModels/SlackMessageModels';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import WebClientSingleton from '../../../../utils/WebClientSingleton';
 import Interactions from '../../../new-slack/trips/user/interactions';
 import tripService from '../../../../services/TripService';
+import BatchUseRecordService from '../../../../services/BatchUseRecordService';
+import UserService from '../../../../services/UserService';
+import UpdateSlackMessageHelper from '../../../../helpers/slack/updatePastMessageHelper';
 
 describe('RateTripController', () => {
   describe('sendTripRatingMessage', () => {
@@ -32,25 +40,59 @@ describe('RateTripController', () => {
     });
   });
 
-  describe('rateTrip', () => {
-    it('should rate trip and respond with a SlackInteractiveMessage', async () => {
-      const getWebClientMock = mock => ({
-        dialog: { open: mock }
+  describe('getAfterRatingAction', () => {
+    const payload = { user: { id: 'SHDAA' }, response_url: 'url' };
+    it('should Update message if homebase is KAMPALA', async () => {
+      jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({
+        Homebase: { name: 'Kampala' }
       });
+      jest.spyOn(UpdateSlackMessageHelper, 'newUpdateMessage');
+      await RateTripController.getAfterRatingAction(payload, {});
+      expect(UpdateSlackMessageHelper.newUpdateMessage).toBeCalled();
+    });
+    it('should send Price Form if homebase is not Kampala ', async () => {
+      jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({
+        Homebase: { name: 'Nairobi' }
+      });
+      jest.spyOn(Interactions, 'sendPriceForm').mockResolvedValue({});
+      await RateTripController.getAfterRatingAction(payload, {});
+      expect(Interactions.sendPriceForm).toBeCalled();
+    });
+  });
+
+  describe('rateTrip', () => {
+    const respond = jest.fn();
+    const getWebClientMock = mock => ({
+      dialog: { open: mock }
+    });
+    beforeAll(() => {
+      jest.spyOn(tripService, 'updateRequest').mockResolvedValue({});
+      jest.spyOn(TeamDetailsService, 'getTeamDetails')
+        .mockResolvedValue({ botToken: { slackBotOauthToken: 'ABCDE' } });
+      jest.spyOn(Interactions, 'sendPriceForm');
+    });
+
+    it('should call getAfterRatingAction if action is rate_trip', async () => {
       const open = jest.fn().mockResolvedValue({ status: true });
-      jest.spyOn(tripService, 'getById').mockResolvedValue({});
-      jest.spyOn(TeamDetailsService, 'getTeamDetails').mockResolvedValue({ botToken: { slackBotOauthToken: 'ABCDE' } });
       jest.spyOn(WebClientSingleton, 'getWebClient')
         .mockReturnValue(getWebClientMock(open));
-      jest.spyOn(Interactions, 'sendPriceForm');
       const payload = {
         actions: [{ name: '1', value: '3' }], callback_id: 'rate_trip', team: { id: 'random' }
       };
-      const respond = jest.fn();
-
+      jest.spyOn(RateTripController, 'getAfterRatingAction').mockResolvedValue({});
       await RateTripController.rate(payload, respond);
-
-      expect(Interactions.sendPriceForm).toHaveBeenCalled();
+      expect(RateTripController.getAfterRatingAction).toBeCalled();
     });
+
+    it('should call BatchUseRecordService.updateBatchUseRecord if action is rate_route',
+      async () => {
+        const payload = {
+          actions: [{ name: '1', value: '3' }], callback_id: 'rate_route', team: { id: 'random' }
+        };
+        jest.spyOn(BatchUseRecordService, 'updateBatchUseRecord').mockResolvedValue({});
+        const response = await RateTripController.rate(payload, respond);
+        expect(BatchUseRecordService.updateBatchUseRecord).toBeCalled();
+        expect(response).toBeInstanceOf(SlackInteractiveMessage);
+      });
   });
 });

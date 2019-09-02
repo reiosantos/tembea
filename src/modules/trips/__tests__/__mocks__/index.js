@@ -154,7 +154,8 @@ const tripInformation = {
   createdAt: '',
   departureTime: '',
   cab: { regNumber: '', model: '' },
-  driver: { driverName: '', driverPhoneNo: '' }
+  driver: { driverName: '', driverPhoneNo: '' },
+  confirmer: { slackId: 'DADAD' }
 };
 export {
   mockedValue, resultValue, response, tripInfo, mockTrip, updatedValue, mockAirportTransferTrip,

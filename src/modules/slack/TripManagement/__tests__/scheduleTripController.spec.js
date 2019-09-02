@@ -203,9 +203,9 @@ describe.only('ScheduleTripController Tests', () => {
       expect(request).toHaveProperty('reason', tripRequestDetails().reason);
     });
 
-    it('should return an object with details of the trip to persist when forSelf is false',
+    it('should return an object with details of the trip to persist when forMe is false',
       async () => {
-        payload.submission.forSelf = 'false';
+        payload.submission.forMe = false;
         SlackHelpers.findOrCreateUserBySlackId = jest.fn(() => ({ id: 4 }));
         ScheduleTripController.createRequestObject = jest.fn(() => tripRequestDetails());
 

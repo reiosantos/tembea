@@ -2,7 +2,7 @@ import RouteRequestService from '../../../../services/RouteRequestService';
 import { cabService } from '../../../../services/CabService';
 import OperationsNotifications from '../../SlackPrompts/notifications/OperationsRouteRequest/index';
 import SlackNotifications from '../../SlackPrompts/Notifications';
-import { SlackAttachment } from '../../SlackModels/SlackMessageModels';
+import { SlackAttachment, SlackAttachmentField } from '../../SlackModels/SlackMessageModels';
 import ProviderAttachmentHelper from '../../SlackPrompts/notifications/ProviderNotifications/helper';
 import ProviderNotifications from '../../SlackPrompts/notifications/ProviderNotifications';
 import RouteNotifications from '../../SlackPrompts/notifications/RouteNotifications';
@@ -77,10 +77,15 @@ class OperationsHelper {
   }
 
   static getTripDetailsAttachment(tripInformation, driverDetails) {
+    const approve = [
+      new SlackAttachmentField('', `:white_check_mark: <@${tripInformation.confirmer.slackId}>`
+      + 'approved this *request*')
+    ];
     const tripDetailsAttachment = new SlackAttachment('Trip request complete');
     tripDetailsAttachment.addOptionalProps('', '', '#3c58d7');
     tripDetailsAttachment.addFieldsOrActions('fields',
       ProviderAttachmentHelper.providerFields(tripInformation, driverDetails));
+    tripDetailsAttachment.addFieldsOrActions('fields', approve);
     return tripDetailsAttachment;
   }
 

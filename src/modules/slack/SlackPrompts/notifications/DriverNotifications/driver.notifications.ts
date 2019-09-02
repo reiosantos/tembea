@@ -42,7 +42,8 @@ class DriverNotifications {
         { where: { id } },
       );
         const message = new
-        SlackInteractiveMessage(`:white_check_mark: I have notified <@${driverSlackId}> :smiley:`);
+        SlackInteractiveMessage(':white_check_mark: I have notified the driver'
+        + ` <@${driverSlackId}> :smiley:`);
         await DriverNotifications.sendDriverTripApproveNotification(teamId, trip, driverSlackId);
         respond(message);
       }

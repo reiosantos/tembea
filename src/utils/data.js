@@ -29,7 +29,6 @@ export const kampalaPickUpLocations = [
   'US Embassy Kampala',
   'Kisasi',
   'Golden Tulip',
-  'Andela Staff Apartments',
   'Watoto Church',
   'Fusion Arena',
   'Others'
@@ -41,7 +40,6 @@ export const kampalaDestinationLocations = [
   'US Embassy Kampala',
   'Kisasi',
   'Golden Tulip',
-  'Andela Staff Apartments',
   'Watoto Church',
   'Fusion Arena',
   'Others'

@@ -127,11 +127,10 @@ class ScheduleTripController {
         SlackHelpers.findOrCreateUserBySlackId(slackUserId, teamId),
         SlackHelpers.getUserInfoFromSlack(slackUserId, teamId),
       ]);
-
       const request = await ScheduleTripController
         .createRequestObject(tripRequestDetails, requester, slackInfo.tz);
 
-      if (tripRequestDetails.forSelf === 'false') {
+      if (tripRequestDetails.forMe === false) {
         const { rider } = tripRequestDetails;
         const passenger = await SlackHelpers.findOrCreateUserBySlackId(rider, teamId);
         request.riderId = passenger.id;
