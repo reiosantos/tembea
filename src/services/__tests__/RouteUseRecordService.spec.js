@@ -79,6 +79,7 @@ describe('RouteUseRecordService', () => {
 
   describe('getAdditionalInfo', () => {
     it('should get average ratings and utilization for data', () => {
+      mockRecord[0].dataValues = { ...mockRecord[0] };
       const routeTrips = RouteUseRecordService.getAdditionalInfo(mockRecord);
       expect(routeTrips[0].utilization).toEqual('0');
       expect(routeTrips[0].averageRating).toEqual('4.00');

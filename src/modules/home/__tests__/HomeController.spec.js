@@ -12,7 +12,7 @@ describe('Slack App Homepage Test', () => {
       .get('/notAnApp')
       .expect(404)
       .end((err, res) => {
-        expect(res.body.message).toBe('Not Found. Use /api/v1 to access the api');
+        expect(res.body.message).toBe('Not Found. Use /api/v1 or /api/v2 to access the api');
         done();
       });
   });

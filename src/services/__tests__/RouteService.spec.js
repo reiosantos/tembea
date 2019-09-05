@@ -217,7 +217,7 @@ describe('RouteService', () => {
   describe('RouteService_getRouteByName', () => {
     it('should return route details from the db', async () => {
       const mockRouteDetails = { id: 1, name: 'Yaba', imgUrl: 'images://an-img.png' };
-      jest.spyOn(Route, 'findOne').mockResolvedValue(mockRouteDetails);
+      jest.spyOn(routeService, 'findOne').mockResolvedValue(mockRouteDetails);
       const routeDetails = await routeService.getRouteByName('Yaba');
       expect(routeDetails).toEqual(mockRouteDetails);
     });
@@ -253,10 +253,10 @@ describe('RouteService', () => {
       expect(result).toHaveProperty('totalPages');
     });
     it('should return only active routes', async () => {
-      const where = { status: 'Active' };
+      const where = { status: 'Active', homebaseId: 1 };
       const defaultInclude = [
+        { model: User, as: 'riders', attributes: [] },
         ...RouteService.updateDefaultInclude(where),
-        { model: User, as: 'riders', attributes: [] }
       ];
       const attributes = [...RouteService.defaultRouteDetails];
       const group = [...RouteService.defaultRouteGroupBy];

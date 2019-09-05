@@ -5,9 +5,10 @@ import ProviderHelper from '../helpers/providerHelper';
 import ProviderValidator from '../middlewares/ProviderValidator';
 import BaseService from './BaseService';
 import RemoveDataValues from '../helpers/removeDataValues';
+import { homebaseInfo } from './RouteService';
 
 const {
-  Provider, User, Cab, Driver, Country, Homebase
+  Provider, User, Cab, Driver
 } = models;
 
 class ProviderService extends BaseService {
@@ -33,12 +34,7 @@ class ProviderService extends BaseService {
       as: 'user',
       attributes: ['name', 'phoneNo', 'email', 'slackId']
     },
-    {
-      model: Homebase,
-      as: 'homebase',
-      attributes: ['id', 'name'],
-      include: [{ model: Country, as: 'country', attributes: ['name', 'id', 'status'] }]
-    }
+    { ...homebaseInfo }
     ];
     const filter = {
       include,

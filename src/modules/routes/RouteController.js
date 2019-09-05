@@ -20,12 +20,13 @@ import RouteHelper from '../../helpers/RouteHelper';
 import RouteNotifications from '../slack/SlackPrompts/notifications/RouteNotifications';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import slackEvents from '../slack/events';
+import ApiVersionHelper from '../../helpers/apiVersionHelper.ts';
 
 class RoutesController {
   /**
    * @description Read the routes batch records
    * @param  {object} req The http request object
-   * @param  {object} res The http response object
+    * @param  {object} res The http response object
    * @returns {object} The http response object
    */
   static async getRoutes(req, res) {
@@ -36,13 +37,14 @@ class RoutesController {
       page = page || 1;
       size = size || defaultSize;
       name = name || null;
-      const { status } = req.query;
-      const { currentUser: { userInfo } } = req;
+      const { query: { status }, currentUser: { userInfo } } = req;
       const { homebaseId } = await UserService.getUserByEmail(userInfo.email);
       sort = SequelizePaginationHelper.deserializeSort(sort || 'name,asc,id,asc');
       const pageable = { page, size, sort };
       const where = { name, status };
-      const { ...result } = await RouteService.getRoutes(pageable, where, homebaseId);
+      const result = ApiVersionHelper.getApiVersion(req) === 'v1'
+        ? await RouteService.getRoutes(pageable, where, homebaseId)
+        : await RouteService.getRoutes(pageable, where, homebaseId, true);
       const message = `${result.pageNo} of ${result.totalPages} page(s).`;
       const routeData = RouteHelper.pageDataObject(result);
       return Response.sendResponse(res, 200, true, message, routeData);

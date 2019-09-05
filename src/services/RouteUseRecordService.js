@@ -4,9 +4,10 @@ import models from '../database/models';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import RemoveDataValues from '../helpers/removeDataValues';
 import BatchUseRecordService from './BatchUseRecordService';
+import { homebaseInfo } from './RouteService';
 
 const {
-  RouteUseRecord, RouteBatch, Cab, Route, BatchUseRecord
+  RouteUseRecord, RouteBatch, Cab, Route, BatchUseRecord, Driver
 } = models;
 const routeRecordInclude = {
   include: [{
@@ -15,13 +16,26 @@ const routeRecordInclude = {
     paranoid: false,
     where: {},
     include: [
+      'riders',
       {
         model: Route,
         as: 'route',
-        attributes: ['name'],
-        include: [{ model: models.Address, as: 'destination', attributes: ['address'] }]
+        attributes: ['name', 'imageUrl'],
+        include: [
+          { model: models.Address, as: 'destination', attributes: ['address'] },
+          { ...homebaseInfo }
+        ]
       },
-      { model: Cab, as: 'cabDetails', attributes: ['regNumber'] },
+      {
+        model: Cab,
+        as: 'cabDetails',
+        attributes: ['regNumber', 'model']
+      },
+      {
+        model: Driver,
+        as: 'driver',
+        attributes: ['driverName', 'driverPhoneNo', 'driverNumber', 'email']
+      },
       { model: BatchUseRecord, attributes: ['rating'] }
     ],
   }]
@@ -138,7 +152,7 @@ class RouteUseRecordService {
 
   static getAdditionalInfo(routeTripsData) {
     return routeTripsData.map((record) => {
-      const recordInfo = { ...record };
+      const recordInfo = { ...record.dataValues };
       const {
         confirmedUsers,
         unConfirmedUsers,

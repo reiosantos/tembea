@@ -16,11 +16,15 @@ const {
   Route, RouteBatch, Cab, Address, User, sequelize, Sequelize, Driver, Homebase, Country
 } = models;
 
-class RouteService extends BaseService {
-  constructor() {
-    super(Route);
-  }
 
+export const homebaseInfo = {
+  model: Homebase,
+  as: 'homebase',
+  attributes: ['id', 'name'],
+  include: [{ model: Country, as: 'country', attributes: ['name', 'id', 'status'] }]
+};
+
+class RouteService extends BaseService {
   static get sort() {
     return {
       cab: { model: Cab, as: 'cabDetails' },
@@ -53,7 +57,7 @@ class RouteService extends BaseService {
         model: Route, as: 'route', include: ['destination']
       },
       {
-        model: Homebase, as: 'homebase', attributes: ['id', 'name'], include: [{ model: Country, as: 'country', attributes: ['name', 'id', 'status'] }]
+        ...homebaseInfo
       }];
   }
 
@@ -220,7 +224,9 @@ class RouteService extends BaseService {
    *  { page:1, size:10, sort:['id','desc'] }
    * );
    */
-  static async getRoutes(pageable = RouteService.defaultPageable, where = {}, homebaseId) {
+  static async getRoutes(
+    pageable = RouteService.defaultPageable, where = {}, homebaseId = 1, isV2 = false
+  ) {
     const { page, size, sort } = pageable;
     let [order, filter] = [];
     if (sort) { order = [...RouteService.convertToSequelizeOrderByClause(sort)]; }
@@ -237,13 +243,13 @@ class RouteService extends BaseService {
         ...RouteService.defaultRouteDetails
       ],
       include: [
+        { model: User, as: 'riders', attributes: [] },
         ...RouteService.updateDefaultInclude(where),
-        { model: User, as: 'riders', attributes: [] }
       ],
       group: [...RouteService.defaultRouteGroupBy]
     };
     const { data, pageMeta } = await paginatedRoutes.getPageItems(page);
-    const routes = data.map(RouteServiceHelper.serializeRouteBatch);
+    const routes = isV2 ? data : data.map(RouteServiceHelper.serializeRouteBatch);
     return { routes, ...pageMeta };
   }
 

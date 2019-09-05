@@ -167,6 +167,7 @@ tripsRouter.post(
  * /trips/routetrips:
  *  post:
  *    summary: fetch route trips for a specified period
+ *    deprecated: true
  *    tags:
  *      - Trips
  *    parameters:

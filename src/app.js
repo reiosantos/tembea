@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import expressValidator from 'express-validator';
 import BugsnagHelper from './helpers/bugsnagHelper';
 import modules from './modules';
+import modulesV2 from './modules/index.v2';
 import SlackBodyParserFilter from './helpers/slackBodyParserFilter';
 import './modules/slack/events/index';
 import hbsConfig from './hbsConfig';
@@ -41,10 +42,11 @@ app.set('view engine', 'html');
 
 // set base url for api
 modules(app);
+modulesV2(app);
 
 // catch all routers
 app.use('*', (req, res) => res.status(404).json({
-  message: 'Not Found. Use /api/v1 to access the api'
+  message: 'Not Found. Use /api/v1 or /api/v2 to access the api'
 }));
 
 /* This handles any errors that Express catches,

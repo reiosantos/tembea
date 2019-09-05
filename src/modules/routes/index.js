@@ -19,6 +19,7 @@ routesRouter.use(
  * /routes:
  *  get:
  *    summary: Gets all available route batches from the database
+ *    deprecated: true
  *    tags:
  *      - Routes
  *    parameters:
