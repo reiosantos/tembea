@@ -11,6 +11,8 @@ import HttpError from '../../helpers/errorHandler';
 import BugsnagHelper from '../../helpers/bugsnagHelper';
 import HomebaseService from '../../services/HomebaseService';
 import SlackHelpers from '../../helpers/slack/slackHelpers';
+import UserService from '../../services/UserService';
+import RouteService from '../../services/RouteService';
 
 class SlackController {
   static async launch(req, res) {
@@ -163,6 +165,25 @@ class SlackController {
     } catch (error) {
       BugsnagHelper.log(error);
       HttpError.sendErrorResponse(error, res);
+    }
+  }
+
+  static async leaveRoute(payload, respond) {
+    try {
+      const { user: { id } } = payload;
+      const { dataValues: { routeBatchId, name, id: userId } } = await UserService.getUserBySlackId(id);
+      if (routeBatchId) {
+        await UserService.updateUser(userId, { routeBatchId: null });
+        const { routeId } = await RouteService.getRouteBatchByPk(routeBatchId, false);
+        const { name: routeName } = await RouteService.getRouteById(routeId, false);
+        const slackMessage = new SlackInteractiveMessage(
+          `Hey *${name}*, You have successfully left the route \`${routeName}\`.`
+        );
+        respond(slackMessage);
+      }
+    } catch (error) {
+      BugsnagHelper.log(error);
+      respond(new SlackInteractiveMessage('Something went wrong! Please try again.'));
     }
   }
 }

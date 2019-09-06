@@ -42,6 +42,9 @@ class SlackInteractions {
       case 'back_to_routes_launch':
         respond(await SlackController.getRouteCommandMsg(slackId));
         break;
+      case 'leave_route':
+        await SlackController.leaveRoute(payload, respond);
+        break;
       default:
         respond(new SlackInteractiveMessage('Thank you for using Tembea'));
         break;

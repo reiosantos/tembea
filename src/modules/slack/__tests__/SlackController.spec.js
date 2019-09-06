@@ -1,4 +1,6 @@
 import request from 'supertest';
+import RouteService from '../../../services/RouteService';
+import UserService from '../../../services/UserService';
 import app from '../../../app';
 import SlackControllerMock from '../__mocks__/SlackControllerMock';
 import SlackController from '../SlackController';
@@ -8,6 +10,7 @@ import BugsnagHelper from '../../../helpers/bugsnagHelper';
 import HttpError from '../../../helpers/errorHandler';
 import HomebaseService from '../../../services/HomebaseService';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
+import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
 
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
@@ -132,5 +135,35 @@ describe('Slack controller test', () => {
         }
       );
     });
+  });
+});
+describe('leaveRoute', () => {
+  it('should remove an engineer from a route', async () => {
+    jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue(
+      { dataValues: { routeBatchId: 1, name: 'Route name', id: 2 } }
+    );
+    jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue(
+      { routeId: 1 }
+    );
+    jest.spyOn(RouteService, 'getRouteById').mockResolvedValue(
+      { name: 'Route name' }
+    );
+    const payload = { user: { id: 'uuuuucu' } };
+      
+    const res = jest.fn();
+    await SlackController.leaveRoute(payload, res);
+    const slackMessage = new SlackInteractiveMessage('Hey *Route name*, You have successfully left the route `Route name`.');
+    expect(res).toHaveBeenCalled();
+    expect(res).toHaveBeenCalledWith(slackMessage);
+  });
+      
+  it('should throw an error if something unexpected happens while removing an engineer from a route', async () => {
+    jest.spyOn(BugsnagHelper, 'log').mockReturnValue();
+    jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue(Promise.reject());
+    const payload = { user: { id: 'uuuuucu' } };
+    const res = jest.fn();
+    await SlackController.leaveRoute(payload, res);
+    const slackMessage = new SlackInteractiveMessage('Something went wrong! Please try again.');
+    expect(res).toHaveBeenCalledWith(slackMessage);
   });
 });

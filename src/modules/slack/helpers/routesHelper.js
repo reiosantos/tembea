@@ -6,7 +6,7 @@ import {
 import SlackPagination from '../../../helpers/slack/SlackPaginationHelper';
 import {
   SlackAttachment,
-  SlackAttachmentField, SlackButtonAction
+  SlackAttachmentField, SlackButtonAction, SlackCancelButtonAction
 } from '../SlackModels/SlackMessageModels';
 import ProviderAttachmentHelper from '../SlackPrompts/notifications/ProviderNotifications/helper';
 
@@ -42,9 +42,15 @@ class RoutesHelpers {
     );
   }
 
+  static createLeaveRouteButton() {
+    return new SlackCancelButtonAction('Leave Route', 'leave_route',
+      'Are you sure you want to leave this route', 'leave_route');
+  }
+
   static toCurrentRouteAttachment(route) {
     const attachments = new SlackAttachment();
-    const navButtonsAttachment = createNavButtons('back_to_launch', 'back_to_routes_launch');
+    const leaveRouteButton = route ? RoutesHelpers.createLeaveRouteButton(route.id) : null;
+    const navButtonsAttachment = createNavButtons('back_to_launch', 'back_to_routes_launch', leaveRouteButton);
 
     if (!route) {
       return new SlackInteractiveMessage(

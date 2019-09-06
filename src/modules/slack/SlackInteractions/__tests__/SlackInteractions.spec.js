@@ -160,6 +160,14 @@ describe('SlackInteractions', () => {
       done();
     });
 
+    it('should test leave_route', (done) => {
+      const payload = createPayload('leave_route');
+      SlackController.leaveRoute = jest.fn().mockReturnValue({});
+      SlackInteractions.launch(payload, respond);
+      expect(SlackController.leaveRoute).toHaveBeenCalled();
+      done();
+    });
+
     it('should test back_to_launch', (done) => {
       const payload = createPayload('back_to_travel_launch');
       SlackController.getTravelCommandMsg = jest.fn().mockReturnValue({});
