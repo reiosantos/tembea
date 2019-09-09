@@ -20,7 +20,7 @@ import RouteHelper from '../../helpers/RouteHelper';
 import RouteNotifications from '../slack/SlackPrompts/notifications/RouteNotifications';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import slackEvents from '../slack/events';
-import ApiVersionHelper from '../../helpers/apiVersionHelper.ts';
+import ApiVersionHelper from '../../helpers/apiVersionHelper';
 
 class RoutesController {
   /**
