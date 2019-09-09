@@ -456,12 +456,12 @@ class SlackNotifications {
     } = tripInformation;
 
     const userAttachment = SlackNotifications.cabDriverDetailsNotification(cab, driver, departureTime, destination, pickup);
-
+        
     return (!(cab && driver)) ? [
       new SlackAttachmentField('Pickup Location', pickup, true),
       new SlackAttachmentField('Destination', destination, true),
       new SlackAttachmentField('Request Date', getSlackDateString(createdAt), true),
-      new SlackAttachmentField('Trip Date', departureTime, true),
+      new SlackAttachmentField('Trip Date', getSlackDateString(departureTime), true),
       new SlackAttachmentField('Reason', reason, true),
       new SlackAttachmentField('No of Passengers', noOfPassengers, true),
       new SlackAttachmentField('Passenger', passenger, true),
@@ -491,7 +491,7 @@ class SlackNotifications {
         new SlackAttachmentField('Pickup Location', pickup, true),
         new SlackAttachmentField('Destination', destination, true),
         new SlackAttachmentField('Driver Name', driverName, true),
-        new SlackAttachmentField('Trip Date', departureTime, true),
+        new SlackAttachmentField('Trip Date', getSlackDateString(departureTime), true),
         new SlackAttachmentField('Driver Contact', driverPhoneNo, true),
         new SlackAttachmentField('Vehicle Name', model, true),
         new SlackAttachmentField('Vehicle Reg Number', regNumber, true)

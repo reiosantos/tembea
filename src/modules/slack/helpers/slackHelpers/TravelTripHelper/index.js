@@ -16,6 +16,9 @@ import Notifications from '../../../SlackPrompts/Notifications';
 import InteractivePromptSlackHelper from '../InteractivePromptSlackHelper';
 import travelHelper from './travelHelper';
 import UpdateSlackMessageHelper from '../../../../../helpers/slack/updatePastMessageHelper';
+import HomebaseService from '../../../../../services/HomebaseService';
+import { getTimezone } from '../../dateHelpers';
+import DateDialogHelper from '../../../../../helpers/dateHelper';
 
 
 export const getTravelKey = id => `TRAVEL_REQUEST_${id}`;
@@ -27,10 +30,7 @@ class TravelTripHelper {
       const errors = await ScheduleTripController.validateTravelContactDetailsForm(
         payload
       );
-      if (errors.length > 0) {
-        return { errors };
-      }
-
+      if (errors.length > 0) { return { errors }; }
       const { user: { id }, submission } = payload;
       await Cache.save(getTravelKey(id), 'contactDetails', submission);
       const props = {
@@ -43,9 +43,7 @@ class TravelTripHelper {
       return InteractivePrompts.sendListOfDepartments(props, 'false');
     } catch (error) {
       bugsnagHelper.log(error);
-      respond(
-        new SlackInteractiveMessage('Unsuccessful request. Kindly Try again')
-      );
+      respond(new SlackInteractiveMessage('Unsuccessful request. Kindly Try again'));
     }
   }
 
@@ -66,9 +64,7 @@ class TravelTripHelper {
       return DialogPrompts.sendTripDetailsForm(
         newPayload, 'travelEmbassyDetailsForm', 'travel_trip_embassyForm'
       );
-    } catch (error) {
-      bugsnagHelper.log(error);
-    }
+    } catch (error) { bugsnagHelper.log(error); }
   }
 
   static async embassyForm(payload, respond) {
@@ -77,11 +73,13 @@ class TravelTripHelper {
       const errors = await ScheduleTripController.validateTravelDetailsForm(
         payload, 'embassy'
       );
-      if (errors.length > 0) {
-        return { errors };
-      }
+      if (errors.length > 0) { return { errors }; }
       await UpdateSlackMessageHelper.updateMessage(payload.state, { text: 'Noted...' });
       const tripDetails = await createTravelTripDetails(payload, 'embassyVisitDateTime');
+      const homeBase = await HomebaseService.getHomeBaseBySlackId(id);
+      const userTimeZone = getTimezone(homeBase.name || 'Nairobi');
+      tripDetails.dateTime = DateDialogHelper.transformDate(tripDetails.dateTime, userTimeZone);
+      tripDetails.flightDateTime = DateDialogHelper.transformDate(tripDetails.flightDateTime, userTimeZone);
       await Cache.save(getTravelKey(id), 'tripDetails', tripDetails);
       respond(InteractivePrompts.sendPreviewTripResponse(tripDetails));
     } catch (error) {
@@ -108,11 +106,13 @@ class TravelTripHelper {
       const errors = await ScheduleTripController.validateTravelDetailsForm(
         payload, 'airport', 'pickup'
       );
-      if (errors.length > 0) {
-        return { errors };
-      }
+      if (errors.length > 0) { return { errors }; }
       await UpdateSlackMessageHelper.updateMessage(payload.state, { text: 'Noted...' });
       const tripDetails = await createTravelTripDetails(payload);
+      const homeBase = await HomebaseService.getHomeBaseBySlackId(id);
+      const userTimeZone = getTimezone(homeBase.name || 'Nairobi');
+      tripDetails.dateTime = DateDialogHelper.transformDate(tripDetails.dateTime, userTimeZone);
+      tripDetails.flightDateTime = DateDialogHelper.transformDate(tripDetails.flightDateTime, userTimeZone);
       await Cache.save(getTravelKey(id), 'tripDetails', tripDetails);
       await TravelTripHelper.checkVerifiable(payload, respond);
     } catch (error) {
@@ -135,9 +135,7 @@ class TravelTripHelper {
     newPayload.state = JSON.stringify(payload);
     const valueName = payload.actions[0].value;
     if (valueName === 'cancel') {
-      respond(
-        new SlackInteractiveMessage('Thank you for using Tembea')
-      );
+      respond(new SlackInteractiveMessage('Thank you for using Tembea'));
     } else {
       await LocationMapHelpers.callDestinationSelection(newPayload, respond);
     }
@@ -148,9 +146,7 @@ class TravelTripHelper {
       const errors = await ScheduleTripController.validateTravelDetailsForm(
         payload, 'airport', 'destination'
       );
-      if (errors.length > 0) {
-        return { errors };
-      }
+      if (errors.length > 0) { return { errors }; }
       const { user: { id } } = payload;
       const { tripDetails } = await Cache.fetch(getTravelKey(id));
       const { submission: { destination, othersDestination } } = payload;

@@ -12,6 +12,8 @@ import Validators from '../../../../../../helpers/slack/UserInputValidator/Valid
 import InteractivePromptSlackHelper from '../../InteractivePromptSlackHelper';
 import travelHelper from '../travelHelper';
 import UpdateSlackMessageHelper from '../../../../../../helpers/slack/updatePastMessageHelper';
+import HomebaseService from '../../../../../../services/HomebaseService';
+
 
 jest.mock('../../../../events', () => ({
   slackEvents: jest.fn(() => ({
@@ -203,6 +205,7 @@ describe('TravelTripHelper', () => {
 
     it('should save tripDetails in cache and sendPreviewTripRespons', async () => {
       payload.user.id = 1;
+      payload.submission.flightDateTime = '2/10/2019 22:00';
       const validateTravelContactDetailsForm = jest.spyOn(ScheduleTripController,
         'validateTravelDetailsForm');
       validateTravelContactDetailsForm.mockImplementationOnce(() => []);
@@ -210,7 +213,8 @@ describe('TravelTripHelper', () => {
       const sendPreviewTripResponse = jest.spyOn(InteractivePrompts,
         'sendPreviewTripResponse');
       sendPreviewTripResponse.mockImplementationOnce(() => []);
-
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId')
+        .mockResolvedValue({ name: 'Nairobi', id: 1 });
       await TravelTripHelper.embassyForm(payload, respond);
 
       expect(cache.save).toHaveBeenCalledTimes(1);
@@ -261,8 +265,11 @@ describe('TravelTripHelper', () => {
 
     it('should save tripDetails in cache', async () => {
       payload.user.id = 1;
+      payload.submission.flightDateTime = '2/10/2019 22:00';
       const validateTravelContactDetailsForm = jest.spyOn(ScheduleTripController,
         'validateTravelDetailsForm');
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId')
+        .mockResolvedValue({ name: 'Nairobi', id: 1 });
       validateTravelContactDetailsForm.mockImplementationOnce(() => []);
 
       await TravelTripHelper.flightDetails(payload, respond);

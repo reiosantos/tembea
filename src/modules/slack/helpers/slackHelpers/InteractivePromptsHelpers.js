@@ -12,6 +12,7 @@ class InteractivePromptsHelpers {
       requester, department, rider, destination: { address: destination },
       origin: { address: pickup }
     } = tripInfo;
+
     return [
       new SlackAttachmentField('Requested By', `<@${requester.slackId}>`, true),
       new SlackAttachmentField('Department', department.name, true),
@@ -21,7 +22,7 @@ class InteractivePromptsHelpers {
       new SlackAttachmentField('Request Date',
         Utils.formatDate(tripInfo.createdAt), true),
       new SlackAttachmentField('Trip Date',
-        (tripInfo.departureTime), true)
+        Utils.formatDate(tripInfo.departureTime), true)
     ];
   }
 

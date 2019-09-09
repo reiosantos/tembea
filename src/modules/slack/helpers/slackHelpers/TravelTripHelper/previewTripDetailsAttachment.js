@@ -1,4 +1,5 @@
 import { SlackAttachmentField } from '../../../SlackModels/SlackMessageModels';
+import { checkBeforeSlackDateString } from '../../dateHelpers';
 
 export default (tripDetails) => {
   const {
@@ -19,8 +20,8 @@ export default (tripDetails) => {
     new SlackAttachmentField('Requester (Travel)', requester, true),
     new SlackAttachmentField('Pickup Location', pickup, true),
     new SlackAttachmentField('Destination', destination, true),
-    new SlackAttachmentField('Pick-Up Time', dateTime, true),
-    new SlackAttachmentField(timeFieldName, travelDateTime, true),
+    new SlackAttachmentField('Pick-Up Time', checkBeforeSlackDateString(dateTime), true),
+    new SlackAttachmentField(timeFieldName, checkBeforeSlackDateString(travelDateTime), true),
     new SlackAttachmentField('Trip Type', tripType, true),
     flightNumber ? new SlackAttachmentField('Flight Number', flightNumber, true) : null,
     new SlackAttachmentField('TripNotes', tripNote, true),

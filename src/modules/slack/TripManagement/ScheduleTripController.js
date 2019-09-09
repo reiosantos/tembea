@@ -146,6 +146,7 @@ class ScheduleTripController {
   static async createTripRequest(payload, tripRequestDetails) {
     try {
       const tripRequest = await ScheduleTripController.createRequest(payload, tripRequestDetails);
+
       const trip = await TripService.createRequest(tripRequest);
       // const { forMe } = tripRequestDetails;
       // const riderSlackId = `${forMe ? tripRequestDetails.id : tripRequestDetails.rider}`;

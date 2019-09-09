@@ -13,7 +13,8 @@ export const getSlackDateTime = (dateTime) => {
     moment(newDateTime).unix()
   ];
   return {
-    fallback, original
+    fallback,
+    original
   };
 };
 
@@ -24,7 +25,7 @@ export const getSlackDateTime = (dateTime) => {
  */
 
 export const getSlackDateString = (dateTime) => {
-  const newDateTime = moment(dateTime, 'DD-MM-YYYY');
+  const newDateTime = new Date(dateTime);
   const [fallback, original] = [
     moment(newDateTime).format('ddd, MMM Do YYYY hh:mm a'),
     moment(newDateTime).unix()
@@ -35,4 +36,22 @@ export const getSlackDateString = (dateTime) => {
   return `<!date^${original}^{date_long} ${year} at {time}|${fallback}>`;
 };
 
-export const timeTo12hrs = hrs24 => moment(hrs24, 'HH:mm', true).format('hh:mm a').toUpperCase();
+export const timeTo12hrs = hrs24 => moment(hrs24, 'HH:mm', true)
+  .format('hh:mm a')
+  .toUpperCase();
+
+const timeZones = Object.freeze({
+  lagos: 'Africa/Lagos',
+  cairo: 'Africa/Cairo',
+  kampala: 'Africa/Kampala',
+  kigali: 'Africa/Kigali',
+  nairobi: 'Africa/Nairobi'
+});
+export const getTimezone = homebase => timeZones[homebase.toLowerCase()];
+
+export const checkBeforeSlackDateString = (datetime) => {
+  if (/^\d+-\d+-\d+T\d+:\d+:\d+.\d+Z$/.test(datetime)) {
+    return getSlackDateString(datetime);
+  }
+  return datetime;
+};
