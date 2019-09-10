@@ -64,6 +64,11 @@ tripsRouter.use('/trips',
  *          - Regular Trip
  *          - Airport Transfer
  *          - Embassy Visit
+ *      - name: searchterm
+ *        in: query
+ *        required: false
+ *        description: filters trips by requester, rider, origin and destination
+ *        type: string
  *    responses:
  *      200:
  *        description: response object containing all trips from the database

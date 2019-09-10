@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import tripService, { TripService } from '../TripService';
 import database from '../../database';
 import {
@@ -46,6 +47,26 @@ describe('TripService', () => {
       expect(response).toBeDefined();
       expect(response).toHaveProperty('departmentName');
       expect(response.departmentName).toEqual('People');
+    });
+
+    it('should filter by search term if provided', () => {
+      const filterParams = { searchterm: 'searchterm' };
+      const response = TripService.sequelizeWhereClauseOption(filterParams);
+      expect(response).toBeDefined();
+      expect(response).toEqual({
+        [Op.or]: [
+          { '$requester.name$': { [Op.iLike]: { [Op.any]: ['%searchterm%'] } } },
+          { '$rider.name$': { [Op.iLike]: { [Op.any]: ['%searchterm%'] } } },
+          { '$origin.address$': { [Op.iLike]: { [Op.any]: ['%searchterm%'] } } },
+          { '$destination.address$': { [Op.iLike]: { [Op.any]: ['%searchterm%'] } } },
+        ]
+      });
+    });
+    it('should ignore filter by search term if empty', () => {
+      const filterParams = { searchterm: '' };
+      const response = TripService.sequelizeWhereClauseOption(filterParams);
+      expect(response).toBeDefined();
+      expect(response).toEqual({});
     });
   });
 

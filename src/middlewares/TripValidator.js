@@ -32,9 +32,15 @@ class TripValidator {
 
   static validateGetTripsParam(req, res, next) {
     const errors = [];
-    const { query: { status, page, size } } = req;
+    const {
+      query: {
+        status, page, size, searchterm
+      }
+    } = req;
 
-    const validateParams = JoiHelper.validateSubmission({ status, page, size }, getTripsSchema);
+    const validateParams = JoiHelper.validateSubmission({
+      status, page, size, searchterm
+    }, getTripsSchema);
     if (validateParams.errorMessage) {
       return Response.sendResponse(res, 400, false, 'Validation Error', { errors: validateParams });
     }

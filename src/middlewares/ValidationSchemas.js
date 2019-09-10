@@ -46,7 +46,8 @@ export const getTripsSchema = Joi.object().keys({
   page: Joi.number(),
   size: Joi.number(),
   status: Joi.string().trim().valid('Confirmed', 'Pending', 'Approved', 'Completed',
-    'DeclinedByManager', 'DeclinedByOps', 'InTransit', 'Cancelled')
+    'DeclinedByManager', 'DeclinedByOps', 'InTransit', 'Cancelled'),
+  searchterm: Joi.string().empty('').default('').optional()
 });
 
 export const tripUpdateSchema = Joi.object().keys({

@@ -44,7 +44,8 @@ export class TripService {
       departureTime, requestedOn, currentDay,
       status: tripStatus, department: departmentName,
       type: tripType,
-      noCab
+      noCab,
+      searchterm: searchTerm
     } = filterParams;
     let where = {};
 
@@ -66,6 +67,17 @@ export class TripService {
     where = { ...where, ...dateFilters };
     dateFilters = TripService.getDateFilters('createdAt', requestedOn || {});
     where = { ...where, ...dateFilters };
+    if (searchTerm) {
+      where = {
+        ...where,
+        [Op.or]: [
+          { '$requester.name$': { [Op.iLike]: { [Op.any]: [`%${searchTerm}%`] } } },
+          { '$rider.name$': { [Op.iLike]: { [Op.any]: [`%${searchTerm}%`] } } },
+          { '$origin.address$': { [Op.iLike]: { [Op.any]: [`%${searchTerm}%`] } } },
+          { '$destination.address$': { [Op.iLike]: { [Op.any]: [`%${searchTerm}%`] } } },
+        ],
+      };
+    }
     return where;
   }
 
