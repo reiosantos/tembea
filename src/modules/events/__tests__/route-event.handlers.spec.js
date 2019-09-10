@@ -2,13 +2,15 @@ import RouteService from '../../../services/RouteService';
 import RouteHelper from '../../../helpers/RouteHelper';
 import ConfirmRouteUseJob from '../../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 import RouteEventHandlers from '../route-event.handlers';
-import { mockRouteBatchData } from '../../../services/__mocks__';
+import { mockRouteBatchData, mockUserLeavesRouteHandler } from '../../../services/__mocks__';
 import RouteUseRecordService from '../../../services/RouteUseRecordService';
 import { route, recordData } from '../../../helpers/__mocks__/BatchUseRecordMock';
 import appEvents from '../app-event.service';
 import { routeEvents } from '../route-events.constants';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import { bugsnagHelper } from '../../slack/RouteManagement/rootFile';
+import SlackNotifications from '../../slack/SlackPrompts/Notifications';
+import HomebaseService from '../../../services/HomebaseService';
 
 describe('RouteEventHandlers', () => {
   beforeEach(() => {
@@ -87,6 +89,29 @@ describe('RouteEventHandlers', () => {
         expect(RouteEventHandlers.sendTakeOffAlerts).toHaveBeenCalledWith(testData);
         done();
       }, 3000);
+    });
+  });
+
+  describe('user leaves route notification', () => {
+    it('should send a notification when the user leaves a route', async () => {
+      const {
+        payload,
+        userName,
+        routeName,
+        riders
+      } = mockUserLeavesRouteHandler;
+      jest.spyOn(SlackNotifications, 'sendNotifications').mockResolvedValue();
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue();
+      jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue(
+        { channel: 'OPSCHANNEL' }
+      );
+      await RouteEventHandlers.handleUserLeavesRouteNotification(
+        payload,
+        userName,
+        routeName,
+        riders
+      );
+      expect(SlackNotifications.sendNotifications).toHaveBeenCalled();
     });
   });
 });

@@ -6,6 +6,8 @@ import RouteUseRecordService from '../../services/RouteUseRecordService';
 import ConfirmRouteUseJob from '../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 import TeamDetailsService from '../../services/TeamDetailsService';
 import { bugsnagHelper } from '../slack/RouteManagement/rootFile';
+import RouteNotifications from '../slack/SlackPrompts/notifications/RouteNotifications';
+import HomebaseService from '../../services/HomebaseService';
 
 export default class RouteEventHandlers {
   static init() {
@@ -50,5 +52,19 @@ export default class RouteEventHandlers {
       await Promise.all(riders.map((rider) => RouteHelper.sendCompletionNotification(rider,
         record, botToken)));
     }
+  }
+
+  static async handleUserLeavesRouteNotification(payload, userName, routeName, riders) {
+    const {
+      user: { id: slackId }
+    } = payload;
+
+    const { channel: channelId } = await HomebaseService.getHomeBaseBySlackId(slackId);
+    await RouteNotifications.sendUserLeavesRouteMessage(
+      channelId,
+      payload,
+      userName,
+      { routeName, riders }
+    );
   }
 }

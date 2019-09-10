@@ -11,6 +11,7 @@ import HttpError from '../../../helpers/errorHandler';
 import HomebaseService from '../../../services/HomebaseService';
 import SlackHelpers from '../../../helpers/slack/slackHelpers';
 import { SlackInteractiveMessage } from '../SlackModels/SlackMessageModels';
+import RouteEventHandlers from '../../events/route-event.handlers';
 
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
@@ -148,11 +149,12 @@ describe('leaveRoute', () => {
     jest.spyOn(RouteService, 'getRouteById').mockResolvedValue(
       { name: 'Route name' }
     );
-    const payload = { user: { id: 'uuuuucu' } };
+    jest.spyOn(RouteEventHandlers, 'handleUserLeavesRouteNotification').mockResolvedValue();
+    const payload = { user: { id: 'slackId' } };
       
     const res = jest.fn();
     await SlackController.leaveRoute(payload, res);
-    const slackMessage = new SlackInteractiveMessage('Hey *Route name*, You have successfully left the route `Route name`.');
+    const slackMessage = new SlackInteractiveMessage('Hey <@slackId>, You have successfully left the route `Route name`.');
     expect(res).toHaveBeenCalled();
     expect(res).toHaveBeenCalledWith(slackMessage);
   });

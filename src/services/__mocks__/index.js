@@ -533,3 +533,13 @@ export const mockDriver = {
 };
 
 export const mockDriversData = [mockDriver, mockDriver, mockDriver];
+
+export const mockUserLeavesRouteHandler = {
+  payload: {
+    user: { id },
+    team: { id }
+  },
+  userName: 'name',
+  routeName: 'name',
+  riders: [1]
+};

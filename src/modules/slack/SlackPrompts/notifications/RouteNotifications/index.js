@@ -178,4 +178,16 @@ export default class RouteNotifications {
       new SlackAttachmentField('Driver Phone Number', routeBatch.driver.driverPhoneNo, true)
     ];
   }
+
+  static async sendUserLeavesRouteMessage(channelID, payload, slackId, routeInformation) {
+    const { routeName, riders } = routeInformation;
+    const { team: { id: teamId } } = payload;
+    const users = riders.length;
+
+    const text = `Hello, <@${slackId}> has dropped off \`${routeName}\` route.
+The route now has \`${users}\` user${users > 1 ? 's' : ''}`;
+
+    const botAuthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
+    await SlackNotifications.sendNotifications(channelID, null, text, botAuthToken);
+  }
 }

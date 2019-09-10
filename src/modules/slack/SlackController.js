@@ -13,6 +13,7 @@ import HomebaseService from '../../services/HomebaseService';
 import SlackHelpers from '../../helpers/slack/slackHelpers';
 import UserService from '../../services/UserService';
 import RouteService from '../../services/RouteService';
+import RouteEventHandlers from '../events/route-event.handlers';
 
 class SlackController {
   static async launch(req, res) {
@@ -172,14 +173,23 @@ class SlackController {
 
   static async leaveRoute(payload, respond) {
     try {
-      const { user: { id } } = payload;
-      const { dataValues: { routeBatchId, name, id: userId } } = await UserService.getUserBySlackId(id);
+      const { user: { id: slackId } } = payload;
+      const {
+        dataValues: { routeBatchId, id: userId }
+      } = await UserService.getUserBySlackId(slackId);
       if (routeBatchId) {
         await UserService.updateUser(userId, { routeBatchId: null });
-        const { routeId } = await RouteService.getRouteBatchByPk(routeBatchId, false);
+        const { routeId, riders } = await RouteService.getRouteBatchByPk(routeBatchId, true);
         const { name: routeName } = await RouteService.getRouteById(routeId, false);
         const slackMessage = new SlackInteractiveMessage(
-          `Hey *${name}*, You have successfully left the route \`${routeName}\`.`
+          `Hey <@${slackId}>, You have successfully left the route \`${routeName}\`.`
+        );
+
+        await RouteEventHandlers.handleUserLeavesRouteNotification(
+          payload,
+          slackId,
+          routeName,
+          riders
         );
         respond(slackMessage);
       }
