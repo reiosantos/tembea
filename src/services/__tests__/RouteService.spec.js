@@ -339,9 +339,9 @@ describe('RouteService', () => {
   });
 
   describe('RouteService_deleteRouteBatch', () => {
-    it('should should perform soft delete', async () => {
+    it('should perform soft delete', async () => {
       const routeBatchId = 1001;
-      const spy = jest.spyOn(RouteBatch, 'destroy');
+      const spy = jest.spyOn(RouteBatch, 'destroy').mockResolvedValue();
       await RouteService.deleteRouteBatch(routeBatchId);
 
       expect(spy).toHaveBeenCalled();

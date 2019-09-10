@@ -16,7 +16,6 @@ const {
   Route, RouteBatch, Cab, Address, User, sequelize, Sequelize, Driver, Homebase, Country
 } = models;
 
-
 export const homebaseInfo = {
   model: Homebase,
   as: 'homebase',
@@ -25,6 +24,10 @@ export const homebaseInfo = {
 };
 
 class RouteService extends BaseService {
+  constructor() {
+    super(Route);
+  }
+
   static get sort() {
     return {
       cab: { model: Cab, as: 'cabDetails' },
