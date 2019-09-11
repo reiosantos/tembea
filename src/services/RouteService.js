@@ -297,7 +297,9 @@ class RouteService extends BaseService {
           as: 'route',
           include: ['destination'],
           where: { name: { [Op.iLike]: `%${where.name}%` } }
-        }];
+        },
+        RouteService.defaultInclude[3]
+      ];
     }
     return RouteService.defaultInclude;
   }

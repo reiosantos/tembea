@@ -362,7 +362,7 @@ describe('RouteService', () => {
         name: 'Island'
       };
       const result = RouteService.updateDefaultInclude(where);
-      expect(result.length).toEqual(3);
+      expect(result.length).toEqual(4);
       expect(result[2]).toHaveProperty('where');
       expect(result[2].where).toHaveProperty('name');
     });
