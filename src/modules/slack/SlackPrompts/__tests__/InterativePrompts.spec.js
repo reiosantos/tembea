@@ -16,6 +16,7 @@ import { createTripData } from '../../SlackInteractions/__mocks__/SlackInteracti
 import PreviewScheduleTrip from '../../helpers/slackHelpers/previewScheduleTripAttachments';
 import InteractivePromptSlackHelper from '../../helpers/slackHelpers/InteractivePromptSlackHelper';
 import HomebaseService from '../../../../services/HomebaseService';
+import UserService from '../../../../services/UserService';
 
 jest.mock('../../../slack/events/', () => ({
   slackEvents: jest.fn(() => ({
@@ -51,6 +52,17 @@ describe('Interactive Prompts test', () => {
     jest.restoreAllMocks();
   });
 
+  beforeAll(async () => {
+    const user = {
+      name: 'Jane Doe',
+      slackId: 'UN5FDBM1U',
+      email: 'jane.doe@gmail.com',
+      createdAt: '2019-09-10',
+      updatedAt: '2019-09-10'
+    };
+    await UserService.findOrCreateNewUserWithSlackId(user);
+  });
+
   it('should sendBookNewTrip Response', (done) => {
     const respond = jest.fn(value => value);
     const payload = jest.fn(() => 'respond');
@@ -58,6 +70,21 @@ describe('Interactive Prompts test', () => {
     expect(result).toBe(undefined);
     expect(respond).toHaveBeenCalledWith(sendBookNewTripMock);
     done();
+  });
+
+  it('should changeLocation', async () => {
+    let responseMock;
+    const respond = jest.fn((value) => {
+      responseMock = value;
+      return value;
+    });
+    const payload = {
+      actions: [{ name: 'changeLocation' }],
+      user: { id: 'UN5FDBM1U' }
+    };
+    const result = await InteractivePrompts.changeLocation(payload, respond);
+    expect(result).toBe(undefined);
+    expect(respond).toHaveBeenCalledWith(responseMock);
   });
 
   it('should create view open trips response', (done) => {

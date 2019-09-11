@@ -877,10 +877,11 @@ describe('slackController - Homebases', () => {
   });
   it('should handle get homebase message', async () => {
     jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue(
-      { id: 1, name: 'Nairobi' }
+      { id: 1, name: 'Nairobi', country: { name: 'Kenya' } }
     );
+    const flag = SlackHelpers.getLocationCountryFlag('Kenya');
     const homebaseMessage = await SlackController.getHomeBaseMessage(1);
-    expect(homebaseMessage).toContain('_Your current home base is *Nairobi*_');
+    expect(homebaseMessage).toContain(`_Your current home base is ${flag} *Nairobi*_`);
   });
   it('should ask user to set their homebase', async () => {
     jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue();

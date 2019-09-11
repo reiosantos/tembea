@@ -46,7 +46,7 @@ jest.mock('@slack/client', () => ({
 describe('Slack controller test', () => {
   beforeEach(() => {
     jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue(
-      { id: 1, name: 'Nairobi' }
+      { id: 1, name: 'Nairobi', country: { name: 'Kenya' } }
     );
     jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId').mockReturnValue({});
   });
@@ -126,7 +126,7 @@ describe('Slack controller test', () => {
     });
     it('should not limit routes to only users with Nairobi Homebase', async () => {
       jest.spyOn(HomebaseService, 'getHomeBaseBySlackId').mockResolvedValue(
-        { id: 1, name: 'Kampala' }
+        { id: 1, name: 'Kampala', country: { name: 'Uganda' } }
       );
       expect(await SlackController.getRouteCommandMsg()).toMatchObject(
         {

@@ -35,17 +35,24 @@ class InteractivePrompts {
 
   static async changeLocation(payload, respond) {
     const origin = payload.actions[0].name.split('__')[1];
-    const state = {
-      origin,
-    };
+    const slackId = payload.user.id;
+    const state = { origin };
     const attachment = new SlackAttachment();
 
-    const homeBases = await HomebaseService.getAllHomebases();
+    const homeBases = await HomebaseService.getAllHomebases(true);
+    const userHomeBase = await HomebaseService.getHomeBaseBySlackId(slackId);
+
+    const filteredHomeBases = userHomeBase ? homeBases.filter(
+      currentHomeBase => currentHomeBase.name !== userHomeBase.name
+    ) : homeBases;
 
     attachment.addFieldsOrActions(
-      'actions', homeBases.map(homeBase => new SlackButtonAction(
-        homeBase.id.toString(), homeBase.name, JSON.stringify(state)
-      ))
+      'actions', filteredHomeBases.map((homeBase) => {
+        const homeBaseCountryFlag = SlackHelpers.getLocationCountryFlag(homeBase.country.name);
+        return new SlackButtonAction(
+          homeBase.id.toString(), `${homeBaseCountryFlag} ${homeBase.name}`, JSON.stringify(state)
+        );
+      })
     );
     attachment.addOptionalProps('change_location', 'fallback', '#FFCCAA', 'default');
     const fallBack = origin ? `back_to_${origin}_launch` : 'back_to_launch';

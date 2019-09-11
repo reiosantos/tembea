@@ -40,9 +40,10 @@ class SlackController {
   }
 
   static async getHomeBaseMessage(slackId) {
-    const homeBase = await HomebaseService.getHomeBaseBySlackId(slackId);
+    const homeBase = await HomebaseService.getHomeBaseBySlackId(slackId, true);
     const homeBaseMessage = homeBase
-      ? `_Your current home base is *${homeBase.name}*_` : '`Please set your location to continue`';
+      ? `_Your current home base is ${SlackHelpers.getLocationCountryFlag(homeBase.country.name)} *${homeBase.name}*_`
+      : '`Please set your location to continue`';
     return homeBaseMessage;
   }
 
@@ -53,6 +54,7 @@ class SlackController {
       new SlackButtonAction('book', 'Schedule a Trip', 'book_new_trip'),
       new SlackButtonAction(
         'view',
+
         'See Trip Itinerary',
         'view_trips_itinerary'
       )

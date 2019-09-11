@@ -91,20 +91,23 @@ class HomebaseService {
     }
   }
 
-  static async getAllHomebases() {
+  static async getAllHomebases(withForeignKey = false) {
     const homeBases = await Homebase.findAll({
-      attributes: { include: ['id', 'name', 'channel'] }
+      order: [['name', 'ASC']],
+      attributes: { include: ['id', 'name', 'channel'] },
+      include: withForeignKey ? [{ model: Country, as: 'country', attributes: ['name'] }] : []
     });
     return RemoveDataValues.removeDataValues(homeBases);
   }
 
-  static async getHomeBaseBySlackId(slackId) {
+  static async getHomeBaseBySlackId(slackId, withForeignKey = false) {
     const { homebaseId } = await UserService.getUserBySlackId(slackId);
     const homeBase = await Homebase.findOne({
       where: { id: homebaseId },
-      attributes: ['id', 'name', 'channel']
+      attributes: ['id', 'name', 'channel'],
+      include: withForeignKey ? [{ model: Country, as: 'country', attributes: ['name'] }] : []
     });
-    return homeBase;
+    return RemoveDataValues.removeDataValues(homeBase);
   }
 
   static async getById(homebaseId) {

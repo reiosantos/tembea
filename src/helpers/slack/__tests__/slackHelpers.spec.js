@@ -267,4 +267,11 @@ describe('slackHelpers', () => {
       expect(result.cab.dataValues.driverName).toEqual('Tembea SuperAdmin');
     });
   });
+
+  describe('getLocationCountryFlag', () => {
+    it('should return the countryflag emoji of a location', () => {
+      const flag = '🇳🇬';
+      expect(SlackHelpers.getLocationCountryFlag('Nigeria')).toEqual(flag);
+    });
+  });
 });

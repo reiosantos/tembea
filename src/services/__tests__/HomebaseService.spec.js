@@ -8,7 +8,7 @@ import UserService from '../UserService';
 import { createCountry } from '../../../integrations/support/helpers';
 
 jest.mock('../../helpers/sequelizePaginationHelper', () => jest.fn());
-const { Homebase } = models;
+const { Homebase, Country } = models;
 
 describe('test HomebaseService', () => {
   let createHomebaseSpy;
@@ -119,7 +119,22 @@ describe('test HomebaseService', () => {
     jest.spyOn(Homebase, 'findAll').mockResolvedValue(mockedValue);
     await HomebaseService.getAllHomebases();
     expect(Homebase.findAll).toBeCalled();
-    expect(Homebase.findAll).toBeCalledWith({ attributes: { include: ['id', 'name', 'channel'] } });
+    expect(Homebase.findAll).toBeCalledWith({
+      order: [['name', 'ASC']],
+      attributes: { include: ['id', 'name', 'channel'] },
+      include: []
+    });
+  });
+
+  it('should get all Homebases with foreignKey', async () => {
+    jest.spyOn(Homebase, 'findAll').mockResolvedValue(mockedValue);
+    await HomebaseService.getAllHomebases(true);
+    expect(Homebase.findAll).toBeCalled();
+    expect(Homebase.findAll).toBeCalledWith({
+      order: [['name', 'ASC']],
+      attributes: { include: ['id', 'name', 'channel'] },
+      include: [{ model: Country, as: 'country', attributes: ['name'] }]
+    });
   });
 
   it('should get homebase by User slack ID', async () => {
@@ -130,7 +145,22 @@ describe('test HomebaseService', () => {
     expect(Homebase.findOne).toBeCalledWith(
       {
         attributes: ['id', 'name', 'channel'],
-        where: { id: 1 }
+        where: { id: 1 },
+        include: []
+      }
+    );
+  });
+
+  it('should get homebase by User slack ID with foreignKey', async () => {
+    jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({ homebaseId: 1 });
+    jest.spyOn(Homebase, 'findOne').mockResolvedValue(mockedValue);
+    await HomebaseService.getHomeBaseBySlackId(1, true);
+    expect(Homebase.findOne).toBeCalled();
+    expect(Homebase.findOne).toBeCalledWith(
+      {
+        attributes: ['id', 'name', 'channel'],
+        where: { id: 1 },
+        include: [{ model: Country, as: 'country', attributes: ['name'] }]
       }
     );
   });

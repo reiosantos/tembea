@@ -45,7 +45,7 @@ const SlackControllerMock = {
     title: 'I am your trip operations assistant at Andela'
   }],
   response_type: 'ephemeral',
-  text: 'Welcome to Tembea! \n _Your current home base is *Nairobi*_',
+  text: 'Welcome to Tembea! \n _Your current home base is 🇰🇪 *Nairobi*_',
   as_user: false
 };
 export default SlackControllerMock;

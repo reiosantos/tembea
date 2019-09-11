@@ -1,3 +1,5 @@
+import { getCode } from 'country-list';
+import flag from 'country-code-emoji';
 import tripService from '../../services/TripService';
 import WebClientSingleton from '../../utils/WebClientSingleton';
 import TeamDetailsService from '../../services/TeamDetailsService';
@@ -111,6 +113,16 @@ class SlackHelpers {
     }
 
     return trip;
+  }
+
+  /**
+   * @static
+   * @param {string} countryName - the name of the location's country
+   * @returns {string} location's country flag emoji
+   * @description Returns the flag emoji of a location based on location's countryName
+   */
+  static getLocationCountryFlag(countryName) {
+    return flag(getCode(countryName));
   }
 }
 export default SlackHelpers;

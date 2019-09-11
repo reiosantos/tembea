@@ -109,6 +109,8 @@
     "cls-hooked": "^4.2.2",
     "convert-array-to-csv": "^1.0.6",
     "cors": "^2.8.4",
+    "country-code-emoji": "^1.0.0",
+    "country-list": "^2.2.0",
     "debug": "^3.1.0",
     "dialog": "^0.3.1",
     "dotenv-extended": "^2.4.0",
