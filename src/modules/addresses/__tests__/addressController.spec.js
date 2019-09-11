@@ -10,8 +10,8 @@ let validToken;
 beforeAll(() => {
   validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
 });
-afterAll(() => {
-  database.close();
+afterAll(async () => {
+  await database.close();
 });
 
 describe('/Addresses post request for adding new address', () => {

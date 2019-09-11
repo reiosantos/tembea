@@ -18,8 +18,8 @@ describe('Get department records', () => {
 
     });
   });
-  afterAll(() => {
-    database.close();
+  afterAll(async () => {
+    await database.close();
   });
 
   it('should fail when page does not exist', (done) => {

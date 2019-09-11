@@ -19,9 +19,18 @@ describe('/Departments create', () => {
 
   beforeAll(async () => {
     const { id: countryId } = await createCountry({ name: faker.address.country() });
-    const { homebase: { id } } = await HomebaseService.createHomebase(
-      faker.address.city(), countryId
-    );
+    const testData = {
+      name: 'Nairobi',
+      channel: 'UOP23',
+      address: {
+        address: 'nairobi',
+        location: {
+          longitude: '23', latitude: '53'
+        }
+      },
+      countryId
+    };
+    const { homebase: { id } } = await HomebaseService.createHomebase(testData);
     homebaseId = id;
     await Promise.all([
       database.models.User.findOrCreate({

@@ -45,8 +45,8 @@ describe('DriverService', () => {
     });
   });
 
-  afterAll(() => {
-    database.close();
+  afterAll(async () => {
+    await database.close();
   });
 
   describe('DriverService > getDriverById', () => {

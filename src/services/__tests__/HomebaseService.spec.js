@@ -20,7 +20,8 @@ describe('test HomebaseService', () => {
     id: 1,
     name: 'Nairobi',
     createdAt: '2019-05-05T10:57:31.476Z',
-    updatedAt: '2019-05-05T10:57:31.476Z'
+    updatedAt: '2019-05-05T10:57:31.476Z',
+    addressId: 1
   }];
 
   const filterParams = {
@@ -48,10 +49,21 @@ describe('test HomebaseService', () => {
   });
 
   it('creates a homebase successfully', async () => {
+    const testData = {
+      name: 'Nairobi',
+      channel: 'UO23D',
+      address: {
+        address: 'nairobi',
+        location: {
+          longitude: '23', latitude: '53'
+        }
+      },
+      countryId: 1
+    };
     createHomebaseSpy.mockResolvedValue([mockNewHomebase]);
-    const result = await HomebaseService.createHomebase('Nairobi', 1, 'UO23D');
+    const result = await HomebaseService.createHomebase(testData);
     expect(createHomebaseSpy).toHaveBeenCalled();
-    expect(HomebaseService.formatName).toHaveBeenCalled();
+    expect(HomebaseService.formatName).toHaveBeenCalledWith(testData.name);
     expect(result).toEqual(mockCreatedHomebase);
   });
 
@@ -121,7 +133,7 @@ describe('test HomebaseService', () => {
     expect(Homebase.findAll).toBeCalled();
     expect(Homebase.findAll).toBeCalledWith({
       order: [['name', 'ASC']],
-      attributes: { include: ['id', 'name', 'channel'] },
+      attributes: { include: ['id', 'name', 'channel', 'addressId'] },
       include: []
     });
   });
@@ -132,7 +144,7 @@ describe('test HomebaseService', () => {
     expect(Homebase.findAll).toBeCalled();
     expect(Homebase.findAll).toBeCalledWith({
       order: [['name', 'ASC']],
-      attributes: { include: ['id', 'name', 'channel'] },
+      attributes: { include: ['id', 'name', 'channel', 'addressId'] },
       include: [{ model: Country, as: 'country', attributes: ['name'] }]
     });
   });
@@ -144,7 +156,7 @@ describe('test HomebaseService', () => {
     expect(Homebase.findOne).toBeCalled();
     expect(Homebase.findOne).toBeCalledWith(
       {
-        attributes: ['id', 'name', 'channel'],
+        attributes: ['id', 'name', 'channel', 'addressId'],
         where: { id: 1 },
         include: []
       }
@@ -158,7 +170,7 @@ describe('test HomebaseService', () => {
     expect(Homebase.findOne).toBeCalled();
     expect(Homebase.findOne).toBeCalledWith(
       {
-        attributes: ['id', 'name', 'channel'],
+        attributes: ['id', 'name', 'channel', 'addressId'],
         where: { id: 1 },
         include: [{ model: Country, as: 'country', attributes: ['name'] }]
       }
@@ -168,30 +180,40 @@ describe('test HomebaseService', () => {
 
 describe('update HomeBase', () => {
   let mockHomeBase;
+  const testAddress = {
+    address: faker.address.county(),
+    location: {
+      longitude: '123',
+      latitude: '86'
+    }
+  };
   beforeAll(async () => {
     const mockCountry = await createCountry(
       { name: faker.address.country().concat('z') }
     );
-    mockHomeBase = await HomebaseService.createHomebase(
-      faker.address.city().concat('z'),
-      mockCountry.id,
-      faker.address.county()
-    );
-    await HomebaseService.createHomebase(
-      'Duplicatetest',
-      mockCountry.id,
-      faker.address.county()
-    );
+    mockHomeBase = await HomebaseService.createHomebase({
+      name: faker.address.city().concat('z'),
+      channel: 'U123K',
+      countryId: mockCountry.id,
+      address: testAddress
+    });
+    await HomebaseService.createHomebase({
+      name: 'Duplicatetest',
+      channel: 'U123K',
+      countryId: mockCountry.id,
+      address: testAddress
+    });
   });
-  afterAll(() => {
-    database.close();
+
+  afterAll(async () => {
+    await database.close();
   });
 
   it('should update the homebase', async () => {
-    const { homebase: { id } } = mockHomeBase;
+    const { homebase: { id, countryId } } = mockHomeBase;
     const homeBaseName = faker.address.county().concat('w');
     const result = await HomebaseService.update(
-      homeBaseName, id, 'U08ETD'
+      homeBaseName, id, 'U08ETD', countryId, testAddress
     );
     expect(result.name).toBe(homeBaseName);
   });

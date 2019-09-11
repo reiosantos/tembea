@@ -3,18 +3,28 @@ import database from '../database';
 import RemoveDataValues from '../helpers/removeDataValues';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import UserService from './UserService';
+import AddressService from './AddressService';
 
 const { models: { Homebase, Country } } = database;
 
 class HomebaseService {
-  static async createHomebase(homebaseName, countryId, channel) {
-    const newHomebaseName = this.formatName(homebaseName);
+  static async createHomebase({
+    name, channel, address, countryId
+  }) {
+    const newHomebaseName = this.formatName(name);
+    const homebaseAddress = await AddressService.findOrCreateAddress(address.address,
+      address.location);
+    if (homebaseAddress.longitude == null || homebaseAddress.latitude == null) {
+      throw new Error('please provide address location');
+    }
+
     const [homebase] = await Homebase.findOrCreate({
       where: { name: { [Op.iLike]: `${newHomebaseName.trim()}%` } },
       defaults: {
         name: newHomebaseName.trim(),
         countryId,
         channel,
+        addressId: homebaseAddress.id,
       }
     });
     const { _options: { isNewRecord } } = homebase;
@@ -73,13 +83,14 @@ class HomebaseService {
   static serializeHomebases(homebase) {
     const { country, ...homebaseInfo } = homebase;
     const {
-      id, name: homebaseName, channel, createdAt, updatedAt
+      id, name: homebaseName, channel, addressId, createdAt, updatedAt
     } = homebaseInfo;
     return {
       id,
       homebaseName,
       channel,
       country: HomebaseService.serializeCountry(country),
+      addressId,
       createdAt,
       updatedAt
     };
@@ -94,7 +105,7 @@ class HomebaseService {
   static async getAllHomebases(withForeignKey = false) {
     const homeBases = await Homebase.findAll({
       order: [['name', 'ASC']],
-      attributes: { include: ['id', 'name', 'channel'] },
+      attributes: { include: ['id', 'name', 'channel', 'addressId'] },
       include: withForeignKey ? [{ model: Country, as: 'country', attributes: ['name'] }] : []
     });
     return RemoveDataValues.removeDataValues(homeBases);
@@ -104,8 +115,10 @@ class HomebaseService {
     const { homebaseId } = await UserService.getUserBySlackId(slackId);
     const homeBase = await Homebase.findOne({
       where: { id: homebaseId },
-      attributes: ['id', 'name', 'channel'],
+      attributes: ['id', 'name', 'channel', 'addressId'],
       include: withForeignKey ? [{ model: Country, as: 'country', attributes: ['name'] }] : []
+
+
     });
     return RemoveDataValues.removeDataValues(homeBase);
   }
@@ -117,12 +130,22 @@ class HomebaseService {
     return homeBase;
   }
 
-  static async update(name, id, channel, countryId) {
-    const [, [homeBase]] = await Homebase.update(
-      { name, channel, countryId },
-      { returning: true, where: { id } }
-    );
-    return RemoveDataValues.removeDataValues(homeBase);
+  static async update(name, id, channel, countryId, address) {
+    const homebaseAddress = await AddressService.findOrCreateAddress(address.address, address.location);
+    if (homebaseAddress.longitude == null || homebaseAddress.latitude == null) {
+      throw new Error('please provide address location');
+    }
+    try {
+      const [, [homeBase]] = await Homebase.update(
+        {
+          name, channel, countryId, address
+        },
+        { returning: true, where: { id } }
+      );
+      return RemoveDataValues.removeDataValues(homeBase);
+    } catch (err) {
+      return (err);
+    }
   }
 }
 export default HomebaseService;

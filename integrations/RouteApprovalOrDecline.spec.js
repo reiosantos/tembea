@@ -48,7 +48,7 @@ describe('Route Request Approval/Decline', () => {
   });
 
   afterAll(async () => {
-    database.close();
+    await database.close();
   });
 
   describe('Decline route request', () => {

@@ -35,7 +35,19 @@ describe('Test HomebaseController', () => {
     let homebaseSpy;
     let countrySpy;
     beforeEach(() => {
-      req = { body: { countryId: 1, homebaseName: 'Nairobi', channel: 'UOP23' } };
+      req = {
+        body: {
+          homebaseName: 'Nairobi',
+          channel: 'UOP23',
+          address: {
+            address: 'nairobi',
+            location: {
+              longitude: '23', latitude: '53'
+            }
+          },
+          countryId: 1
+        }
+      };
       homebaseSpy = jest.spyOn(HomebaseService, 'createHomebase');
       countrySpy = jest.spyOn(CountryService, 'findCountry');
     });
@@ -43,7 +55,17 @@ describe('Test HomebaseController', () => {
     it('should create a homebase successfully', async () => {
       homebaseSpy.mockResolvedValue(mockCreatedHomebase);
       await HomeBaseController.addHomeBase(req, res);
-      expect(homebaseSpy).toHaveBeenCalledWith('Nairobi', 1, 'UOP23');
+      expect(homebaseSpy).toHaveBeenCalledWith({
+        name: 'Nairobi',
+        channel: 'UOP23',
+        address: {
+          address: 'nairobi',
+          location: {
+            longitude: '23', latitude: '53'
+          }
+        },
+        countryId: 1
+      });
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith({
         success: true,

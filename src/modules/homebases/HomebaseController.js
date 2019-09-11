@@ -13,12 +13,12 @@ class HomebaseController {
 
   static async addHomeBase(req, res) {
     const {
-      homebaseName, channel, countryId
+      homebaseName, channel, address, countryId
     } = req.body;
     try {
-      const { homebase, isNewHomebase } = await HomebaseService.createHomebase(
-        homebaseName, countryId, channel
-      );
+      const { homebase, isNewHomebase } = await HomebaseService.createHomebase({
+        name: homebaseName, channel, address, countryId
+      });
       if (isNewHomebase) {
         delete homebase.deletedAt;
         return res.status(201)

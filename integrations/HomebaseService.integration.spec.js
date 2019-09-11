@@ -10,24 +10,28 @@ describe('create Homebase', () => {
     country = await models.Country.findOne();
   });
 
-  afterAll(() => {
-    database.close();
+  afterAll(async () => {
+    await database.close();
   });
 
   it('should create a homebase', async () => {
     const testHomebase = {
       homebaseName: faker.address.county().concat('rand'),
       countryId: country.id,
-      channel: 'UPOIUJ'
+      channel: 'UPOIUJ',
+      address: {
+        address: 'nairobi',
+        location: {
+          longitude: '23', latitude: '53'
+        }
+      }
     };
-    const { homebaseName, countryId, channel } = testHomebase;
-    const result = await HomebaseService.createHomebase(homebaseName, countryId, channel);
-
-
+    
+    const result = await HomebaseService.createHomebase(testHomebase);
     const { homebase } = result;
 
     expect(homebase.deletedAt).toEqual(null);
-    expect(homebase.countryId).toEqual(countryId);
+    expect(homebase.countryId).toEqual(testHomebase.countryId);
     expect(homebase.name).toEqual(testHomebase.homebaseName);
   });
 });

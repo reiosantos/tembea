@@ -52,8 +52,9 @@ describe('RoutesController', () => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
   });
-  afterAll(() => {
-    database.close();
+
+  afterAll(async () => {
+    await database.close();
   });
 
   describe('deleteRouteBatch()', () => {

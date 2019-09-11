@@ -4,8 +4,8 @@ import database from '../../database';
 
 const { models: { User } } = database;
 
-afterAll(() => {
-  database.close();
+afterAll(async () => {
+  await database.close();
 });
 
 

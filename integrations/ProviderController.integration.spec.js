@@ -33,8 +33,8 @@ describe('ProvidersController', () => {
     };
     jest.spyOn(HomeBaseFilterValidator, 'validateHomeBaseAccess').mockReturnValue();
   });
-  afterAll(() => {
-    database.close();
+  afterAll(async () => {
+    await database.close();
   });
 
 

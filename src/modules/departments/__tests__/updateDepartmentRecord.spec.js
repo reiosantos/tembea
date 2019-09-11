@@ -21,9 +21,18 @@ describe('/Departments update', () => {
     const mockCountry = await createCountry({
       name: faker.address.country()
     });
-    mockHomeBase = await HomebaseService.createHomebase(
-      faker.address.city(), mockCountry.id
-    );
+    const testData = {
+      name: 'Nairobi',
+      channel: 'UOP23',
+      address: {
+        address: 'nairobi',
+        location: {
+          longitude: '23', latitude: '53'
+        }
+      },
+      countryId: mockCountry.id
+    };
+    mockHomeBase = await HomebaseService.createHomebase(testData);
     const { homebase: { id } } = mockHomeBase;
     homeBaseId = id;
 
@@ -56,8 +65,8 @@ describe('/Departments update', () => {
     validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
   });
 
-  afterAll(() => {
-    database.close();
+  afterAll(async () => {
+    await database.close();
   });
 
   it('should return a department not found error with wrong id', async () => {

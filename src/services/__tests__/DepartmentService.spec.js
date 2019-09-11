@@ -8,11 +8,11 @@ import { createCountry, createUser } from '../../../integrations/support/helpers
 import HomebaseService from '../HomebaseService';
 
 
-const { models: { Department, TripRequest, sequelize } } = database;
+const { models: { Department, TripRequest } } = database;
 
 describe('/DepartmentService', () => {
-  afterAll(() => {
-    sequelize.close();
+  afterAll(async () => {
+    await database.close();
   });
   describe('Departments update', () => {
     afterEach(() => {
@@ -39,9 +39,19 @@ describe('/DepartmentService', () => {
 
     it('should create a department', async () => {
       const mockcountry = await createCountry({ name: 'Argentina' });
-      const { homebase: { id: homebaseId } } = await HomebaseService.createHomebase(
-        'Buenos Aires', mockcountry.id
-      );
+      const testData = {
+        name: 'Buenos Aires',
+        channel: 'UE278D',
+        address: {
+          address: 'buenos aires',
+          location: {
+            longitude: '25', latitude: '163'
+          }
+        },
+        countryId: mockcountry.id
+      };
+      const { homebase: { id: homebaseId } } = await HomebaseService.createHomebase(testData);
+
       const { id: headId } = await createUser({
         name: faker.name.findName(),
         slackId: faker.random.word().toUpperCase(),

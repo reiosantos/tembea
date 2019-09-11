@@ -340,7 +340,8 @@ export const mockCreatedHomebase = {
     channel: 'UO23D',
     createdAt: '2019-04-01T12:07:13.002Z',
     updatedAt: '2019-04-01T12:07:13.002Z',
-    deletedAt: null
+    deletedAt: null,
+    addressId: 1
   },
   isNewHomebase: true
 };

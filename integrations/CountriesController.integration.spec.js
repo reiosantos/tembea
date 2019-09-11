@@ -18,8 +18,8 @@ describe('Countries controller', () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
-  afterAll(() => {
-    database.close();
+  afterAll(async () => {
+    await database.close();
   });
 
   it('e2e Test: should return a list of all countries', async () => {

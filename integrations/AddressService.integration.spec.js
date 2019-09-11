@@ -3,8 +3,8 @@ import AddressService from '../src/services/AddressService';
 import database from '../src/database';
 
 describe('AddressService', () => {
-  afterAll(() => {
-    database.close();
+  afterAll(async () => {
+    await database.close();
   });
   describe('findOrCreateAddress', () => {
     it('should create a new address with supplied location', async () => {
