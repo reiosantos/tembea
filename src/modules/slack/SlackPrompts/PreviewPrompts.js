@@ -11,7 +11,7 @@ import AttachmentHelper from './notifications/AttachmentHelper';
 class PreviewPrompts {
   static async sendPartnerInfoPreview(payload, result, fellow) {
     const routeRequest = PreviewPrompts.generateRouteModelFromCacheDate(
-      result, { ...payload.submission, fellow }
+      result, { ...payload.submission, nameOfPartner: payload.partnerName, fellow }
     );
     const { routeImageUrl } = routeRequest;
     const attachment = new SlackAttachment('', '', '', '', routeImageUrl);
@@ -37,7 +37,6 @@ class PreviewPrompts {
     const {
       manager: managerId, nameOfPartner, workingHours: workHours, fellow
     } = engagementInfo;
-
     return {
       manager: { slackId: managerId },
       engagement: { partner: { name: nameOfPartner }, workHours, fellow }

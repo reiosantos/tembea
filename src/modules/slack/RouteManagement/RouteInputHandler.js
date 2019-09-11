@@ -150,11 +150,12 @@ const RouteInputHandlers = {
   },
   handlePreviewPartnerInfo: async (payload, respond) => {
     const { user: { id: userId }, team: { id: teamId } } = payload;
-    const [requester, cached] = await Promise.all([
+    const [requester, cached, partnerInfo] = await Promise.all([
       SlackHelpers.findOrCreateUserBySlackId(userId, teamId),
       await Cache.fetch(userId),
       await getFellowEngagementDetails(userId, teamId)
     ]);
+
     const { locationInfo } = cached;
     const { submission } = payload;
     const errors = UserInputValidator.validateEngagementForm(submission);
@@ -162,7 +163,7 @@ const RouteInputHandlers = {
 
     await UpdateSlackMessageHelper.updateMessage(payload.state, { text: 'Noted...' });
     if (locationInfo) {
-      const message = await PreviewPrompts.sendPartnerInfoPreview(payload, locationInfo, requester);
+      const message = await PreviewPrompts.sendPartnerInfoPreview({ ...payload, partnerName: partnerInfo.partnerStatus }, locationInfo, requester);
       respond(message);
     }
   },

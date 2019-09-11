@@ -17,10 +17,9 @@ import RouteInputHandlerHelper from '../RouteInputHandlerHelper';
 import PreviewPrompts from '../../SlackPrompts/PreviewPrompts';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import dummyMockData from './dummyMockData';
-
 import { SlackInteractiveMessage } from '../../SlackModels/SlackMessageModels';
 import { SlackEvents, slackEventNames } from '../../events/slackEvents';
-import formHelper from '../../helpers/formHelper';
+import AisService from '../../../../services/AISService';
 
 jest.mock('../../events/index.js');
 jest.mock('../../../../services/TeamDetailsService');
@@ -357,22 +356,33 @@ describe('RouteInputHandler Tests', () => {
   });
   describe('RouteInputHandlers_handlePreviewPartnerInfo', () => {
     const { partnerInfo: { userId, teamId }, locationInfo, partnerInfo } = dummyMockData;
+    const placement = {
+      client: 'john doe',
+      status: 'External Engagements',
+      end_date: '2018-11-21T08:04:16.625Z',
+      start_date: '2018-11-21T08:04:16.625Z',
+    };
     beforeEach(() => {
       jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId').mockResolvedValue(partnerInfo);
       jest.spyOn(SlackHelpers, 'getUserInfoFromSlack').mockResolvedValue({
         profile: { email: 'john@andela.com' }
       });
-      jest.spyOn(formHelper, 'getFellowEngagementDetails').mockResolvedValue({
-        startDate: '12/01/2019', endDate: '12/12/2022', partnerStatus: 'Safaricom'
+
+      jest.spyOn(AisService, 'getUserDetails').mockResolvedValue({
+        placement
       });
+
       jest.spyOn(Cache, 'fetch').mockResolvedValue({ locationInfo });
       jest.spyOn(PreviewPrompts, 'sendPartnerInfoPreview').mockResolvedValue();
     });
     it('should display a preview of the fellows information', async () => {
-      const submission = { nameOfPartner: 'Test Partner', workingHours: '20:30 - 02:30' };
+      const submission = { managerId: 'Test_567', workingHours: '20:30 - 02:30' };
       const payload = { user: { id: userId }, team: { id: teamId }, submission };
       await RouteInputHandlers.handlePreviewPartnerInfo(payload, respond);
-      expect(PreviewPrompts.sendPartnerInfoPreview).toBeCalled();
+      expect(AisService.getUserDetails).toHaveBeenCalledWith('john@andela.com');
+      expect(PreviewPrompts.sendPartnerInfoPreview).toHaveBeenCalledWith(
+        expect.any(Object), expect.any(Object), expect.any(Object)
+      );
     });
     it('should return an error when user enter invalid date', async () => {
       const submission = { nameOfPartner: '', workingHours: '20:30 - hello' };
