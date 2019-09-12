@@ -137,21 +137,34 @@ describe('Role Service', () => {
 
   it('should run createUser method and return userRole', async () => {
     const getUserMock = jest.spyOn(UserService, 'getUser')
-      .mockResolvedValue({ addRoles: () => ['success'] });
+      .mockResolvedValue({ id: 1 });
     const getRoleMock = jest.spyOn(RoleService, 'getRole')
-      .mockResolvedValue('Executive');
-
-    const httpMock = jest
-      .spyOn(HttpError, 'throwErrorIfNull')
-      .mockImplementation();
+      .mockResolvedValue({ id: 1, name: 'Executive' });
+    jest.spyOn(UserRole, 'create').mockResolvedValue();
 
     const result = await RoleService.createUserRole('boss@email.com', 'VIP');
 
-    expect(result).toEqual(['success']);
+    expect(result).toEqual(true);
     expect(getUserMock).toHaveBeenCalledWith('boss@email.com');
     expect(getRoleMock).toHaveBeenCalledWith('VIP');
+  });
+
+  it('should return an error if user role already exists ', async () => {
+    jest.spyOn(UserService, 'getUser')
+      .mockResolvedValue({ id: 1 });
+    jest.spyOn(RoleService, 'getRole')
+      .mockResolvedValue({ id: 1, name: 'Executive' });
+    jest.spyOn(UserRole, 'create').mockResolvedValue(Promise.reject());
+
+    const httpMock = jest
+      .spyOn(HttpError, 'throwErrorIfNull').mockImplementation();
+
+    const result = await RoleService.createUserRole('boss@email.com', 'VIP');
+
+    expect(result).toEqual(true);
     expect(httpMock).toHaveBeenCalledTimes(1);
-    expect(httpMock).toHaveBeenCalledWith('success', 'This Role is already assigned to this user', 409);
+    expect(httpMock).toHaveBeenCalledWith('',
+      'This Role is already assigned to this user', 409);
   });
 
   it('should run createUser method and throw error', async () => {

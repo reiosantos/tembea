@@ -1,6 +1,7 @@
 import express from 'express';
 import RoleManagementController from './RoleManagementController';
 import middlewares from '../../middlewares';
+import HomebaseValidator from '../../middlewares/HomebaseValidator';
 
 const roleManagementRouter = express.Router();
 const { TokenValidator, UserValidator } = middlewares;
@@ -23,11 +24,14 @@ const { TokenValidator, UserValidator } = middlewares;
  *          required:
  *            - email
  *            - roleName
+ *            - homebaseId
  *          properties:
  *            email:
  *              type: string
  *            roleName:
  *              type: string
+ *            homebaseId:
+ *              type: number
  *    responses:
  *      200:
  *        description: successfully assigned role to user
@@ -42,6 +46,7 @@ roleManagementRouter.post(
   TokenValidator.authenticateToken,
   TokenValidator.validateRole,
   UserValidator.validateAssignRole,
+  HomebaseValidator.validateHomeBaseExists,
   RoleManagementController.assignRoleToUser
 );
 
@@ -91,9 +96,12 @@ roleManagementRouter.get(
  *          type: object
  *          required:
  *            - roleName
+ *            - homebaseId
  *          properties:
  *            roleName:
  *              type: string
+ *          homebaseId:
+ *              type: number
  *    responses:
  *      200:
  *        description: new role successfully created

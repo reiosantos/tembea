@@ -37,16 +37,18 @@ class RoleService {
     return role;
   }
 
-  static async createUserRole(email, roleName) {
+  static async createUserRole(email, roleName, homebaseId) {
     const [user, role] = await Promise.all([
       UserService.getUser(email),
       RoleService.getRole(roleName)
     ]);
-    const userRole = await user.addRoles(role);
 
-    HttpError.throwErrorIfNull(userRole[0], 'This Role is already assigned to this user', 409);
-
-    return userRole;
+    try {
+      await UserRole.create({ userId: user.id, roleId: role.id, homebaseId });
+    } catch (e) {
+      HttpError.throwErrorIfNull('', 'This Role is already assigned to this user', 409);
+    }
+    return true;
   }
 
   static async createOrFindRole(name) {

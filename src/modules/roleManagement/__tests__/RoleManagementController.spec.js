@@ -108,7 +108,7 @@ describe('RoleManagementController Unit Test', () => {
     let reqMock;
 
     beforeEach(() => {
-      reqMock = { body: { email: 'role@email.com', roleName: 'Sweeper' } };
+      reqMock = { body: { email: 'role@email.com', roleName: 'Sweeper', homebaseId: 1 } };
     });
 
     afterEach(() => {
@@ -120,7 +120,7 @@ describe('RoleManagementController Unit Test', () => {
 
       await RoleManagementController.assignRoleToUser(reqMock, 'res');
       expect(roleServiceMock).toHaveBeenCalledTimes(1);
-      expect(roleServiceMock).toHaveBeenCalledWith('role@email.com', 'Sweeper');
+      expect(roleServiceMock).toHaveBeenCalledWith('role@email.com', 'Sweeper', 1);
       expect(sendResponseMock).toHaveBeenCalledTimes(1);
       expect(sendResponseMock).toHaveBeenCalledWith(
         'res', 201, true, 'Role was successfully assigned to the user', ''
@@ -134,7 +134,7 @@ describe('RoleManagementController Unit Test', () => {
 
       await RoleManagementController.assignRoleToUser(reqMock, 'res');
       expect(roleServiceMock).toHaveBeenCalledTimes(1);
-      expect(roleServiceMock).toHaveBeenCalledWith('role@email.com', 'Sweeper');
+      expect(roleServiceMock).toHaveBeenCalledWith('role@email.com', 'Sweeper', 1);
       expect(sendResponseMock).toHaveBeenCalledTimes(0);
       expect(httpErrorMock).toHaveBeenCalledTimes(1);
       expect(httpErrorMock).toHaveBeenCalledWith(errMock, 'res');

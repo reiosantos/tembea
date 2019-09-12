@@ -80,9 +80,10 @@ class RoleManagementController {
   static async assignRoleToUser(req, res) {
     try {
       const {
-        body: { email, roleName }
+        body: { email, roleName, homebaseId }
       } = req;
-      await RoleService.createUserRole(email, roleName);
+
+      await RoleService.createUserRole(email, roleName, homebaseId);
 
       const message = 'Role was successfully assigned to the user';
       Response.sendResponse(res, 201, true, message, '');
