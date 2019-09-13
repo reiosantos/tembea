@@ -8,6 +8,7 @@ ROOT_DIR=$(pwd)
 
 # Create a service account file for authentication
 generateServiceAccountFile() {
+  mkdir $ROOT_DIR/shared
   touch $ROOT_DIR/shared/account.json
   echo $SERVICE_ACCOUNT | base64 --decode > $ROOT_DIR/shared/account.json
 }

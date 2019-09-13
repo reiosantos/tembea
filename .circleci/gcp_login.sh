@@ -2,6 +2,7 @@
 ROOT_DIR=$(pwd)
 
 generateServiceAccount() {
+  mkdir $ROOT_DIR/shared
   touch $ROOT_DIR/shared/account.json
   echo ${SERVICE_ACCOUNT} > $ROOT_DIR/shared/account.json
   ls -la
