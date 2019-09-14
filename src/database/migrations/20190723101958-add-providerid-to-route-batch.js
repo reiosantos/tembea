@@ -6,5 +6,5 @@ module.exports = {
       allowNull: true
     }
   ),
-  down: (queryInterface) => queryInterface.removeColumn('RouteBatches', 'providerId')
+  down: queryInterface => queryInterface.removeColumn('RouteBatches', 'providerId')
 };

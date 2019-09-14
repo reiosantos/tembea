@@ -1,5 +1,5 @@
 module.exports = {
-  up: (queryInterface) => queryInterface.bulkInsert('Providers', [{
+  up: queryInterface => queryInterface.bulkInsert('Providers', [{
     name: 'Uber Kenya',
     providerUserId: 1,
     createdAt: '2019-01-01',
@@ -19,5 +19,5 @@ module.exports = {
   }
   ],
   {}),
-  down: (queryInterface) => queryInterface.bulkDelete('Providers', null, {})
+  down: queryInterface => queryInterface.bulkDelete('Providers', null, {})
 };

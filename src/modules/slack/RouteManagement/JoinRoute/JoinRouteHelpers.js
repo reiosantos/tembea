@@ -12,7 +12,7 @@ import DateDialogHelper from '../../../../helpers/dateHelper';
 class JoinRouteHelpers {
   static getName(username) {
     let names = username.split('.');
-    names = names.map((name) => Utils.toSentenceCase(name));
+    names = names.map(name => Utils.toSentenceCase(name));
     return names.join(' ');
   }
 

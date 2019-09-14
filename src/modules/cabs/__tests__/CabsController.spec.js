@@ -1,7 +1,7 @@
 import request from 'supertest';
 import app from '../../../app';
 import Utils from '../../../utils';
-import database from '../../../database';
+import models from '../../../database/models';
 import payloadData from '../__mocks__/cabsMocks';
 import { cabService } from '../../../services/CabService';
 import CabsController from '../CabsController';
@@ -9,7 +9,7 @@ import Response from '../../../helpers/responseHelper';
 import BugsnagHelper from '../../../helpers/bugsnagHelper';
 import HttpError from '../../../helpers/errorHandler';
 
-const { models: { Cab } } = database;
+const { Cab } = models;
 
 const apiURL = '/api/v1/cabs';
 
@@ -71,7 +71,7 @@ describe('CabsController', () => {
   });
 
   afterAll(() => {
-    database.close();
+    models.sequelize.close();
   });
 
   describe('createCab', () => {

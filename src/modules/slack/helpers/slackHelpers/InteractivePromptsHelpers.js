@@ -70,7 +70,7 @@ class InteractivePromptsHelpers {
       ]);
       attachments.push(tripAttachment);
     };
-    tripHistory.forEach((trip) => formatTrip(trip));
+    tripHistory.forEach(trip => formatTrip(trip));
     return attachments;
   }
 

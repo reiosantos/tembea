@@ -100,8 +100,12 @@ class Utils {
 
   static async verifyToken(token, envSecret) {
     const secret = Buffer.from(process.env[envSecret], 'base64').toString('ascii');
-    const decodedData = await jwt.verify(token, secret);
-    return decodedData;
+    try {
+      const decodedData = await jwt.verify(token, secret);
+      return decodedData;
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
@@ -121,7 +125,7 @@ class Utils {
     if (array.length < 1) {
       return [];
     }
-    return array.map((item) => item[key]);
+    return array.map(item => item[key]);
   }
 
   static formatUserInfo(user, unfilteredRoles) {
@@ -184,7 +188,11 @@ class Utils {
   }
 
   static async removeFile(fileDir) {
-    await fileSystem.unlink(fileDir);
+    try {
+      await fileSystem.unlink(fileDir);
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**

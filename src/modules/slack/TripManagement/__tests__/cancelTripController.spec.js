@@ -1,8 +1,8 @@
 import CancelTripController from '../CancelTripController';
 import tripService from '../../../../services/TripService';
-import database from '../../../../database';
+import models from '../../../../database/models';
 
-const { models: { TripRequest } } = database;
+const { TripRequest } = models;
 
 const mockTrip = {
   name: 'test trip',

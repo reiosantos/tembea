@@ -225,12 +225,12 @@ describe('Test JointRouteInteractions', () => {
   describe('sendCurrentRouteMessage', () => {
     it('should send users current route', async () => {
       const [payload, respond, testBatchId] = [{ user: { id: 'U1234' } }, jest.fn(), routeBatchMock.routeBatchId];
-      const getUserSpy = jest.spyOn(UserService, 'getUserBySlackId').mockImplementation((slackId) => (
+      const getUserSpy = jest.spyOn(UserService, 'getUserBySlackId').mockImplementation(slackId => (
         {
           slackId,
           routeBatchId: testBatchId
         }));
-      const getBatchSpy = jest.spyOn(RouteService, 'getRouteBatchByPk').mockImplementation((id) => ({
+      const getBatchSpy = jest.spyOn(RouteService, 'getRouteBatchByPk').mockImplementation(id => ({
         ...routeBatchMock,
         id
       }));
@@ -244,7 +244,7 @@ describe('Test JointRouteInteractions', () => {
 
   it('should display a message when the user has no route', async () => {
     const [payload, respond] = [{ user: { id: 'U1234' } }, jest.fn()];
-    const getUserSpy = jest.spyOn(UserService, 'getUserBySlackId').mockImplementation((slackId) => (
+    const getUserSpy = jest.spyOn(UserService, 'getUserBySlackId').mockImplementation(slackId => (
       {
         slackId,
         routeBatchId: null

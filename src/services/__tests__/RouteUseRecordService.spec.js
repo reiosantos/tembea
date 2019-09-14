@@ -1,11 +1,11 @@
 import RouteUseRecordService from '../RouteUseRecordService';
-import database from '../../database';
+import models from '../../database/models';
 import BatchUseRecordService from '../BatchUseRecordService';
 import { MAX_INT as all } from '../../helpers/constants';
 import { mockRecord } from '../__mocks__';
 
 
-const { models: { RouteUseRecord, } } = database;
+const { RouteUseRecord, } = models;
 
 describe('RouteUseRecordService', () => {
   beforeEach(() => {
@@ -43,9 +43,7 @@ describe('RouteUseRecordService', () => {
     it('should updateRouteUseRecord', async () => {
       jest.spyOn(RouteUseRecord, 'update').mockResolvedValue();
       await RouteUseRecordService.updateRouteUseRecord(1, {});
-      expect(RouteUseRecord.update).toBeCalledWith(
-        { ...{} }, { returning: true, where: { id: 1 } }
-      );
+      expect(RouteUseRecord.update).toBeCalledWith({ ...{} }, { returning: true, where: { id: 1 } });
     });
   });
 

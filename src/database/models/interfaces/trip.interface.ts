@@ -3,10 +3,11 @@ import { IDriver } from './driver.interface';
 import { ICab } from './cab.interface';
 import { IDepartment } from './department.interface';
 
-export interface ITripRequest {
-  id?: number;
-  origin?: IAddress;
-  destination?: IAddress;
+export interface ITripInformation extends IApprovalInfo{
+  id: number;
+  origin: IAddress;
+  pickup?: IAddress;
+  destination: IAddress;
   tripStatus: string;
   departureTime: string;
   reason: string;
@@ -16,14 +17,13 @@ export interface ITripRequest {
   cab?: ICab;
   riderId?: number;
   rider?: IUser;
-  requestedById: number;
   requester?: IUser;
   response_url?: string;
   tripType: string;
   approver?: IUser;
   department?: IDepartment;
   managerComment: string;
-  createdAt?: string;
+  createdAt: string;
   distance: string;
   driverSlackId?: string;
 }
@@ -31,6 +31,7 @@ export interface ITripRequest {
 interface IApprovalInfo {
   isApproved: boolean;
   approvedBy: string;
+
 }
 
 interface IReasonPayload {
@@ -38,6 +39,5 @@ interface IReasonPayload {
 }
 
 interface IAddress {
-  id?: number;
   address: string;
 }

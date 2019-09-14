@@ -1,12 +1,12 @@
 import { WebClient } from '@slack/client';
 import Sequalize from 'sequelize';
-import database from '../database';
+import models from '../database/models';
 import HttpError from '../helpers/errorHandler';
 import TeamDetailsService from './TeamDetailsService';
 import CleanData from '../helpers/cleanData';
 import RemoveDataValues from '../helpers/removeDataValues';
 
-const { models: { User, Homebase } } = database;
+const { User, Homebase } = models;
 
 class UserService {
   /**
@@ -151,7 +151,7 @@ class UserService {
       },
     });
     return {
-      data: results.rows.map((user) => RemoveDataValues.removeDataValues(user)),
+      data: results.rows.map(user => RemoveDataValues.removeDataValues(user)),
       pageMeta: {
         totalPages: Math.ceil(results.count / size),
         currentPage: page,

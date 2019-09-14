@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { Op } from 'sequelize';
-import database from '../database';
+import models from '../database/models';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import Utils from '../utils';
 import cache from '../cache';
@@ -10,12 +10,9 @@ import RemoveDataValues from '../helpers/removeDataValues';
 import WhereClauseHelper from '../helpers/WhereClauseHelper';
 
 const {
-  models: {
-    TripRequest, Department, Provider, User, Country, Cab, Driver, Homebase
-  }
-} = database;
-
-const getTripKey = (pk) => `tripDetail_${pk}`;
+  TripRequest, Department, Provider, User, Country
+} = models;
+const getTripKey = pk => `tripDetail_${pk}`;
 
 export class TripService {
   constructor() {
@@ -26,12 +23,12 @@ export class TripService {
         model: Provider, as: 'provider', include: [{ model: User, as: 'user' }]
       },
       {
-        model: Cab, as: 'cab', attributes: ['regNumber', 'model', 'providerId']
+        model: models.Cab, as: 'cab', attributes: ['regNumber', 'model', 'providerId']
       }, {
-        model: Driver, as: 'driver', attributes: ['driverName', 'driverPhoneNo']
+        model: models.Driver, as: 'driver', attributes: ['driverName', 'driverPhoneNo']
       },
       {
-        model: Homebase,
+        model: models.Homebase,
         as: 'homebase',
         attributes: ['id', 'name', 'channel'],
         include: [{ model: Country, as: 'country', attributes: ['name', 'id', 'status'] }]
@@ -81,7 +78,7 @@ export class TripService {
     const filter = this.createFilter({ ...where, homebaseId });
     const paginatedRoutes = new SequelizePaginationHelper(TripRequest, filter, size);
     const { data, pageMeta } = await paginatedRoutes.getPageItems(page);
-    const trips = data.map((trip) => TripService.serializeTripRequest(trip));
+    const trips = data.map(trip => TripService.serializeTripRequest(trip));
     return { trips, ...pageMeta };
   }
 

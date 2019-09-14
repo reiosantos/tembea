@@ -4,17 +4,17 @@ import TeamDetailsService from '../../../../../services/TeamDetailsService';
 import { bugsnagHelper, SlackInteractiveMessage } from '../../../RouteManagement/rootFile';
 import DriverService from '../../../../../services/DriverService';
 import { SlackText } from '../../../../new-slack/models/slack-block-models';
-import { ITripRequest } from '../../../../../database/models/interfaces/trip-request.interface';
+import { ITripInformation } from '../../../../../database/models/interfaces/trip.interface';
 import { IDriver } from '.../../../database/models/interfaces/driver.interface';
 
-export default class DriverNotifications {
+class DriverNotifications {
   /**
    * Sends Driver notification for trip Assigned
    * @param {string} teamId to get team bot token
    * @param {object} trip requested approved
    * @param {string} driverSlackId of the driver assigned
    */
-  static async sendDriverTripApproveNotification(teamId: string, trip: ITripRequest,
+  static async sendDriverTripApproveNotification(teamId: string, trip: ITripInformation,
                                                  driverSlackId: string) {
     const tripData = { ...trip, driverSlackId };
     const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
@@ -34,13 +34,13 @@ export default class DriverNotifications {
    * @param {object} trip
    */
   static async checkAndNotifyDriver(driver: IDriver, teamId: string,
-                                    trip: ITripRequest, respond: Function) {
+                                    trip: ITripInformation, respond: Function) {
     try {
       const { userId, id } = driver;
       if (userId) {
         const { user: { slackId: driverSlackId } } = await DriverService.findOneDriver(
         { where: { id } },
-      ) as IDriver;
+      );
         const message = new
         SlackInteractiveMessage(':white_check_mark: I have notified the driver'
         + ` <@${driverSlackId}> :smiley:`);
@@ -56,3 +56,5 @@ export default class DriverNotifications {
 
   }
 }
+
+export default DriverNotifications;

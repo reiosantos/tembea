@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import database from '../database';
+import models from '../database/models';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import ProviderHelper from '../helpers/providerHelper';
 import ProviderValidator from '../middlewares/ProviderValidator';
@@ -8,10 +8,8 @@ import RemoveDataValues from '../helpers/removeDataValues';
 import { homebaseInfo } from './RouteService';
 
 const {
-  models: {
-    Provider, User, Cab, Driver
-  }
-} = database;
+  Provider, User, Cab, Driver
+} = models;
 
 class ProviderService extends BaseService {
   constructor() {
@@ -150,7 +148,7 @@ class ProviderService extends BaseService {
       }
     });
     return providers.filter(
-      (provider) => provider.dataValues.vehicles.length > 0 && provider.dataValues.drivers.length > 0
+      provider => provider.dataValues.vehicles.length > 0 && provider.dataValues.drivers.length > 0
     );
   }
 

@@ -6,7 +6,7 @@ describe('EmailService Module', () => {
   beforeEach(() => {
     mail = new EmailService();
     mail.client.messages = () => ({
-      send: async (options) => new Promise(
+      send: async options => new Promise(
         (resolve, reject) => {
           if (options.to === '') reject(new Error('failed'));
           resolve({ message: 'Queued. Thank you.' });

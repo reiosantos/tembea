@@ -1,7 +1,7 @@
 import LRUCache from 'lru-cache';
 import Utils from '../utils';
 
-export const cacheOptions = (maxAgeInMinutes) => ({
+export const cacheOptions = maxAgeInMinutes => ({
   maxAge: Utils.convertMinutesToSeconds(maxAgeInMinutes),
 });
 

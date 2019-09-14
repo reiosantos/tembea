@@ -32,7 +32,7 @@ describe('ConfirmRouteUseJob', () => {
       fn();
     });
     jest.spyOn(appEvents, 'broadcast').mockReturnValue();
-    jest.spyOn(RouteUseRecordService, 'create').mockImplementation((batchId) => (
+    jest.spyOn(RouteUseRecordService, 'create').mockImplementation(batchId => (
       Promise.resolve({
         id: batchId + 100,
         batchId,

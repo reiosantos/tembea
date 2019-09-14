@@ -4,5 +4,5 @@ module.exports = {
     type: Sequelize.STRING,
     defaultValue: 'opsChannelId'
   }),
-  down: (queryInterface) => queryInterface.removeColumn('TeamDetails', 'opsChannelId')
+  down: queryInterface => queryInterface.removeColumn('TeamDetails', 'opsChannelId')
 };

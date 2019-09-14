@@ -24,7 +24,7 @@ export const querySchema = Joi.object().keys({
   onRoute: Joi.boolean()
 });
 
-const whenConfirm = (type) => Joi.number().when(
+const whenConfirm = type => Joi.number().when(
   'action', {
     is: 'confirm',
     then: type === 'number'

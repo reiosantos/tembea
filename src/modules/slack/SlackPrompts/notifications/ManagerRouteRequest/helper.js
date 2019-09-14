@@ -9,7 +9,7 @@ export default class ManagerAttachmentHelper {
     const routeAttachment = AttachmentHelper.routeRequestAttachment(routeRequest);
     const engagementAttachment = await AttachmentHelper.engagementAttachment(routeRequest);
     const attachments = [header, routeAttachment, engagementAttachment, footer];
-    attachments.forEach((at) => at.addOptionalProps(
+    attachments.forEach(at => at.addOptionalProps(
       'manager_route_btnActions', '/fallback', color
     ));
     return attachments;
@@ -33,7 +33,7 @@ export default class ManagerAttachmentHelper {
       const footer = new SlackAttachment(message);
       attachments.push(footer);
     }
-    attachments.forEach((at) => at.addOptionalProps(
+    attachments.forEach(at => at.addOptionalProps(
       'manager_route_btnActions', '/fallback', '#3359DF'
     ));
     return attachments;
@@ -58,8 +58,8 @@ export default class ManagerAttachmentHelper {
     const engagementAttachment = await AttachmentHelper.engagementAttachment(routeRequest);
     const attachments = [attachment, comment, routeAttachment, engagementAttachment];
     attachments
-      .filter((item) => !!item)
-      .forEach((at) => at.addOptionalProps('manager_route_btnActions', '/fallback', color));
+      .filter(item => !!item)
+      .forEach(at => at.addOptionalProps('manager_route_btnActions', '/fallback', color));
     const greeting = `Hi, <@${fellow.slackId}>`;
     return SlackNotifications.createDirectMessage(
       channelID,

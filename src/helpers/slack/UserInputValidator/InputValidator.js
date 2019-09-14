@@ -10,7 +10,7 @@ class InputValidator {
   }
 
   static checkDuplicateFieldValues(fieldOne, fieldTwo, fieldOneName, fieldTwoName) {
-    const trimFields = (field) => field.trim().toLowerCase();
+    const trimFields = field => field.trim().toLowerCase();
     const errorMessage = `${fieldOneName} and ${fieldTwoName} cannot be the same.`;
     if (trimFields(fieldOne) === trimFields(fieldTwo)) {
       return [

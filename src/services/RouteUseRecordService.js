@@ -1,17 +1,14 @@
 import moment from 'moment';
 import { MAX_INT as all } from '../helpers/constants';
-import database from '../database';
+import models from '../database/models';
 import SequelizePaginationHelper from '../helpers/sequelizePaginationHelper';
 import RemoveDataValues from '../helpers/removeDataValues';
 import BatchUseRecordService from './BatchUseRecordService';
 import { homebaseInfo } from './RouteService';
 
 const {
-  models: {
-    RouteUseRecord, RouteBatch, Cab, Route, Driver, Address
-  }
-} = database;
-
+  RouteUseRecord, RouteBatch, Cab, Route, BatchUseRecord, Driver
+} = models;
 const routeRecordInclude = {
   include: [{
     model: RouteBatch,
@@ -25,7 +22,7 @@ const routeRecordInclude = {
         as: 'route',
         attributes: ['name', 'imageUrl'],
         include: [
-          { model: Address, as: 'destination', attributes: ['address'] },
+          { model: models.Address, as: 'destination', attributes: ['address'] },
           { ...homebaseInfo }
         ]
       },
@@ -39,7 +36,7 @@ const routeRecordInclude = {
         as: 'driver',
         attributes: ['driverName', 'driverPhoneNo', 'driverNumber', 'email']
       },
-      // { model: BatchUseRecord, attributes: ['rating'] }
+      { model: BatchUseRecord, attributes: ['rating'] }
     ],
   }]
 };
@@ -134,26 +131,23 @@ class RouteUseRecordService {
       offset: (page - 1) * size,
       limit: size
     };
-    if (homebaseId) routeRecordInclude.include[0].where.homebaseId = homebaseId;
+    routeRecordInclude.include[0].where.homebaseId = homebaseId;
     const allRouteRecords = await RouteUseRecord.findAll({
       ...routeRecordInclude
     });
-
     const paginatedRouteRecords = await RouteUseRecord.findAll({
       ...paginationConstraint,
       ...routeRecordInclude
     });
 
+    RemoveDataValues.removeDataValues(paginatedRouteRecords);
     const paginationMeta = {
       totalPages: Math.ceil(allRouteRecords.length / size),
       pageNo: page,
       totalItems: allRouteRecords.length,
       itemsPerPage: size
     };
-    return {
-      data: RemoveDataValues.removeDataValues(paginatedRouteRecords),
-      pageMeta: { ...paginationMeta }
-    };
+    return { data: paginatedRouteRecords, pageMeta: { ...paginationMeta } };
   }
 
   static getAdditionalInfo(routeTripsData) {

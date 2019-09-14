@@ -1,9 +1,9 @@
 import StartUpHelper from '../startUpHelper';
-import database from '../../database';
+import models from '../../database/models';
 import RoleService from '../../services/RoleService';
 import RouteEventHandlers from '../../modules/events/route-event.handlers';
 
-const { models: { User } } = database;
+const { User } = models;
 
 describe('Super Admin test', () => {
   afterEach(() => {

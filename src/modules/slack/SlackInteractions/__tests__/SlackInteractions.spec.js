@@ -219,7 +219,7 @@ describe('SlackInteractions', () => {
     beforeEach(() => {
       respond = respondMock();
       Cache.save = jest.fn(() => { });
-      DialogPrompts.sendTripReasonForm = jest.fn((value1) => ({ value1 }));
+      DialogPrompts.sendTripReasonForm = jest.fn(value1 => ({ value1 }));
       DialogPrompts.sendTripDetailsForm = jest.fn((value1, value2) => ({ value1, value2 }));
     });
 
@@ -536,7 +536,7 @@ describe('SlackInteractions', () => {
       jest.spyOn(InteractivePrompts, 'sendManagerDeclineOrApprovalCompletion')
         .mockResolvedValue();
       jest.spyOn(tripService, 'getById')
-        .mockImplementation((id) => Promise.resolve({ id, name: 'Test Trip' }));
+        .mockImplementation(id => Promise.resolve({ id, name: 'Test Trip' }));
       const getTeamDetailsBotOauthToken = jest.spyOn(
         TeamDetailsService, 'getTeamDetailsBotOauthToken'
       ).mockResolvedValue('xyz');

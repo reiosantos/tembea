@@ -48,7 +48,7 @@ class FellowController {
     try {
       const data = await UserService.getPagedFellowsOnOrOffRoute(onRoute, { size, page }, { homebaseId });
       const fellowsData = await Promise.all(data.data.map(
-        (fellow) => FellowController.mergeFellowData(fellow.id, fellow.email)
+        fellow => FellowController.mergeFellowData(fellow.id, fellow.email)
       ));
       return Response.sendResponse(res, 200, true, 'Request was successful', {
         fellows: fellowsData,

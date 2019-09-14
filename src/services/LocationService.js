@@ -1,8 +1,8 @@
-import database from '../database';
+import models from '../database/models';
 import HttpError from '../helpers/errorHandler';
 import bugsnagHelper from '../helpers/bugsnagHelper';
 
-const { models: { Location } } = database;
+const { Location } = models;
 
 class LocationService {
   /**

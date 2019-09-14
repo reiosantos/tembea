@@ -149,7 +149,7 @@ export class SlackSelectActionWithSlackContent extends SlackAction {
 export class SlackButtonsAttachmentFromAList {
   static createButtons(list) {
     const createdButtons = list.map(
-      (department) => new SlackButtonAction(
+      department => new SlackButtonAction(
         department.label.toLocaleLowerCase().replace(' ', '_'),
         department.label,
         department.value,

@@ -1,5 +1,5 @@
 module.exports = {
-  up: (queryInterface) => queryInterface.sequelize.query(`ALTER TABLE "Departments" ADD CONSTRAINT
+  up: queryInterface => queryInterface.sequelize.query(`ALTER TABLE "Departments" ADD CONSTRAINT
       departments_name_homebase_ukey
      UNIQUE ("name", "homebaseId");`),
 

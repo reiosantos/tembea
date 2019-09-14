@@ -1,9 +1,9 @@
 import { Op } from 'sequelize';
-import database from '../database';
+import models from '../database/models';
 import RemoveDataValues from '../helpers/removeDataValues';
 import { departmentDataAttributes } from './DepartmentService';
 
-const { models: { TripRequest, Department } } = database;
+const { TripRequest, Department } = models;
 
 export default class TravelTripService {
   /**

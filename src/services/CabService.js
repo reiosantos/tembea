@@ -1,13 +1,13 @@
 import { Op } from 'sequelize';
-import database from '../database';
+import models from '../database/models';
 import cache from '../cache';
 import RemoveDataValues from '../helpers/removeDataValues';
 import ProviderHelper from '../helpers/providerHelper';
 import BaseService from './BaseService';
 
 
-const { models: { Cab } } = database;
-const getCabKey = (pk) => `CabDetail_${pk}`;
+const { Cab } = models;
+const getCabKey = pk => `CabDetail_${pk}`;
 
 class CabService extends BaseService {
   constructor() {

@@ -13,5 +13,5 @@ module.exports = {
       },
     });
   }),
-  down: (queryInterface) => queryInterface.removeColumn('TripRequests', 'homebaseId')
+  down: queryInterface => queryInterface.removeColumn('TripRequests', 'homebaseId')
 };

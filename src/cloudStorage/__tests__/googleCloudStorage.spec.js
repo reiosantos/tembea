@@ -5,7 +5,7 @@ import { MockStorage } from '../__mocks__/googleCloudStorageMock';
 
 jest.mock('@google-cloud/storage');
 
-Storage.mockImplementation((options) => new MockStorage(options));
+Storage.mockImplementation(options => new MockStorage(options));
 
 describe('GoogleCloudStorage', () => {
   afterEach(() => {

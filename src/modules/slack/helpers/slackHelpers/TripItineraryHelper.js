@@ -1,9 +1,9 @@
 import Sequelize from 'sequelize';
-import database from '../../../../database';
+import models from '../../../../database/models';
 import SlackHelpers from '../../../../services/UserService';
 import tripService from '../../../../services/TripService';
 
-const { models: { User, Address } } = database;
+const { User, Address } = models;
 const { Op } = Sequelize;
 const includeQuery = [
   {
@@ -38,20 +38,24 @@ class TripItineraryHelper {
    * @memberof TripItineraryController
    */
   static async getTripRequests(userId, requestType = 'upcoming') {
-    const upcomingTripStatus = ['Pending', 'Approved', 'Confirmed'];
+    try {
+      const upcomingTripStatus = ['Pending', 'Approved', 'Confirmed'];
 
-    const tripStatus = requestType === 'upcoming' ? upcomingTripStatus : ['Confirmed'];
-    const trips = await tripService.getAll(
-      {
-        where: {
-          [Op.or]: [{ riderId: userId }, { requestedById: userId }],
-          tripStatus: {
-            [Op.or]: tripStatus
+      const tripStatus = requestType === 'upcoming' ? upcomingTripStatus : ['Confirmed'];
+      const trips = await tripService.getAll(
+        {
+          where: {
+            [Op.or]: [{ riderId: userId }, { requestedById: userId }],
+            tripStatus: {
+              [Op.or]: tripStatus
+            }
           }
         }
-      }
-    );
-    return trips;
+      );
+      return trips;
+    } catch (error) {
+      throw error;
+    }
   }
 
   static async getUserIdBySlackId(slackId) {

@@ -1,5 +1,5 @@
 module.exports = {
-  up: (queryInterface) => queryInterface.bulkInsert('TeamDetails', [{
+  up: queryInterface => queryInterface.bulkInsert('TeamDetails', [{
     teamId: 'TEAMID2',
     botId: 'BOTID2',
     botToken: 'BOTTOKEN2',
@@ -13,5 +13,5 @@ module.exports = {
     opsChannelId: 'opsChannel'
   }], {}),
 
-  down: (queryInterface) => queryInterface.bulkDelete('TeamDetails', null, {})
+  down: queryInterface => queryInterface.bulkDelete('TeamDetails', null, {})
 };

@@ -1,5 +1,5 @@
 module.exports = {
-  up: (queryInterface) => queryInterface.bulkInsert('Cabs', [
+  up: queryInterface => queryInterface.bulkInsert('Cabs', [
     {
       regNumber: 'SMK 319 JK',
       createdAt: '2019-01-14',
@@ -209,5 +209,5 @@ module.exports = {
       providerId: 2,
     }
   ]),
-  down: (queryInterface) => queryInterface.bulkDelete('Cabs')
+  down: queryInterface => queryInterface.bulkDelete('Cabs')
 };

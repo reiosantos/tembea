@@ -2,7 +2,7 @@ import request from 'supertest';
 import faker from 'faker';
 import app from '../src/app';
 import Utils from '../src/utils';
-import database from '../src/database';
+import models from '../src/database/models';
 import { createUser } from './support/helpers';
 import HomeBaseFilterValidator from '../src/middlewares/HomeBaseFilterValidator';
 
@@ -21,11 +21,7 @@ describe('ProvidersController', () => {
       email: faker.internet.email(),
     });
 
-    validToken = Utils.generateToken('30m', {
-      userInfo: {
-        roles: ['Super Admin'], locations: [{ id: 4, name: 'Kigali' }], email: mockUser.email
-      }
-    });
+    validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'], locations: [{ id: 4, name: 'Kigali' }], email: mockUser.email } });
     headers = {
       Accept: 'application/json',
       Authorization: validToken,
@@ -34,7 +30,7 @@ describe('ProvidersController', () => {
     jest.spyOn(HomeBaseFilterValidator, 'validateHomeBaseAccess').mockReturnValue();
   });
   afterAll(() => {
-    database.close();
+    models.sequelize.close();
   });
 
 

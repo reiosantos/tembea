@@ -103,7 +103,7 @@ class TripValidator {
   static validateDateParam(data, field) {
     const dateFormat = `must be in the format ${field}=before:YYYY-MM-DD;after:YYYY-MM-DD`;
     const invalidKeys = Object.keys(data[field] || {})
-      .filter((key) => key !== 'after' && key !== 'before');
+      .filter(key => key !== 'after' && key !== 'before');
     if (invalidKeys.length) {
       return [(`Invalid format, ${field} ${dateFormat}`)];
     }

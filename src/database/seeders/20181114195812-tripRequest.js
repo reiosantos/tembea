@@ -1,5 +1,5 @@
 module.exports = {
-  up: (queryInterface) => queryInterface.bulkInsert('TripRequests', [
+  up: queryInterface => queryInterface.bulkInsert('TripRequests', [
     {
       name: 'my trip home',
       riderId: 1,
@@ -23,5 +23,5 @@ module.exports = {
       homebaseId: 1
     }
   ]),
-  down: (queryInterface) => queryInterface.bulkDelete('TripRequests')
+  down: queryInterface => queryInterface.bulkDelete('TripRequests')
 };

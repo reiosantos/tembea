@@ -1,6 +1,6 @@
-import database from '../database';
+import models from '../database/models';
 
-const { models: { TripDetail } } = database;
+const { TripDetail } = models;
 
 class TripDetailsService {
   static async createDetails(riderPhoneNo, travelTeamPhoneNo, flightNumber) {

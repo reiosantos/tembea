@@ -3,7 +3,7 @@ import '@slack/client';
 import app from '../../../app';
 import HttpError from '../../../helpers/errorHandler';
 import Utils from '../../../utils';
-import database from '../../../database';
+import models from '../../../database/models';
 
 const errorMessage = 'Validation error occurred, see error object for details';
 let validToken;
@@ -27,7 +27,7 @@ beforeAll(() => {
   }));
 });
 afterAll(async () => {
-  await database.close();
+  await models.sequelize.close();
 });
 
 describe('/User create', () => {

@@ -34,7 +34,7 @@ class OpsDialogPrompts {
   }
 
   static createOptionsGroups(data, { name, prop }, { label, value }) {
-    return data.map((entry) => ({
+    return data.map(entry => ({
       label: entry[name],
       options: toLabelValuePairs(entry[prop], { labelProp: label, valueProp: value })
     }));

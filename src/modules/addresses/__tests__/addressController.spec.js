@@ -3,7 +3,7 @@ import '@slack/client';
 import app from '../../../app';
 import AddressController from '../AddressController';
 import Utils from '../../../utils';
-import database from '../../../database';
+import models from '../../../database/models';
 
 let validToken;
 
@@ -11,7 +11,7 @@ beforeAll(() => {
   validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
 });
 afterAll(() => {
-  database.close();
+  models.sequelize.close();
 });
 
 describe('/Addresses post request for adding new address', () => {

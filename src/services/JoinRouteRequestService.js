@@ -1,12 +1,10 @@
-import database from '../database';
+import models from '../database/models';
 import { bugsnagHelper } from '../modules/slack/RouteManagement/rootFile';
 import { getRequest, updateRequest } from './SerivceUtils';
 
 const {
-  models: {
-    JoinRequest, Engagement, RouteBatch, Route
-  }
-} = database;
+  JoinRequest, Engagement, RouteBatch, Route
+} = models;
 
 class JoinRouteRequestService {
   /**
@@ -74,8 +72,7 @@ class JoinRouteRequestService {
    * @throws {Error}
    */
   static async updateJoinRouteRequest(id, data) {
-    return updateRequest(id, data,
-      JoinRouteRequestService.getJoinRouteRequestByPk, 'Join', 'Route');
+    return updateRequest(id, data, JoinRouteRequestService.getJoinRouteRequestByPk, 'Join', 'Route');
   }
 }
 

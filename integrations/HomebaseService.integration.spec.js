@@ -1,8 +1,6 @@
 import faker from 'faker';
 import HomebaseService from '../src/services/HomebaseService';
-import database from '../src/database';
-
-const { models } = database;
+import models from '../src/database/models';
 
 describe('create Homebase', () => {
   let country;
@@ -11,7 +9,7 @@ describe('create Homebase', () => {
   });
 
   afterAll(() => {
-    database.close();
+    models.sequelize.close();
   });
 
   it('should create a homebase', async () => {

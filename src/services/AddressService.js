@@ -1,12 +1,12 @@
 import { Op } from 'sequelize';
-import database from '../database';
+import models from '../database/models';
 import HttpError from '../helpers/errorHandler';
 import bugsnagHelper from '../helpers/bugsnagHelper';
 
 import LocationService from './LocationService';
 import RemoveDataValues from '../helpers/removeDataValues';
 
-const { models: { Address, Location } } = database;
+const { Address, Location } = models;
 
 class AddressService {
   /**

@@ -98,7 +98,7 @@ export default class AttachmentHelper {
 
     return [
       nameField, partnerField, ...engagementDateFields, workHourLabelField, fromField, toField
-    ].filter((field) => !!field);
+    ].filter(field => !!field);
   }
 
   /**

@@ -1,7 +1,7 @@
 import { IncomingWebhook } from '@slack/client';
 import SlackInteractions from '../../SlackInteractions';
 import SlackNotifications from '../Notifications';
-import database from '../../../../database';
+import models from '../../../../database/models';
 import { SlackEvents } from '../../events/slackEvents';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import WebClientSingleton from '../../../../utils/WebClientSingleton';
@@ -177,8 +177,7 @@ describe('SlackNotifications', () => {
 
       expect(result).toBeDefined();
       expect(Services.findOrCreateNewUserWithSlackId).toBeCalledWith(rider);
-      expect(SlackNotifications.createDirectMessage)
-        .toHaveBeenCalledWith(imResponse, expect.anything(), expect.anything());
+      expect(SlackNotifications.createDirectMessage).toHaveBeenCalledWith(imResponse, expect.anything(), expect.anything());
 
       const result2 = await SlackNotifications.getManagerMessageAttachment(newTripRequest,
         imResponse, requester, 'notNew', rider);
@@ -504,8 +503,7 @@ describe('SlackNotifications', () => {
     const { user: { id: userId }, team: { id: teamId } } = payload;
     it('should send user notification when requester is equal to rider', async () => {
       tripInfo.rider.slackId = 3;
-      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(teamId,
-        userId, tripInfo, declineStatusFalse, opsStatus);
+      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, tripInfo, declineStatusFalse, opsStatus);
       expect(res).toEqual(undefined);
     });
 
@@ -517,13 +515,11 @@ describe('SlackNotifications', () => {
       expect(res).toEqual(undefined);
     });
 
-    it('should send user confirmation notification when requester is not equal to rider',
-      async () => {
-        tripInfo.rider.slackId = 4;
-        const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(teamId,
-          userId, tripInfo, declineStatusTrue, opsStatus);
-        expect(res).toEqual(undefined);
-      });
+    it('should send user confirmation notification when requester is not equal to rider', async () => {
+      tripInfo.rider.slackId = 4;
+      const res = await SlackNotifications.sendUserConfirmOrDeclineNotification(teamId, userId, tripInfo, declineStatusTrue, opsStatus);
+      expect(res).toEqual(undefined);
+    });
 
     it('should send user confirmation notification when requester is equal to rider', async () => {
       tripInfo.rider.slackId = 3;
@@ -609,7 +605,7 @@ describe('SlackNotifications', () => {
     let sendNotification;
     let getHomeBaseBySlackId;
     beforeEach(() => {
-      respond = jest.fn((value) => value);
+      respond = jest.fn(value => value);
       getTripRequest = jest.spyOn(tripService, 'getById');
       getTeamDetails = jest.spyOn(TeamDetailsService, 'getTeamDetails');
       getDepartment = jest.spyOn(DepartmentService, 'getById');
@@ -668,7 +664,7 @@ describe('SlackNotifications', () => {
   });
 
   describe('SlackNotifications Tests: Manager approval', () => {
-    const { models: { TripRequest, User, Department } } = database;
+    const { TripRequest, User, Department } = models;
 
     beforeEach(() => {
       jest.spyOn(TripRequest, 'findByPk').mockResolvedValue({ dataValues: tripInitial });

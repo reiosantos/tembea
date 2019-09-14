@@ -1,7 +1,7 @@
 import request from 'supertest';
 import app from '../../../app';
 import Utils from '../../../utils';
-import database from '../../../database';
+import models from '../../../database/models';
 
 const errorMessage = 'Validation error occurred, see error object for details';
 
@@ -23,7 +23,7 @@ beforeAll(() => {
   validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
 });
 afterAll(() => {
-  database.close();
+  models.sequelize.close();
 });
 
 describe('/User update', () => {

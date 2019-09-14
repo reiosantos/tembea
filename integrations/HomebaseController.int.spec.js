@@ -2,9 +2,9 @@ import requestCall from 'supertest';
 import faker from 'faker';
 import app from '../src/app';
 import Utils from '../src/utils';
-import database from '../src/database';
+import models from '../src/database/models';
 
-const { models: { Country } } = database;
+const { Country } = models;
 
 describe('Homebase Controller', () => {
   let validToken;
@@ -25,7 +25,7 @@ describe('Homebase Controller', () => {
   }, 10000);
 
   afterAll(async () => {
-    await database.close();
+    await models.sequelize.close();
   });
 
   it('e2e Test: should create a homebase successfully', async () => {

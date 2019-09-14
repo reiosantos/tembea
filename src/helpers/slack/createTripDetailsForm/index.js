@@ -5,7 +5,7 @@ import {
 } from '../../../modules/slack/SlackModels/SlackDialogModels';
 import { pickupLocations, destinations, extraTravelOptions } from '../../../utils/data';
 
-export const toLabelValuePairs = (arr) => arr.map((val) => ({
+export const toLabelValuePairs = arr => arr.map(val => ({
   label: val,
   value: val
 }));

@@ -25,7 +25,7 @@ FOR HOMEBASES IN EXECUTE getHb
 END; $$`;
 
 module.exports = {
-  up: (queryInterface) => queryInterface.sequelize.query(getQuery()),
+  up: queryInterface => queryInterface.sequelize.query(getQuery()),
 
   down: () => Promise.resolve()
 };

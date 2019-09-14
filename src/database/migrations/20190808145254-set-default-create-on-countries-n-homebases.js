@@ -1,4 +1,5 @@
 
+
 module.exports = {
   up: (queryInterface, Sequelize) => Promise.all([
     // modify country defaults

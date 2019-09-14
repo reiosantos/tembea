@@ -1,5 +1,5 @@
 module.exports = {
-  up: (queryInterface) => queryInterface.bulkInsert('Departments', [{
+  up: queryInterface => queryInterface.bulkInsert('Departments', [{
     name: 'TDD',
     headId: 3,
     teamId: 'TE2K8PGF8',
@@ -144,5 +144,5 @@ module.exports = {
     createdAt: '2018-11-28',
     updatedAt: '2018-11-28'
   }], {}),
-  down: (queryInterface) => queryInterface.bulkDelete('Departments', null, {})
+  down: queryInterface => queryInterface.bulkDelete('Departments', null, {})
 };

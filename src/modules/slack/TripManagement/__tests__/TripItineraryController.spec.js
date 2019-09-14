@@ -32,11 +32,11 @@ describe('TripItineraryController', () => {
   };
 
   beforeEach(() => {
-    respond = jest.fn((value) => value);
-    jest.spyOn(InteractivePrompts, 'sendTripHistory').mockImplementationOnce((value) => value);
-    jest.spyOn(InteractivePrompts, 'sendUpcomingTrips').mockImplementationOnce((value) => value);
+    respond = jest.fn(value => value);
+    jest.spyOn(InteractivePrompts, 'sendTripHistory').mockImplementationOnce(value => value);
+    jest.spyOn(InteractivePrompts, 'sendUpcomingTrips').mockImplementationOnce(value => value);
     jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId')
-      .mockImplementation((slackId) => Promise.resolve({
+      .mockImplementation(slackId => Promise.resolve({
         slackId, name: 'test user'
       }));
   });

@@ -3,7 +3,7 @@ import UserService from '../../../../services/UserService';
 
 export default class ProvidersHelper {
   static toProviderLabelPairValues(providers) {
-    return providers.map((val) => ({
+    return providers.map(val => ({
       label: `${val.name}`,
       value: val.id
     }));

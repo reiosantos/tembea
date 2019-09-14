@@ -1,9 +1,9 @@
 import TripItineraryHelper from '../TripItineraryHelper';
 import SlackHelpers from '../../../../../services/UserService';
-import database from '../../../../../database';
+import models from '../../../../../database/models';
 import tripService from '../../../../../services/TripService';
 
-const { models: { TripRequest, User } } = database;
+const { TripRequest, User } = models;
 
 describe('TripItineraryHelper ', () => {
   beforeEach(() => {

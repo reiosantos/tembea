@@ -3,5 +3,5 @@ module.exports = {
     type: Sequelize.STRING
   }),
 
-  down: (queryInterface) => queryInterface.removeColumn('Departments', 'location')
+  down: queryInterface => queryInterface.removeColumn('Departments', 'location')
 };

@@ -1,6 +1,6 @@
 import faker from 'faker';
 import HomebaseService from '../HomebaseService';
-import database from '../../database';
+import models from '../../database/models';
 import { mockCreatedHomebase, mockNewHomebase } from '../__mocks__';
 import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
 import { mockedValue } from '../../modules/trips/__tests__/__mocks__';
@@ -8,7 +8,7 @@ import UserService from '../UserService';
 import { createCountry } from '../../../integrations/support/helpers';
 
 jest.mock('../../helpers/sequelizePaginationHelper', () => jest.fn());
-const { models: { Homebase, Country } } = database;
+const { Homebase, Country } = models;
 
 describe('test HomebaseService', () => {
   let createHomebaseSpy;
@@ -184,7 +184,7 @@ describe('update HomeBase', () => {
     );
   });
   afterAll(() => {
-    database.close();
+    models.Sequelize.close();
   });
 
   it('should update the homebase', async () => {

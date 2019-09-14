@@ -1,4 +1,4 @@
-import database from '../../database';
+import models from '../../database/models';
 import BatchUseRecordService from '../BatchUseRecordService';
 import { MAX_INT as all } from '../../helpers/constants';
 import { routeData, data } from '../__mocks__';
@@ -10,7 +10,7 @@ import {
 import SequelizePaginationHelper from '../../helpers/sequelizePaginationHelper';
 
 
-const { models: { BatchUseRecord, RouteBatch } } = database;
+const { BatchUseRecord, RouteBatch } = models;
 
 describe('BatchUseRecordService', () => {
   beforeEach(() => {
@@ -53,8 +53,7 @@ describe('BatchUseRecordService', () => {
     });
 
     it('should get getBatchUseRecord', async () => {
-      const { pageMeta: { itemsPerPage } } = await BatchUseRecordService
-        .getBatchUseRecord({ page: 1, size: all }, {});
+      const { pageMeta: { itemsPerPage } } = await BatchUseRecordService.getBatchUseRecord({ page: 1, size: all }, {});
       expect(itemsPerPage).toEqual(1);
     });
 
@@ -125,10 +124,7 @@ describe('BatchUseRecordService', () => {
             batchId: 1001, comments: 'Went to the trip', status: 'Activ', takeOff: '09:50'
           },
           cabDetails: {
-            cabId: 10,
-            driverName: 'Kafuuma Henry',
-            driverPhoneNo: 256772312456,
-            regNumber: 'UBE321A'
+            cabId: 10, driverName: 'Kafuuma Henry', driverPhoneNo: 256772312456, regNumber: 'UBE321A'
           },
           departureDate: '2018-05-03 09:50',
           id: 1,
@@ -164,7 +160,7 @@ describe('BatchUseRecordService', () => {
   describe('BatchUseRecordService_getRoutesUsage', () => {
     it('should fetch all routes and batch records', async () => {
       const mockData = [];
-      const sequelizeSpy = jest.spyOn(database, 'query');
+      const sequelizeSpy = jest.spyOn(models.sequelize, 'query');
       sequelizeSpy.mockReturnValue(mockData);
       const results = await BatchUseRecordService.getRoutesUsage();
       expect(sequelizeSpy).toBeCalled();

@@ -116,7 +116,7 @@ const genFakerUser = (userSize, batchSize, cabSize, driverSize, routeSize) => {
 
   const map = {};
   const totalCapacity = routeBatches
-    .map((batch) => batch.capacity)
+    .map(batch => batch.capacity)
     .reduce((a, b) => a + b);
   const num = Math.min(totalCapacity, userSize);
   for (let i = 0; i < num; i += 1) {
@@ -156,11 +156,11 @@ const routeSize = 8;
 const { addresses, locations, routes } = genRoutes(routeSize);
 const { users, routeBatches } = genFakerUser(50, 25, 4, 3, routeSize);
 module.exports = {
-  up: (queryInterface) => queryInterface.bulkInsert('Locations', locations)
+  up: queryInterface => queryInterface.bulkInsert('Locations', locations)
     .then(() => queryInterface.bulkInsert('Addresses', addresses))
     .then(() => queryInterface.bulkInsert('Routes', routes))
     .then(() => queryInterface.bulkInsert('RouteBatches', routeBatches))
     .then(() => queryInterface.bulkInsert('Users', users)),
-  down: (queryInterface) => queryInterface.bulkDelete('Routes')
+  down: queryInterface => queryInterface.bulkDelete('Routes')
     .then(() => queryInterface.bulkDelete('RouteBatches'))
 };

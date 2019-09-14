@@ -20,7 +20,7 @@ import ProviderHelper from '../../../helpers/providerHelper';
 import UserService from '../../../services/UserService';
 import HomebaseService from '../../../services/HomebaseService';
 
-export const getPayloadKey = (userId) => `PAYLOAD_DETAILS${userId}`;
+export const getPayloadKey = userId => `PAYLOAD_DETAILS${userId}`;
 
 class DialogPrompts {
   static async sendTripDetailsForm(payload, formElementsFunction, callbackId, dialogTitle) {

@@ -1,6 +1,7 @@
 
+
 module.exports = {
-  up: (queryInterface) => Promise.all([
+  up: queryInterface => Promise.all([
     queryInterface.removeColumn('Cabs', 'location'),
     queryInterface.removeColumn('Cabs', 'driverName'),
     queryInterface.removeColumn('Cabs', 'driverPhoneNo')

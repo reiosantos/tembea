@@ -11,7 +11,7 @@ class RemoveDataValues {
     const sorted = { ...newData.dataValues };
 
     Object.keys(sorted)
-      .filter((k) => RemoveDataValues.filter(sorted[k]))
+      .filter(k => RemoveDataValues.filter(sorted[k]))
       .forEach((key) => {
         sorted[key] = Array.isArray(sorted[key])
           ? sorted[key].map(RemoveDataValues.removeDataValues)

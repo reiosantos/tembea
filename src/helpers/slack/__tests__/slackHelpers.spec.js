@@ -1,4 +1,4 @@
-import database from '../../../database';
+import models from '../../../database/models';
 import SlackHelpers from '../slackHelpers';
 import TeamDetailsService from '../../../services/TeamDetailsService';
 import WebClientSingleton from '../../../utils/WebClientSingleton';
@@ -9,7 +9,7 @@ import UserService from '../../../services/UserService';
 import tripService from '../../../services/TripService';
 import { cabService } from '../../../services/CabService';
 
-const { models: { TripRequest, User } } = database;
+const { TripRequest, User } = models;
 
 // setup for all
 const webClientMock = {

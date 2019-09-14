@@ -1,8 +1,8 @@
 import TeamDetailsService from '../TeamDetailsService';
-import database from '../../database';
+import models from '../../database/models';
 import cache from '../../cache';
 
-const { models: { TeamDetails } } = database;
+const { TeamDetails } = models;
 
 describe('Team details service', () => {
   beforeAll(() => {
@@ -121,7 +121,7 @@ describe('getTeamDetailsByTeamUrl', () => {
   });
 
   it('should fetch team details from catch', async () => {
-    cache.fetch = jest.fn((teamId) => ((teamId === `teamDetails_${teamUrl}`) ? data : null));
+    cache.fetch = jest.fn(teamId => ((teamId === `teamDetails_${teamUrl}`) ? data : null));
     TeamDetails.findOne = jest.fn(() => data);
 
     const result = await TeamDetailsService.getTeamDetailsByTeamUrl(teamUrl);

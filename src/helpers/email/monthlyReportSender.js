@@ -17,7 +17,7 @@ class MonthlyReportSender {
   async send() {
     try {
       const allTeams = await TeamDetailsService.getAllTeams();
-      const promises = allTeams.map((team) => this.sendMail(team.teamId));
+      const promises = allTeams.map(team => this.sendMail(team.teamId));
       await Promise.all(promises);
       return;
     } catch (e) {
@@ -99,7 +99,7 @@ class MonthlyReportSender {
   static async getAddresses(teamId) {
     const departments = await DepartmentService.getDepartmentsForSlack(teamId);
 
-    let filtered = departments.filter((department) => !!(department.label && (
+    let filtered = departments.filter(department => !!(department.label && (
       department.label.toLowerCase() === 'operations'
                       || department.label.toLowerCase() === 'finance')));
 
@@ -108,7 +108,7 @@ class MonthlyReportSender {
       return -1;
     });
 
-    filtered = filtered.map((department) => ({
+    filtered = filtered.map(department => ({
       name: department.head.name,
       email: department.head.email,
     }));
@@ -130,7 +130,7 @@ class MonthlyReportSender {
   static departmentToArray(departments) {
     const dept = Object.keys(departments);
 
-    return dept.map((value) => ({
+    return dept.map(value => ({
       name: value,
       ...departments[value]
     }));

@@ -40,7 +40,7 @@ describe('Manage Trip Controller decline trip', () => {
   beforeEach(() => {
     jest.spyOn(slackEvents, 'raise').mockReturnValue();
     jest.spyOn(tripService, 'getById')
-      .mockImplementation((id) => Promise.resolve({ id, name: 'Test Trip' }));
+      .mockImplementation(id => Promise.resolve({ id, name: 'Test Trip' }));
     jest.spyOn(DepartmentService, 'getHeadByDeptId')
       .mockResolvedValue({ slackId: 'U123S0' });
     jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('token');

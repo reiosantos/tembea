@@ -98,7 +98,7 @@ export default class LocationHelpers {
         .getPlacesAutoComplete(locationPredictions);
 
       const predictedLocations = predictedPlacesResults.map(
-        (prediction) => ({ text: prediction.description, value: prediction.place_id })
+        prediction => ({ text: prediction.description, value: prediction.place_id })
       );
 
       const locationMarkers = LocationHelpers.locationMarker(predictedPlacesResults);

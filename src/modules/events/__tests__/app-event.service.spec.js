@@ -8,7 +8,7 @@ describe('AppEvents Service', () => {
     appEvents.subscribe(testPayload.name, testHandler);
     appEvents.broadcast(testPayload);
 
-    await new Promise((resolve) => setTimeout(() => {
+    await new Promise(resolve => setTimeout(() => {
       resolve();
     }, 2000));
     expect(testHandler).toHaveBeenCalledWith('test');

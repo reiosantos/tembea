@@ -37,7 +37,7 @@ export default class RouteHelper {
   static findPercentageUsage(record, allUsageRecords, dormantRouteBatches) {
     const usageRecords = Object.values(record);
     const confirmedRecords = usageRecords.filter(
-      (confirmed) => confirmed.userAttendStatus === 'Confirmed'
+      confirmed => confirmed.userAttendStatus === 'Confirmed'
     );
     const batchUsage = {};
     const { RouteBatchName, Route } = record[0];

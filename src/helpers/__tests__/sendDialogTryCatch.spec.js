@@ -2,7 +2,7 @@ import WebClientSingleton from '../../utils/WebClientSingleton';
 import sendDialogTryCatch from '../sendDialogTryCatch';
 import bugsnagHelper from '../bugsnagHelper';
 
-const getWebClientMock = (mock) => ({
+const getWebClientMock = mock => ({
   dialog: { open: mock }
 });
 describe('sendDialogTryCatch', () => {

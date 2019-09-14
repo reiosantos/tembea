@@ -21,7 +21,7 @@ import { getTimezone } from '../../dateHelpers';
 import DateDialogHelper from '../../../../../helpers/dateHelper';
 
 
-export const getTravelKey = (id) => `TRAVEL_REQUEST_${id}`;
+export const getTravelKey = id => `TRAVEL_REQUEST_${id}`;
 
 class TravelTripHelper {
   static async contactDetails(data, respond) {

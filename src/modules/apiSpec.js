@@ -1,7 +1,7 @@
 import swaggerUi from 'swagger-ui-express';
 import swaggerJSDoc from 'swagger-jsdoc';
 
-const getDefinition = (version) => ({
+const getDefinition = version => ({
   info: {
     title: 'Tembea API Docs',
     version: `${version}.0.0`,

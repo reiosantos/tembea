@@ -155,7 +155,7 @@ class Validators {
         return error;
       }
       return false;
-    }).filter((items) => items !== false);
+    }).filter(items => items !== false);
     return inputs;
   }
 

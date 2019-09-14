@@ -1,4 +1,5 @@
 
+
 module.exports = {
   up: (queryInterface) => {
     if (process.env.NODE_ENV === 'production') {

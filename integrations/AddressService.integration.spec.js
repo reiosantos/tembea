@@ -1,10 +1,10 @@
 import LocationService from '../src/services/LocationService';
 import AddressService from '../src/services/AddressService';
-import database from '../src/database';
+import models from '../src/database/models';
 
 describe('AddressService', () => {
   afterAll(() => {
-    database.close();
+    models.sequelize.close();
   });
   describe('findOrCreateAddress', () => {
     it('should create a new address with supplied location', async () => {

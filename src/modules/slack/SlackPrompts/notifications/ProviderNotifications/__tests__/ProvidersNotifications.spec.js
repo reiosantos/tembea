@@ -202,7 +202,6 @@ describe('ProviderNotifications', () => {
 
 describe('Provider notifications', () => {
   it('Should update provider notification', async () => {
-    jest.spyOn(InteractivePrompts, 'messageUpdate').mockResolvedValue();
     const tripDetails = responseData;
     const [channel, botToken, trip, timeStamp] = [
       'cpd33', 'xxop', tripDetails, '1555500000'];

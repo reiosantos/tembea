@@ -3,7 +3,7 @@ import SendNotifications from '../../SlackPrompts/Notifications';
 import InteractivePrompts from '../../SlackPrompts/InteractivePrompts';
 import SlackHelpers from '../../../../helpers/slack/slackHelpers';
 import UserInputValidator from '../../../../helpers/slack/UserInputValidator';
-import database from '../../../../database';
+import models from '../../../../database/models';
 import TeamDetailsService from '../../../../services/TeamDetailsService';
 import { cabService } from '../../../../services/CabService';
 import tripService from '../../../../services/TripService';
@@ -12,7 +12,7 @@ import DriverNotifications from
   '../../SlackPrompts/notifications/DriverNotifications/driver.notifications';
 import DriverService from '../../../../services/DriverService';
 
-const { models: { TripRequest, Address } } = database;
+const { TripRequest, Address } = models;
 
 jest.mock('../../SlackPrompts/Notifications.js');
 jest.mock('../../events/', () => ({
@@ -281,10 +281,8 @@ describe('TripActionController operations approve tests', () => {
     jest.spyOn(DriverService, 'findOneDriver').mockResolvedValue({ user: { slackId: 'UGD' } });
     jest.spyOn(DriverNotifications, 'checkAndNotifyDriver').mockImplementation(() => jest.fn());
 
-    const updateNotificationSpy = jest.spyOn(ProviderNotifications, 'UpdateProviderNotification')
-      .mockResolvedValue({});
-    const sendUserNotificationSpy = jest.spyOn(SendNotifications,
-      'sendUserConfirmOrDeclineNotification');
+    const updateNotificationSpy = jest.spyOn(ProviderNotifications, 'UpdateProviderNotification').mockResolvedValue({});
+    const sendUserNotificationSpy = jest.spyOn(SendNotifications, 'sendUserConfirmOrDeclineNotification');
     await TripActionsController.completeTripRequest(payload);
     expect(updateNotificationSpy).toHaveBeenCalled();
     expect(sendUserNotificationSpy).toHaveBeenCalled();
@@ -294,8 +292,7 @@ describe('TripActionController operations approve tests', () => {
   describe('#getTripNotificationDetails', () => {
     beforeEach(async () => {
       jest.spyOn(SlackHelpers, 'findOrCreateUserBySlackId').mockResolvedValue({ id: 'UE1FCCXXX' });
-      jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken')
-        .mockResolvedValue('xoxb-xxxx-xxxx');
+      jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('xoxb-xxxx-xxxx');
     });
 
     afterEach(() => {

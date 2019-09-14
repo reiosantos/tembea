@@ -9,7 +9,7 @@ import {
   mockDataInvalidTakeOffTime
 } from '../src/services/__mocks__';
 import { createRouteRequest } from './support/helpers';
-import database from '../src/database';
+import models from '../src/database/models';
 
 describe('Route Request Approval/Decline', () => {
   let validToken;
@@ -48,7 +48,7 @@ describe('Route Request Approval/Decline', () => {
   });
 
   afterAll(async () => {
-    database.close();
+    models.sequelize.close();
   });
 
   describe('Decline route request', () => {

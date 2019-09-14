@@ -1,9 +1,9 @@
-import database from '../database';
+import models from '../database/models';
 import cache from '../cache';
 import bugsnagHelper from '../helpers/bugsnagHelper';
 
-const { models: { TeamDetails } } = database;
-const getTeamDetailsKey = (teamId) => `teamDetails_${teamId}`;
+const { TeamDetails } = models;
+const getTeamDetailsKey = teamId => `teamDetails_${teamId}`;
 
 class TeamDetailsService {
   static async getTeamDetails(teamId) {

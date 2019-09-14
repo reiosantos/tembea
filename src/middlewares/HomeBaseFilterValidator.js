@@ -8,7 +8,7 @@ class HomeBaseFilterValidator {
         'Missing HomebaseId in request headers');
     }
     const [canViewLocationData] = locations.filter(
-      (location) => location.id === parseInt(homebaseid, 10)
+      location => location.id === parseInt(homebaseid, 10)
     );
     if (!canViewLocationData) {
       return Response.sendResponse(res, 403, false,

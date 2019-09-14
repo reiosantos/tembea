@@ -33,7 +33,7 @@ const homebases = [
 
 module.exports = {
   up: async (queryInterface) => {
-    const homebasesQ = homebases.map((h) => queryInterface.sequelize.query(createHomebaseQuery(h)));
+    const homebasesQ = homebases.map(h => queryInterface.sequelize.query(createHomebaseQuery(h)));
     await Promise.all(homebasesQ);
   },
   down: async (queryInterface) => {

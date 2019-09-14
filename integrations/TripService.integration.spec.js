@@ -1,10 +1,9 @@
 import faker from 'faker';
 import tripService, { TripService } from '../src/services/TripService';
-import database from '../src/database';
+import models from '../src/database/models';
 import { createTripRequests, createUser } from './support/helpers';
 import TravelTripService from '../src/services/TravelTripService';
 
-const { models: { Department, Address, TripRequest } } = database;
 describe('TripService', () => {
   const [testUserId, departmentId] = [2, 2];
   const testTrips = [];
@@ -12,7 +11,7 @@ describe('TripService', () => {
 
 
   beforeAll(async () => {
-    const { id: destinationId } = await Address.findOne();
+    const { id: destinationId } = await models.Address.findOne();
     for (let count = 1; count < tripsCount; count += 1) {
       testTrips.push(TripService.createRequest({
         destinationId,
@@ -34,7 +33,7 @@ describe('TripService', () => {
   });
 
   afterAll(async () => {
-    await database.close();
+    await models.sequelize.close();
   });
 
   describe('getPaginatedTrips', () => {
@@ -77,9 +76,9 @@ describe('TripService', () => {
       };
       mockUser = await createUser(userData);
 
-      mockedDepartment1 = await Department.findByPk(1, { plain: true });
-      mockedDepartment2 = await Department.findByPk(2, { plain: true });
-      const { id: destinationId } = await Address.findOne();
+      mockedDepartment1 = await models.Department.findByPk(1, { plain: true });
+      mockedDepartment2 = await models.Department.findByPk(2, { plain: true });
+      const { id: destinationId } = await models.Address.findOne();
 
 
       const trips = [
@@ -137,7 +136,7 @@ describe('TripService', () => {
           cost: 50,
           createdAt: new Date('2019-06-15 08:00'),
           rating: 2,
-          homebaseId: 1
+          homebaseId:1
         }
       ];
 
@@ -145,8 +144,8 @@ describe('TripService', () => {
     });
 
     afterAll(async () => {
-      await TripRequest.destroy({ where: { id: [70, 72, 73] } });
-      await database.close();
+      await models.TripRequest.destroy({ where: { id: [70, 72, 73] } });
+      await models.sequelize.close();
     });
 
     it('should Travel trips for only specified departments', async () => {

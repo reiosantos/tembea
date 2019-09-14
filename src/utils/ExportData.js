@@ -165,7 +165,7 @@ class ExportData {
         padding: [15, 0, 0, 5]
       })
       .addColumns(columns)
-      .onPageAdded((newTable) => newTable.addHeader());
+      .onPageAdded(newTable => newTable.addHeader());
     pdf.font('Times-Roman', 10);
     pdf.addPage({ ...otherParams });
     table.addBody(data);
@@ -191,7 +191,7 @@ class ExportData {
   }
 
   static formNewRequiredData(data, headers) {
-    const newFormedData = data.map((objData) => ExportData.filterRequired(
+    const newFormedData = data.map(objData => ExportData.filterRequired(
       objData, headers
     ));
     return newFormedData;
@@ -219,7 +219,7 @@ class ExportData {
   }
 
   static getColumnHeaders(columns) {
-    const listOfHeaders = columns.map((obj) => obj.id);
+    const listOfHeaders = columns.map(obj => obj.id);
     return listOfHeaders; // List of headers;
   }
 }

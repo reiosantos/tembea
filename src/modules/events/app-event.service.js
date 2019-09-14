@@ -7,8 +7,8 @@ class AppEvents {
   }
 
   subscribe(name, subscriber) {
-    this.subject.pipe(filter((e) => e.name === name))
-      .subscribe((e) => subscriber(e.data));
+    this.subject.pipe(filter(e => e.name === name))
+      .subscribe(e => subscriber(e.data));
   }
 
   broadcast({ name, data }) {

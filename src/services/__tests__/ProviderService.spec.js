@@ -7,9 +7,9 @@ import {
   mockReturnedProvider,
   mockCreatedProvider, mockProviderRecord, mockCabsData, mockDriversData
 } from '../__mocks__';
-import database from '../../database';
+import models from '../../database/models';
 
-const { models: { Provider } } = database;
+const { Provider } = models;
 jest.mock('../../helpers/sequelizePaginationHelper', () => jest.fn());
 
 
@@ -181,8 +181,7 @@ describe('ProviderService', () => {
     it('should get provider by slack id', async () => {
       const result = await ProviderService.getProviderByUserId(16);
       expect(result).toBeDefined();
-      expect(result).toHaveProperty('id', 'name', 'providerUserId', 'createdAt', 'updatedAt',
-        'deletedAt');
+      expect(result).toHaveProperty('id', 'name', 'providerUserId', 'createdAt', 'updatedAt', 'deletedAt');
     });
     it('should get provider by slack id', async () => {
       const result = await ProviderService.getProviderByUserId(2);

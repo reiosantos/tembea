@@ -1,6 +1,6 @@
 import request from 'supertest';
 import app from '../../../app';
-import database from '../../../database';
+import models from '../../../database/models';
 import DepartmentController from '../DepartmentsController';
 import HttpError from '../../../helpers/errorHandler';
 import Utils from '../../../utils';
@@ -9,7 +9,7 @@ import Utils from '../../../utils';
 describe('Delete department record', () => {
   let validToken;
 
-  const { models: { Department } } = database;
+  const { Department } = models;
 
   beforeAll(async () => {
     validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
@@ -33,7 +33,7 @@ describe('Delete department record', () => {
       }
     });
     await department.destroy();
-    await database.close();
+    await models.sequelize.close();
   });
 
   it('should return a 404 if department is not found', (done) => {

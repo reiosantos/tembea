@@ -13,5 +13,5 @@ module.exports = {
       },
     });
   }),
-  down: (queryInterface) => queryInterface.removeColumn('Departments', 'homebaseId')
+  down: queryInterface => queryInterface.removeColumn('Departments', 'homebaseId')
 };
