@@ -160,7 +160,7 @@ describe('Test HomebaseController', () => {
         }
       ));
 
-      jest.spyOn(HomebaseService, 'update').mockImplementation(() => Promise.reject());
+      jest.spyOn(HomebaseService, 'update').mockRejectedValue();
       await HomeBaseController.update(req, res);
       expect(res.status).toHaveBeenCalledWith(409);
       expect(res.json).toHaveBeenCalledWith({

@@ -13,6 +13,7 @@ import AddressService from '../../services/AddressService';
 import RouteRequestService from '../../services/RouteRequestService';
 import RouteNotifications from '../../modules/slack/SlackPrompts/notifications/RouteNotifications';
 import ConfirmRouteUseJob from '../../services/jobScheduler/jobs/ConfirmRouteUseJob';
+import { providerService } from '../../services/ProviderService';
 
 let status;
 
@@ -58,6 +59,7 @@ describe('Route Helpers', () => {
 
   describe('checkThatRouteNameExists', () => {
     it('should return array containing true/false', async () => {
+      jest.spyOn(providerService, 'getProviderById').mockResolvedValueOnce({});
       jest.spyOn(routeService, 'getRouteByName').mockResolvedValue({ id: 2, });
       const result = await RouteHelper.checkThatProviderIdExists(1);
       expect(Array.isArray(result)).toBeTruthy();

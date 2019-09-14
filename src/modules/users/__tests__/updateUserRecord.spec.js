@@ -2,37 +2,73 @@ import request from 'supertest';
 import app from '../../../app';
 import Utils from '../../../utils';
 import database from '../../../database';
+import UserService from '../../../services/UserService';
 
 const errorMessage = 'Validation error occurred, see error object for details';
-
 jest.mock('@slack/client', () => ({
   WebClient: jest.fn(() => ({
     users: {
-      lookupByEmail: jest.fn(() => ({
+      lookupByEmail: jest.fn((email) => ({
         user: {
-          id: 'XXXXXXXXX'
+          id: `XXXXXXXXX_${email.splice(3)}`
         }
       })),
     }
   }))
 }));
 
-let validToken;
-
-beforeAll(() => {
-  validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
-});
-afterAll(() => {
-  database.close();
-});
-
 describe('/User update', () => {
+  let validToken;
+  let teamDetails;
+  let johnSmith;
+  let meYou;
+  beforeAll(async (done) => {
+    teamDetails = await database.models.TeamDetails.create({
+      teamUrl: 'https://userupdate.slack.com',
+      teamId: 'UPDATE123',
+      botId: 'XXXXXXX-UPDATE',
+      botToken: 'XXXXXX-UPDATE',
+      webhookConfigUrl: 'XXXXXXXXXXXXX',
+      userId: 'XXXXXXXXXXXXX-UPDATE',
+      opsChannelId: 'XXXXXXXXXXXXX',
+      teamName: 'Fake Team',
+      userToken: 'XXXXXXXXXXX',
+    });
+
+    ([johnSmith, meYou] = await Promise.all([
+      database.models.User.create({
+        email: 'john.smith@gmail.com',
+        slackId: 'UU1234_UPDATE',
+        phoneNo: '+245679076542',
+        name: 'User Update',
+      }),
+      database.models.User.create({
+        email: 'me.you@test.com',
+        slackId: 'UU1234_UPDATE_2',
+        phoneNo: '+2456790765422',
+        name: 'User Updates',
+      })
+    ]));
+
+    jest.spyOn(UserService, 'getUserSlackInfo').mockImplementation((_, email) => ({
+      user: {
+        id: `U1234_${(email).slice(0, 4)}`
+      }
+    }));
+    validToken = Utils.generateToken('30m', { userInfo: { roles: ['Super Admin'] } });
+    done();
+  }, 10000);
+
+  afterAll((done) => {
+    database.close().then(done, done);
+  });
+
   it('should return a not found error with wrong email', (done) => {
     request(app)
       .put('/api/v1/users')
       .send({
         email: 'unKnownEmail@test.com',
-        slackUrl: 'ACME.slack.com',
+        slackUrl: teamDetails.teamUrl,
         newName: 'New name',
         newPhoneNo: '2349023746389',
         newEmail: 'me.you@test.com',
@@ -43,7 +79,7 @@ describe('/User update', () => {
       })
       .expect(404, {
         success: false,
-        message: 'User not found'
+        message: 'User not found',
       }, done);
   });
 
@@ -138,15 +174,15 @@ describe('/User update', () => {
       }, done);
   });
 
-  it('should respond success', (done) => {
+  it('should respond success 1', (done) => {
     request(app)
       .put('/api/v1/users')
       .send({
-        email: 'john.smith@gmail.com',
-        slackUrl: 'ACME.slack.com',
+        email: johnSmith.email,
+        slackUrl: teamDetails.teamUrl,
         newName: 'New Name',
         newPhoneNo: '2349782037189',
-        newEmail: 'me.you@test.com',
+        newEmail: 'mess.you@test.com',
       })
       .set({
         Accept: 'application/json',
@@ -155,14 +191,14 @@ describe('/User update', () => {
       .expect(200, done);
   });
 
-  it('should respond success', (done) => {
+  it('should respond success 2', (done) => {
     request(app)
       .put('/api/v1/users')
       .send({
-        email: 'me.you@test.com',
-        slackUrl: 'ACME.slack.com',
+        email: meYou.email,
+        slackUrl: teamDetails.teamUrl,
         newName: 'New Name',
-        newPhoneNo: '2349782037189'
+        newPhoneNo: '2349782037171'
       })
       .set({
         Accept: 'application/json',
@@ -171,12 +207,12 @@ describe('/User update', () => {
       .expect(200, done);
   });
 
-  it('should respond success', (done) => {
+  it('should respond success 3', (done) => {
     request(app)
       .put('/api/v1/users')
       .send({
-        email: 'me.you@test.com',
-        slackUrl: 'ACME.slack.com',
+        email: meYou.email,
+        slackUrl: teamDetails.teamUrl,
         newEmail: 'me.you@test.com',
       })
       .set({
@@ -186,11 +222,11 @@ describe('/User update', () => {
       .expect(200, done);
   });
 
-  it('should respond with can\'t find slack team', (done) => {
+  it('should respond with cannot find slack team', (done) => {
     request(app)
       .put('/api/v1/users')
       .send({
-        email: 'me.them@andela.com',
+        email: meYou.email,
         slackUrl: 'ACM.slack.com',
         newName: 'New Name',
         newPhoneNo: '2349782037189',

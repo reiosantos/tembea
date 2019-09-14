@@ -190,8 +190,10 @@ class ProvidersController {
       const route = await RouteService.getRouteBatchByPk(routeBatchId, true);
       const { riders: users } = route;
       const slackBotOauthToken = await TeamDetailsService.getTeamDetailsBotOauthToken(teamId);
-      await ProviderNotifications.updateProviderReAssignCabMessage(channelId, slackBotOauthToken, timestamp, route, cab);
-      await users.forEach((user) => ProvidersController.sendUserUpdatedRouteMessage(user, route, cab, slackBotOauthToken));
+      await ProviderNotifications.updateProviderReAssignCabMessage(channelId, slackBotOauthToken,
+        timestamp, route, cab);
+      await users.forEach((user) => ProvidersController.sendUserUpdatedRouteMessage(user, route,
+        cab, slackBotOauthToken));
     } catch (error) {
       bugsnagHelper.log(error);
       respond(

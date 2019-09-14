@@ -22,13 +22,13 @@ export default class Driver extends Base<Driver> implements IDriver {
   @ForeignKey(() => Provider)
   providerId: number;
 
-  // @Column
-  // @ForeignKey(() => User)
+  @Column
+  @ForeignKey(() => User)
   userId?: number;
 
   @BelongsTo(() => Provider)
   provider: Provider;
 
-  // @BelongsTo(() => User)
-  // user: User;
+  @BelongsTo(() => User)
+  user: User;
 }

@@ -11,8 +11,9 @@ import ProviderNotifications from '../../SlackPrompts/notifications/ProviderNoti
 import DriverNotifications from
   '../../SlackPrompts/notifications/DriverNotifications/driver.notifications';
 import DriverService from '../../../../services/DriverService';
+import { providerService } from '../../../../services/ProviderService';
 
-const { models: { TripRequest, Address } } = database;
+const { models: { TripRequest } } = database;
 
 jest.mock('../../SlackPrompts/Notifications.js');
 jest.mock('../../events/', () => ({
@@ -125,9 +126,8 @@ describe('TripActionController operations decline tests', () => {
   });
 
   it('should run changeTripStatus() to declinedByOps', async () => {
-    const { id: destinationId } = await Address.findOne();
-    const trip = await TripRequest.create({
-      destinationId,
+    const trip = {
+      destinationId: 2,
       name: 'A trip',
       riderId: 1,
       tripStatus: 'Approved',
@@ -138,14 +138,16 @@ describe('TripActionController operations decline tests', () => {
       reason: 'I need to go',
       noOfPassengers: 1,
       tripType: 'Regular Trip'
-    });
+    };
 
-    const validState = JSON.stringify({ trip: trip.id, actionTs: 212132 });
-    payload.state = validState;
-    SendNotifications.sendUserConfirmOrDeclineNotification = jest.fn();
-    SendNotifications.sendManagerConfirmOrDeclineNotification = jest.fn();
-    InteractivePrompts.sendOpsDeclineOrApprovalCompletion = jest.fn();
+    jest.spyOn(SendNotifications, 'sendUserConfirmOrDeclineNotification').mockResolvedValue();
+    jest.spyOn(SendNotifications, 'sendManagerConfirmOrDeclineNotification').mockResolvedValue();
+    jest.spyOn(InteractivePrompts, 'sendOpsDeclineOrApprovalCompletion').mockResolvedValue();
+    jest.spyOn(TripRequest, 'create').mockResolvedValueOnce(trip);
+    jest.spyOn(tripService, 'updateRequest')
+      .mockImplementation((t) => ({ ...t, status: 'DeclinedByOps' }));
 
+    payload.state = JSON.stringify({ trip: trip.id, actionTs: 212132 });
     const result = await TripActionsController.changeTripStatusToDeclined(
       opsUserId, payload, '1234'
     );
@@ -154,8 +156,6 @@ describe('TripActionController operations decline tests', () => {
     expect(SendNotifications.sendUserConfirmOrDeclineNotification).toHaveBeenCalled();
     expect(SendNotifications.sendManagerConfirmOrDeclineNotification).toHaveBeenCalled();
     expect(InteractivePrompts.sendOpsDeclineOrApprovalCompletion).toHaveBeenCalled();
-
-    await trip.destroy();
   });
 
   it('should run the catchBlock on changeTripStatusToDeclined error ', async () => {
@@ -203,6 +203,8 @@ describe('TripActionController operations approve tests', () => {
     jest.restoreAllMocks();
   });
 
+  afterAll((done) => database.close().then(done));
+
   const opsUserId = 3;
 
   it('should change Trip Status for confirmation comment', async () => {
@@ -227,6 +229,9 @@ describe('TripActionController operations approve tests', () => {
   });
   it('should run notifiyProvider upon provider assignment', async () => {
     const notifyAll = jest.spyOn(TripActionsController, 'notifyAll').mockResolvedValue({});
+    jest.spyOn(providerService, 'getProviderById').mockResolvedValue({
+      providerUserId: 1, name: 'Test Provider'
+    });
     jest.spyOn(tripService, 'updateRequest').mockResolvedValue({ id: 1, name: 'Sample User' });
 
     await TripActionsController.changeTripStatusToConfirmed(opsUserId, payload, 'token');

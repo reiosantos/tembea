@@ -12,7 +12,6 @@ import ProviderService from '../../../../../services/ProviderService';
 import { driverService } from '../../../../../services/DriverService';
 import CabsHelper from '../../../helpers/slackHelpers/CabsHelper';
 import { cabService } from '../../../../../services/CabService';
-import RemoveDataValues from '../../../../../helpers/removeDataValues';
 import RouteService from '../../../../../services/RouteService';
 import InteractivePrompts from '../../InteractivePrompts';
 
@@ -37,17 +36,16 @@ export default class ProviderNotifications {
    */
   static async sendRouteApprovalNotification(routeBatch, providerId, botToken) {
     const provider = await ProviderService.findByPk(providerId, true);
-    const batch = RemoveDataValues.removeDataValues(routeBatch);
     const { user: { slackId }, name } = provider;
     const directMessageID = await SlackNotifications.getDMChannelId(slackId, botToken);
-    const route = await RouteService.getRouteBatchByPk(batch.routeId, true);
+    const detailedRouteBatch = await RouteService.getRouteBatchByPk(routeBatch.id, true);
     const channel = await ProviderNotifications.checkIsDirectMessage(provider, slackId);
     const channelID = channel === slackId ? directMessageID : channel;
     const attachment = new SlackAttachment('Assign driver and cab');
     attachment.addFieldsOrActions('fields',
-      ProviderAttachmentHelper.providerRouteFields(route));
+      ProviderAttachmentHelper.providerRouteFields(detailedRouteBatch));
     attachment.addFieldsOrActions('actions', [
-      new SlackButtonAction('provider_approval', 'Accept', `${batch.id}`)
+      new SlackButtonAction('provider_approval', 'Accept', `${routeBatch.id}`)
     ]);
     attachment.addOptionalProps('provider_actions_route', '', '#FFCCAA');
     const message = SlackNotifications.createDirectMessage(channelID,

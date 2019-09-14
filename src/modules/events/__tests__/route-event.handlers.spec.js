@@ -8,6 +8,7 @@ import { route, recordData } from '../../../helpers/__mocks__/BatchUseRecordMock
 import appEvents from '../app-event.service';
 import { routeEvents } from '../route-events.constants';
 import TeamDetailsService from '../../../services/TeamDetailsService';
+import { bugsnagHelper } from '../../slack/RouteManagement/rootFile';
 
 describe('RouteEventHandlers', () => {
   beforeEach(() => {
@@ -36,11 +37,11 @@ describe('RouteEventHandlers', () => {
 
     it('should handle error when shit happens', async (done) => {
       const err = new Error('Shit happened');
-      jest.spyOn(console, 'log').mockImplementation();
+      jest.spyOn(bugsnagHelper, 'log').mockImplementation();
       jest.spyOn(RouteService, 'getRouteBatchByPk')
         .mockRejectedValue(err);
       await RouteEventHandlers.sendTakeOffAlerts({ batchId: 0 });
-      expect(console.log).toHaveBeenCalledWith(err);
+      expect(bugsnagHelper.log).toHaveBeenCalledWith(err);
       done();
     });
   });

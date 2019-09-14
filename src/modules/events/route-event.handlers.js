@@ -5,6 +5,7 @@ import RouteHelper from '../../helpers/RouteHelper';
 import RouteUseRecordService from '../../services/RouteUseRecordService';
 import ConfirmRouteUseJob from '../../services/jobScheduler/jobs/ConfirmRouteUseJob';
 import TeamDetailsService from '../../services/TeamDetailsService';
+import { bugsnagHelper } from '../slack/RouteManagement/rootFile';
 
 export default class RouteEventHandlers {
   static init() {
@@ -38,7 +39,7 @@ export default class RouteEventHandlers {
         });
       }
     } catch (_) {
-      console.log(_);
+      bugsnagHelper.log(_);
     }
   }
 

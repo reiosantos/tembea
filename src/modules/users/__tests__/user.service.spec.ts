@@ -14,7 +14,7 @@ describe(UserService, () => {
     userRepo = database.getRepository(User);
   });
 
-  afterAll(done => database.close().then(done));
+  afterAll((done) => database.close().then(done));
 
   it('should export a default instance', () => {
     expect(userService).toBeDefined();
@@ -45,12 +45,14 @@ describe(UserService, () => {
       slackId: 'U34HTY6G',
     };
 
-    beforeAll(done => userRepo.create(sampleUser).then(() => done()));
+    beforeAll((done) => userRepo.create(sampleUser).then(() => done(), () => done()));
 
     it('should return specified user', async () => {
       const result = await userService.findByEmail(sampleUser.email);
-      expect(result).toHaveProperty('id');
-      expect(result).toHaveProperty('name', sampleUser.name);
+      expect(result).toEqual(expect.objectContaining({
+        ...sampleUser,
+        id: expect.any(Number),
+      }));
     });
   });
 });

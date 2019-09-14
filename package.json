@@ -17,10 +17,9 @@
     "lint-js": "node_modules/.bin/eslint ./src",
     "jest": "ts-node node_modules/jest/bin/jest.js",
     "jest:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "pretest": "yarn lint && NODE_ENV=test yarn db:rollback && NODE_ENV=test yarn db:migrate yarn && NODE_ENV=test yarn db:seed",
+    "pretest": "yarn lint && NODE_ENV=test yarn db:rollback && NODE_ENV=test yarn db:migrate yarn",
     "test": "yarn jest --no-cache  --detectOpenHandles --runInBand --forceExit",
     "watch-test": "yarn run test -- --watchAll",
-    "db:seed": "node_modules/.bin/sequelize db:seed:all",
     "db:migrate": "node_modules/.bin/sequelize db:migrate",
     "db:rollback": "node_modules/.bin/sequelize db:migrate:undo:all",
     "db:rollmigrate": "yarn db:rollback && yarn db:migrate && yarn db:seed"

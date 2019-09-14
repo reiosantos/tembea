@@ -3,7 +3,6 @@ import database from '../../database';
 import { Repository } from 'sequelize-typescript';
 import { Identifier, Includeable, WhereOptions } from 'sequelize/types';
 import { Base } from '../../database/base';
-import RemoveDataValues from '../../helpers/removeDataValues';
 
 export class BaseService<T extends Base<T>, TId extends Identifier>
   implements IModelService<T, TId> {
@@ -15,31 +14,30 @@ export class BaseService<T extends Base<T>, TId extends Identifier>
 
   findOneByProp = async (option: IPropOption<T>) => {
     const result = await this.model.findOne({ where: this.createWhereOptions(option) });
-    return this.serialize(result);
+    return result.get() as T;
   }
 
   findManyByProp = async (option: IPropOption<T>) => {
     const result = await this.model.findAll({ where: this.createWhereOptions(option) });
-    return this.serialize(result);
+    return result.map((item) => item.get()) as T[];
   }
 
-  findById = async (id: TId): Promise<T> => this.model.findByPk(id);
+  findById = async (id: TId): Promise<T> => {
+    const result = await this.model.findByPk(id);
+    return result.get() as T;
+  }
 
   findAll = async (options: IIncludeOptions): Promise<T[]> => {
     const result = await this.model.findAll({
       where: options.where,
       include: options.include,
     });
-    return result;
+    return result.map((e) => e.get()) as T[];
   }
 
   async add<TInterface extends Object>(model: TInterface) {
     const result = await this.model.create(model);
-    return this.serialize(result);
-  }
-
-  serialize<U>(data: U): U {
-    return RemoveDataValues.removeDataValues(data);
+    return result.get() as T;
   }
 
   createWhereOptions = (option: IPropOption<T>) => ({ [option.prop]: option.value });

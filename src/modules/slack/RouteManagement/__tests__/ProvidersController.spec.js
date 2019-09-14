@@ -29,18 +29,24 @@ describe('Provider Controller', () => {
 
   describe('reassigned cab', () => {
     beforeEach(() => {
+      jest.spyOn(cabService, 'getById').mockResolvedValue({
+        id: 1,
+        regNuber: 'LKJ-123',
+        providerId: 3
+      });
       jest.spyOn(RouteService, 'updateRouteBatch').mockResolvedValue();
       jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue(route);
       jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('moon-token');
       jest.spyOn(ProviderNotifications, 'updateProviderReAssignCabMessage').mockResolvedValue({});
       jest.spyOn(ProvidersController, 'sendUserUpdatedRouteMessage').mockResolvedValue({});
     });
+
     afterEach(async () => {
       jest.restoreAllMocks();
     });
 
     it('should reassign a cab to route', async () => {
-      await ProvidersController.handleCabReAssigmentNotification(reassignCabPayload);
+      await ProvidersController.handleCabReAssigmentNotification(reassignCabPayload, jest.fn());
       expect(ProviderNotifications.updateProviderReAssignCabMessage).toHaveBeenCalled();
       expect(ProvidersController.sendUserUpdatedRouteMessage).toHaveBeenCalled();
     });

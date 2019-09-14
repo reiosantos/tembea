@@ -71,8 +71,16 @@ class TripActionsController {
     } = payload;
     const { tripId, timeStamp } = JSON.parse(payloadState);
     let newPayload = { ...payload };
-    const { providerUserSlackId, providerName } = await SlackProviderHelper.getProviderUserDetails(providerId);
-    newPayload = { ...newPayload, submission: { ...newPayload.submission, providerUserSlackId, providerName } };
+    const { providerUserSlackId, providerName } = await SlackProviderHelper
+      .getProviderUserDetails(providerId);
+    newPayload = {
+      ...newPayload,
+      submission: {
+        ...newPayload.submission,
+        providerUserSlackId,
+        providerName
+      }
+    };
     const approvalDate = TripHelper.convertApprovalDateFormat(timeStamp);
     const trip = await tripService.updateRequest(tripId, {
       tripStatus: 'Confirmed',

@@ -73,16 +73,15 @@ class UserService {
    */
   static async saveNewRecord(user, slackUserInfo, newName, newEmail, newPhoneNo) {
     try {
-      const modUser = user;
-      modUser.slackId = slackUserInfo.user.id;
-      modUser.name = (newName || user.dataValues.name).trim();
-      modUser.email = (newEmail || user.dataValues.email).trim();
-      modUser.phoneNo = (newPhoneNo || user.dataValues.phoneNo).trim();
-      await modUser.save();
-
-      return modUser.dataValues;
+      const [, [updated]] = await User.update({
+        slackId: slackUserInfo.user.id,
+        name: (newName || user.name).trim(),
+        email: (newEmail || user.email).trim(),
+        phoneNo: (newPhoneNo || user.phoneNo).trim()
+      }, { where: { id: user.id }, returning: true });
+      return updated.get();
     } catch (error) {
-      HttpError.throwErrorIfNull(null, 'Could not update user record', 500);
+      HttpError.throwErrorIfNull(error, 'Could not update user record', 500);
     }
   }
 

@@ -1,3 +1,4 @@
+import sequelize from 'sequelize';
 import database from '../database';
 import cache from '../cache';
 import bugsnagHelper from '../helpers/bugsnagHelper';
@@ -26,12 +27,11 @@ class TeamDetailsService {
     if (fetchedValue) {
       return fetchedValue;
     }
-
     try {
       const teamDetails = await TeamDetails.findOne({
         raw: true,
         where: {
-          teamUrl: `https://${teamUrl}`
+          teamUrl: { [sequelize.Op.or]: [`https://${teamUrl}`, teamUrl] },
         }
       });
       await cache.saveObject(getTeamDetailsKey(teamUrl), teamDetails);

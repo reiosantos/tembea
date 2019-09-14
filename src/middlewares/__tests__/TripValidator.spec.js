@@ -93,19 +93,20 @@ describe('Trip Validator', () => {
       expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(1);
       expect(next).toHaveBeenCalledTimes(0);
     });
-    it('should call next middleware if providerId is not supplied and action is decline', async () => {
-      req.query.action = 'decline';
-      delete req.body.providerId;
-      HttpError.sendErrorResponse = jest.fn(() => { });
-      jest.spyOn(HttpError, 'sendErrorResponse')
-        .mockResolvedValue(resolved);
-      jest.spyOn(TripService, 'checkExistence')
-        .mockResolvedValue(true);
+    it('should call next middleware if providerId is not supplied and action is decline',
+      async () => {
+        req.query.action = 'decline';
+        delete req.body.providerId;
+        HttpError.sendErrorResponse = jest.fn(() => { });
+        jest.spyOn(HttpError, 'sendErrorResponse')
+          .mockResolvedValue(resolved);
+        jest.spyOn(TripService, 'checkExistence')
+          .mockResolvedValue(true);
 
-      await TripValidator.validateAll(req, res, next);
-      expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(0);
-      expect(next).toHaveBeenCalledTimes(1);
-    });
+        await TripValidator.validateAll(req, res, next);
+        expect(HttpError.sendErrorResponse).toHaveBeenCalledTimes(0);
+        expect(next).toHaveBeenCalledTimes(1);
+      });
     it('should call validateAll with all values for decline', async () => {
       HttpError.sendErrorResponse = jest.fn(() => { });
       jest.spyOn(HttpError, 'sendErrorResponse')
@@ -138,14 +139,15 @@ describe('Trip Validator', () => {
     });
 
     it('should call next middleware', async () => {
-      req.params.tripId = 1;
-      req.body.providerId = 1;
-      await TripValidator.validateAll(req, res, next);
-      req.query.action = Boolean(null);
-      req.body.providerId = 1;
+      jest.spyOn(TripService, 'checkExistence').mockResolvedValueOnce(true);
+      const reqq = { ...req };
+      reqq.params.tripId = 1;
+      reqq.body.providerId = 1;
+      await TripValidator.validateAll(reqq, res, next);
       expect(next).toHaveBeenCalledTimes(1);
     });
   });
+
   describe('validateEachInput method', () => {
     beforeEach(() => {
       resolved = {

@@ -14,14 +14,14 @@ class CabsController {
           regNumber, capacity, model, providerId
         }
       } = req;
-      const { _options: { isNewRecord }, dataValues } = await cabService.findOrCreateCab(
+      const { _options: { isNewRecord }, dataValues: cab } = await cabService.findOrCreateCab(
         regNumber, capacity, model, providerId
       );
       if (isNewRecord) {
         return res.status(201).json({
           success: true,
           message: 'You have successfully created a cab',
-          cab: dataValues
+          cab,
         });
       }
       const recordConflictError = {

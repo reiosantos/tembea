@@ -62,7 +62,6 @@ class DepartmentController {
       );
       const [dept, created] = await DepartmentService.createDepartment(user,
         name, teamId, homebaseId);
-
       return DepartmentController.returnCreateDepartmentResponse(res, created, dept);
     } catch (error) {
       bugsnagHelper.log(error);
@@ -108,7 +107,8 @@ class DepartmentController {
   static async deleteRecord(req, res) {
     try {
       const { body: { id: departmentId, name: departmentName } } = req;
-      const success = await DepartmentService.deleteDepartmentByNameOrId(departmentId, departmentName);
+      const success = await DepartmentService.deleteDepartmentByNameOrId(departmentId,
+        departmentName);
 
       if (success) {
         return res.status(200).json({

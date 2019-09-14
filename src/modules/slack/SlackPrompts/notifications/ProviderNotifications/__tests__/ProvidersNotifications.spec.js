@@ -17,6 +17,7 @@ import {
 } from '../../../../RouteManagement/__mocks__/providersController.mock';
 import { cabService } from '../../../../../../services/CabService';
 import OpsAttachmentHelper from '../../OperationsRouteRequest/helper';
+import RouteService from '../../../../../../services/RouteService';
 
 describe('ProviderNotifications', () => {
   const data = {
@@ -73,7 +74,8 @@ describe('ProviderNotifications', () => {
     beforeEach(() => {
       jest.spyOn(ProviderAttachmentHelper, 'getFellowApproveAttachment').mockReturnValue('token');
       jest.spyOn(ProviderAttachmentHelper, 'getManagerApproveAttachment').mockReturnValue('token');
-      jest.spyOn(ProviderAttachmentHelper, 'getProviderCompleteAttachment').mockReturnValue('token');
+      jest.spyOn(ProviderAttachmentHelper, 'getProviderCompleteAttachment')
+        .mockReturnValue('token');
     });
   });
 
@@ -148,7 +150,8 @@ describe('ProviderNotifications', () => {
     });
 
     it('should get manager approve attachment', async () => {
-      await ProviderAttachmentHelper.getManagerApproveAttachment(routeRequest, chanelId, true, submission);
+      await ProviderAttachmentHelper.getManagerApproveAttachment(routeRequest, chanelId, true,
+        submission);
 
       expect(AttachmentHelper.getStatusLabels).toHaveBeenCalledWith(
         routeRequest.status, 'Approved'
@@ -171,14 +174,16 @@ describe('ProviderNotifications', () => {
 
     it('should get provider complete attachment', () => {
       jest.spyOn(ProviderAttachmentHelper, 'providerRouteInformation');
-      ProviderAttachmentHelper.getProviderCompleteAttachment('asdasd', 'Complete', routeRequest, submission);
+      ProviderAttachmentHelper.getProviderCompleteAttachment('asdasd', 'Complete', routeRequest,
+        submission);
 
       expect(AttachmentHelper.routeRequestAttachment).toHaveBeenCalled();
       expect(ProviderAttachmentHelper.providerRouteInformation).toHaveBeenCalledWith(submission);
     });
 
     it('should create provider route information', () => {
-      const routeInformationAttachment = ProviderAttachmentHelper.providerRouteInformation(submission);
+      const routeInformationAttachment = ProviderAttachmentHelper
+        .providerRouteInformation(submission);
       expect(routeInformationAttachment).toEqual({
         actions: [],
         attachment_type: undefined,
@@ -224,7 +229,8 @@ describe('sendProviderReasignDriverMessage', () => {
     jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('CATX99');
     jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue({});
 
-    await ProviderNotifications.sendProviderReasignDriverMessage(driver, [route], 'adaeze.slack.com');
+    await ProviderNotifications.sendProviderReasignDriverMessage(driver, [route],
+      'adaeze.slack.com');
     expect(ProviderService.findByPk).toHaveBeenCalled();
     expect(TeamDetailsService.getTeamDetailsByTeamUrl).toHaveBeenCalled();
     expect(UserService.getUserById).toHaveBeenCalled();
@@ -274,7 +280,6 @@ describe('provider cab reassignnment', () => {
   afterEach(async () => {
     jest.restoreAllMocks();
   });
-
 
   it('should notify the provider of the cab deletion', async () => {
     await ProviderNotifications.sendVehicleRemovalProviderNotification(cab, [route],
@@ -405,6 +410,10 @@ describe('sendRouteApprovalNotification', () => {
     jest.spyOn(SlackNotifications, 'getDMChannelId').mockResolvedValue('UXXID');
     jest.spyOn(SlackNotifications, 'createDirectMessage').mockResolvedValue({});
     jest.spyOn(SlackNotifications, 'sendNotification').mockResolvedValue({});
+    jest.spyOn(RouteService, 'getRouteBatchByPk').mockResolvedValue({
+      route: { name: 'Hello', destination: { address: 'Abeokuta Street, Ebute-metta' } }
+    });
+
     await ProviderNotifications.sendRouteApprovalNotification(route, 1, 'xoop');
     expect(ProviderService.findByPk).toHaveBeenCalled();
     expect(SlackNotifications.getDMChannelId).toHaveBeenCalled();

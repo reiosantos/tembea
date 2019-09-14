@@ -21,6 +21,8 @@ import { batch, routeDetails } from '../../../../helpers/__mocks__/routeMock';
 import DriverNotifications from
   '../../SlackPrompts/notifications/DriverNotifications/driver.notifications';
 import InteractivePromptsHelpers from '../../helpers/slackHelpers/InteractivePromptsHelpers';
+import { cabService } from '../../../../services/CabService';
+import { driverService } from '../../../../services/DriverService';
 
 describe('Operations Route Controller', () => {
   let respond;
@@ -442,6 +444,17 @@ describe('OperationsHandler > completeOpsAssignCabDriver', () => {
     jest.spyOn(bugsnagHelper, 'log').mockResolvedValue({});
     jest.spyOn(TeamDetailsService, 'getTeamDetailsBotOauthToken').mockResolvedValue('');
     jest.spyOn(DriverNotifications, 'checkAndNotifyDriver').mockResolvedValue({});
+    jest.spyOn(cabService, 'getById').mockResolvedValue({
+      id: 1,
+      regNumber: 'KJK-LKS-123',
+      capacity: 4,
+      model: 'Avensis'
+    });
+    jest.spyOn(driverService, 'getDriverById').mockResolvedValue({
+      id: 1,
+      driverName: 'Bimbo Alake',
+      driverPhoneNo: '+2348108746839'
+    });
   });
 
   it('should log error if it occurs', async () => {
@@ -454,7 +467,8 @@ describe('OperationsHandler > completeOpsAssignCabDriver', () => {
     jest.spyOn(InteractivePrompts, 'messageUpdate').mockResolvedValue({});
     jest.spyOn(OperationsHelper, 'getTripDetailsAttachment').mockResolvedValue({});
     jest.spyOn(OperationsHelper, 'sendcompleteOpAssignCabMsg').mockResolvedValue({});
-    jest.spyOn(InteractivePromptsHelpers, 'getOpsCompletionAttachmentDetails').mockResolvedValue({});
+    jest.spyOn(InteractivePromptsHelpers, 'getOpsCompletionAttachmentDetails')
+      .mockResolvedValue({});
     await OperationsHandler.sendAssignCabDriverNotifications('TEMA 1', {}, {},
       {}, 'UDAA78', 'UDAA', 'Channel', '1334141');
     expect(TeamDetailsService.getTeamDetailsBotOauthToken).toBeCalled();
