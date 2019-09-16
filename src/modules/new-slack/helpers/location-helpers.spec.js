@@ -5,7 +5,7 @@ import NewLocationHelpers from './location-helpers';
 import { getTripKey } from '../../../helpers/slack/ScheduleTripInputHandlers';
 
 describe('getLocationVerificationMsg', () => {
-  jest.spyOn(UserService, 'getUserBySlackId').mockReturnValue({ Homebase: { name: 'Kampala' } });
+  jest.spyOn(UserService, 'getUserBySlackId').mockReturnValue({ homebase: { name: 'Kampala' } });
   it('should get verfication message', async () => {
     const details = {
       url: 'fakeUrl',

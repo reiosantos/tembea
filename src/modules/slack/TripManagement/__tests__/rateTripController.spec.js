@@ -44,7 +44,7 @@ describe('RateTripController', () => {
     const payload = { user: { id: 'SHDAA' }, response_url: 'url' };
     it('should Update message if homebase is KAMPALA', async () => {
       jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({
-        Homebase: { name: 'Kampala' }
+        homebase: { name: 'Kampala' }
       });
       jest.spyOn(UpdateSlackMessageHelper, 'newUpdateMessage');
       await RateTripController.getAfterRatingAction(payload, {});
@@ -52,7 +52,7 @@ describe('RateTripController', () => {
     });
     it('should send Price Form if homebase is not Kampala ', async () => {
       jest.spyOn(UserService, 'getUserBySlackId').mockResolvedValue({
-        Homebase: { name: 'Nairobi' }
+        homebase: { name: 'Nairobi' }
       });
       jest.spyOn(Interactions, 'sendPriceForm').mockResolvedValue({});
       await RateTripController.getAfterRatingAction(payload, {});

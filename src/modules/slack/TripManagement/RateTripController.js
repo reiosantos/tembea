@@ -49,7 +49,7 @@ class RateTripController {
   }
 
   static async getAfterRatingAction(payload, state) {
-    const { Homebase: { name: homebase } } = await UserService.getUserBySlackId(payload.user.id);
+    const { homebase: { name: homebase } } = await UserService.getUserBySlackId(payload.user.id);
     if (homebase === HOMEBASE_NAMES.KAMPALA) {
       const message = new SlackInteractiveMessage('Thank you for using Tembea');
       await UpdateSlackMessageHelper.newUpdateMessage(payload.response_url, message);

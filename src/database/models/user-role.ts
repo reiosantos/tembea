@@ -1,4 +1,4 @@
-import { Table, Model, Column, ForeignKey } from 'sequelize-typescript';
+import { Table, Model, Column, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import User from './user';
 import Role from './role';
 import Homebase from './homebase';
@@ -16,4 +16,10 @@ export default class UserRole extends Model<UserRole> {
   @Column
   @ForeignKey(() => Homebase)
   homebaseId: number;
+
+  @BelongsTo(() => Role)
+  role: Role;
+
+  @BelongsTo(() => Homebase)
+  homebase: Homebase;
 }

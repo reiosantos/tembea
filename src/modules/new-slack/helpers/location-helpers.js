@@ -38,7 +38,7 @@ export default class NewLocationHelpers {
   }
 
   static async getLocationVerificationMsg(location, userId, options) {
-    const { Homebase: { name } } = await UserService.getUserBySlackId(userId);
+    const { homebase: { name } } = await UserService.getUserBySlackId(userId);
     const final = {};
     const details = await LocationHelpers.getPredictionsOnMap(location, name);
     if (!details) {

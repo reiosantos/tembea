@@ -182,7 +182,7 @@ describe('UserTripBookingController', () => {
           }
         }]
       };
-      jest.spyOn(UserService, 'getUserBySlackId').mockReturnValue({ Homebase: { name: 'Kampala' } });
+      jest.spyOn(UserService, 'getUserBySlackId').mockReturnValue({ homebase: { name: 'Kampala' } });
       jest.spyOn(Interactions, 'sendDetailsForm').mockResolvedValue();
       await UserTripBookingController.saveDepartment(newPayload);
       expect(Cache.save).toHaveBeenCalledTimes(3);

@@ -2,8 +2,8 @@ import RolesHelper from '../RolesHelper';
 
 describe('RoleHelper', () => {
   it('should return roles and locations object', () => {
-    const roles = [{ Homebase: { id: 1, name: 'Kampala' }, Role: { name: 'Admin' } },
-      { Homebase: { id: 2, name: 'Kampala' }, Role: { name: 'Super Admin' } }];
+    const roles = [{ homebase: { id: 1, name: 'Kampala' }, role: { name: 'Admin' } },
+      { homebase: { id: 2, name: 'Kampala' }, role: { name: 'Super Admin' } }];
     const result = RolesHelper.mapLocationsAndRoles(roles);
     expect(result).toEqual({
       locations:

@@ -13,16 +13,16 @@ export default class RolesHelper {
       SuperAdmin: [],
       Admin: []
     };
-    roles.map((role) => {
+    roles.map((roleObject) => {
       const locationObject = {};
-      locationObject.id = role.Homebase.id;
-      locationObject.name = role.Homebase.name;
-      locationObject.role = role.Role.name;
+      locationObject.id = roleObject.homebase.id;
+      locationObject.name = roleObject.homebase.name;
+      locationObject.role = roleObject.role.name;
       locations.push(locationObject);
-      if (role.Role.name === 'Admin') {
-        return RoleBasedAccessControl.Admin.push(role.Homebase.id);
+      if (roleObject.role.name === 'Admin') {
+        return RoleBasedAccessControl.Admin.push(roleObject.homebase.id);
       }
-      return RoleBasedAccessControl.SuperAdmin.push(role.Homebase.id);
+      return RoleBasedAccessControl.SuperAdmin.push(roleObject.homebase.id);
     });
     return { locations, RoleBasedAccessControl };
   }

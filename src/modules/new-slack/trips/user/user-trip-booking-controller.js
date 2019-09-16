@@ -64,7 +64,7 @@ export default class UserTripBookingController {
 
   static async saveDepartment(payload) {
     const { value, text } = payload.actions[0];
-    const { Homebase: { name } } = await UserService.getUserBySlackId(payload.user.id);
+    const { homebase: { name } } = await UserService.getUserBySlackId(payload.user.id);
     await Cache.save(getTripKey(payload.user.id), 'homeBaseName', name);
     await Cache.save(getTripKey(payload.user.id), 'departmentId', value);
     await Cache.save(getTripKey(payload.user.id), 'department', text.text);
