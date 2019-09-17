@@ -46,7 +46,6 @@ class RouteStatistics {
         model: User,
         as: 'user',
         attributes: ['name', 'email'],
-        where: { homebaseId }
       },
       {
         model: RouteUseRecord,
@@ -61,7 +60,8 @@ class RouteStatistics {
               {
                 model: Route,
                 as: 'route',
-                attributes: ['name']
+                attributes: ['name'],
+                where: { homebaseId }
               }]
           }]
       }];
