@@ -40,7 +40,7 @@ export class BaseService<T extends Base<T>, TId extends Identifier>
     return result.get() as T;
   }
 
-  createWhereOptions = (option: IPropOption<T>) => ({ [option.prop]: option.value });
+  protected createWhereOptions = (option: IPropOption<T>) => ({ [option.prop]: option.value });
 }
 
 export interface IIncludeOptions {

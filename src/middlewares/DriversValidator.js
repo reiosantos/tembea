@@ -118,7 +118,8 @@ class DriversValidator {
 
   static async validateUserExistenceById(req, res, next) {
     const { body: { userId, email }, headers: { teamurl } } = req;
-    const userByEmail = await UserService.getUserByEmail(email);
+    let userByEmail;
+    if (email) userByEmail = await UserService.getUserByEmail(email);
 
     if (!userId) {
       try {
