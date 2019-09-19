@@ -20,9 +20,10 @@
     "pretest": "yarn lint && NODE_ENV=test yarn db:rollback && NODE_ENV=test yarn db:migrate yarn",
     "test": "yarn jest --no-cache  --detectOpenHandles --runInBand --forceExit",
     "watch-test": "yarn run test -- --watchAll",
-    "db:migrate": "node_modules/.bin/sequelize db:migrate",
-    "db:rollback": "node_modules/.bin/sequelize db:migrate:undo:all",
-    "db:rollmigrate": "yarn db:rollback && yarn db:migrate && yarn db:seed"
+    "sequelize": "ts-node node_modules/.bin/sequelize",
+    "db:migrate": "yarn sequelize db:migrate",
+    "db:rollback": "yarn sequelize db:migrate:undo:all",
+    "db:rollmigrate": "yarn db:rollback && yarn db:migrate"
   },
   "repository": {
     "type": "git",
