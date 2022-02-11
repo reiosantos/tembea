@@ -117,7 +117,7 @@
     "dotenv-extended": "^2.4.0",
     "exceljs": "^2.0.1",
     "express": "^4.16.4",
-    "express-handlebars": "~3.0.0",
+    "express-handlebars": "~5.3.1",
     "express-validator": "^5.3.0",
     "faker": "^4.1.0",
     "fs-extra": "^7.0.1",
