@@ -123,7 +123,7 @@
     "fs-extra": "^7.0.1",
     "graceful-fs": "^4.1.15",
     "group-array": "^0.3.3",
-    "jsonwebtoken": "^8.4.0",
+    "jsonwebtoken": "^9.0.0",
     "lru-cache": "^5.1.1",
     "mailgun-js": "^0.22.0",
     "moment": "^2.24.0",
